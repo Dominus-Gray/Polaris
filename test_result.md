@@ -190,6 +190,9 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: POST /api/ai/explain correctly returns ok=false with message 'AI key missing. Please set EMERGENT_LLM_KEY in backend/.env and restart backend.' Graceful degradation working as expected."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: POST /api/ai/explain now working with EMERGENT_LLM_KEY set. Returns ok=true with comprehensive AI-generated explanation using openai/gpt-4o-mini model. Response includes detailed guidance on procurement readiness requirements and evidence needed for business registration in Texas/San Antonio."
 
 ## frontend:
   - task: "Assessment wizard UI"
