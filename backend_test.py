@@ -133,7 +133,7 @@ def test_progress(session_id):
                 print("✅ PASS: Progress endpoint returns all required fields")
                 print(f"  Total questions: {data['total_questions']}")
                 print(f"  Answered: {data['answered']}")
-                print(f"  Answered with evidence: {data['answered_with_required_evidence']}")
+                print(f"  Answered with evidence: {data['approved_evidence_answers']}")
                 print(f"  Percent complete: {data['percent_complete']}%")
                 return True
             else:
