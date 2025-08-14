@@ -24,9 +24,13 @@ function useAuth() {
 
   const login = async (email, password) => {
     const { data } = await axios.post(`${API}/auth/login`, { email, password });
+    // Immediately set Authorization header for subsequent calls
+    axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
     setToken(data.access_token);
     localStorage.setItem("polaris_token", data.access_token);
-    const { data: profile } = await axios.get(`${API}/auth/me`);
+    const { data: profile } = await axios.get(`${API}/auth/me`, {
+      headers: { Authorization: `Bearer ${data.access_token}` },
+    });
     setMe(profile);
     localStorage.setItem("polaris_me", JSON.stringify(profile));
   };
