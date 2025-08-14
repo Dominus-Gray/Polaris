@@ -269,14 +269,14 @@ def test_chunked_upload_flow(session_id):
         return False
 
 def test_ai_explain():
-    """Test POST /api/ai/explain - should return ok=false due to missing key"""
+    """Test POST /api/ai/explain - should return ok=true with AI response now that EMERGENT_LLM_KEY is set"""
     print("\n=== Testing AI Explain ===")
     try:
         payload = {
+            "session_id": "test-ui",
             "area_id": "area1",
             "question_id": "q1",
-            "question_text": "Is your business legally registered in Texas and San Antonio?",
-            "context": {"test": "context"}
+            "question_text": "Is your business legally registered in Texas and San Antonio?"
         }
         
         response = requests.post(
@@ -290,11 +290,15 @@ def test_ai_explain():
             data = response.json()
             print(f"AI response: {json.dumps(data, indent=2)}")
             
-            if data.get('ok') == False and 'EMERGENT_LLM_KEY' in data.get('message', ''):
-                print("✅ PASS: AI endpoint correctly returns ok=false with missing key message")
+            if data.get('ok') == True and data.get('message') and len(data.get('message', '').strip()) > 0:
+                print("✅ PASS: AI endpoint returns ok=true with non-empty message using openai/gpt-4o-mini")
+                print(f"AI Message: {data.get('message')}")
                 return True
+            elif data.get('ok') == False:
+                print(f"❌ FAIL: AI endpoint returned ok=false: {data.get('message', 'No message')}")
+                return False
             else:
-                print(f"❌ FAIL: Expected ok=false with key missing message, got: {data}")
+                print(f"❌ FAIL: Expected ok=true with non-empty message, got: {data}")
                 return False
         else:
             print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
