@@ -126,7 +126,7 @@ def test_progress(session_id):
             print(f"Progress data: {json.dumps(data, indent=2)}")
             
             # Check required fields
-            required_fields = ['session_id', 'total_questions', 'answered', 'answered_with_required_evidence', 'percent_complete']
+            required_fields = ['session_id', 'total_questions', 'answered', 'approved_evidence_answers', 'percent_complete']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
