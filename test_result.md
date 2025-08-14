@@ -233,13 +233,7 @@
   run_ui: false
 
 ## test_plan:
-  current_focus:
-    - "Assessment schema endpoint"
-    - "Create assessment session"
-    - "Save answers in bulk"
-    - "Progress endpoint"
-    - "Chunked upload: initiate/chunk/complete"
-    - "AI explain endpoint via emergentintegrations"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
