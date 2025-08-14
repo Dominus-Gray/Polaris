@@ -213,37 +213,46 @@
 ## frontend:
   - task: "Auth bar + role-aware nav"
     implemented: true
-    working: NA
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: NA
         agent: "main"
         comment: "Login/Register with role select; shows Navigator panel link for navigators."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL: Auth system failing in frontend. Backend auth endpoints work fine (register/login return 200 OK), but frontend JWT token handling is broken. After successful login, /api/auth/me returns 401 Unauthorized, preventing proper authentication flow. Users cannot log in through the UI. Webpack dev server overlay also blocking UI interactions."
   - task: "Answer hydration and multi-file evidence manager"
     implemented: true
-    working: NA
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: NA
         agent: "main"
         comment: "Hydrates previous answers on load; lists attached evidence with status and remove."
+      - working: false
+        agent: "testing"
+        comment: "❌ Cannot test due to auth system failure. Users cannot log in to access assessment functionality."
   - task: "Navigator panel UI"
     implemented: true
-    working: NA
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: NA
         agent: "main"
         comment: "Table of pending evidence with Approve/Reject actions."
+      - working: false
+        agent: "testing"
+        comment: "❌ Cannot test due to auth system failure. Navigator users cannot log in to access navigator panel."
 
 ## test_plan:
   current_focus:
