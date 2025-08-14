@@ -172,6 +172,9 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Evidence delete working perfectly. DELETE /api/upload/{upload_id} works for both client owners and navigators. Proper role-based access control implemented. Files are removed from disk, evidence_ids updated in answers, and review records marked as deleted."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASS: Evidence delete verified in Phase 2 flow. DELETE /api/upload/{upload_id} as navigator successfully removes evidence. Evidence list updates correctly (evidence removed from list), progress recalculates from 1.25% back to 0.0%. File cleanup and database updates working perfectly."
   - task: "Navigator review queue"
     implemented: true
     working: true
