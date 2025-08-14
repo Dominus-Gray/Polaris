@@ -155,6 +155,9 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Evidence listing working perfectly. GET /api/assessment/session/{session}/answer/{area}/{question}/evidence returns uploaded files with correct metadata (upload_id, file_name, mime_type, size) and review status (pending/approved/rejected). Evidence properly linked to questions."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASS: Evidence listing verified in Phase 2 flow. GET /api/assessment/session/{session}/answer/area3/q1/evidence correctly shows uploaded business_registration_certificate.pdf with pending status initially, then approved status after navigator approval. Status transitions working perfectly."
   - task: "Evidence delete"
     implemented: true
     working: true
