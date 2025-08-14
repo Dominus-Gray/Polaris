@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-do
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Axios auth setup
 function useAuth() {
   const [token, setToken] = useState(() => localStorage.getItem("polaris_token") || "");
   const [me, setMe] = useState(() => {
@@ -24,13 +23,10 @@ function useAuth() {
 
   const login = async (email, password) => {
     const { data } = await axios.post(`${API}/auth/login`, { email, password });
-    // Immediately set Authorization header for subsequent calls
     axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
     setToken(data.access_token);
     localStorage.setItem("polaris_token", data.access_token);
-    const { data: profile } = await axios.get(`${API}/auth/me`, {
-      headers: { Authorization: `Bearer ${data.access_token}` },
-    });
+    const { data: profile } = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${data.access_token}` } });
     setMe(profile);
     localStorage.setItem("polaris_me", JSON.stringify(profile));
   };
@@ -133,6 +129,8 @@ function AuthBar({ auth }) {
       <div className="auth">
         <span className="text-sm">{auth.me.email} • {auth.me.role}</span>
         <Link className="link" to="/">Assessment</Link>
+        {auth.me.role === "client" && <Link className="link" to="/matching">Matching</Link>}
+        {auth.me.role === "provider" && <Link className="link" to="/provider">Provider</Link>}
         {auth.me.role === "navigator" && <Link className="link" to="/navigator">Navigator</Link>}
         <button className="btn" onClick={() => { auth.logout(); navigate("/"); }}>Logout</button>
       </div>
@@ -163,7 +161,7 @@ function AuthBar({ auth }) {
 function QuestionCard({ area, q, sessionId, saveAnswer, current }) {
   const [aiMsg, setAiMsg] = useState("");
   const [uploadPct, setUploadPct] = useState(0);
-  const [files, setFiles] = useState([]); // [{upload_id, file_name, status}]
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -212,6 +210,22 @@ function QuestionCard({ area, q, sessionId, saveAnswer, current }) {
     }
   };
 
+  const downloadFile = async (upload_id, file_name) => {
+    try {
+      const { data } = await axios.get(`${API}/upload/${upload_id}/download`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file_name || 'evidence';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("Download failed");
+    }
+  };
+
   return (
     <div className="q-card">
       <div className="q-label">{q.text}</div>
@@ -234,6 +248,7 @@ function QuestionCard({ area, q, sessionId, saveAnswer, current }) {
                     <li key={f.upload_id} className="flex items-center gap-2">
                       <span>{f.file_name}</span>
                       <span className={`status-pill ${f.status === 'approved' ? 'status-approved' : f.status === 'rejected' ? 'status-rejected' : 'status-pending'}`}>{f.status}</span>
+                      <button className="link" onClick={() => downloadFile(f.upload_id, f.file_name)}>download</button>
                       <button className="link" onClick={() => removeFile(f.upload_id)}>remove</button>
                     </li>
                   ))}
@@ -252,9 +267,8 @@ function AssessmentApp({ auth }) {
   const sessionId = useSession();
   const schema = useSchema();
   const [activeArea, setActiveArea] = useState(null);
-  const [answers, setAnswers] = useState({}); // { [areaId]: { [qId]: { value, evidence_ids } } }
+  const [answers, setAnswers] = useState({});
 
-  // Hydration
   useEffect(() => {
     async function load() {
       if (!sessionId) return;
@@ -363,6 +377,137 @@ function NavigatorPanel() {
   );
 }
 
+function ProviderProfilePage() {
+  const schema = useSchema();
+  const [company_name, setCompany] = useState("");
+  const [service_areas, setAreas] = useState([]);
+  const [price_min, setPmin] = useState("");
+  const [price_max, setPmax] = useState("");
+  const [availability, setAvail] = useState("");
+  const [location, setLoc] = useState("San Antonio, TX");
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await axios.get(`${API}/provider/profile/me`);
+        if (data) {
+          setCompany(data.company_name || "");
+          setAreas(data.service_areas || []);
+          setPmin(data.price_min || "");
+          setPmax(data.price_max || "");
+          setAvail(data.availability || "");
+          setLoc(data.location || "");
+        }
+      } catch {}
+    })();
+  }, []);
+  const toggleArea = (id) => {
+    setAreas((prev) => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+  const save = async () => {
+    await axios.post(`${API}/provider/profile`, { company_name, service_areas, price_min: price_min ? Number(price_min) : null, price_max: price_max ? Number(price_max) : null, availability, location });
+    alert("Profile saved");
+  };
+  return (
+    <div className="container">
+      <h2 className="text-lg font-semibold mt-6 mb-3">Provider Profile</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="p-4 border rounded bg-white">
+          <div className="mb-2"><label className="block text-sm">Company Name</label><input className="input w-full" value={company_name} onChange={(e)=>setCompany(e.target.value)} /></div>
+          <div className="mb-2"><label className="block text-sm">Price Range</label><div className="flex gap-2"><input className="input w-full" placeholder="min" value={price_min} onChange={(e)=>setPmin(e.target.value)} /><input className="input w-full" placeholder="max" value={price_max} onChange={(e)=>setPmax(e.target.value)} /></div></div>
+          <div className="mb-2"><label className="block text-sm">Availability</label><input className="input w-full" value={availability} onChange={(e)=>setAvail(e.target.value)} /></div>
+          <div className="mb-2"><label className="block text-sm">Location</label><input className="input w-full" value={location} onChange={(e)=>setLoc(e.target.value)} /></div>
+          <button className="btn btn-primary" onClick={save}>Save Profile</button>
+        </div>
+        <div className="p-4 border rounded bg-white">
+          <div className="text-sm font-medium mb-2">Service Areas</div>
+          <div className="flex flex-col gap-1">
+            {schema?.areas.map(a => (
+              <label key={a.id} className="flex items-center gap-2"><input type="checkbox" checked={service_areas.includes(a.id)} onChange={()=>toggleArea(a.id)} />{a.title}</label>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MatchingPage() {
+  const auth = useAuth();
+  const schema = useSchema();
+  const [area_id, setArea] = useState("");
+  const [budget, setBudget] = useState("");
+  const [payment_pref, setPay] = useState("Net 30");
+  const [timeline, setTime] = useState("2-4 weeks");
+  const [description, setDesc] = useState("");
+  const [matches, setMatches] = useState([]);
+  const [requestId, setRequestId] = useState("");
+
+  const submit = async () => {
+    if (!area_id || !budget) { alert("Select area and budget"); return; }
+    const { data } = await axios.post(`${API}/match/request`, { area_id, budget: Number(budget), payment_pref, timeline, description });
+    setRequestId(data.request_id);
+    const { data: mm } = await axios.get(`${API}/match/${data.request_id}/matches`);
+    setMatches(mm.matches || []);
+  };
+
+  return (
+    <div className="container">
+      <h2 className="text-lg font-semibold mt-6 mb-3">Provider Matching</h2>
+      <div className="p-4 border rounded bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm">Business Area</label>
+            <select className="input w-full" value={area_id} onChange={(e)=>setArea(e.target.value)}>
+              <option value="">Select area</option>
+              {schema?.areas.map(a => (<option key={a.id} value={a.id}>{a.title}</option>))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm">Budget (USD)</label>
+            <input className="input w-full" value={budget} onChange={(e)=>setBudget(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm">Payment Preference</label>
+            <select className="input w-full" value={payment_pref} onChange={(e)=>setPay(e.target.value)}>
+              <option>Net 30</option>
+              <option>Net 15</option>
+              <option>Advance</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm">Timeline</label>
+            <input className="input w-full" value={timeline} onChange={(e)=>setTime(e.target.value)} />
+          </div>
+          <div className="lg:col-span-2">
+            <label className="block text-sm">Describe your need</label>
+            <textarea className="input w-full" rows={3} value={description} onChange={(e)=>setDesc(e.target.value)} />
+          </div>
+        </div>
+        <div className="mt-4"><button className="btn btn-primary" onClick={submit}>Get Matches</button></div>
+      </div>
+
+      {matches.length > 0 && (
+        <div className="mt-6 p-4 border rounded bg-white">
+          <div className="text-sm font-medium mb-2">Top Matches</div>
+          <table className="table">
+            <thead><tr><th>Provider</th><th>Areas</th><th>Price Range</th><th>Score</th></tr></thead>
+            <tbody>
+              {matches.map(m => (
+                <tr key={m.provider_id}>
+                  <td>{m.company_name}</td>
+                  <td>{(m.service_areas||[]).join(', ')}</td>
+                  <td>{m.price_min || '-'} - {m.price_max || '-'}</td>
+                  <td>{m.score}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AppShell() {
   const auth = useAuth();
   const sessionId = useSession();
@@ -378,6 +523,8 @@ function AppShell() {
       <Routes>
         <Route path="/" element={<AssessmentApp auth={auth} />} />
         <Route path="/navigator" element={<NavigatorPanel />} />
+        <Route path="/provider" element={<ProviderProfilePage />} />
+        <Route path="/matching" element={<MatchingPage />} />
       </Routes>
     </div>
   );

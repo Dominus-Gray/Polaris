@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends, Header, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -186,6 +186,25 @@ class AIExplainResp(BaseModel):
 class ReviewDecisionReq(BaseModel):
     decision: str  # approved or rejected
     notes: Optional[str] = None
+
+# Provider/Matching models
+class ProviderProfileIn(BaseModel):
+    company_name: str
+    service_areas: List[str]
+    price_min: Optional[float] = None
+    price_max: Optional[float] = None
+    availability: Optional[str] = None
+    location: Optional[str] = None
+
+class ProviderProfileOut(ProviderProfileIn):
+    id: str
+
+class MatchRequestIn(BaseModel):
+    budget: float
+    payment_pref: Optional[str] = None
+    timeline: Optional[str] = None
+    area_id: str
+    description: Optional[str] = None
 
 # ---------- Assessment Schema (Expanded 10 Q per area) ----------
 
@@ -388,7 +407,6 @@ async def list_evidence(session_id: str, area_id: str, question_id: str):
     if not eids:
         return {"evidence": []}
     uploads = await db.uploads.find({"_id": {"$in": eids}}).to_list(100)
-    # attach review status
     reviews = await db.reviews.find({"evidence_id": {"$in": eids}}).to_list(500)
     status_by_eid = {}
     for r in reviews:
@@ -410,18 +428,15 @@ async def delete_evidence(upload_id: str, current=Depends(require_user)):
     if not up:
         raise HTTPException(status_code=404, detail="Upload not found")
     sess = await db.sessions.find_one({"_id": up.get("session_id")})
-    # allow owner (client) or navigator
     if current.get("role") != "navigator":
         if not sess or sess.get("user_id") != current.get("id"):
             raise HTTPException(status_code=403, detail="Forbidden")
-    # remove file(s)
     final_path = up.get("stored_path")
     try:
         if final_path and os.path.exists(final_path):
             os.remove(final_path)
     except Exception as e:
         logger.warning(f"Failed to delete file {final_path}: {e}")
-    # remove chunk dir
     stage_dir = UPLOAD_BASE / upload_id
     try:
         if stage_dir.exists():
@@ -441,13 +456,25 @@ async def delete_evidence(upload_id: str, current=Depends(require_user)):
                 stage_dir.rmdir()
     except Exception:
         pass
-    # unlink from answers
     await db.answers.update_many({"session_id": up.get("session_id"), "area_id": up.get("area_id"), "question_id": up.get("question_id")}, {"$pull": {"evidence_ids": upload_id}})
-    # mark review as deleted
     await db.reviews.update_many({"evidence_id": upload_id}, {"$set": {"status": "deleted", "updated_at": datetime.utcnow()}})
-    # mark upload as deleted
     await db.uploads.update_one({"_id": upload_id}, {"$set": {"status": "deleted", "deleted_at": datetime.utcnow()}})
     return {"ok": True}
+
+@api.get("/upload/{upload_id}/download")
+async def download_evidence(upload_id: str, current=Depends(require_user)):
+    up = await db.uploads.find_one({"_id": upload_id})
+    if not up:
+        raise HTTPException(status_code=404, detail="Upload not found")
+    sess = await db.sessions.find_one({"_id": up.get("session_id")})
+    if current.get("role") != "navigator":
+        if not sess or sess.get("user_id") != current.get("id"):
+            raise HTTPException(status_code=403, detail="Forbidden")
+    final_path = up.get("stored_path")
+    if not final_path or not os.path.exists(final_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    filename = up.get("file_name") or os.path.basename(final_path)
+    return FileResponse(path=final_path, media_type=up.get("mime_type") or 'application/octet-stream', filename=filename)
 
 @api.get("/assessment/session/{session_id}/progress", response_model=ProgressResp)
 async def get_progress(session_id: str):
@@ -455,13 +482,11 @@ async def get_progress(session_id: str):
     answers = await db.answers.find({"session_id": session_id}).to_list(2000)
     answered = sum(1 for a in answers if a.get("value") is not None)
 
-    # requires evidence lookup
     requires = {}
     for area in ASSESSMENT_SCHEMA["areas"]:
         for q in area["questions"]:
             requires[(area["id"], q["id"])] = q["requires_evidence_on_yes"]
 
-    # gather approvals by evidence id
     evidence_ids = []
     for a in answers:
         evidence_ids.extend(a.get("evidence_ids", []) or [])
@@ -483,7 +508,6 @@ async def get_progress(session_id: str):
             if any(e in approved_set for e in eids):
                 approved_evidence_answers += 1
         else:
-            # no evidence required or answer is no -> counts as answered
             approved_evidence_answers += 1
 
     percent = round((approved_evidence_answers / total_questions) * 100, 2) if total_questions else 0.0
@@ -495,7 +519,6 @@ CHUNK_SIZE_DEFAULT = 5 * 1024 * 1024  # 5MB
 @api.post("/upload/initiate", response_model=UploadInitiateResp)
 async def initiate_upload(req: UploadInitiateReq, current=Depends(get_current_user)):
     upload_id = str(uuid.uuid4())
-    # Create staging dir
     stage_dir = UPLOAD_BASE / upload_id / "chunks"
     stage_dir.mkdir(parents=True, exist_ok=True)
     rec = {
@@ -543,7 +566,6 @@ async def complete_upload(req: UploadCompleteReq):
     stage_dir = UPLOAD_BASE / req.upload_id / "chunks"
     if not stage_dir.exists():
         raise HTTPException(status_code=400, detail="Chunks not found")
-    # Merge
     final_dir = UPLOAD_BASE / req.upload_id
     final_dir.mkdir(parents=True, exist_ok=True)
     final_path = final_dir / rec["file_name"]
@@ -562,7 +584,6 @@ async def complete_upload(req: UploadCompleteReq):
     size = final_path.stat().st_size
     await db.uploads.update_one({"_id": req.upload_id}, {"$set": {"status": "completed", "stored_path": str(final_path), "final_size": size, "completed_at": datetime.utcnow()}})
 
-    # Attach to answer record
     existing = await db.answers.find_one({
         "session_id": rec["session_id"],
         "area_id": rec["area_id"],
@@ -586,7 +607,6 @@ async def complete_upload(req: UploadCompleteReq):
         }
         await db.answers.insert_one(doc)
 
-    # Create review record (pending)
     review_id = str(uuid.uuid4())
     rdoc = {
         "_id": review_id,
@@ -636,8 +656,6 @@ async def ai_explain(req: AIExplainReq):
 async def get_reviews(status: str = Query("pending"), current=Depends(require_role("navigator"))):
     q = {"status": status}
     reviews = await db.reviews.find(q).to_list(2000)
-    # enrich with question text and file name
-    # build lookup
     text_by_key = {}
     for area in ASSESSMENT_SCHEMA["areas"]:
         for qobj in area["questions"]:
@@ -669,6 +687,133 @@ async def review_decision(review_id: str, payload: ReviewDecisionReq, current=De
         raise HTTPException(status_code=400, detail="Invalid decision")
     await db.reviews.update_one({"_id": review_id}, {"$set": {"status": payload.decision, "notes": payload.notes, "reviewer_user_id": current["id"], "updated_at": datetime.utcnow()}})
     return {"ok": True}
+
+# ---------- Provider Profiles & Matching (Phase 3 MVP) ----------
+@api.get("/provider/profile/me", response_model=Optional[ProviderProfileOut])
+async def get_my_profile(current=Depends(require_role("provider"))):
+    prof = await db.provider_profiles.find_one({"user_id": current["id"]})
+    if not prof:
+        return None
+    return ProviderProfileOut(
+        id=prof["_id"],
+        company_name=prof.get("company_name"),
+        service_areas=prof.get("service_areas", []),
+        price_min=prof.get("price_min"),
+        price_max=prof.get("price_max"),
+        availability=prof.get("availability"),
+        location=prof.get("location"),
+    )
+
+@api.post("/provider/profile", response_model=ProviderProfileOut)
+async def upsert_profile(payload: ProviderProfileIn, current=Depends(require_role("provider"))):
+    existing = await db.provider_profiles.find_one({"user_id": current["id"]})
+    now = datetime.utcnow()
+    if existing:
+        await db.provider_profiles.update_one({"_id": existing["_id"]}, {"$set": {**payload.dict(), "updated_at": now}})
+        prof = await db.provider_profiles.find_one({"_id": existing["_id"]})
+        prof_id = existing["_id"]
+    else:
+        prof_id = str(uuid.uuid4())
+        doc = {"_id": prof_id, "id": prof_id, "user_id": current["id"], **payload.dict(), "created_at": now, "updated_at": now}
+        await db.provider_profiles.insert_one(doc)
+        prof = doc
+    return ProviderProfileOut(
+        id=prof_id,
+        company_name=prof.get("company_name"),
+        service_areas=prof.get("service_areas", []),
+        price_min=prof.get("price_min"),
+        price_max=prof.get("price_max"),
+        availability=prof.get("availability"),
+        location=prof.get("location"),
+    )
+
+@api.post("/match/request")
+async def create_match_request(payload: MatchRequestIn, current=Depends(require_role("client"))):
+    req_id = str(uuid.uuid4())
+    doc = {"_id": req_id, "id": req_id, "user_id": current["id"], "budget": payload.budget, "payment_pref": payload.payment_pref, "timeline": payload.timeline, "area_id": payload.area_id, "description": payload.description, "status": "open", "created_at": datetime.utcnow(), "responses_count": 0}
+    await db.match_requests.insert_one(doc)
+    return {"request_id": req_id, "ok": True}
+
+@api.get("/match/{request_id}/matches")
+async def get_matches(request_id: str, current=Depends(require_user)):
+    req = await db.match_requests.find_one({"_id": request_id})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    # owner or navigator can view
+    if current.get("role") != "navigator" and req.get("user_id") != current.get("id"):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    providers = await db.provider_profiles.find({}).to_list(5000)
+    matches = []
+    for p in providers:
+        score = 0
+        if req["area_id"] in (p.get("service_areas") or []):
+            score += 50
+        b = req.get("budget")
+        pmin = p.get("price_min") or 0
+        pmax = p.get("price_max") or 0
+        if pmin and pmax and pmin <= b <= pmax:
+            score += 40
+        elif pmin and b >= pmin * 0.8:
+            score += 20
+        if p.get("availability"):
+            score += 10
+        matches.append({
+            "provider_id": p["_id"],
+            "company_name": p.get("company_name"),
+            "service_areas": p.get("service_areas", []),
+            "price_min": p.get("price_min"),
+            "price_max": p.get("price_max"),
+            "location": p.get("location"),
+            "score": score,
+        })
+    matches.sort(key=lambda x: x["score"], reverse=True)
+    return {"matches": matches[:10]}
+
+@api.get("/match/eligible")
+async def get_eligible_for_provider(current=Depends(require_role("provider"))):
+    prof = await db.provider_profiles.find_one({"user_id": current["id"]})
+    if not prof:
+        return {"requests": []}
+    service_areas = prof.get("service_areas", [])
+    pmin = prof.get("price_min") or 0
+    pmax = prof.get("price_max") or 0
+    reqs = await db.match_requests.find({"status": "open"}).to_list(5000)
+    out = []
+    for r in reqs:
+        if r.get("area_id") in service_areas:
+            b = r.get("budget") or 0
+            budget_ok = (not pmin and not pmax) or (pmin <= b <= (pmax or b))
+            if budget_ok:
+                out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
+    return {"requests": out[:20]}
+
+@api.post("/match/respond")
+async def respond_to_match(request_id: str = Form(...), proposal_note: Optional[str] = Form(None), current=Depends(require_role("provider"))):
+    req = await db.match_requests.find_one({"_id": request_id})
+    if not req or req.get("status") != "open":
+        raise HTTPException(status_code=400, detail="Request not open")
+    resp_count = await db.match_responses.count_documents({"request_id": request_id})
+    if resp_count >= 5:
+        return {"ok": False, "reason": "First-5 responses have already been received"}
+    # prevent duplicate response from same provider
+    existing = await db.match_responses.find_one({"request_id": request_id, "provider_user_id": current["id"]})
+    if existing:
+        return {"ok": True, "message": "Already responded"}
+    rid = str(uuid.uuid4())
+    rdoc = {"_id": rid, "id": rid, "request_id": request_id, "provider_user_id": current["id"], "proposal_note": proposal_note, "created_at": datetime.utcnow()}
+    await db.match_responses.insert_one(rdoc)
+    await db.match_requests.update_one({"_id": request_id}, {"$set": {"responses_count": resp_count + 1}})
+    return {"ok": True, "response_id": rid}
+
+@api.get("/match/{request_id}/responses")
+async def list_responses(request_id: str, current=Depends(require_user)):
+    req = await db.match_requests.find_one({"_id": request_id})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if current.get("role") != "navigator" and req.get("user_id") != current.get("id"):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    resps = await db.match_responses.find({"request_id": request_id}).to_list(100)
+    return {"responses": resps}
 
 # Include router
 app.include_router(api)
