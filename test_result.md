@@ -108,70 +108,88 @@
 ## backend:
   - task: "Assessment schema endpoint"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Implemented GET /api/assessment/schema returning 8 SBAP areas (subset questions)."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: GET /api/assessment/schema returns exactly 8 areas with correct structure. All area titles verified: Business Formation, Financial Management, HR, Operations, Technology, Marketing, Risk Management, Growth Planning."
   - task: "Create assessment session"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "POST /api/assessment/session returns UUID session_id; stored in Mongo without ObjectId."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: POST /api/assessment/session successfully creates session with valid UUID format (cd979baa-5452-4ac3-b3a6-be0fa1708685). Session stored in MongoDB correctly."
   - task: "Save answers in bulk"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "POST /api/assessment/answers/bulk upserts answers, keeps UUIDs."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: POST /api/assessment/answers/bulk successfully upserts answer for area1/q1 with value=true and evidence_ids=['dummy']. Returns ok=true response."
   - task: "Progress endpoint"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "GET /api/assessment/session/{session_id}/progress computes readiness %."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: GET /api/assessment/session/{session}/progress correctly returns all required fields (session_id, total_questions=24, answered=1, answered_with_required_evidence=1, percent_complete=4.17%). Progress calculation working correctly."
   - task: "Chunked upload: initiate/chunk/complete"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Implements /api/upload/initiate, /api/upload/chunk (form-data), /api/upload/complete merges to disk and updates evidence_ids."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Complete chunked upload flow working perfectly. POST /api/upload/initiate (test.pdf, 11MB) → 3 chunks via POST /api/upload/chunk → POST /api/upload/complete (3 chunks). Upload ID correctly added to evidence_ids for area1/q1. File merged successfully with correct size."
   - task: "AI explain endpoint via emergentintegrations"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "POST /api/ai/explain uses EMERGENT_LLM_KEY and defaults to openai gpt-4o-mini; returns friendly message if key/lib missing."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: POST /api/ai/explain correctly returns ok=false with message 'AI key missing. Please set EMERGENT_LLM_KEY in backend/.env and restart backend.' Graceful degradation working as expected."
 
 ## frontend:
   - task: "Assessment wizard UI"
