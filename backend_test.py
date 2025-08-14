@@ -244,7 +244,7 @@ def test_chunked_upload_flow(session_id):
             progress_response = requests.get(f"{API_BASE}/assessment/session/{session_id}/progress")
             if progress_response.status_code == 200:
                 progress_data = progress_response.json()
-                print(f"Updated progress: answered_with_required_evidence = {progress_data.get('answered_with_required_evidence', 0)}")
+                print(f"Updated progress: approved_evidence_answers = {progress_data.get('approved_evidence_answers', 0)}")
                 
                 # Also check the session data to see if evidence_ids were updated
                 session_response = requests.get(f"{API_BASE}/assessment/session/{session_id}")
