@@ -206,6 +206,9 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Progress calculation working correctly. GET /api/assessment/session/{session}/progress returns all required fields (session_id, total_questions=80, answered, approved_evidence_answers, percent_complete). Progress properly accounts for approved evidence on required Yes answers."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASS: Progress calculation verified in Phase 2 flow. After navigator approval, progress shows approved_evidence_answers=1 and percent_complete=1.25% (1/80 questions with approved evidence). After evidence deletion, progress correctly recalculates to approved_evidence_answers=0 and percent_complete=0.0%. Dynamic progress calculation working perfectly."
 
 ## frontend:
   - task: "Auth bar + role-aware nav"
