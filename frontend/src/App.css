@@ -2,17 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #0b1020;
-}
-
+:root { --bg: #0b1020; }
 body { @apply bg-slate-50 text-slate-900; }
-
 .app-shell { @apply min-h-screen; }
-.header {
-  @apply sticky top-0 z-20 backdrop-blur bg-white/70 border-b border-slate-200;
-}
-.header-inner { @apply max-w-6xl mx-auto px-4 py-3 flex items-center justify-between; }
+.header { @apply sticky top-0 z-20 backdrop-blur bg-white/70 border-b border-slate-200; }
+.header-inner { @apply max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4; }
 .brand { @apply text-xl font-semibold tracking-tight; }
 
 .progress-wrap { @apply w-full bg-slate-200 h-2 rounded overflow-hidden; }
@@ -29,9 +23,7 @@ body { @apply bg-slate-50 text-slate-900; }
 .q-card { @apply p-4 border rounded-lg mb-4 bg-white; }
 .q-label { @apply font-medium; }
 .q-actions { @apply mt-3 flex items-center gap-2 flex-wrap; }
-.toggle {
-  @apply inline-flex rounded-full overflow-hidden border;
-}
+.toggle { @apply inline-flex rounded-full overflow-hidden border; }
 .toggle button { @apply px-3 py-1 text-sm hover:bg-slate-100; }
 .toggle .on { @apply bg-emerald-600 text-white; }
 .toggle .off { @apply bg-rose-600 text-white; }
@@ -41,3 +33,15 @@ body { @apply bg-slate-50 text-slate-900; }
 .btn-primary { @apply bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700; }
 .badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-slate-100; }
 .ai-note { @apply mt-2 text-sm text-slate-600; }
+
+.auth { @apply flex items-center gap-2; }
+.input { @apply border rounded px-2 py-1 text-sm; }
+.link { @apply text-indigo-600 hover:underline; }
+
+.table { @apply w-full text-sm; }
+.table th, .table td { @apply px-3 py-2 border-b; }
+.table th { @apply text-left bg-slate-50; }
+.status-pill { @apply inline-flex items-center px-2 py-0.5 text-xs rounded-full; }
+.status-pending { @apply bg-yellow-100 text-yellow-800; }
+.status-approved { @apply bg-emerald-100 text-emerald-800; }
+.status-rejected { @apply bg-rose-100 text-rose-800; }
