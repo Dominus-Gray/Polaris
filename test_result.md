@@ -102,6 +102,11 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
+## agent_communication:
+  - agent: "main"
+    message: "Re-run backend tests for Phase 2 (auth, navigator review, evidence list/delete, progress with approvals). After backend passes, run automated frontend tests for the same flows as per user's approval."
+
+
 - Backend Phase 2 Update (Auth + Full SBAP + Navigator Review)
 
 ## backend:
