@@ -731,11 +731,16 @@ def test_evidence_delete_as_navigator(navigator_token, upload_id):
         return False
 
 def main():
-    """Run all backend tests"""
-    print("🚀 Starting Backend API Tests")
+    """Run all backend tests including Phase 2 auth and navigator features"""
+    print("🚀 Starting Backend API Tests - Phase 2")
     print(f"Base URL: {API_BASE}")
     
     results = {}
+    
+    # ========== PHASE 1 TESTS (EXISTING) ==========
+    print("\n" + "="*60)
+    print("PHASE 1 TESTS - Basic Assessment Features")
+    print("="*60)
     
     # Test 1: Assessment Schema
     results['schema'] = test_assessment_schema()
@@ -761,17 +766,127 @@ def main():
     # Test 6: AI Explain
     results['ai_explain'] = test_ai_explain()
     
+    # ========== PHASE 2 TESTS (NEW) ==========
+    print("\n" + "="*60)
+    print("PHASE 2 TESTS - Auth + Navigator Review System")
+    print("="*60)
+    
+    # Test 7: Auth Register Navigator
+    navigator_email, navigator_password = test_auth_register()
+    results['auth_register_navigator'] = navigator_email is not None
+    
+    # Test 8: Auth Register Client
+    client_email, client_password = test_auth_register_client()
+    results['auth_register_client'] = client_email is not None
+    
+    navigator_token = None
+    client_token = None
+    
+    if navigator_email and navigator_password:
+        # Test 9: Auth Login Navigator
+        navigator_token = test_auth_login(navigator_email, navigator_password, "navigator")
+        results['auth_login_navigator'] = navigator_token is not None
+        
+        if navigator_token:
+            # Test 10: Auth Me Navigator
+            results['auth_me_navigator'] = test_auth_me(navigator_token, "navigator")
+    else:
+        results['auth_login_navigator'] = False
+        results['auth_me_navigator'] = False
+    
+    if client_email and client_password:
+        # Test 11: Auth Login Client
+        client_token = test_auth_login(client_email, client_password, "client")
+        results['auth_login_client'] = client_token is not None
+        
+        if client_token:
+            # Test 12: Auth Me Client
+            results['auth_me_client'] = test_auth_me(client_token, "client")
+    else:
+        results['auth_login_client'] = False
+        results['auth_me_client'] = False
+    
+    # Test 13-14: Client Session + Upload Flow
+    client_session_id = None
+    client_upload_id = None
+    if client_token:
+        client_session_id, client_upload_id = test_client_session_and_upload(client_token)
+        results['client_session_upload'] = client_session_id is not None and client_upload_id is not None
+        
+        if client_session_id and client_upload_id:
+            # Test 15: Evidence Listing
+            results['evidence_listing'] = test_evidence_listing(client_session_id, client_upload_id)
+    else:
+        results['client_session_upload'] = False
+        results['evidence_listing'] = False
+    
+    # Test 16-17: Navigator Review Queue and Decision
+    review_id = None
+    if navigator_token:
+        review_id = test_navigator_review_queue(navigator_token)
+        results['navigator_review_queue'] = review_id is not None
+        
+        if review_id:
+            results['navigator_decision'] = test_navigator_decision(navigator_token, review_id)
+        else:
+            results['navigator_decision'] = False
+    else:
+        results['navigator_review_queue'] = False
+        results['navigator_decision'] = False
+    
+    # Test 18: Progress with Approval
+    if client_session_id:
+        results['progress_with_approval'] = test_progress_with_approval(client_session_id)
+    else:
+        results['progress_with_approval'] = False
+    
+    # Test 19-20: Evidence Delete Tests
+    # Create a new upload for delete testing
+    if client_token:
+        print("\n=== Creating New Upload for Delete Testing ===")
+        delete_session_id, delete_upload_id = test_client_session_and_upload(client_token)
+        if delete_upload_id:
+            # Test delete as client owner
+            results['evidence_delete_client'] = test_evidence_delete_as_client(client_token, delete_upload_id)
+        else:
+            results['evidence_delete_client'] = False
+    else:
+        results['evidence_delete_client'] = False
+    
+    # Create another upload for navigator delete test
+    if client_token and navigator_token:
+        print("\n=== Creating Another Upload for Navigator Delete Testing ===")
+        nav_delete_session_id, nav_delete_upload_id = test_client_session_and_upload(client_token)
+        if nav_delete_upload_id:
+            # Test delete as navigator
+            results['evidence_delete_navigator'] = test_evidence_delete_as_navigator(navigator_token, nav_delete_upload_id)
+        else:
+            results['evidence_delete_navigator'] = False
+    else:
+        results['evidence_delete_navigator'] = False
+    
     # Summary
-    print("\n" + "="*50)
-    print("📊 TEST SUMMARY")
-    print("="*50)
+    print("\n" + "="*60)
+    print("📊 COMPREHENSIVE TEST SUMMARY")
+    print("="*60)
     
     passed = sum(1 for result in results.values() if result)
     total = len(results)
     
-    for test_name, result in results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{test_name.replace('_', ' ').title()}: {status}")
+    # Group results by phase
+    phase1_tests = ['schema', 'session', 'bulk_answers', 'progress', 'chunked_upload', 'ai_explain']
+    phase2_tests = [k for k in results.keys() if k not in phase1_tests]
+    
+    print("PHASE 1 RESULTS:")
+    for test_name in phase1_tests:
+        if test_name in results:
+            status = "✅ PASS" if results[test_name] else "❌ FAIL"
+            print(f"  {test_name.replace('_', ' ').title()}: {status}")
+    
+    print("\nPHASE 2 RESULTS:")
+    for test_name in phase2_tests:
+        status = "✅ PASS" if results[test_name] else "❌ FAIL"
+        print(f"  {test_name.replace('_', ' ').title()}: {status}")
     
     print(f"\nOverall: {passed}/{total} tests passed")
     
