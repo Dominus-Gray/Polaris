@@ -101,3 +101,131 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+
+## user_problem_statement: "Build Polaris MVP: SBAP Assessment Wizard with AI explanations and full chunked evidence uploads, FastAPI + React + MongoDB"
+
+## backend:
+  - task: "Assessment schema endpoint"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Implemented GET /api/assessment/schema returning 8 SBAP areas (subset questions)."
+  - task: "Create assessment session"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "POST /api/assessment/session returns UUID session_id; stored in Mongo without ObjectId."
+  - task: "Save answers in bulk"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "POST /api/assessment/answers/bulk upserts answers, keeps UUIDs."
+  - task: "Progress endpoint"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "GET /api/assessment/session/{session_id}/progress computes readiness %."
+  - task: "Chunked upload: initiate/chunk/complete"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Implements /api/upload/initiate, /api/upload/chunk (form-data), /api/upload/complete merges to disk and updates evidence_ids."
+  - task: "AI explain endpoint via emergentintegrations"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "POST /api/ai/explain uses EMERGENT_LLM_KEY and defaults to openai gpt-4o-mini; returns friendly message if key/lib missing."
+
+## frontend:
+  - task: "Assessment wizard UI"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Sidebar areas, main questions, yes/no toggles, Save Progress."
+  - task: "Chunked uploader client"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Initiate, sequential chunks, complete; progress UI."
+  - task: "AI explanation button"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Calls /api/ai/explain and shows response; degrades gracefully if key missing."
+
+## metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+## test_plan:
+  current_focus:
+    - "Assessment schema endpoint"
+    - "Create assessment session"
+    - "Save answers in bulk"
+    - "Progress endpoint"
+    - "Chunked upload: initiate/chunk/complete"
+    - "AI explain endpoint via emergentintegrations"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+## agent_communication:
+  - agent: "main"
+    message: "Backend implemented for assessment + AI + chunked uploads. Please test endpoints as per plan. Note: EMERGENT_LLM_KEY not set yet; AI endpoint should return ok=false with informative message. Use /api prefix strictly."
