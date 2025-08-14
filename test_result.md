@@ -107,70 +107,88 @@
 ## backend:
   - task: "Auth: register/login/me with JWT and roles"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Added /api/auth/register, /api/auth/login, /api/auth/me with JWT, role guard helpers."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Auth system fully functional. POST /api/auth/register creates navigator and client users successfully. POST /api/auth/login returns JWT tokens. GET /api/auth/me validates JWT and returns correct user data with roles. All auth endpoints working perfectly with proper JWT validation."
   - task: "Full SBAP schema (8 areas x up to 10 questions)"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Expanded schema to 10 questions per area with evidence requirements pattern."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Full SBAP schema working perfectly. GET /api/assessment/schema returns exactly 8 areas with 10 questions each (80 total questions). All area titles verified: Business Operations, Financial Management, Legal and Compliance, Technology and Cybersecurity, Human Resources, Marketing and Sales, Supply Chain Management, Quality Assurance."
   - task: "Evidence listing per question"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "GET /api/assessment/session/{session}/answer/{area}/{question}/evidence returns files + review status."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Evidence listing working perfectly. GET /api/assessment/session/{session}/answer/{area}/{question}/evidence returns uploaded files with correct metadata (upload_id, file_name, mime_type, size) and review status (pending/approved/rejected). Evidence properly linked to questions."
   - task: "Evidence delete"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "DELETE /api/upload/{upload_id} with role checks and file cleanup."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Evidence delete working perfectly. DELETE /api/upload/{upload_id} works for both client owners and navigators. Proper role-based access control implemented. Files are removed from disk, evidence_ids updated in answers, and review records marked as deleted."
   - task: "Navigator review queue"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "GET /api/navigator/reviews?status=pending and POST /api/navigator/reviews/{id}/decision."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Navigator review system fully functional. GET /api/navigator/reviews?status=pending returns pending reviews with enriched data (area titles, question text, file names). POST /api/navigator/reviews/{id}/decision accepts approved/rejected decisions with notes. Role-based access control working correctly."
   - task: "Progress updated to count approved evidence"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "percent_complete includes approved evidence for required Yes answers."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Progress calculation working correctly. GET /api/assessment/session/{session}/progress returns all required fields (session_id, total_questions=80, answered, approved_evidence_answers, percent_complete). Progress properly accounts for approved evidence on required Yes answers."
 
 ## frontend:
   - task: "Auth bar + role-aware nav"
