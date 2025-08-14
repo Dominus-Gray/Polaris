@@ -102,6 +102,126 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
+- Backend Phase 2 Update (Auth + Full SBAP + Navigator Review)
+
+## backend:
+  - task: "Auth: register/login/me with JWT and roles"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added /api/auth/register, /api/auth/login, /api/auth/me with JWT, role guard helpers."
+  - task: "Full SBAP schema (8 areas x up to 10 questions)"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Expanded schema to 10 questions per area with evidence requirements pattern."
+  - task: "Evidence listing per question"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "GET /api/assessment/session/{session}/answer/{area}/{question}/evidence returns files + review status."
+  - task: "Evidence delete"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "DELETE /api/upload/{upload_id} with role checks and file cleanup."
+  - task: "Navigator review queue"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "GET /api/navigator/reviews?status=pending and POST /api/navigator/reviews/{id}/decision."
+  - task: "Progress updated to count approved evidence"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "percent_complete includes approved evidence for required Yes answers."
+
+## frontend:
+  - task: "Auth bar + role-aware nav"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Login/Register with role select; shows Navigator panel link for navigators."
+  - task: "Answer hydration and multi-file evidence manager"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Hydrates previous answers on load; lists attached evidence with status and remove."
+  - task: "Navigator panel UI"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Table of pending evidence with Approve/Reject actions."
+
+## test_plan:
+  current_focus:
+    - "Auth endpoints and JWT guard"
+    - "Evidence list/delete"
+    - "Navigator review queue and decision"
+    - "Progress with approvals"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+## agent_communication:
+  - agent: "main"
+    message: "Phase 2 endpoints added. Please test auth (register/login/me), navigator review queue, decision, evidence list/delete, and progress with approved evidence."
+
+
 
 ## user_problem_statement: "Build Polaris MVP: SBAP Assessment Wizard with AI explanations and full chunked evidence uploads, FastAPI + React + MongoDB"
 
