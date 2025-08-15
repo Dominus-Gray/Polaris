@@ -102,6 +102,25 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
+- Phase 3 fixes for constraints/notes:
+## backend:
+  - task: "Session ownership claim to reduce 403s on evidence ops"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "GET /api/assessment/session/{id} and DELETE /api/upload/{id} now claim orphan sessions to current user (if authenticated) to avoid 403 edge cases."
+
+## agent_communication:
+  - agent: "main"
+    message: "Added evidence download route, started Phase 3 (provider profiles, match requests, top matches, first-5 responses), and fixed occasional 403 by claiming orphan sessions. Please test new routes, evidence download, and matching flows."
+
+
 ## agent_communication:
   - agent: "main"
     message: "Re-run backend tests for Phase 2 (auth, navigator review, evidence list/delete, progress with approvals). After backend passes, run automated frontend tests for the same flows as per user's approval."
