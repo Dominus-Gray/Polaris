@@ -366,10 +366,14 @@ async def create_session(current=Depends(get_current_user)):
     return CreateSessionResp(session_id=session_id, created_at=now)
 
 @api.get("/assessment/session/{session_id}")
-async def get_session(session_id: str):
+async def get_session(session_id: str, current=Depends(get_current_user)):
     sess = await db.sessions.find_one({"_id": session_id})
     if not sess:
         raise HTTPException(status_code=404, detail="Session not found")
+    # Claim orphan session to the first authenticated client accessing it (MVP behavior)
+    if current and not sess.get("user_id"):
+        await db.sessions.update_one({"_id": session_id}, {"$set": {"user_id": current["id"], "claimed_at": datetime.utcnow()}})
+        sess = await db.sessions.find_one({"_id": session_id})
     answers = await db.answers.find({"session_id": session_id}).to_list(1000)
     return {"session": sess, "answers": answers}
 
