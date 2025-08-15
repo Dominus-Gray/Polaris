@@ -433,6 +433,10 @@ async def delete_evidence(upload_id: str, current=Depends(require_user)):
         raise HTTPException(status_code=404, detail="Upload not found")
     sess = await db.sessions.find_one({"_id": up.get("session_id")})
     if current.get("role") != "navigator":
+        # If session is unclaimed, claim it for this user (MVP fix for orphan sessions)
+        if sess and not sess.get("user_id"):
+            await db.sessions.update_one({"_id": sess["_id"]}, {"$set": {"user_id": current["id"], "claimed_at": datetime.utcnow()}})
+            sess = await db.sessions.find_one({"_id": up.get("session_id")})
         if not sess or sess.get("user_id") != current.get("id"):
             raise HTTPException(status_code=403, detail="Forbidden")
     final_path = up.get("stored_path")
