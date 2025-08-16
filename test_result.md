@@ -80,8 +80,8 @@
         comment: "Added tier banner to AgencyHome showing current plan (Basic/Volume/Growth/Enterprise) with pricing tiers based on invitation count: Basic ($100), Volume 5+ ($85), Growth 25+ ($75), Enterprise 100+ ($60)."
 
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+  - agent: "main"
+    message: "Implemented certificate download/copy verification links for ClientHome and AgencyHome, plus volume-based tier banner for agencies. Added /api/client/certificates and /api/agency/certificates endpoints. Ready for backend testing to verify new certificate listing endpoints."
 
 # Protocol Guidelines for Main agent
 #
