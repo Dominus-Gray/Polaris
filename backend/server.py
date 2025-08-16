@@ -276,13 +276,6 @@ class BusinessProfileIn(BaseModel):
     contact_title: str
     contact_email: EmailStr
     contact_phone: str
-    billing_contact_name: Optional[str] = None
-    billing_contact_email: Optional[EmailStr] = None
-    billing_contact_phone: Optional[str] = None
-    payment_methods: List[str]
-    subscription_plan: str
-    subscription_features: Optional[str] = None
-    billing_frequency: str
 
 class BusinessProfileOut(BusinessProfileIn):
     id: str
