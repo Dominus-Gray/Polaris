@@ -560,7 +560,6 @@ function BusinessProfileForm(){
       // Prepare payload with proper data types
       const payload = { 
         ...form, 
-        payment_methods: form.payment_methods.split(',').map(s=>s.trim()).filter(Boolean),
         website_url: form.website_url ? (form.website_url.startsWith('http') ? form.website_url : `https://${form.website_url}`) : null,
         year_founded: form.year_founded ? parseInt(form.year_founded) : null
       };
