@@ -358,13 +358,48 @@ function AssessmentPage(){
 function BusinessProfileForm(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  
+  // Standardized dropdown options for data quality
+  const dropdownOptions = {
+    legal_entity_type: [
+      'LLC', 'Corporation', 'Partnership', 'Sole Proprietorship', 'S-Corporation', 'Non-Profit', 'Other'
+    ],
+    industry: [
+      'Technology', 'Healthcare', 'Manufacturing', 'Construction', 'Professional Services', 
+      'Retail', 'Transportation', 'Finance', 'Education', 'Government', 'Non-Profit', 'Other'
+    ],
+    revenue_range: [
+      'Under $100K', '$100K - $500K', '$500K - $1M', '$1M - $5M', '$5M - $10M', 'Over $10M'
+    ],
+    employees_count: [
+      '1-5', '6-10', '11-25', '26-50', '51-100', '101-250', '251-500', '500+'
+    ],
+    ownership_structure: [
+      'Private', 'Public', 'Family-Owned', 'Employee-Owned', 'Government', 'Non-Profit'
+    ],
+    contact_title: [
+      'CEO', 'President', 'Owner', 'General Manager', 'Operations Manager', 'CFO', 'CTO', 'Other'
+    ]
+  };
+
   const [form, setForm] = useState({ 
-    company_name:'', legal_entity_type:'LLC', tax_id:'', registered_address:'', mailing_address:'', 
-    website_url:'', industry:'', primary_products_services:'', revenue_range:'', revenue_currency:'USD', 
-    employees_count:'', year_founded:'', ownership_structure:'private', contact_name:'', contact_title:'', 
-    contact_email:'', contact_phone:'', billing_contact_name:'', billing_contact_email:'', 
-    billing_contact_phone:'', payment_methods:'Card, ACH', subscription_plan:'Basic', 
-    subscription_features:'', billing_frequency:'monthly' 
+    company_name:'', 
+    legal_entity_type:'LLC', 
+    tax_id:'', 
+    registered_address:'', 
+    mailing_address:'', 
+    website_url:'', 
+    industry:'', 
+    primary_products_services:'', 
+    revenue_range:'', 
+    revenue_currency:'USD', 
+    employees_count:'', 
+    year_founded:'', 
+    ownership_structure:'Private', 
+    contact_name:'', 
+    contact_title:'', 
+    contact_email:'', 
+    contact_phone:''
   });
   const [logo, setLogo] = useState(null);
   const [missing, setMissing] = useState([]);
