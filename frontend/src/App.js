@@ -304,7 +304,7 @@ function MatchingPage(){
             <option value="area3">Legal & Contracting</option>
             <option value="area4">Technology & Cybersecurity</option>
             <option value="area5">People & HR</option>
-            <option value="area6">Marketing &amp; Sales</option>
+            <option value="area6">Marketing & Sales</option>
             <option value="area7">Procurement &amp; Supply Chain</option>
             <option value="area8">Quality &amp; Continuous Improvement</option>
           </select>
