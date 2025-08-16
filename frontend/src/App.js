@@ -152,7 +152,7 @@ function FeatureHighlights() {
       <div className="features">
         <div className="card">
           <div className="card-visual"><IlluAssessment /></div>
-          <div className="card-body"><div className="card-title">Assessment</div><div className="card-sub">80 guided questions across 8 business areas with progress tracking.</div></div>
+          <div className="card-body"><div className="card-title">Small Business Maturity Assessment</div><div className="card-sub">Over 80 guided assessment questions across 8 key business areas with progress tracking.</div></div>
         </div>
         <div className="card">
           <div className="card-visual"><IlluEvidence /></div>
