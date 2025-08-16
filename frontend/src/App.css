@@ -128,3 +128,24 @@ body { @apply bg-slate-50 text-slate-900; }
 /* Enhanced Auth Widget */
 .auth-widget { @apply max-w-sm mx-auto; }
 .auth-widget .input { @apply px-3 py-2; }
+
+/* Enhanced Agency Tier Banner */
+.tier-banner {
+  background: linear-gradient(135deg, #1B365D 0%, #4A90C2 100%);
+  @apply text-white p-6 rounded-lg mb-6 shadow-lg;
+  background-image: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.15) 0, transparent 40%), 
+                    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.1) 0, transparent 40%),
+                    radial-gradient(circle at 50% 80%, rgba(255,255,255,0.05) 0, transparent 40%);
+}
+
+/* Enhanced Certificate Cards */
+.certificate-card {
+  @apply p-4 border rounded-lg bg-gradient-to-br from-white to-slate-50 shadow-sm flex items-center justify-between transition-all duration-200 hover:shadow-md;
+  background-image: linear-gradient(135deg, rgba(27, 54, 93, 0.02) 0%, rgba(74, 144, 194, 0.02) 100%);
+}
+
+/* Enhanced Assessment Page */
+.assessment-overview {
+  @apply bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-lg p-6 mb-6;
+  background-image: linear-gradient(135deg, rgba(27, 54, 93, 0.03) 0%, rgba(74, 144, 194, 0.03) 100%);
+}
