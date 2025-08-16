@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://e931e8fe-77e9-41c5-98cc-5358651b343c.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-sbap.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing backend at: {API_BASE}")
