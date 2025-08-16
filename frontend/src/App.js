@@ -19,32 +19,54 @@ function PolarisLogo({ size = 22 }) {
   );
 }
 
-function useAuth() {
-  const [token, setToken] = useState(() => localStorage.getItem("polaris_token") || "");
-  const [me, setMe] = useState(() => {
-    const cached = localStorage.getItem("polaris_me");
-    return cached ? JSON.parse(cached) : null;
-  });
-  useEffect(() => {
-    if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`; else delete axios.defaults.headers.common["Authorization"];
-  }, [token]);
-  const login = async (email, password) => {
-    const { data } = await axios.post(`${API}/auth/login`, { email, password });
-    axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
-    setToken(data.access_token);
-    localStorage.setItem("polaris_token", data.access_token);
-    const { data: profile } = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${data.access_token}` } });
-    setMe(profile);
-    localStorage.setItem("polaris_me", JSON.stringify(profile));
-    toast.success("Welcome back!", { description: profile.email });
+function useAuthHeader(){
+  useEffect(()=>{
+    const t = localStorage.getItem('polaris_token');
+    if (t) axios.defaults.headers.common['Authorization'] = `Bearer ${t}`; else delete axios.defaults.headers.common['Authorization'];
+  },[]);
+}
+
+function AuthWidget(){
+  const navigate = useNavigate();
+  const [mode, setMode] = useState('login');
+  const [role, setRole] = useState('client');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const submit = async()=>{
+    try{
+      if(mode==='register'){
+        await axios.post(`${API}/auth/register`, { email, password, role });
+      }
+      const { data } = await axios.post(`${API}/auth/login`, { email, password });
+      localStorage.setItem('polaris_token', data.access_token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+      const me = await axios.get(`${API}/auth/me`);
+      localStorage.setItem('polaris_me', JSON.stringify(me.data));
+      toast.success('Welcome', { description: me.data.email });
+      navigate('/home');
+    }catch(e){ toast.error('Auth failed', { description: e?.response?.data?.detail || e.message }); }
   };
-  const register = async (email, password, role) => {
-    await axios.post(`${API}/auth/register`, { email, password, role });
-    await login(email, password);
-    toast.success("Account created", { description: `Role: ${role}` });
-  };
-  const logout = () => { setToken(""); setMe(null); localStorage.removeItem("polaris_token"); localStorage.removeItem("polaris_me"); toast("Logged out"); };
-  return { token, me, login, register, logout };
+  return (
+    <div className="auth" id="auth">
+      <div className="flex gap-2 items-center mb-2">
+        <select className="input" value={mode} onChange={e=>setMode(e.target.value)}>
+          <option value="login">Login</option>
+          <option value="register">Register</option>
+        </select>
+        {mode==='register' && (
+          <select className="input" value={role} onChange={e=>setRole(e.target.value)}>
+            <option value="client">client</option>
+            <option value="provider">provider</option>
+            <option value="navigator">navigator</option>
+            <option value="agency">agency</option>
+          </select>
+        )}
+      </div>
+      <input className="input" placeholder="email" value={email} onChange={e=>setEmail(e.target.value)} />
+      <input className="input" placeholder="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+      <button className="btn btn-primary mt-2" onClick={submit}>{mode==='login' ? 'Sign in' : 'Create account'}</button>
+    </div>
+  );
 }
 
 function VerifyCert(){
@@ -71,7 +93,7 @@ function VerifyCert(){
   );
 }
 
-// ---------------- Business Profile Form (client & provider) ----------------
+// ---------------- Business Profile Form ----------------
 function BusinessProfileForm(){
   const navigate = useNavigate();
   const [form, setForm] = useState({ company_name:'', legal_entity_type:'LLC', tax_id:'', registered_address:'', mailing_address:'', website_url:'', industry:'', primary_products_services:'', revenue_range:'', revenue_currency:'USD', employees_count:'', year_founded:'', ownership_structure:'private', contact_name:'', contact_title:'', contact_email:'', contact_phone:'', billing_contact_name:'', billing_contact_email:'', billing_contact_phone:'', payment_methods:'Card, ACH', subscription_plan:'Basic', subscription_features:'', billing_frequency:'monthly' });
@@ -152,8 +174,7 @@ function ClientHome(){
         <div className="tile"><div className="tile-title">Assessment</div><div className="tile-num">→</div><div className="tile-sub">Continue</div></div>
       </div>
       <div className="mt-4 flex gap-2">
-        <button className="btn btn-primary" onClick={()=>navigate('/assessment')}>Continue Assessment</button>
-        <button className="btn" onClick={()=>navigate('/matching')}>Request a provider</button>
+        <button className="btn btn-primary" onClick={()=>navigate('/matching')}>Request a provider</button>
       </div>
     </div>
   );
@@ -173,7 +194,7 @@ function ProviderHome(){
         <div className="tile"><div className="tile-title">Profile</div><div className="tile-num">✓</div><div className="tile-sub">Complete</div></div>
       </div>
       <div className="mt-4 flex gap-2">
-        <button className="btn btn-primary" onClick={()=>navigate('/provider')}>Edit Provider Profile</button>
+        <button className="btn btn-primary" onClick={()=>navigate('/provider/proposals')}>Open Proposal Composer</button>
       </div>
     </div>
   );
@@ -191,7 +212,7 @@ function NavigatorHome(){
         <div className="tile"><div className="tile-title">Active Engagements</div><div className="tile-num">{data.active_engagements}</div></div>
         <div className="tile"><div className="tile-title">Queue</div><div className="tile-num">→</div><div className="tile-sub">Open</div></div>
       </div>
-      <div className="mt-4"><button className="btn btn-primary" onClick={()=>navigate('/navigator')}>Open review queue</button></div>
+      <div className="mt-4"><Link className="btn btn-primary" to="/navigator">Open review queue</Link></div>
     </div>
   );
 }
@@ -225,8 +246,140 @@ function HomeRouter(){
   return <Navigate to="/" replace />;
 }
 
+// ---------------- Matching with Accept → Engagement ----------------
+function MatchingPage(){
+  const location = useLocation();
+  const [req, setReq] = useState({ budget: '', payment_pref: '', timeline: '', area_id: 'area6', description: '' });
+  const [requestId, setRequestId] = useState('');
+  const [matches, setMatches] = useState([]);
+  const [responses, setResponses] = useState([]);
+  const [agreedFee, setAgreedFee] = useState('');
+  useEffect(()=>{
+    const params = new URLSearchParams(location.search);
+    const area = params.get('area_id'); const desc = params.get('desc');
+    if (area || desc) setReq(prev=>({ ...prev, area_id: area || prev.area_id, description: desc || prev.description }));
+  }, [location.search]);
+  const createReq = async()=>{
+    try{
+      const payload = { ...req, budget: Number(req.budget) };
+      const {data} = await axios.post(`${API}/match/request`, payload);
+      setRequestId(data.request_id);
+      toast.success('Request created');
+      const r2 = await axios.get(`${API}/match/${data.request_id}/matches`); setMatches(r2.data.matches||[]);
+      const r3 = await axios.get(`${API}/match/${data.request_id}/responses`); setResponses(r3.data.responses||[]);
+    }catch(e){ toast.error('Create request failed'); }
+  };
+  const refresh = async()=>{
+    if(!requestId) return;
+    const r2 = await axios.get(`${API}/match/${requestId}/matches`); setMatches(r2.data.matches||[]);
+    const r3 = await axios.get(`${API}/match/${requestId}/responses`); setResponses(r3.data.responses||[]);
+  };
+  const inviteTop5 = async()=>{ try{ await axios.post(`${API}/match/${requestId}/invite-top5`); toast.success('Invited top 5'); }catch{ toast.error('Invite failed'); } };
+  const acceptResponse = async(resp)=>{
+    try{
+      const { data } = await axios.post(`${API}/engagements/create`, { request_id: requestId, response_id: resp.id || resp._id, agreed_fee: Number(agreedFee||0) });
+      toast.success('Engagement created', { description: data.engagement_id });
+      await refresh();
+    }catch(e){ toast.error('Accept failed', { description: e?.response?.data?.detail || e.message }); }
+  };
+  return (
+    <div className="container mt-6">
+      <h2 className="text-lg font-semibold mb-3">Provider Matching</h2>
+      {!requestId && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input className="input" placeholder="Budget" value={req.budget} onChange={e=>setReq({...req, budget:e.target.value})} />
+          <input className="input" placeholder="Payment preference (optional)" value={req.payment_pref} onChange={e=>setReq({...req, payment_pref:e.target.value})} />
+          <input className="input" placeholder="Timeline" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})} />
+          <select className="input" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
+            <option value="area1">Business Formation & Registration</option>
+            <option value="area2">Financial Operations</option>
+            <option value="area3">Legal & Contracting</option>
+            <option value="area4">Technology & Cybersecurity</option>
+            <option value="area5">People & HR</option>
+            <option value="area6">Marketing & Sales</option>
+            <option value="area7">Procurement & Supply Chain</option>
+            <option value="area8">Quality & Continuous Improvement</option>
+          </select>
+          <input className="input" placeholder="Short description" value={req.description} onChange={e=>setReq({...req, description:e.target.value})} />
+        </div>
+      )}
+      {!requestId ? (<div className="mt-3"><button className="btn btn-primary" onClick={createReq}>Create request</button></div>) : (
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2"><div className="text-sm text-slate-600">Top matches</div><div className="flex gap-2"><button className="btn" onClick={inviteTop5}>Invite top-5</button><button className="btn" onClick={refresh}>Refresh</button></div></div>
+          <table className="table">
+            <thead><tr><th>Company</th><th>Areas</th><th>Location</th><th>Price range</th><th>Score</th></tr></thead>
+            <tbody>
+              {matches.map(m => (
+                <tr key={m.provider_id}><td>{m.company_name}</td><td>{(m.service_areas||[]).join(', ')}</td><td>{m.location||'-'}</td><td>{m.price_min||'-'} - {m.price_max||'-'}</td><td>{m.score}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-6">
+            <div className="text-sm font-medium mb-2">Responses</div>
+            <table className="table">
+              <thead><tr><th>Response</th><th>Provider</th><th>Created</th><th>Agree fee</th><th>Action</th></tr></thead>
+              <tbody>
+                {responses.map(r => (
+                  <tr key={r.id || r._id}><td className="max-w-md truncate" title={r.proposal_note}>{r.proposal_note||'-'}</td><td>{r.provider_user_id}</td><td>{r.created_at}</td><td><input className="input" style={{width:120}} placeholder="$" onChange={e=>setAgreedFee(e.target.value)} /></td><td><button className="btn btn-primary" onClick={()=>acceptResponse(r)}>Accept</button></td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------- Provider Proposal Composer ----------------
+function ProviderProposalsPage(){
+  const [eligible, setEligible] = useState([]);
+  const [notes, setNotes] = useState({});
+  const [attachments, setAttachments] = useState({}); // responseId -> files[] local
+  const load = async()=>{ try{ const {data} = await axios.get(`${API}/match/eligible`); setEligible(data.requests||[]);}catch{} };
+  useEffect(()=>{ load(); },[]);
+  const respond = async(reqId)=>{
+    try{
+      const fd = new FormData(); fd.append('request_id', reqId); fd.append('proposal_note', notes[reqId] || '');
+      const res = await fetch(`${API}/match/respond`, { method:'POST', body: fd });
+      const data = await res.json();
+      if(!data.ok){ toast.error(data.reason || 'Respond failed'); return; }
+      toast.success('Response sent');
+      if (data.response_id && attachments[reqId]?.length){
+        for (const file of attachments[reqId]){
+          const init = await fetch(`${API}/provider/proposals/upload/initiate`, { method:'POST', body: new URLSearchParams({ response_id: data.response_id, file_name: file.name, total_size: String(file.size), mime_type: file.type })});
+          const initJson = await init.json(); const uploadId = initJson.upload_id; const chunkSize = initJson.chunk_size; const totalChunks = Math.ceil(file.size / chunkSize);
+          for(let i=0;i<totalChunks;i++){
+            const start=i*chunkSize; const end=Math.min(start+chunkSize, file.size); const blob=file.slice(start,end); const fd2=new FormData(); fd2.append('upload_id', uploadId); fd2.append('chunk_index', String(i)); fd2.append('file', blob, `${file.name}.part`); await fetch(`${API}/provider/proposals/upload/chunk`, { method:'POST', body: fd2 });
+          }
+          await fetch(`${API}/provider/proposals/upload/complete`, { method:'POST', body: new URLSearchParams({ upload_id: uploadId, total_chunks: String(totalChunks) })});
+        }
+      }
+      setNotes(prev=>({ ...prev, [reqId]: '' })); setAttachments(prev=>({ ...prev, [reqId]: [] }));
+      await load();
+    }catch(e){ toast.error('Respond failed'); }
+  };
+  return (
+    <div className="container mt-6">
+      <h2 className="text-lg font-semibold mb-3">Proposal Composer</h2>
+      <table className="table">
+        <thead><tr><th>Area</th><th>Budget</th><th>Timeline</th><th>Invited</th><th>Proposal</th><th>Attachments</th><th>Action</th></tr></thead>
+        <tbody>
+          {eligible.map(r => (
+            <tr key={r.id}>
+              <td>{r.area_id}</td><td>{r.budget}</td><td>{r.timeline||'-'}</td><td>{r.invited ? 'Yes' : 'No'}</td>
+              <td><input className="input" placeholder="Short proposal note" value={notes[r.id]||''} onChange={e=>setNotes(prev=>({ ...prev, [r.id]: e.target.value }))} /></td>
+              <td><input type="file" multiple onChange={e=>{ const files = Array.from(e.target.files||[]); setAttachments(prev=>({ ...prev, [r.id]: files })); }} /></td>
+              <td><button className="btn btn-primary" onClick={()=>respond(r.id)}>Send</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function Header(){
-  const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
   return (
     <header className="header">
@@ -234,30 +387,59 @@ function Header(){
         <PolarisLogo />
         <nav className="nav">
           {me && <Link className="link" to="/home">Home</Link>}
-          {me && me.role==='client' && <Link className="link" to="/assessment">Assessment</Link>}
           {me && me.role==='client' && <Link className="link" to="/matching">Matching</Link>}
-          {me && me.role==='provider' && <Link className="link" to="/provider">Provider</Link>}
+          {me && me.role==='provider' && <Link className="link" to="/provider/proposals">Proposals</Link>}
           {me && me.role==='navigator' && <Link className="link" to="/navigator">Navigator</Link>}
           {me && me.role==='agency' && <Link className="link" to="/agency">Agency</Link>}
         </nav>
         <div className="flex-1" />
-        <button className="btn" onClick={()=>navigate('/home')}>Dashboard</button>
+        {!me ? <a className="btn" href="#auth">Sign in</a> : <Link className="btn" to="/home">Dashboard</Link>}
       </div>
     </header>
   );
 }
 
+function Landing(){
+  return (
+    <div>
+      <section className="hero">
+        <div className="hero-inner">
+          <div className="flex-1 text-white">
+            <PolarisLogo size={28} />
+            <h1 className="hero-title mt-2">Your North Star for Procurement Readiness</h1>
+            <p className="hero-sub">Polaris streamlines small business maturity to prepare for opportunity</p>
+            <div className="hero-ctas">
+              <a className="btn btn-primary" href="#auth">Create an account</a>
+              <a className="btn" href="#auth">Sign in</a>
+            </div>
+          </div>
+          <div className="w-[420px] max-w-full"><AuthWidget /></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function AppShell(){
+  useAuthHeader();
+  const location = useLocation();
+  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const showLanding = location.pathname === '/' && !me;
   return (
     <div className="app-shell">
       <Header />
-      <Routes>
-        <Route path="/verify/cert/:id" element={<VerifyCert />} />
-        <Route path="/home" element={<HomeRouter />} />
-        <Route path="/business/profile" element={<BusinessProfileForm />} />
-        {/* Existing routes preserved elsewhere */}
-        <Route path="/" element={<div className="container mt-10"><h1 className="text-2xl font-semibold mb-2">Welcome to Polaris</h1><p className="text-slate-600">Sign in to access your personalized dashboard.</p></div>} />
-      </Routes>
+      {showLanding ? (
+        <Landing />
+      ) : (
+        <Routes>
+          <Route path="/verify/cert/:id" element={<VerifyCert />} />
+          <Route path="/home" element={<HomeRouter />} />
+          <Route path="/business/profile" element={<BusinessProfileForm />} />
+          <Route path="/matching" element={<MatchingPage />} />
+          <Route path="/provider/proposals" element={<ProviderProposalsPage />} />
+          <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
+        </Routes>
+      )}
       <Toaster richColors position="top-center" />
     </div>
   );
