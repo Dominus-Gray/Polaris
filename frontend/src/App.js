@@ -361,7 +361,7 @@ function AgencyHome(){
               <div key={cert.id} className="p-4 border rounded bg-white shadow-sm flex items-center justify-between">
                 <div>
                   <div className="font-medium">{cert.title}</div>
-                  <div className="text-sm text-slate-600">Client: {cert.client_user_id} • Readiness: {cert.readiness_percent}% • Issued: {new Date(cert.issued_at).toLocaleDateString()}</div>
+                  <div className="text-sm text-slate-600">Client: {cert.client_user_id} • Readiness: {cert.readiness_percent}% • Issued: {cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : 'Unknown'}</div>
                 </div>
                 <div className="flex gap-2">
                   <button className="btn btn-sm" onClick={()=>downloadCertificate(cert.id)}>Download PDF</button>
