@@ -1263,7 +1263,11 @@ def main():
     
     # Group results by phase
     phase1_tests = ['schema', 'session', 'bulk_answers', 'progress', 'chunked_upload', 'ai_explain']
-    phase2_tests = [k for k in results.keys() if k not in phase1_tests]
+    phase2_tests = ['auth_register_navigator', 'auth_register_client', 'auth_login_navigator', 'auth_me_navigator', 
+                   'auth_login_client', 'auth_me_client', 'client_session_upload', 'evidence_listing', 
+                   'navigator_review_queue', 'navigator_decision', 'progress_with_approval', 
+                   'evidence_delete_client', 'evidence_delete_navigator']
+    phase3_tests = [k for k in results.keys() if k not in phase1_tests and k not in phase2_tests]
     
     print("PHASE 1 RESULTS:")
     for test_name in phase1_tests:
@@ -1273,6 +1277,12 @@ def main():
     
     print("\nPHASE 2 RESULTS:")
     for test_name in phase2_tests:
+        if test_name in results:
+            status = "✅ PASS" if results[test_name] else "❌ FAIL"
+            print(f"  {test_name.replace('_', ' ').title()}: {status}")
+    
+    print("\nPHASE 3 RESULTS:")
+    for test_name in phase3_tests:
         status = "✅ PASS" if results[test_name] else "❌ FAIL"
         print(f"  {test_name.replace('_', ' ').title()}: {status}")
     
