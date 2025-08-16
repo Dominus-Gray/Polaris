@@ -49,17 +49,15 @@ body { @apply bg-slate-50 text-slate-900; }
 /* Hero */
 .hero { @apply relative overflow-hidden; }
 .hero-bg { @apply absolute inset-0; }
-.hero-overlay { @apply absolute inset-0 bg-gradient-to-r from-[#0b1224]/90 via-[#1B365D]/70 to-transparent; }
 .hero-inner { @apply relative max-w-6xl mx-auto px-4 py-10 lg:py-14 flex items-center gap-10; }
 .hero-title { @apply text-white text-2xl lg:text-4xl font-semibold; }
 .hero-sub { @apply text-white/90 text-sm lg:text-base mt-2 max-w-2xl; }
 .hero-ctas { @apply mt-4 flex items-center gap-3; }
-.hero-img { @apply rounded-lg shadow-2xl ring-1 ring-white/10; }
 
-/* Feature cards with illustration backgrounds */
+/* Feature cards with inline illustrations */
 .features { @apply grid grid-cols-1 md:grid-cols-3 gap-4 mt-6; }
 .card { @apply p-0 rounded-lg border bg-white shadow-sm overflow-hidden hover:shadow-md transition; }
-.card-visual { @apply h-36 bg-cover bg-center; }
+.card-visual { @apply h-36 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-sky-50; }
 .card-body { @apply p-4; }
 .card-title { @apply font-semibold text-slate-900; }
 .card-sub { @apply text-slate-600 text-sm; }
