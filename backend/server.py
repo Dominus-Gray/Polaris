@@ -226,7 +226,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q2", "text": "Upload your standard PO or subcontract template (if applicable)."},
             {"id": "q3", "text": "Provide your insurance certificate page showing coverage types and dates (no premiums)."},
         ])},
-        {"id": "area8", "title": "Quality &amp; Continuous Improvement", "questions": qs([
+        {"id": "area8", "title": "Quality & Continuous Improvement", "questions": qs([
             {"id": "q1", "text": "Provide a SOP template (one completed example with non-sensitive content acceptable)."},
             {"id": "q2", "text": "Provide your Corrective Action template or log (redacted)."},
             {"id": "q3", "text": "Provide a simple KPI dashboard screenshot (test data acceptable)."},
