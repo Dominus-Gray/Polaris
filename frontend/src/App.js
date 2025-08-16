@@ -299,7 +299,7 @@ function MatchingPage(){
           <input className="input" placeholder="Payment preference (optional)" value={req.payment_pref} onChange={e=>setReq({...req, payment_pref:e.target.value})} />
           <input className="input" placeholder="Timeline" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})} />
           <select className="input" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
-            <option value="area1">Business Formation &amp; Registration</option>
+            <option value="area1">Business Formation & Registration</option>
             <option value="area2">Financial Operations</option>
             <option value="area3">Legal &amp; Contracting</option>
             <option value="area4">Technology &amp; Cybersecurity</option>
