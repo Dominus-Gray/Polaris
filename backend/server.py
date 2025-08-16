@@ -652,6 +652,16 @@ async def issue_certificate(payload: IssueCertIn, current=Depends(require_role("
     await db.certificates.insert_one(doc)
     return CertOut(**doc)
 
+@api.get("/agency/certificates")
+async def list_agency_certificates(current=Depends(require_role("agency"))):
+    certs = await db.certificates.find({"agency_user_id": current["id"]}).to_list(1000)
+    return {"certificates": certs}
+
+@api.get("/client/certificates")
+async def list_client_certificates(current=Depends(require_role("client"))):
+    certs = await db.certificates.find({"client_user_id": current["id"]}).to_list(1000)
+    return {"certificates": certs}
+
 @api.get("/certificates/{cert_id}")
 async def get_certificate(cert_id: str, current=Depends(require_user)):
     cert = await db.certificates.find_one({"_id": cert_id})
