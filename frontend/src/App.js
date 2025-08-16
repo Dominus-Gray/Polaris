@@ -935,7 +935,7 @@ function AgencyHome(){
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="dashboard-grid">
         <div className="tile"><div className="tile-title">Invites</div><div className="tile-num">{String(impact.invites?.total || 0)}</div><div className="tile-sub">total</div></div>
         <div className="tile"><div className="tile-title">Paid</div><div className="tile-num">{String(impact.invites?.paid || 0)}</div><div className="tile-sub">assessments</div></div>
         <div className="tile"><div className="tile-title">Revenue</div><div className="tile-num">${String(impact.revenue?.assessment_fees || 0)}</div><div className="tile-sub">assessment fees</div></div>
