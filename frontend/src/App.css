@@ -88,3 +88,29 @@ body { @apply bg-slate-50 text-slate-900; }
 .input.border-red-500 { border-color: #ef4444 !important; }
 .input.border-red-500:focus { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
 .error-message { @apply text-red-500 text-xs mt-1; }
+
+/* Enhanced Landing Page Components */
+.user-segment { @apply text-center p-6 rounded-lg bg-white border shadow-sm hover:shadow-md transition-shadow; }
+.segment-icon { @apply w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3; }
+.segment-title { @apply font-semibold text-slate-900 mb-2; }
+.segment-desc { @apply text-slate-600 text-sm mb-3; }
+.segment-features { @apply text-left text-xs text-slate-500 space-y-1; }
+.segment-features li { @apply flex items-center; }
+.segment-features li:before { content: "✓"; @apply mr-2 text-emerald-500 font-semibold; }
+
+/* Feature Cards with Images */
+.feature-card { @apply rounded-lg bg-white border shadow-sm hover:shadow-md transition-shadow overflow-hidden; }
+.feature-image { @apply overflow-hidden; }
+.feature-image img { @apply transition-transform duration-300 hover:scale-105; }
+
+/* Statistics Cards */
+.stat-card { @apply text-center p-6; }
+.stat-number { @apply text-3xl font-bold text-[#1B365D] mb-1; }
+.stat-label { @apply font-semibold text-slate-900 text-sm mb-1; }
+.stat-desc { @apply text-slate-600 text-xs; }
+
+/* Enhanced User Segments */
+.user-segments { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6; }
+
+/* Enhanced Button Styles */
+.btn.glass { @apply bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20; }
