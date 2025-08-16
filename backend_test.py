@@ -730,9 +730,339 @@ def test_evidence_delete_as_navigator(navigator_token, upload_id):
         print(f"❌ ERROR: {e}")
         return False
 
+# ========== PHASE 3 TESTS: AGENCY + FINANCIAL CORE ==========
+
+def test_auth_register_agency():
+    """Test POST /api/auth/register with agency role"""
+    print("\n=== Testing Auth Register (Agency) ===")
+    try:
+        # Generate unique email for agency
+        agency_email = f"agency_{uuid.uuid4().hex[:8]}@test.com"
+        payload = {
+            "email": agency_email,
+            "password": "AgencyPass123!",
+            "role": "agency"
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Agency registered: {data.get('email')} with role {data.get('role')}")
+            if data.get('role') == 'agency' and data.get('email') == agency_email:
+                print("✅ PASS: Agency registration successful")
+                return agency_email, "AgencyPass123!"
+            else:
+                print(f"❌ FAIL: Unexpected response data: {data}")
+                return None, None
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return None, None
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return None, None
+
+def test_agency_approved_businesses(agency_token):
+    """Test GET /api/agency/approved-businesses"""
+    print("\n=== Testing Agency Approved Businesses ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(f"{API_BASE}/agency/approved-businesses", headers=headers)
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Approved businesses response: {json.dumps(data, indent=2)}")
+            print("✅ PASS: Agency approved businesses endpoint working")
+            return True
+        elif response.status_code == 404:
+            print("❌ FAIL: Agency approved businesses endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_agency_opportunities(agency_token):
+    """Test POST and GET /api/agency/opportunities"""
+    print("\n=== Testing Agency Opportunities ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Test POST - Create opportunity
+        print("Testing POST /api/agency/opportunities...")
+        opportunity_payload = {
+            "title": "Small Business IT Services Contract",
+            "agency": "City of Austin",
+            "due_date": "2025-09-15",
+            "est_value": 250000.00
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/agency/opportunities",
+            json=opportunity_payload,
+            headers=headers
+        )
+        print(f"POST Status: {response.status_code}")
+        
+        if response.status_code == 404:
+            print("❌ FAIL: Agency opportunities POST endpoint not found (not implemented)")
+            return False
+        elif response.status_code != 200:
+            print(f"❌ FAIL: POST failed - {response.text}")
+            return False
+        
+        # Test GET - List opportunities
+        print("Testing GET /api/agency/opportunities...")
+        response = requests.get(f"{API_BASE}/agency/opportunities", headers=headers)
+        print(f"GET Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Opportunities response: {json.dumps(data, indent=2)}")
+            print("✅ PASS: Agency opportunities endpoints working")
+            return True
+        elif response.status_code == 404:
+            print("❌ FAIL: Agency opportunities GET endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: GET failed - {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_agency_schedule_ics(agency_token):
+    """Test GET /api/agency/schedule/ics?business_id=..."""
+    print("\n=== Testing Agency Schedule ICS ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Test with dummy business_id
+        business_id = str(uuid.uuid4())
+        response = requests.get(
+            f"{API_BASE}/agency/schedule/ics?business_id={business_id}",
+            headers=headers
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            print("✅ PASS: Agency schedule ICS endpoint working")
+            print(f"Response content type: {response.headers.get('content-type', 'unknown')}")
+            return True
+        elif response.status_code == 404:
+            print("❌ FAIL: Agency schedule ICS endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_revenue_calculate_success_fee(agency_token):
+    """Test POST /api/v1/revenue/calculate-success-fee"""
+    print("\n=== Testing Revenue Calculate Success Fee ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "contract_value": 100000.00,
+            "business_id": str(uuid.uuid4()),
+            "contract_type": "services"
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/v1/revenue/calculate-success-fee",
+            json=payload,
+            headers=headers
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Success fee response: {json.dumps(data, indent=2)}")
+            if 'feePercentage' in data and 'feeAmount' in data:
+                print("✅ PASS: Revenue calculate success fee endpoint working with required fields")
+                return True
+            else:
+                print(f"❌ FAIL: Missing required fields (feePercentage, feeAmount): {data}")
+                return False
+        elif response.status_code == 404:
+            print("❌ FAIL: Revenue calculate success fee endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_revenue_process_premium_payment(agency_token):
+    """Test POST /api/v1/revenue/process-premium-payment"""
+    print("\n=== Testing Revenue Process Premium Payment ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "business_id": str(uuid.uuid4()),
+            "amount": 500.00,
+            "payment_method": "credit_card"
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/v1/revenue/process-premium-payment",
+            json=payload,
+            headers=headers
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Premium payment response: {json.dumps(data, indent=2)}")
+            if data.get('ok') and 'transaction_id' in data:
+                print("✅ PASS: Revenue process premium payment endpoint working")
+                return True
+            else:
+                print(f"❌ FAIL: Missing required fields (ok, transaction_id): {data}")
+                return False
+        elif response.status_code == 404:
+            print("❌ FAIL: Revenue process premium payment endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_revenue_marketplace_transaction(agency_token):
+    """Test POST /api/v1/revenue/marketplace-transaction"""
+    print("\n=== Testing Revenue Marketplace Transaction ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "provider_id": str(uuid.uuid4()),
+            "client_id": str(uuid.uuid4()),
+            "amount": 1000.00,
+            "transaction_type": "service_fee"
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/v1/revenue/marketplace-transaction",
+            json=payload,
+            headers=headers
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Marketplace transaction response: {json.dumps(data, indent=2)}")
+            if data.get('ok') and 'fee' in data:
+                print("✅ PASS: Revenue marketplace transaction endpoint working")
+                return True
+            else:
+                print(f"❌ FAIL: Missing required fields (ok, fee): {data}")
+                return False
+        elif response.status_code == 404:
+            print("❌ FAIL: Revenue marketplace transaction endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_revenue_dashboard_agency(agency_token):
+    """Test GET /api/v1/revenue/dashboard/agency"""
+    print("\n=== Testing Revenue Dashboard Agency ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(f"{API_BASE}/v1/revenue/dashboard/agency", headers=headers)
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Revenue dashboard response: {json.dumps(data, indent=2)}")
+            print("✅ PASS: Revenue dashboard agency endpoint working")
+            return True
+        elif response.status_code == 404:
+            print("❌ FAIL: Revenue dashboard agency endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
+def test_analytics_revenue_forecast(agency_token):
+    """Test GET /api/v1/analytics/revenue-forecast"""
+    print("\n=== Testing Analytics Revenue Forecast ===")
+    try:
+        headers = {
+            "Authorization": f"Bearer {agency_token}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(f"{API_BASE}/v1/analytics/revenue-forecast", headers=headers)
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Revenue forecast response: {json.dumps(data, indent=2)}")
+            if 'monthly' in data and 'annualized' in data:
+                print("✅ PASS: Analytics revenue forecast endpoint working with required fields")
+                return True
+            else:
+                print(f"❌ FAIL: Missing required fields (monthly, annualized): {data}")
+                return False
+        elif response.status_code == 404:
+            print("❌ FAIL: Analytics revenue forecast endpoint not found (not implemented)")
+            return False
+        else:
+            print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        return False
+
 def main():
-    """Run all backend tests including Phase 2 auth and navigator features"""
-    print("🚀 Starting Backend API Tests - Phase 2")
+    """Run all backend tests including Phase 3 agency and financial features"""
+    print("🚀 Starting Backend API Tests - Phase 3")
     print(f"Base URL: {API_BASE}")
     
     results = {}
