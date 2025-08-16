@@ -652,7 +652,11 @@
         comment: "✅ NAVIGATOR PANEL FUNCTIONAL! Navigator user successfully logged in and accessed Navigator panel. Found 3 pending items in review queue. Approve button working - clicked approve on pending item. Table displays pending evidence with proper area/question/file information. Role-based access control working correctly."
 
 ## test_plan:
-  current_focus: []
+  current_focus:
+    - "Enhanced Landing Page Design with High-Quality Images"
+    - "Google OAuth Integration with Role Selection"
+    - "Enhanced UI/UX Dashboard Tiles and Certificate Cards"
+    - "Agency Tier Banner Enhancement"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
