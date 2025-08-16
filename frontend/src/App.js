@@ -793,7 +793,7 @@ function ClientHome(){
   if(!data.profile_complete) return <BusinessProfileForm/>;
   return (
     <div className="container mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="dashboard-grid">
         <div className="tile"><div className="tile-title">Readiness</div><div className="tile-num">{String(data.readiness || 0)}%</div><div className="tile-sub">Evidence-approved</div></div>
         <div className="tile"><div className="tile-title">Opportunities</div><div className="tile-num">{String(data.opportunities || 0)}</div><div className="tile-sub">Available to you</div></div>
         <div className="tile"><div className="tile-title">Certificate</div><div className="tile-num">{data.has_certificate? 'Yes' : 'No'}</div><div className="tile-sub">Download once issued</div></div>
