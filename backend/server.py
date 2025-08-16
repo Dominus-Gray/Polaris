@@ -179,8 +179,38 @@ class ReviewDecisionReq(BaseModel):
     decision: str
     notes: Optional[str] = None
 
-# Assessment schema omitted for brevity (unchanged)
-# ... existing ASSESSMENT_SCHEMA and endpoints ...
+# Assessment schema
+ASSESSMENT_SCHEMA = {
+    "areas": [
+        {
+            "id": "business_structure",
+            "name": "Business Structure & Legal",
+            "questions": [
+                {"id": "legal_entity", "text": "Is your business a legally registered entity?"},
+                {"id": "business_license", "text": "Do you have all required business licenses?"},
+                {"id": "insurance", "text": "Do you have appropriate business insurance?"}
+            ]
+        },
+        {
+            "id": "financial_management", 
+            "name": "Financial Management",
+            "questions": [
+                {"id": "accounting_system", "text": "Do you have a formal accounting system?"},
+                {"id": "financial_statements", "text": "Do you prepare regular financial statements?"},
+                {"id": "cash_flow", "text": "Do you monitor cash flow regularly?"}
+            ]
+        },
+        {
+            "id": "operations",
+            "name": "Operations & Quality",
+            "questions": [
+                {"id": "quality_control", "text": "Do you have quality control processes?"},
+                {"id": "inventory_management", "text": "Do you have inventory management systems?"},
+                {"id": "vendor_relationships", "text": "Do you maintain good vendor relationships?"}
+            ]
+        }
+    ]
+}
 
 # --------------- AI resources for "No" pathway ---------------
 class AIResourcesReq(BaseModel):
