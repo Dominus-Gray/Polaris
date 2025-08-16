@@ -211,6 +211,28 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Agency invitations system fully functional. POST /api/agency/invitations creates invitation with pending status and amount=100. GET /api/agency/invitations lists all invitations for agency. POST /api/agency/invitations/{id}/pay processes payment, updates status to 'paid', and creates revenue_transactions entry with transaction_type=assessment_fee and amount=100. POST /api/agency/invitations/{id}/accept (as client) returns session_id and updates invitation status to 'accepted' with session_id set. Complete invitation lifecycle working perfectly."
+  - task: "Matching core (request/create, matches, responses, provider respond)"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Re-added missing endpoints: POST /api/match/request, GET /api/match/{request_id}/matches, GET /api/match/{request_id}/responses, POST /api/match/respond."
+  - task: "Home dashboards (client/provider) stability"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Verified /api/home/client and /api/home/provider logic and dependencies; will re-test after matching endpoints restored."
   - task: "Option F: Opportunity Gating for Clients"
     implemented: true
     working: true
