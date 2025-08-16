@@ -574,7 +574,7 @@ async def get_matches(request_id: str, current=Depends(require_user)):
         pmax = p.get("price_max") or 0
         if pmin and pmax and pmin <= b <= pmax:
             score += 40
-        elif pmin and b &gt;= pmin * 0.8:
+        elif pmin and b >= pmin * 0.8:
             score += 20
         if p.get("availability"):
             score += 10
