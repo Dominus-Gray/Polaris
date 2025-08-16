@@ -924,7 +924,7 @@ function AgencyHome(){
           <h3 className="text-lg font-semibold mb-3">Issued Certificates</h3>
           <div className="space-y-2">
             {certificates.map(cert => (
-              <div key={cert.id} className="p-4 border rounded bg-white shadow-sm flex items-center justify-between">
+              <div key={cert.id} className="certificate-card">
                 <div>
                   <div className="font-medium">{cert.title}</div>
                   <div className="text-sm text-slate-600">Client: {cert.client_user_id} • Readiness: {cert.readiness_percent}% • Issued: {cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : 'Unknown'}</div>
