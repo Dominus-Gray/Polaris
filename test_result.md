@@ -204,6 +204,17 @@
       - working: NA
         agent: "main"
         comment: "Added Sensitive-safe inline badge on each question and re-enabled Navigator/Provider/Matching routes with minimal pages."
+  - task: "Agency UI Dashboard"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added AgencyDashboard with approved businesses table, opportunity CRUD (create), and ICS download stub. Added Agency link in auth bar and route /agency (role-gated)."
 
 ## agent_communication:
   - agent: "main"
