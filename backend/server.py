@@ -53,7 +53,7 @@ class Token(BaseModel):
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    role: str = Field(..., pattern=r"^(client|navigator|provider)$")
+    role: str = Field(..., pattern=r"^(client|navigator|provider|agency)$")
 
 class UserLogin(BaseModel):
     email: EmailStr
