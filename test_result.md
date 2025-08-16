@@ -409,9 +409,7 @@
   current_focus:
     - "Agency role + endpoints"
     - "Financial core skeleton APIs"
-  stuck_tasks:
-    - "Agency role + endpoints"
-    - "Financial core skeleton APIs"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
