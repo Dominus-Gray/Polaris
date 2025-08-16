@@ -48,7 +48,22 @@ class Token(BaseModel):
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    role: str = Field(..., pattern=r"^(client|navigator|provider|agency)$")
+    role: str
+    terms_accepted: bool = False
+
+class ProviderApprovalIn(BaseModel):
+    provider_user_id: str
+    approval_status: str  # 'approved', 'rejected', 'pending'
+    notes: Optional[str] = None
+
+class ProviderApprovalOut(BaseModel):
+    id: str
+    provider_user_id: str
+    navigator_user_id: str
+    approval_status: str
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime = Field(..., pattern=r"^(client|navigator|provider|agency)$")
 
 class UserLogin(BaseModel):
     email: EmailStr
