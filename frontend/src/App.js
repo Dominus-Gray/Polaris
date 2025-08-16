@@ -1233,7 +1233,7 @@ function Landing(){
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="feature-card">
               <div className="feature-image">
-                <img src="https://images.unsplash.com/photo-1626148750586-df6e1b0bebf2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwyfHxidXNpbmVzcyUyMGFzc2Vzc21lbnR8ZW58MHx8fGJsdWV8MTc1NTM4MDIxMnww&ixlib=rb-4.1.0&q=85&w=600" alt="Business Assessment" className="w-full h-48 object-cover" />
+                <img src="https://images.unsplash.com/photo-1545063328-c8e3faffa16f?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=600" alt="Assessment Dashboard" className="w-full h-48 object-cover" />
               </div>
               <div className="p-6">
                 <h3 className="font-semibold text-lg text-slate-900 mb-2">Smart Assessment System</h3>
@@ -1248,29 +1248,29 @@ function Landing(){
 
             <div className="feature-card">
               <div className="feature-image">
-                <img src="https://images.unsplash.com/photo-1528747045269-390fe33c19f2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwY29udHJhY3Rpbmd8ZW58MHx8fGJsdWV8MTc1NTM4MDIxN3ww&ixlib=rb-4.1.0&q=85&w=600" alt="Expert Matching" className="w-full h-48 object-cover" />
+                <img src="https://images.unsplash.com/photo-1477013743164-ffc3a5e556da?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=600" alt="Analytics Dashboard" className="w-full h-48 object-cover" />
               </div>
               <div className="p-6">
-                <h3 className="font-semibold text-lg text-slate-900 mb-2">Expert Provider Network</h3>
-                <p className="text-slate-600 text-sm">Connect with qualified service providers based on your specific needs and expertise requirements.</p>
+                <h3 className="font-semibold text-lg text-slate-900 mb-2">Data-Driven Insights</h3>
+                <p className="text-slate-600 text-sm">Advanced analytics and reporting to track your procurement readiness journey and identify improvement areas.</p>
                 <ul className="mt-3 text-xs text-slate-500 space-y-1">
-                  <li>• Intelligent matching algorithm</li>
-                  <li>• Proposal management system</li>
-                  <li>• Secure engagement platform</li>
+                  <li>• Performance analytics</li>
+                  <li>• Progress visualization</li>
+                  <li>• Benchmark comparisons</li>
                 </ul>
               </div>
             </div>
 
             <div className="feature-card">
               <div className="feature-image">
-                <img src="https://images.unsplash.com/photo-1648135589394-6926ddf85316?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwyfHxnb3Zlcm5tZW50JTIwY29udHJhY3Rpbmd8ZW58MHx8fGJsdWV8MTc1NTM4MDIxN3ww&ixlib=rb-4.1.0&q=85&w=600" alt="Certification" className="w-full h-48 object-cover" />
+                <img src="https://images.unsplash.com/photo-1532102235608-dc8fc689c9ab?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=600" alt="Strategic Planning" className="w-full h-48 object-cover" />
               </div>
               <div className="p-6">
-                <h3 className="font-semibold text-lg text-slate-900 mb-2">Verified Certification</h3>
-                <p className="text-slate-600 text-sm">Earn publicly verifiable certificates that demonstrate your procurement readiness to potential partners.</p>
+                <h3 className="font-semibold text-lg text-slate-900 mb-2">Strategic Certification</h3>
+                <p className="text-slate-600 text-sm">Earn publicly verifiable certificates that demonstrate your procurement readiness to government agencies.</p>
                 <ul className="mt-3 text-xs text-slate-500 space-y-1">
                   <li>• Public verification system</li>
-                  <li>• PDF certificate download</li>
+                  <li>• Government-recognized standards</li>
                   <li>• QR code authentication</li>
                 </ul>
               </div>
