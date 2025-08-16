@@ -234,6 +234,35 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     ]
 }
 
+# ---------- Auth Endpoints ----------
+@api.post("/auth/register", response_model=UserOut)
+async def register(user: UserRegister):
+    created_user = await create_user(user.email, user.password, user.role)
+    return UserOut(
+        id=created_user["id"],
+        email=created_user["email"],
+        role=created_user["role"],
+        created_at=created_user["created_at"]
+    )
+
+@api.post("/auth/login", response_model=Token)
+async def login(user: UserLogin):
+    verified_user = await verify_user(user.email, user.password)
+    if not verified_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    access_token = create_access_token(data={"sub": verified_user["id"]})
+    return Token(access_token=access_token)
+
+@api.get("/auth/me", response_model=UserOut)
+async def get_current_user_info(current=Depends(require_user)):
+    return UserOut(
+        id=current["id"],
+        email=current["email"],
+        role=current["role"],
+        created_at=current["created_at"]
+    )
+
 # ---------- Assessment Endpoints ----------
 @api.get("/assessment/schema")
 async def get_schema(current=Depends(require_user)):
