@@ -205,8 +205,8 @@ function ClientHome(){
   return (
     <div className="container mt-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="tile"><div className="tile-title">Readiness</div><div className="tile-num">{data.readiness}%</div><div className="tile-sub">Evidence-approved</div></div>
-        <div className="tile"><div className="tile-title">Opportunities</div><div className="tile-num">{data.opportunities}</div><div className="tile-sub">Available to you</div></div>
+        <div className="tile"><div className="tile-title">Readiness</div><div className="tile-num">{String(data.readiness || 0)}%</div><div className="tile-sub">Evidence-approved</div></div>
+        <div className="tile"><div className="tile-title">Opportunities</div><div className="tile-num">{String(data.opportunities || 0)}</div><div className="tile-sub">Available to you</div></div>
         <div className="tile"><div className="tile-title">Certificate</div><div className="tile-num">{data.has_certificate? 'Yes' : 'No'}</div><div className="tile-sub">Download once issued</div></div>
         <div className="tile"><div className="tile-title">Assessment</div><div className="tile-num">→</div><div className="tile-sub">Continue</div></div>
       </div>
