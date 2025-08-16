@@ -403,17 +403,27 @@ function Landing(){
   return (
     <div>
       <section className="hero">
+        <div className="hero-bg" />
         <div className="hero-inner">
           <div className="flex-1 text-white">
             <PolarisLogo size={28} />
             <h1 className="hero-title mt-2">Your North Star for Procurement Readiness</h1>
-            <p className="hero-sub">Polaris streamlines small business maturity to prepare for opportunity</p>
+            <p className="hero-sub">Assess your business, match with providers, and unlock local opportunities.</p>
             <div className="hero-ctas">
               <a className="btn btn-primary" href="#auth">Create an account</a>
               <a className="btn" href="#auth">Sign in</a>
             </div>
           </div>
           <div className="w-[420px] max-w-full"><AuthWidget /></div>
+        </div>
+      </section>
+      <section className="container section">
+        <h3 className="section-title">Why Polaris</h3>
+        <p className="section-sub">Designed with the City of San Antonio to accelerate procurement readiness for small businesses.</p>
+        <div className="features">
+          <div className="card"><div className="card-visual">📋</div><div className="card-body"><div className="card-title">Focused Assessment</div><div className="card-sub">Concrete, non-sensitive deliverables with AI guidance and free resources.</div></div></div>
+          <div className="card"><div className="card-visual">🤝</div><div className="card-body"><div className="card-title">Expert Matching</div><div className="card-sub">Providers by area of expertise; accept and create engagements in a click.</div></div></div>
+          <div className="card"><div className="card-visual">📈</div><div className="card-body"><div className="card-title">Impact & Certificates</div><div className="card-sub">Certificates verified publicly, with agency impact dashboards.</div></div></div>
         </div>
       </section>
     </div>
