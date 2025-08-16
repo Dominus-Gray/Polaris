@@ -356,6 +356,123 @@ async def set_engagement_status(engagement_id: str, payload: EngagementStatusIn,
     await db.engagements.update_one({"_id": engagement_id}, {"$set": {"status": payload.status, "updated_at": datetime.utcnow()}})
     return {"ok": True}
 
+# ---------------- Matching Core Endpoints ----------------
+class MatchRequestIn(BaseModel):
+    budget: float
+    payment_pref: str
+    timeline: str
+    area_id: str
+    description: str
+
+@api.post("/match/request")
+async def create_match_request(payload: MatchRequestIn, current=Depends(require_role("client"))):
+    request_id = str(uuid.uuid4())
+    doc = {
+        "_id": request_id,
+        "id": request_id,
+        "user_id": current["id"],
+        "budget": payload.budget,
+        "payment_pref": payload.payment_pref,
+        "timeline": payload.timeline,
+        "area_id": payload.area_id,
+        "description": payload.description,
+        "status": "open",
+        "created_at": datetime.utcnow()
+    }
+    await db.match_requests.insert_one(doc)
+    return {"request_id": request_id}
+
+@api.get("/match/{request_id}/matches")
+async def get_matches(request_id: str, current=Depends(require_role("client"))):
+    req = await db.match_requests.find_one({"_id": request_id, "user_id": current["id"]})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Find providers that match the request criteria
+    providers = await db.provider_profiles.find({}).to_list(5000)
+    matches = []
+    for p in providers:
+        score = 0
+        if req["area_id"] in (p.get("service_areas") or []):
+            score += 50
+        b = req.get("budget") or 0
+        pmin = p.get("price_min") or 0
+        pmax = p.get("price_max") or 0
+        if pmin and pmax and pmin <= b <= pmax:
+            score += 40
+        elif pmin and b >= pmin * 0.8:
+            score += 20
+        if p.get("availability"):
+            score += 10
+        if score > 0:
+            matches.append({
+                "provider_id": p["_id"],
+                "user_id": p.get("user_id"),
+                "score": score,
+                "service_areas": p.get("service_areas", []),
+                "price_range": f"${pmin}-${pmax}" if pmin and pmax else "Contact for pricing"
+            })
+    
+    matches.sort(key=lambda x: x["score"], reverse=True)
+    return {"matches": matches[:10]}  # Return top 10 matches
+
+@api.post("/match/respond")
+async def provider_respond(request_id: str = Form(...), proposal_note: str = Form(...), current=Depends(require_role("provider"))):
+    # Check if request exists
+    req = await db.match_requests.find_one({"_id": request_id})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Check if provider already responded
+    existing = await db.match_responses.find_one({"request_id": request_id, "provider_user_id": current["id"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already responded to this request")
+    
+    # Check first-5 rule - only first 5 providers can respond
+    response_count = await db.match_responses.count_documents({"request_id": request_id})
+    if response_count >= 5:
+        raise HTTPException(status_code=400, detail="Maximum responses reached for this request")
+    
+    response_id = str(uuid.uuid4())
+    doc = {
+        "_id": response_id,
+        "id": response_id,
+        "request_id": request_id,
+        "provider_user_id": current["id"],
+        "proposal_note": proposal_note,
+        "status": "pending",
+        "created_at": datetime.utcnow()
+    }
+    await db.match_responses.insert_one(doc)
+    return {"ok": True, "response_id": response_id}
+
+@api.get("/match/{request_id}/responses")
+async def get_responses(request_id: str, current=Depends(require_role("client"))):
+    req = await db.match_requests.find_one({"_id": request_id, "user_id": current["id"]})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    responses = await db.match_responses.find({"request_id": request_id}).to_list(100)
+    
+    # Enrich responses with provider info
+    enriched_responses = []
+    for resp in responses:
+        provider_user = await db.users.find_one({"_id": resp["provider_user_id"]})
+        provider_profile = await db.provider_profiles.find_one({"user_id": resp["provider_user_id"]})
+        business_profile = await db.business_profiles.find_one({"user_id": resp["provider_user_id"]})
+        
+        enriched_resp = {
+            "id": resp["_id"],
+            "proposal_note": resp["proposal_note"],
+            "status": resp["status"],
+            "created_at": resp["created_at"],
+            "provider_email": provider_user.get("email") if provider_user else "Unknown",
+            "company_name": business_profile.get("company_name") if business_profile else "Unknown Company"
+        }
+        enriched_responses.append(enriched_resp)
+    
+    return {"responses": enriched_responses}
+
 # ---------------- Invite Top-5 Providers ----------------
 @api.post("/match/{request_id}/invite-top5")
 async def invite_top5(request_id: str, current=Depends(require_role("client"))):
