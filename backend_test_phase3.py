@@ -667,17 +667,34 @@ def main():
     match_success, request_id = test_client_match_request()
     results['client_match_request'] = match_success
     
-    # Test 5: Get Matches (need client token from previous test)
-    if match_success:
-        # Create new client for this test
-        client_email, client_token = create_test_user("client")
-        if client_token:
-            # Create a new match request for this client
-            match_success2, request_id2 = test_client_match_request()
-            if match_success2:
-                results['get_matches'] = test_get_matches(client_token, request_id2)
-            else:
-                results['get_matches'] = False
+    # Test 5: Get Matches (create client and their own request)
+    print("\n=== Creating Client for Get Matches Test ===")
+    client_email, client_token = create_test_user("client")
+    if client_token:
+        # Create match request for this specific client
+        headers = {
+            "Authorization": f"Bearer {client_token}",
+            "Content-Type": "application/json"
+        }
+        
+        match_payload = {
+            "budget": 20000.0,
+            "payment_pref": "Net 15",
+            "timeline": "1-2 months",
+            "area_id": "area1",
+            "description": "Need business formation assistance"
+        }
+        
+        match_response = requests.post(
+            f"{API_BASE}/match/request",
+            json=match_payload,
+            headers=headers
+        )
+        
+        if match_response.status_code == 200:
+            match_data = match_response.json()
+            request_id_for_matches = match_data.get('request_id')
+            results['get_matches'] = test_get_matches(client_token, request_id_for_matches)
         else:
             results['get_matches'] = False
     else:
