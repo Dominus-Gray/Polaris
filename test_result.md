@@ -56,6 +56,29 @@
 ##   test_all: false
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
+  - task: "Certificate download and copy verification links"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added /api/client/certificates and /api/agency/certificates endpoints for listing certificates. Updated ClientHome and AgencyHome to fetch certificates and display download/copy verification link buttons."
+  - task: "Agency tier banner for volume-based pricing"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added tier banner to AgencyHome showing current plan (Basic/Volume/Growth/Enterprise) with pricing tiers based on invitation count: Basic ($100), Volume 5+ ($85), Growth 25+ ($75), Enterprise 100+ ($60)."
+
 ## agent_communication:
 ##     -agent: "main"  # or "testing" or "user"
 ##     -message: "Communication message between agents"
