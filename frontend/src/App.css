@@ -9,6 +9,93 @@ body { @apply bg-slate-50 text-slate-900; }
 .header-inner { @apply max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4; }
 .brand { @apply text-xl font-semibold tracking-tight text-slate-900; }
 
+/* Professional Header Design */
+.professional-header {
+  @apply bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.header-container {
+  @apply container mx-auto px-6 flex items-center justify-between h-16;
+}
+
+.header-logo {
+  @apply flex items-center;
+}
+
+.main-navigation {
+  @apply hidden md:flex items-center space-x-1;
+}
+
+.nav-item {
+  @apply flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200;
+}
+
+.nav-item.active {
+  @apply text-[#1B365D] bg-blue-50;
+}
+
+.nav-icon {
+  @apply w-4 h-4;
+}
+
+.header-actions {
+  @apply flex items-center space-x-4;
+}
+
+.user-menu-container {
+  @apply relative;
+}
+
+.user-menu-trigger {
+  @apply flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer;
+}
+
+.user-avatar {
+  @apply w-8 h-8 rounded-full bg-gradient-to-br from-[#1B365D] to-[#4A90C2] flex items-center justify-center text-white text-sm font-semibold;
+}
+
+.user-info {
+  @apply hidden lg:block text-left;
+}
+
+.user-email {
+  @apply text-sm font-medium text-slate-900;
+}
+
+.user-role {
+  @apply text-xs text-slate-500 capitalize;
+}
+
+.chevron-icon {
+  @apply w-4 h-4 text-slate-400;
+}
+
+.user-menu-dropdown {
+  @apply absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50;
+}
+
+.menu-item {
+  @apply flex items-center space-x-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-150 w-full text-left;
+}
+
+.menu-icon {
+  @apply w-4 h-4 text-slate-400;
+}
+
+.logout-button {
+  @apply border-t border-gray-100 mt-2 pt-2;
+}
+
+.logout-button:hover {
+  @apply text-red-600;
+}
+
+.logout-button:hover .menu-icon {
+  @apply text-red-500;
+}
+
 .progress-wrap { @apply w-full bg-slate-200 h-2 rounded overflow-hidden; }
 .progress-bar { @apply h-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all; }
 
