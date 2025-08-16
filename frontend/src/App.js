@@ -447,7 +447,16 @@ function BusinessProfileForm(){
       </div>
       <div className="mt-4 flex items-center gap-2">
         {missing?.length>0 && <div className="text-xs text-amber-600">Missing: {missing.join(', ')}</div>}
-        <button className="btn btn-primary" onClick={save}>Save & Continue</button>
+        {Object.keys(errors).some(key => errors[key]) && (
+          <div className="text-xs text-red-600">Please fix validation errors before saving</div>
+        )}
+        <button 
+          className={`btn btn-primary ${isValidating ? 'opacity-50 cursor-not-allowed' : ''}`} 
+          onClick={save}
+          disabled={isValidating}
+        >
+          {isValidating ? 'Validating...' : 'Save & Continue'}
+        </button>
       </div>
     </div>
   );
