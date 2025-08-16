@@ -137,6 +137,144 @@ function VerifyCert(){
   );
 }
 
+function ProfilePage(){
+  const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [role, setRole] = useState('client');
+
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      // Check for session ID in URL fragment
+      const fragment = window.location.hash.substring(1);
+      const params = new URLSearchParams(fragment);
+      const sessionId = params.get('session_id');
+
+      if (sessionId && !isProcessing) {
+        setIsProcessing(true);
+        try {
+          // Call backend to exchange session ID for user data
+          const response = await axios.post(`${API}/auth/oauth/callback`, { 
+            session_id: sessionId,
+            role: role 
+          });
+          
+          if (response.data.access_token) {
+            localStorage.setItem('polaris_token', response.data.access_token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+            localStorage.setItem('polaris_me', JSON.stringify({
+              id: response.data.user_id,
+              email: response.data.email,
+              name: response.data.name,
+              role: response.data.role
+            }));
+            
+            toast.success('Welcome to Polaris!', { description: response.data.email });
+            navigate('/home');
+          }
+        } catch (error) {
+          console.error('OAuth callback error:', error);
+          toast.error('Authentication failed', { description: 'Please try again' });
+          navigate('/');
+        }
+      }
+    };
+
+    handleOAuthCallback();
+  }, [navigate, isProcessing, role]);
+
+  if (isProcessing) {
+    return (
+      <div className="container mt-10 max-w-md mx-auto text-center">
+        <div className="bg-white rounded-lg p-8 shadow-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold mb-2">Setting up your account...</h2>
+          <p className="text-slate-600 text-sm">Please wait while we complete your registration.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-10 max-w-md mx-auto">
+      <div className="bg-white rounded-lg p-8 shadow-lg">
+        <h2 className="text-xl font-semibold mb-4 text-center">Complete Your Profile</h2>
+        <p className="text-slate-600 text-sm mb-6 text-center">
+          Please select your role to personalize your Polaris experience.
+        </p>
+        
+        <div className="space-y-3 mb-6">
+          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+            <input 
+              type="radio" 
+              name="role" 
+              value="client" 
+              checked={role === 'client'} 
+              onChange={(e) => setRole(e.target.value)}
+              className="mr-3" 
+            />
+            <div>
+              <div className="font-medium">Small Business</div>
+              <div className="text-sm text-slate-600">Assess readiness and get certified</div>
+            </div>
+          </label>
+          
+          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+            <input 
+              type="radio" 
+              name="role" 
+              value="provider" 
+              checked={role === 'provider'} 
+              onChange={(e) => setRole(e.target.value)}
+              className="mr-3" 
+            />
+            <div>
+              <div className="font-medium">Service Provider</div>
+              <div className="text-sm text-slate-600">Connect with businesses needing help</div>
+            </div>
+          </label>
+          
+          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+            <input 
+              type="radio" 
+              name="role" 
+              value="navigator" 
+              checked={role === 'navigator'} 
+              onChange={(e) => setRole(e.target.value)}
+              className="mr-3" 
+            />
+            <div>
+              <div className="font-medium">Navigator</div>
+              <div className="text-sm text-slate-600">Review and guide businesses</div>
+            </div>
+          </label>
+          
+          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+            <input 
+              type="radio" 
+              name="role" 
+              value="agency" 
+              checked={role === 'agency'} 
+              onChange={(e) => setRole(e.target.value)}
+              className="mr-3" 
+            />
+            <div>
+              <div className="font-medium">Local Agency</div>
+              <div className="text-sm text-slate-600">Manage community programs</div>
+            </div>
+          </label>
+        </div>
+
+        <button 
+          className="btn btn-primary w-full"
+          onClick={() => window.location.reload()}
+        >
+          Continue with {role}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AssessmentPage(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
