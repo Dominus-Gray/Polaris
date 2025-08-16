@@ -213,26 +213,32 @@
         comment: "✅ PASS: Agency invitations system fully functional. POST /api/agency/invitations creates invitation with pending status and amount=100. GET /api/agency/invitations lists all invitations for agency. POST /api/agency/invitations/{id}/pay processes payment, updates status to 'paid', and creates revenue_transactions entry with transaction_type=assessment_fee and amount=100. POST /api/agency/invitations/{id}/accept (as client) returns session_id and updates invitation status to 'accepted' with session_id set. Complete invitation lifecycle working perfectly."
   - task: "Matching core (request/create, matches, responses, provider respond)"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Re-added missing endpoints: POST /api/match/request, GET /api/match/{request_id}/matches, GET /api/match/{request_id}/responses, POST /api/match/respond."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: All matching core endpoints fully functional. Comprehensive testing completed: 1) POST /api/match/request with exact payload {budget:1500, payment_pref:'card', timeline:'2 weeks', area_id:'area6', description:'need marketing help'} successfully returns request_id, 2) GET /api/match/{request_id}/matches returns matches array (7 matches found), 3) GET /api/match/eligible returns eligible requests with invited flags, 4) POST /api/match/respond (form-data: request_id, proposal_note) returns ok=true and response_id, 5) GET /api/match/{request_id}/responses contains the provider response. All client/provider flows working correctly with proper authentication and data persistence."
   - task: "Home dashboards (client/provider) stability"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Verified /api/home/client and /api/home/provider logic and dependencies; will re-test after matching endpoints restored."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Home dashboard endpoints fully stable and functional. Fixed __wrapped__ attribute errors in home_client and home_provider functions. Comprehensive testing completed: 1) GET /api/home/client returns all required fields (readiness=0.0, has_certificate=false, opportunities=0, profile_complete=false), 2) GET /api/home/provider returns all required fields (eligible_requests=0, responses=1, profile_complete=false). Both endpoints working correctly with proper role-based authentication and returning expected data structure."
   - task: "Option F: Opportunity Gating for Clients"
     implemented: true
     working: true
