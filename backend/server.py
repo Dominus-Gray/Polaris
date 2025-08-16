@@ -1120,15 +1120,8 @@ async def google_callback(code: Optional[str] = None, state: Optional[str] = Non
     token = create_access_token({"sub": user["id"]})
     return {"access_token": token, "token_type": "bearer"}
 
-# Include router and CORS
+# Include router
 app.include_router(api)
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
