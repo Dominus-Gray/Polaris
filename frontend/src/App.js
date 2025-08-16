@@ -1172,17 +1172,133 @@ function ProviderHome(){
 
 function NavigatorHome(){
   const [data, setData] = useState(null);
+  const [pendingProviders, setPendingProviders] = useState([]);
   const navigate = useNavigate();
-  useEffect(()=>{ const load=async()=>{ const {data} = await axios.get(`${API}/home/navigator`); setData(data); }; load(); },[]);
+  
+  useEffect(()=>{ 
+    const load=async()=>{ 
+      try{
+        const {data} = await axios.get(`${API}/home/navigator`); 
+        setData(data);
+        
+        // Load pending providers for approval
+        const providersRes = await axios.get(`${API}/navigator/providers/pending`);
+        setPendingProviders(providersRes.data.providers || []);
+      }catch(e){
+        console.error('Navigator home load error:', e);
+      }
+    }; 
+    load(); 
+  },[]);
+
+  const approveProvider = async(providerId, status, notes = '') => {
+    try{
+      await axios.post(`${API}/navigator/providers/approve`, {
+        provider_user_id: providerId,
+        approval_status: status,
+        notes: notes
+      });
+      
+      toast.success(`Provider ${status === 'approved' ? 'approved' : 'rejected'} successfully`);
+      
+      // Refresh pending providers
+      const providersRes = await axios.get(`${API}/navigator/providers/pending`);
+      setPendingProviders(providersRes.data.providers || []);
+    }catch(e){
+      toast.error('Approval action failed', { description: e.message });
+    }
+  };
+
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
+  
   return (
     <div className="container mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="tile"><div className="tile-title">Pending Reviews</div><div className="tile-num">{String(data.pending_reviews || 0)}</div><div className="tile-sub">awaiting review</div></div>
-        <div className="tile"><div className="tile-title">Active Engagements</div><div className="tile-num">{String(data.active_engagements || 0)}</div></div>
-        <div className="tile"><div className="tile-title">Queue</div><div className="tile-num">→</div><div className="tile-sub">Open</div></div>
+      <div className="dashboard-grid">
+        <div className="tile">
+          <div className="tile-title">
+            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+            Pending Reviews
+          </div>
+          <div className="tile-num">{String(data.pending_reviews || 0)}</div>
+          <div className="tile-sub">awaiting review</div>
+        </div>
+        <div className="tile">
+          <div className="tile-title">
+            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Provider Approvals
+          </div>
+          <div className="tile-num">{pendingProviders.length}</div>
+          <div className="tile-sub">pending approval</div>
+        </div>
+        <div className="tile">
+          <div className="tile-title">
+            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Active Engagements
+          </div>
+          <div className="tile-num">{String(data.active_engagements || 0)}</div>
+          <div className="tile-sub">in progress</div>
+        </div>
+        <div className="tile cursor-pointer hover:bg-gray-50 transition-colors" onClick={()=>navigate('/navigator')}>
+          <div className="tile-title">
+            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Queue Management
+          </div>
+          <div className="tile-num">→</div>
+          <div className="tile-sub">Open</div>
+        </div>
       </div>
-      <div className="mt-4"><Link className="btn btn-primary" to="/navigator">Open review queue</Link></div>
+
+      {/* Provider Approval Section */}
+      {pendingProviders.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Provider Approval Queue</h3>
+          <div className="space-y-3">
+            {pendingProviders.map(provider => (
+              <div key={provider.id} className="certificate-card">
+                <div className="flex-1">
+                  <div className="font-medium">{provider.email}</div>
+                  <div className="text-sm text-slate-600">
+                    Role: Service Provider • 
+                    Registered: {new Date(provider.created_at).toLocaleDateString()}
+                  </div>
+                  {provider.business_profile && (
+                    <div className="text-sm text-slate-600 mt-1">
+                      Company: {provider.business_profile.company_name} • 
+                      Industry: {provider.business_profile.industry}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    className="btn btn-sm bg-green-600 hover:bg-green-700 text-white"
+                    onClick={()=>approveProvider(provider.id, 'approved')}
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    className="btn btn-sm bg-red-600 hover:bg-red-700 text-white"
+                    onClick={()=>approveProvider(provider.id, 'rejected')}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-6 flex gap-2">
+        <Link className="btn btn-primary" to="/navigator">Open Review Queue</Link>
+      </div>
     </div>
   );
 }
