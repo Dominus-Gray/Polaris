@@ -197,6 +197,39 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Financial core skeleton APIs NOW FULLY IMPLEMENTED and working perfectly! Comprehensive testing completed: 1) POST /api/v1/revenue/calculate-success-fee with contractValue=300000, businessTier='small', contractType='services', riskLevel='medium', platformMaturityLevel=3 returns feePercentage=3.0 and feeAmount=9000.0 (exactly as expected), 2) POST /api/v1/revenue/process-premium-payment with business_id='biz1', tier='base', amount=1500 returns ok=true and transaction_id with database insertion, 3) POST /api/v1/revenue/marketplace-transaction with request_id='req1', service_provider_id='prov1', service_fee=12000 returns ok=true and fee=720.0 (6% calculation correct), 4) GET /api/v1/revenue/dashboard/agency returns totals grouped by transaction_type including premium_service and marketplace_fee with correct amounts, 5) GET /api/v1/analytics/revenue-forecast returns monthly=2220.0 and annualized=26640.0 based on recent transactions. All financial endpoints implemented in server.py lines 720-821 with proper authentication and business logic."
+  - task: "Option F: Agency Invitations System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Agency invitations system fully functional. POST /api/agency/invitations creates invitation with pending status and amount=100. GET /api/agency/invitations lists all invitations for agency. POST /api/agency/invitations/{id}/pay processes payment, updates status to 'paid', and creates revenue_transactions entry with transaction_type=assessment_fee and amount=100. POST /api/agency/invitations/{id}/accept (as client) returns session_id and updates invitation status to 'accepted' with session_id set. Complete invitation lifecycle working perfectly."
+  - task: "Option F: Opportunity Gating for Clients"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Opportunity gating system working correctly. GET /api/opportunities/available properly gates access - clients can only see opportunities created by agencies that have invited them (via accepted invitations). Created agency opportunity 'Small Business IT Services RFP' by 'City of San Antonio' with est_value=250000, and client can access it after accepting invitation. Gating logic implemented correctly in server.py."
+  - task: "Option F: Agency Impact Dashboard"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Agency impact dashboard fully functional. GET /api/agency/dashboard/impact returns all required metrics with numeric values: invites totals (total=1, paid=0, accepted=1), assessment_fees revenue (100.0), opportunities count (1), and readiness_buckets distribution (0_25=1, 25_50=0, 50_75=0, 75_100=0). Dashboard aggregates data correctly from agency_invitations, revenue_transactions, agency_opportunities, and calculates readiness percentages from session progress."
 
 
 ## frontend:
