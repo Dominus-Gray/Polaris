@@ -370,6 +370,20 @@ async def get_certificate(cert_id: str, current=Depends(require_user)):
         raise HTTPException(status_code=403, detail="Forbidden")
     return cert
 
+@api.get("/certificates/{cert_id}/public")
+async def get_certificate_public(cert_id: str):
+    cert = await db.certificates.find_one({"_id": cert_id})
+    if not cert:
+        raise HTTPException(status_code=404, detail="Not found")
+    # Return limited non-PII fields suitable for public verification
+    return {
+        "id": cert["_id"],
+        "title": cert.get("title"),
+        "issued_at": cert.get("issued_at"),
+        "readiness_percent": cert.get("readiness_percent"),
+        "agency_user_id": cert.get("agency_user_id"),
+    }
+
 @api.get("/certificates/{cert_id}/download")
 async def download_certificate_pdf(cert_id: str, current=Depends(require_user)):
     # Same access policy as viewing
