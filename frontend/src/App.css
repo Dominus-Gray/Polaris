@@ -62,10 +62,13 @@ body { @apply bg-slate-50 text-slate-900; }
 .card-title { @apply font-semibold text-slate-900; }
 .card-sub { @apply text-slate-600 text-sm; }
 
-/* Matching */
-.kpis { @apply grid grid-cols-2 md:grid-cols-4 gap-3 mt-6; }
-.kpi { @apply p-3 rounded-lg bg-white border shadow-sm; }
-.kpi .v { @apply text-xl font-semibold; }
+/* Value sections */
+.section { @apply py-10; }
+.section-title { @apply text-xl font-semibold text-slate-900; }
+.section-sub { @apply text-slate-600 text-sm mt-1; }
+.pillars { @apply grid grid-cols-1 md:grid-cols-3 gap-4 mt-6; }
+.pillar { @apply p-4 rounded-lg border bg-white shadow-sm; }
+.pillar .icon { @apply w-9 h-9 rounded-full flex items-center justify-center bg-indigo-50 text-indigo-700; }
 
 /* Skeleton */
 .skel { @apply animate-pulse rounded bg-slate-200; }
