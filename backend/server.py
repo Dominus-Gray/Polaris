@@ -211,7 +211,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q3", "text": "Provide an Asset Inventory list (categories & counts acceptable)."},
             {"id": "q4", "text": "Provide your Incident Response Plan (latest version)."},
         ])},
-        {"id": "area5", "title": "People &amp; HR (Non-sensitive)", "questions": qs([
+        {"id": "area5", "title": "People & HR (Non-sensitive)", "questions": qs([
             {"id": "q1", "text": "Upload the table of contents from your Employee Handbook (PDF page)."},
             {"id": "q2", "text": "Provide your Onboarding checklist template (roles generic)."},
             {"id": "q3", "text": "Provide your EEO/Anti-Discrimination policy statement (1 page)."},
