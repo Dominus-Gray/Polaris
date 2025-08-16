@@ -897,8 +897,8 @@ function AgencyHome(){
   
   return (
     <div className="container mt-6">
-      {/* Tier Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-lg mb-6">
+      {/* Enhanced Tier Banner */}
+      <div className="tier-banner">
         <div className="flex items-center justify-between">
           <div>
             <div className="font-semibold text-lg">{tierInfo.tier} Plan</div>
