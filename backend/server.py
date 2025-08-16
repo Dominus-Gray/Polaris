@@ -278,13 +278,16 @@ def require_role(role: str):
         return current
     return role_dep
 
-@api.post("/auth/register", response_model=UserOut)
-async def register(user: UserRegister):
+@api.post("/auth/register")
+@rate_limit(max_requests=5, window_seconds=300)  # 5 registrations per 5 minutes
+async def register_user(request: Request, user: UserRegister):
     if not user.terms_accepted:
+        log_security_event("REGISTRATION_TERMS_NOT_ACCEPTED", details={"email": user.email})
         raise HTTPException(status_code=400, detail="Terms of Service must be accepted")
     
     existing = await db.users.find_one({"email": user.email})
     if existing:
+        log_security_event("REGISTRATION_EMAIL_EXISTS", details={"email": user.email})
         raise HTTPException(status_code=400, detail="Email already registered")
     
     hashed_pw = pbkdf2_sha256.hash(user.password)
@@ -297,23 +300,69 @@ async def register(user: UserRegister):
         "_id": user_id, 
         "id": user_id, 
         "email": user.email, 
-        "password_hash": hashed_pw, 
+        "hashed_password": hashed_pw, 
         "role": user.role,
         "approval_status": approval_status,
         "terms_accepted": user.terms_accepted,
+        "terms_accepted_at": datetime.utcnow(),
+        "failed_login_attempts": 0,
+        "locked_until": None,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
     await db.users.insert_one(doc)
-    return UserOut(id=doc["id"], email=doc["email"], role=doc["role"], created_at=doc["created_at"])
+    
+    log_security_event("USER_REGISTERED", user_id=user_id, details={"role": user.role, "email": user.email})
+    return {"message": "User registered successfully"}
 
 @api.post("/auth/login", response_model=Token)
-async def login(user: UserLogin):
-    verified_user = await verify_user(user.email, user.password)
-    if not verified_user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    access_token = create_access_token(data={"sub": verified_user["id"]})
-    return Token(access_token=access_token)
+@rate_limit(max_requests=10, window_seconds=300)  # 10 login attempts per 5 minutes
+async def login_user(request: Request, user: UserLogin):
+    db_user = await db.users.find_one({"email": user.email})
+    if not db_user:
+        log_security_event("LOGIN_USER_NOT_FOUND", details={"email": user.email, "ip": request.client.host})
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    
+    # Check if account is locked
+    if db_user.get("locked_until") and db_user["locked_until"] > datetime.utcnow():
+        log_security_event("LOGIN_ACCOUNT_LOCKED", user_id=db_user["id"], details={"email": user.email})
+        raise HTTPException(status_code=423, detail="Account temporarily locked due to failed login attempts")
+    
+    # Verify password
+    if not pbkdf2_sha256.verify(user.password, db_user["hashed_password"]):
+        # Increment failed attempts
+        failed_attempts = db_user.get("failed_login_attempts", 0) + 1
+        update_data = {"failed_login_attempts": failed_attempts}
+        
+        # Lock account if too many failures
+        if failed_attempts >= SECURITY_CONFIG["MAX_LOGIN_ATTEMPTS"]:
+            lock_until = datetime.utcnow() + timedelta(minutes=SECURITY_CONFIG["LOGIN_LOCKOUT_MINUTES"])
+            update_data["locked_until"] = lock_until
+            
+        await db.users.update_one({"id": db_user["id"]}, {"$set": update_data})
+        
+        log_security_event("LOGIN_FAILED", user_id=db_user["id"], details={
+            "email": user.email, 
+            "attempts": failed_attempts,
+            "ip": request.client.host
+        })
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    
+    # Check if provider is approved
+    if db_user["role"] == "provider" and db_user.get("approval_status") != "approved":
+        log_security_event("LOGIN_PROVIDER_NOT_APPROVED", user_id=db_user["id"], details={"email": user.email})
+        raise HTTPException(status_code=403, detail="Provider account pending approval")
+    
+    # Reset failed attempts on successful login
+    await db.users.update_one(
+        {"id": db_user["id"]}, 
+        {"$set": {"failed_login_attempts": 0, "locked_until": None, "last_login": datetime.utcnow()}}
+    )
+    
+    access_token = create_access_token(data={"sub": db_user["id"]})
+    
+    log_security_event("LOGIN_SUCCESS", user_id=db_user["id"], details={"email": user.email, "ip": request.client.host})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @api.get("/auth/me", response_model=UserOut)
 async def get_current_user_info(current=Depends(require_user)):
