@@ -206,6 +206,49 @@ async def oauth_callback(payload: OAuthCallbackIn):
         logger.error(f"OAuth callback error: {e}")
         raise HTTPException(status_code=500, detail="Authentication failed")
 
+# Provider Approval System
+@api.get("/navigator/providers/pending")
+async def get_pending_providers(current=Depends(require_role("navigator"))):
+    """Get all providers pending approval"""
+    providers = await db.users.find({"role": "provider", "approval_status": {"$ne": "approved"}}).to_list(1000)
+    return {"providers": providers}
+
+@api.post("/navigator/providers/approve", response_model=ProviderApprovalOut)
+async def approve_provider(payload: ProviderApprovalIn, current=Depends(require_role("navigator"))):
+    """Approve or reject a service provider"""
+    # Check if provider exists
+    provider = await db.users.find_one({"id": payload.provider_user_id, "role": "provider"})
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    
+    # Update provider approval status
+    await db.users.update_one(
+        {"id": payload.provider_user_id},
+        {"$set": {"approval_status": payload.approval_status, "updated_at": datetime.utcnow()}}
+    )
+    
+    # Create approval record
+    approval_id = str(uuid.uuid4())
+    approval_doc = {
+        "_id": approval_id,
+        "id": approval_id,
+        "provider_user_id": payload.provider_user_id,
+        "navigator_user_id": current["id"],
+        "approval_status": payload.approval_status,
+        "notes": payload.notes,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    await db.provider_approvals.insert_one(approval_doc)
+    
+    return ProviderApprovalOut(**approval_doc)
+
+@api.get("/providers/approved")
+async def get_approved_providers():
+    """Get all approved service providers for marketplace"""
+    providers = await db.users.find({"role": "provider", "approval_status": "approved"}).to_list(1000)
+    return {"providers": providers}
+
 # ---------------- Minimal Assessment Schema for readiness calc ----------------
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
