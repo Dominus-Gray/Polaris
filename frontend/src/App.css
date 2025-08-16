@@ -2,12 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --bg: #0b1020; }
+:root { --brand: #1B365D; --brand-2: #4A90C2; }
 body { @apply bg-slate-50 text-slate-900; }
 .app-shell { @apply min-h-screen; }
-.header { @apply sticky top-0 z-20 backdrop-blur bg-white/70 border-b border-slate-200; }
+.header { @apply sticky top-0 z-30 backdrop-blur bg-white/80 border-b border-slate-200; }
 .header-inner { @apply max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4; }
-.brand { @apply text-xl font-semibold tracking-tight; }
+.brand { @apply text-xl font-semibold tracking-tight text-slate-900; }
 
 .progress-wrap { @apply w-full bg-slate-200 h-2 rounded overflow-hidden; }
 .progress-bar { @apply h-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all; }
@@ -17,19 +17,19 @@ body { @apply bg-slate-50 text-slate-900; }
 .sidebar { @apply lg:col-span-3 p-4 rounded-lg border bg-white shadow-sm; }
 .main { @apply lg:col-span-9 p-4 rounded-lg border bg-white shadow-sm; }
 
-.area-item { @apply flex items-center gap-3 p-2 rounded hover:bg-slate-50 cursor-pointer; }
+.area-item { @apply flex items-center gap-3 p-2 rounded hover:bg-slate-50 cursor-pointer transition-colors; }
 .area-active { @apply bg-indigo-50 text-indigo-700 border-l-4 border-indigo-500; }
 
-.q-card { @apply p-4 border rounded-lg mb-4 bg-white; }
+.q-card { @apply p-4 border rounded-lg mb-4 bg-white shadow-sm transition hover:shadow-md; }
 .q-label { @apply font-medium; }
 .q-actions { @apply mt-3 flex items-center gap-2 flex-wrap; }
 .toggle { @apply inline-flex rounded-full overflow-hidden border; }
-.toggle button { @apply px-3 py-1 text-sm hover:bg-slate-100; }
+.toggle button { @apply px-3 py-1 text-sm hover:bg-slate-100 transition; }
 .toggle .on { @apply bg-emerald-600 text-white; }
 .toggle .off { @apply bg-rose-600 text-white; }
 
 .upload-box { @apply mt-3 p-3 rounded border bg-slate-50; }
-.btn { @apply inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border bg-white hover:bg-slate-50; }
+.btn { @apply inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border bg-white hover:bg-slate-50 active:scale-[.99] transition; }
 .btn-primary { @apply bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700; }
 .badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-slate-100; }
 .ai-note { @apply mt-2 text-sm text-slate-600; }
@@ -45,3 +45,27 @@ body { @apply bg-slate-50 text-slate-900; }
 .status-pending { @apply bg-yellow-100 text-yellow-800; }
 .status-approved { @apply bg-emerald-100 text-emerald-800; }
 .status-rejected { @apply bg-rose-100 text-rose-800; }
+
+/* Hero */
+.hero { @apply relative overflow-hidden; }
+.hero-bg { @apply absolute inset-0; }
+.hero-overlay { @apply absolute inset-0 bg-gradient-to-r from-[#0b1224]/90 via-[#1B365D]/70 to-transparent; }
+.hero-inner { @apply relative max-w-6xl mx-auto px-4 py-10 lg:py-14 flex items-center gap-10; }
+.hero-title { @apply text-white text-2xl lg:text-4xl font-semibold; }
+.hero-sub { @apply text-white/90 text-sm lg:text-base mt-2 max-w-2xl; }
+.hero-ctas { @apply mt-4 flex items-center gap-3; }
+.hero-img { @apply rounded-lg shadow-2xl ring-1 ring-white/10; }
+
+/* Feature cards */
+.features { @apply grid grid-cols-1 md:grid-cols-3 gap-4 mt-6; }
+.card { @apply p-4 rounded-lg border bg-white shadow-sm hover:shadow-md transition; }
+.card-title { @apply font-semibold text-slate-900; }
+.card-sub { @apply text-slate-600 text-sm; }
+
+/* Matching */
+.kpis { @apply grid grid-cols-2 md:grid-cols-4 gap-3 mt-6; }
+.kpi { @apply p-3 rounded-lg bg-white border shadow-sm; }
+.kpi .v { @apply text-xl font-semibold; }
+
+/* Skeleton */
+.skel { @apply animate-pulse rounded bg-slate-200; }
