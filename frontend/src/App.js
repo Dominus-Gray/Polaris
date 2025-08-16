@@ -1743,6 +1743,67 @@ function Landing(){
           </div>
         </div>
       </section>
+
+      {/* Terms and Privacy Policy Footer */}
+      <section className="bg-slate-100 py-8">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Terms of Service</h3>
+              <div className="text-sm text-slate-600 space-y-2 max-h-48 overflow-y-auto bg-white p-4 rounded border">
+                <p><strong>1. Acceptance of Terms</strong></p>
+                <p>By accessing and using the Polaris Small Business Procurement Readiness Platform, you accept and agree to be bound by the terms and provision of this agreement.</p>
+                
+                <p><strong>2. Platform Purpose</strong></p>
+                <p>Polaris is designed to assess small business procurement readiness and connect businesses with qualified service providers and government contracting opportunities.</p>
+                
+                <p><strong>3. User Responsibilities</strong></p>
+                <p>Users agree to provide accurate information, maintain the confidentiality of their account credentials, and use the platform in compliance with all applicable laws and regulations.</p>
+                
+                <p><strong>4. Service Provider Approval</strong></p>
+                <p>All service providers must be approved by certified Digital Navigators before being added to the marketplace. Polaris reserves the right to remove any provider who fails to meet our quality standards.</p>
+                
+                <p><strong>5. Data Security</strong></p>
+                <p>We implement industry-standard security measures including data encryption, access controls, and regular security audits to protect your information.</p>
+                
+                <p><strong>6. Limitation of Liability</strong></p>
+                <p>Polaris provides the platform "as is" and makes no warranties regarding the accuracy of assessments or success in government contracting.</p>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Privacy Policy</h3>
+              <div className="text-sm text-slate-600 space-y-2 max-h-48 overflow-y-auto bg-white p-4 rounded border">
+                <p><strong>1. Information Collection</strong></p>
+                <p>We collect business profile information, assessment responses, and usage analytics to provide personalized procurement readiness services.</p>
+                
+                <p><strong>2. Data Usage</strong></p>
+                <p>Your data is used to: assess procurement readiness, match you with appropriate service providers, generate certificates, and improve our platform services.</p>
+                
+                <p><strong>3. Data Protection</strong></p>
+                <p>All sensitive data is encrypted at rest and in transit using AES-256 encryption. We implement role-based access controls and conduct quarterly security audits.</p>
+                
+                <p><strong>4. Data Sharing</strong></p>
+                <p>We do not sell your personal information. Data may be shared with approved service providers for engagement purposes and with government agencies for certification verification.</p>
+                
+                <p><strong>5. Compliance</strong></p>
+                <p>Our platform complies with NIST cybersecurity frameworks, FISMA requirements, and applicable data protection regulations including CCPA and GDPR principles.</p>
+                
+                <p><strong>6. Data Retention</strong></p>
+                <p>Business profiles and assessment data are retained for 7 years to support ongoing certification verification and compliance auditing.</p>
+                
+                <p><strong>7. Your Rights</strong></p>
+                <p>You have the right to access, update, or delete your personal information. Contact support for data requests or privacy concerns.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 pt-6 border-t border-slate-300 text-center text-xs text-slate-500">
+            <p>© 2025 Polaris Small Business Procurement Readiness Platform • Built in partnership with the City of San Antonio</p>
+            <p className="mt-1">By using this platform, you agree to our Terms of Service and Privacy Policy</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
