@@ -338,91 +338,205 @@ function ProfilePage(){
 
   if (isProcessing) {
     return (
-      <div className="container mt-10 max-w-md mx-auto text-center">
-        <div className="bg-white rounded-lg p-8 shadow-lg">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-lg font-semibold mb-2">Setting up your account...</h2>
-          <p className="text-slate-600 text-sm">Please wait while we complete your registration.</p>
+      <div className="oauth-processing-page">
+        <div className="processing-container">
+          {/* Enhanced Polaris Branding */}
+          <div className="processing-header">
+            <div className="polaris-brand-large">
+              <PolarisLogo size={64} />
+              <div className="brand-constellation">
+                <div className="constellation-large">
+                  <div className="star-large star-1"></div>
+                  <div className="star-large star-2"></div>
+                  <div className="star-large star-3"></div>
+                  <div className="star-large star-4"></div>
+                  <div className="star-large star-5"></div>
+                  <div className="star-large star-6"></div>
+                  <div className="star-large star-7"></div>
+                  <div className="star-large star-8"></div>
+                </div>
+              </div>
+            </div>
+            <h1 className="processing-title">Welcome to Polaris</h1>
+            <p className="processing-subtitle">Your North Star for Procurement Readiness</p>
+          </div>
+
+          {/* Professional Loading Animation */}
+          <div className="processing-animation">
+            <div className="polaris-loader">
+              <div className="loader-ring"></div>
+              <div className="loader-ring"></div>
+              <div className="loader-ring"></div>
+            </div>
+          </div>
+
+          {/* Processing Steps Visualization */}
+          <div className="processing-steps">
+            <div className="step-item active">
+              <div className="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span>Authenticating</span>
+            </div>
+            <div className="step-item active">
+              <div className="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <span>Securing Account</span>
+            </div>
+            <div className="step-item">
+              <div className="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <span>Preparing Dashboard</span>
+            </div>
+          </div>
+
+          <div className="processing-message">
+            <p>Setting up your secure, government-grade procurement readiness platform...</p>
+            <div className="security-indicators">
+              <span className="security-indicator">🔒 NIST Compliant</span>
+              <span className="security-indicator">🛡️ Enterprise Security</span>
+              <span className="security-indicator">⚡ Fast & Reliable</span>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mt-10 max-w-md mx-auto">
-      <div className="bg-white rounded-lg p-8 shadow-lg">
-        <h2 className="text-xl font-semibold mb-4 text-center">Complete Your Profile</h2>
-        <p className="text-slate-600 text-sm mb-6 text-center">
-          Please select your role to personalize your Polaris experience.
-        </p>
+    <div className="profile-selection-page">
+      <div className="selection-container">
+        {/* Enhanced Header with Polaris Branding */}
+        <div className="selection-header">
+          <div className="polaris-brand-showcase-large">
+            <PolarisLogo size={56} />
+            <div className="brand-elements-large">
+              <div className="procurement-visual">
+                <div className="proc-element proc-1"></div>
+                <div className="proc-element proc-2"></div>
+                <div className="proc-element proc-3"></div>
+              </div>
+            </div>
+          </div>
+          <h2 className="selection-title">Complete Your Polaris Profile</h2>
+          <p className="selection-subtitle">Choose your role to personalize your procurement readiness experience</p>
+        </div>
         
-        <div className="space-y-3 mb-6">
-          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+        {/* Enhanced Role Selection Cards */}
+        <div className="role-selection-grid">
+          <label className={`role-card ${role === 'client' ? 'selected' : ''}`}>
             <input 
               type="radio" 
               name="role" 
               value="client" 
               checked={role === 'client'} 
               onChange={(e) => setRole(e.target.value)}
-              className="mr-3" 
             />
-            <div>
-              <div className="font-medium">Small Business</div>
-              <div className="text-sm text-slate-600">Assess readiness and get certified</div>
+            <div className="role-icon client-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div className="role-content">
+              <h3>Small Business</h3>
+              <p>Assess readiness and get certified for government contracting opportunities</p>
+              <ul>
+                <li>Maturity assessment</li>
+                <li>Readiness certification</li>
+                <li>Provider matching</li>
+              </ul>
             </div>
           </label>
           
-          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+          <label className={`role-card ${role === 'provider' ? 'selected' : ''}`}>
             <input 
               type="radio" 
               name="role" 
               value="provider" 
               checked={role === 'provider'} 
               onChange={(e) => setRole(e.target.value)}
-              className="mr-3" 
             />
-            <div>
-              <div className="font-medium">Service Provider</div>
-              <div className="text-sm text-slate-600">Connect with businesses needing help</div>
+            <div className="role-icon provider-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div className="role-content">
+              <h3>Service Provider</h3>
+              <p>Connect with businesses needing your expertise and grow your client base</p>
+              <ul>
+                <li>Client matching</li>
+                <li>Proposal management</li>
+                <li>Engagement tracking</li>
+              </ul>
             </div>
           </label>
           
-          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+          <label className={`role-card ${role === 'navigator' ? 'selected' : ''}`}>
             <input 
               type="radio" 
               name="role" 
               value="navigator" 
               checked={role === 'navigator'} 
               onChange={(e) => setRole(e.target.value)}
-              className="mr-3" 
             />
-            <div>
-              <div className="font-medium">Navigator</div>
-              <div className="text-sm text-slate-600">Review and guide businesses</div>
+            <div className="role-icon navigator-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <div className="role-content">
+              <h3>Digital Navigator</h3>
+              <p>Review assessments, validate evidence, and guide businesses to readiness</p>
+              <ul>
+                <li>Evidence review</li>
+                <li>Provider approval</li>
+                <li>Quality assurance</li>
+              </ul>
             </div>
           </label>
           
-          <label className="flex items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+          <label className={`role-card ${role === 'agency' ? 'selected' : ''}`}>
             <input 
               type="radio" 
               name="role" 
               value="agency" 
               checked={role === 'agency'} 
               onChange={(e) => setRole(e.target.value)}
-              className="mr-3" 
             />
-            <div>
-              <div className="font-medium">Local Agency</div>
-              <div className="text-sm text-slate-600">Manage community programs</div>
+            <div className="role-icon agency-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div className="role-content">
+              <h3>Local Agency</h3>
+              <p>Invite businesses, manage assessments, and track community impact</p>
+              <ul>
+                <li>Business invitations</li>
+                <li>Impact dashboards</li>
+                <li>Opportunity management</li>
+              </ul>
             </div>
           </label>
         </div>
 
         <button 
-          className="btn btn-primary w-full"
+          className="continue-button"
           onClick={() => window.location.reload()}
         >
           Continue with {role}
+          <svg className="continue-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
         </button>
       </div>
     </div>
