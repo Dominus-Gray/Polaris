@@ -156,7 +156,7 @@ function FeatureHighlights() {
         </div>
         <div className="card">
           <div className="card-visual"><IlluEvidence /></div>
-          <div className="card-body"><div className="card-title">Evidence Review</div><div className="card-sub">Chunked uploads, navigator approvals, secure downloads, audit notes.</div></div>
+          <div className="card-body"><div className="card-title">Assurance & Verification</div><div className="card-sub">Our digital navigators review evidence that attest to procurement readiness.</div></div>
         </div>
         <div className="card">
           <div className="card-visual"><IlluMatching /></div>
