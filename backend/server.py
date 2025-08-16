@@ -189,6 +189,18 @@ class UserRegister(BaseModel):
     password: str
     role: str
     terms_accepted: bool = False
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if not validate_password_strength(v):
+            raise ValueError('Password must be at least 8 characters with uppercase, lowercase, digit, and special character')
+        return v
+    
+    @validator('role')
+    def validate_role(cls, v):
+        if v not in ['client', 'provider', 'navigator', 'agency']:
+            raise ValueError('Invalid role')
+        return v
 
 class ProviderApprovalIn(BaseModel):
     provider_user_id: str
