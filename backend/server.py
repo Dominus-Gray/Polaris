@@ -467,7 +467,7 @@ async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
         logger.exception("AI call failed")
         raise HTTPException(status_code=500, detail=f"AI error: {e}")
 
-# ---------- Navigator Review &amp; Matching (unchanged from previous refined version) ----------
+# ---------- Navigator Review & Matching (unchanged from previous refined version) ----------
 @api.get("/navigator/reviews")
 async def get_reviews(status: str = Query("pending"), current=Depends(require_role("navigator"))):
     q = {"status": status}
