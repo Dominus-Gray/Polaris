@@ -730,7 +730,84 @@ def test_evidence_delete_as_navigator(navigator_token, upload_id):
         print(f"❌ ERROR: {e}")
         return False
 
-# ========== PHASE 3 TESTS: AGENCY + FINANCIAL CORE ==========
+def test_regression_with_auth():
+    """Test existing endpoints with proper authentication to check for regressions"""
+    print("\n=== Testing Regression with Authentication ===")
+    
+    # Register and login a client for testing
+    client_email = f"regression_client_{uuid.uuid4().hex[:8]}@test.com"
+    payload = {
+        "email": client_email,
+        "password": "RegressionPass123!",
+        "role": "client"
+    }
+    
+    try:
+        # Register
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
+        if response.status_code != 200:
+            print(f"❌ FAIL: Could not register client for regression test")
+            return False
+            
+        # Login
+        login_payload = {"email": client_email, "password": "RegressionPass123!"}
+        response = requests.post(
+            f"{API_BASE}/auth/login",
+            json=login_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        if response.status_code != 200:
+            print(f"❌ FAIL: Could not login client for regression test")
+            return False
+            
+        token = response.json().get('access_token')
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Test schema endpoint
+        response = requests.get(f"{API_BASE}/assessment/schema", headers=headers)
+        if response.status_code != 200:
+            print(f"❌ FAIL: Schema endpoint failed with auth: {response.status_code}")
+            return False
+        
+        # Test session creation
+        response = requests.post(f"{API_BASE}/assessment/session", headers=headers)
+        if response.status_code != 200:
+            print(f"❌ FAIL: Session creation failed with auth: {response.status_code}")
+            return False
+            
+        session_id = response.json().get('session_id')
+        
+        # Test progress endpoint
+        response = requests.get(f"{API_BASE}/assessment/session/{session_id}/progress", headers=headers)
+        if response.status_code != 200:
+            print(f"❌ FAIL: Progress endpoint failed with auth: {response.status_code}")
+            return False
+        
+        # Test AI explain
+        ai_payload = {
+            "session_id": session_id,
+            "area_id": "area1",
+            "question_id": "q1",
+            "question_text": "Test question"
+        }
+        response = requests.post(f"{API_BASE}/ai/explain", json=ai_payload, headers=headers)
+        if response.status_code != 200:
+            print(f"❌ FAIL: AI explain failed with auth: {response.status_code}")
+            return False
+            
+        print("✅ PASS: All regression tests passed with authentication")
+        return True
+        
+    except Exception as e:
+        print(f"❌ ERROR in regression test: {e}")
+        return False
 
 def test_auth_register_agency():
     """Test POST /api/auth/register with agency role"""
