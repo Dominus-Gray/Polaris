@@ -278,77 +278,245 @@ function ProfilePage(){
 function AssessmentPage(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const [currentArea, setCurrentArea] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [showResources, setShowResources] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   
   // Redirect non-clients to home
   if (!me || me.role !== 'client') {
     return <Navigate to="/home" replace />;
   }
 
+  // Assessment areas and questions
+  const assessmentAreas = [
+    {
+      id: 'area1',
+      title: 'Business Formation & Registration',
+      questions: [
+        { id: 'bf1', text: 'Do you have a current business license?', deliverable: 'Valid business license certificate', alternatives: 'City/county business registration, professional licenses' },
+        { id: 'bf2', text: 'Is your business registered with the Secretary of State?', deliverable: 'Articles of incorporation or LLC formation documents', alternatives: 'Certificate of formation, partnership agreement' },
+        { id: 'bf3', text: 'Do you have a Federal Tax ID (EIN)?', deliverable: 'IRS EIN assignment letter', alternatives: 'SSN for sole proprietorships (temporary)' }
+      ]
+    },
+    {
+      id: 'area2', 
+      title: 'Financial Operations',
+      questions: [
+        { id: 'fo1', text: 'Do you maintain separate business banking accounts?', deliverable: 'Business bank account statements', alternatives: 'Separate business checking account, business savings account' },
+        { id: 'fo2', text: 'Do you have current financial statements?', deliverable: 'Balance sheet, income statement, cash flow statement', alternatives: 'Tax returns, profit/loss statements, bookkeeping records' },
+        { id: 'fo3', text: 'Is your accounting system current and organized?', deliverable: 'Organized bookkeeping records, accounting software setup', alternatives: 'QuickBooks, spreadsheet tracking, receipt organization' }
+      ]
+    },
+    {
+      id: 'area3',
+      title: 'Legal & Contracting', 
+      questions: [
+        { id: 'lc1', text: 'Do you have general liability insurance?', deliverable: 'Current insurance certificate', alternatives: 'Professional liability, errors & omissions insurance' },
+        { id: 'lc2', text: 'Can you provide bonding if required?', deliverable: 'Bonding capacity letter from surety company', alternatives: 'Surety bond agreement, financial capacity documentation' },
+        { id: 'lc3', text: 'Do you have standard contract templates?', deliverable: 'Attorney-reviewed contract templates', alternatives: 'Service agreements, terms of service, work order templates' }
+      ]
+    }
+  ];
+
+  const currentAreaData = assessmentAreas[currentArea];
+  const isLastArea = currentArea === assessmentAreas.length - 1;
+
+  const handleAnswer = (questionId, answer) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+
+    if (answer === 'no') {
+      setSelectedQuestion(questionId);
+      setShowResources(true);
+    }
+  };
+
+  const getQuestion = (questionId) => {
+    for (const area of assessmentAreas) {
+      const question = area.questions.find(q => q.id === questionId);
+      if (question) return question;
+    }
+    return null;
+  };
+
+  const nextArea = () => {
+    if (isLastArea) {
+      // Calculate completion and redirect to home
+      navigate('/home');
+    } else {
+      setCurrentArea(currentArea + 1);
+    }
+  };
+
+  const previousArea = () => {
+    if (currentArea > 0) {
+      setCurrentArea(currentArea - 1);
+    }
+  };
+
+  const handleGetHelp = (questionId, area_id) => {
+    const question = getQuestion(questionId);
+    navigate(`/matching?area_id=${area_id}&desc=${encodeURIComponent(question.text)}`);
+  };
+
+  if (showResources && selectedQuestion) {
+    const question = getQuestion(selectedQuestion);
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold mb-4">Resources for: {question.text}</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Free Resources */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <h3 className="font-semibold text-green-800">Free Resources</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="text-sm text-green-700">
+                  <strong>Required Deliverable:</strong> {question.deliverable}
+                </div>
+                <div className="text-sm text-green-700">
+                  <strong>Acceptable Alternatives:</strong> {question.alternatives}
+                </div>
+                <div className="bg-white rounded p-3 text-sm text-slate-600">
+                  AI-generated guidance and templates for completing this requirement will be available in the resource library.
+                </div>
+              </div>
+              <button 
+                className="btn w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => setShowResources(false)}
+              >
+                Use Free Resources
+              </button>
+            </div>
+
+            {/* Provider Help */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h3 className="font-semibold text-blue-800">Professional Help</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="text-sm text-blue-700">
+                  Get matched with qualified service providers who can help you complete this requirement professionally.
+                </div>
+                <div className="bg-white rounded p-3">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Your Budget Range
+                  </label>
+                  <select className="input w-full">
+                    <option value="">Select budget range</option>
+                    <option value="under-500">Under $500</option>
+                    <option value="500-1000">$500 - $1,000</option>
+                    <option value="1000-2500">$1,000 - $2,500</option>
+                    <option value="2500-5000">$2,500 - $5,000</option>
+                    <option value="over-5000">Over $5,000</option>
+                  </select>
+                </div>
+              </div>
+              <button 
+                className="btn btn-primary w-full mt-4"
+                onClick={() => handleGetHelp(selectedQuestion, currentAreaData.id)}
+              >
+                Get Provider Help
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-center">
+            <button 
+              className="btn" 
+              onClick={() => setShowResources(false)}
+            >
+              Continue Assessment
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mt-6">
-      <h2 className="text-xl font-semibold mb-3">Small Business Maturity Assessment</h2>
-      <p className="text-slate-600 mb-6">Complete your assessment to determine your business maturity and procurement readiness.</p>
-      
-      <div className="assessment-overview">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center">
-            <span className="text-sm font-semibold">1</span>
+    <div className="container mt-6 max-w-4xl">
+      <div className="bg-white rounded-lg shadow-sm border">
+        {/* Progress Header */}
+        <div className="border-b p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Small Business Maturity Assessment</h2>
+            <div className="text-sm text-slate-600">
+              Area {currentArea + 1} of {assessmentAreas.length}
+            </div>
           </div>
-          <h3 className="text-lg font-semibold">Assessment Overview</h3>
-        </div>
-        <p className="text-sm text-slate-600 mb-4">
-          This assessment covers 8 key business areas to evaluate your procurement readiness. 
-          Each area focuses on concrete deliverables and evidence-based requirements.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Business Formation & Registration</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Financial Operations</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Legal & Contracting</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Technology & Cybersecurity</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Human Resources</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Marketing & Sales</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Supply Chain Management</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            <span>Quality Assurance</span>
+          <div className="w-full bg-slate-200 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-[#1B365D] to-[#4A90C2] h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentArea + 1) / assessmentAreas.length) * 100}%` }}
+            ></div>
           </div>
         </div>
-      </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-        <div className="flex items-center gap-2 text-amber-800">
-          <span className="text-lg">⚠️</span>
-          <div>
-            <div className="font-medium">Assessment Coming Soon</div>
-            <div className="text-sm">The full interactive assessment is currently under development. Please check back soon or contact support for assistance.</div>
+        {/* Current Area */}
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">{currentAreaData.title}</h3>
+          
+          <div className="space-y-4">
+            {currentAreaData.questions.map((question, index) => (
+              <div key={question.id} className="bg-slate-50 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-900 mb-2">
+                      {index + 1}. {question.text}
+                    </p>
+                    <div className="text-xs text-slate-600 mb-3">
+                      <strong>Deliverable:</strong> {question.deliverable}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <button 
+                    className={`btn btn-sm ${answers[question.id] === 'yes' ? 'btn-primary' : 'border'}`}
+                    onClick={() => handleAnswer(question.id, 'yes')}
+                  >
+                    Yes, I have this
+                  </button>
+                  <button 
+                    className={`btn btn-sm ${answers[question.id] === 'no' ? 'bg-orange-600 text-white' : 'border'}`}
+                    onClick={() => handleAnswer(question.id, 'no')}
+                  >
+                    No, I need help
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
 
-      <div className="flex gap-3">
-        <button className="btn btn-primary" onClick={()=>navigate('/home')}>Return to Dashboard</button>
-        <button className="btn" onClick={()=>navigate('/matching')}>Request Provider Assistance</button>
+        {/* Navigation */}
+        <div className="border-t p-6 flex justify-between">
+          <button 
+            className="btn"
+            onClick={previousArea}
+            disabled={currentArea === 0}
+          >
+            Previous
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={nextArea}
+          >
+            {isLastArea ? 'Complete Assessment' : 'Next Area'}
+          </button>
+        </div>
       </div>
     </div>
   );
