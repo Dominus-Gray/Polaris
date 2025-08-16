@@ -289,7 +289,7 @@ function AssessmentPage(){
       <h2 className="text-xl font-semibold mb-3">Small Business Maturity Assessment</h2>
       <p className="text-slate-600 mb-6">Complete your assessment to determine your business maturity and procurement readiness.</p>
       
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+      <div className="assessment-overview">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center">
             <span className="text-sm font-semibold">1</span>
