@@ -522,7 +522,14 @@ function BusinessProfileForm(){
     }
 
     try{
-      const payload = { ...form, payment_methods: form.payment_methods.split(',').map(s=>s.trim()).filter(Boolean) };
+      // Prepare payload with proper data types
+      const payload = { 
+        ...form, 
+        payment_methods: form.payment_methods.split(',').map(s=>s.trim()).filter(Boolean),
+        website_url: form.website_url ? (form.website_url.startsWith('http') ? form.website_url : `https://${form.website_url}`) : null,
+        year_founded: form.year_founded ? parseInt(form.year_founded) : null
+      };
+      
       const { data } = await axios.post(`${API}/business/profile`, payload); 
       toast.success('Profile saved', { description: data.company_name });
       
@@ -542,7 +549,23 @@ function BusinessProfileForm(){
         navigate('/home');
       }
     }catch(e){ 
-      toast.error('Save failed', { description: e?.response?.data?.detail || e.message}); 
+      console.error('Business profile save error:', e);
+      let errorMessage = 'Save failed';
+      let errorDetails = e.message;
+      
+      if (e.response?.data) {
+        if (typeof e.response.data === 'string') {
+          errorDetails = e.response.data;
+        } else if (e.response.data.detail) {
+          if (Array.isArray(e.response.data.detail)) {
+            errorDetails = e.response.data.detail.map(err => `${err.loc?.join('.')||'field'}: ${err.msg}`).join(', ');
+          } else {
+            errorDetails = e.response.data.detail;
+          }
+        }
+      }
+      
+      toast.error(errorMessage, { description: errorDetails }); 
     }
     setIsValidating(false);
   };
