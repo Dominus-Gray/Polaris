@@ -572,7 +572,7 @@ async def get_matches(request_id: str, current=Depends(require_user)):
         b = req.get("budget")
         pmin = p.get("price_min") or 0
         pmax = p.get("price_max") or 0
-        if pmin and pmax and pmin &lt;= b &lt;= pmax:
+        if pmin and pmax and pmin <= b <= pmax:
             score += 40
         elif pmin and b &gt;= pmin * 0.8:
             score += 20
