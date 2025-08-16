@@ -197,6 +197,9 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Financial core skeleton APIs NOW FULLY IMPLEMENTED and working perfectly! Comprehensive testing completed: 1) POST /api/v1/revenue/calculate-success-fee with contractValue=300000, businessTier='small', contractType='services', riskLevel='medium', platformMaturityLevel=3 returns feePercentage=3.0 and feeAmount=9000.0 (exactly as expected), 2) POST /api/v1/revenue/process-premium-payment with business_id='biz1', tier='base', amount=1500 returns ok=true and transaction_id with database insertion, 3) POST /api/v1/revenue/marketplace-transaction with request_id='req1', service_provider_id='prov1', service_fee=12000 returns ok=true and fee=720.0 (6% calculation correct), 4) GET /api/v1/revenue/dashboard/agency returns totals grouped by transaction_type including premium_service and marketplace_fee with correct amounts, 5) GET /api/v1/analytics/revenue-forecast returns monthly=2220.0 and annualized=26640.0 based on recent transactions. All financial endpoints implemented in server.py lines 720-821 with proper authentication and business logic."
+      - working: true
+        agent: "testing"
+        comment: "✅ REGRESSION TEST PASS: Financial endpoints verified after 5% fee update. POST /api/v1/revenue/marketplace-transaction now correctly uses flat 5% fee (service_fee=2000 -> fee=100.0 confirmed). All other financial endpoints remain operational: calculate-success-fee (contractValue=300000 -> feePercentage=3.0, feeAmount=9000.0), process-premium-payment (ok=true with transaction_id), revenue dashboard (totals aggregation working), revenue forecast (monthly/annualized calculations working). Basic assessment flow also verified functional (schema 8 areas, session creation, progress tracking). All 6/6 regression tests passed."
   - task: "Option F: Agency Invitations System"
     implemented: true
     working: true
