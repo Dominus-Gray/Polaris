@@ -516,9 +516,9 @@
 
 ## test_plan:
   current_focus:
-    - "Agency role + endpoints"
-    - "Financial core skeleton APIs"
-  stuck_tasks: []
+    - "Provider Proposal Composer UI + Client Accept→Engagement"
+  stuck_tasks:
+    - "Provider Proposal Composer UI + Client Accept→Engagement"
   test_all: false
   test_priority: "high_first"
 
