@@ -208,7 +208,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
         {"id": "area4", "title": "Technology & Cybersecurity", "questions": qs([
             {"id": "q1", "text": "Provide your Backup Policy or a screenshot of backup schedule (no hostnames)."},
             {"id": "q2", "text": "Provide your MFA Policy or screenshot showing MFA enabled (no usernames/emails)."},
-            {"id": "q3", "text": "Provide an Asset Inventory list (categories &amp; counts acceptable)."},
+            {"id": "q3", "text": "Provide an Asset Inventory list (categories & counts acceptable)."},
             {"id": "q4", "text": "Provide your Incident Response Plan (latest version)."},
         ])},
         {"id": "area5", "title": "People &amp; HR (Non-sensitive)", "questions": qs([
