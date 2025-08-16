@@ -114,3 +114,7 @@ body { @apply bg-slate-50 text-slate-900; }
 
 /* Enhanced Button Styles */
 .btn.glass { @apply bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20; }
+
+/* Enhanced Auth Widget */
+.auth-widget { @apply max-w-sm mx-auto; }
+.auth-widget .input { @apply px-3 py-2; }
