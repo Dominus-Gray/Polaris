@@ -129,6 +129,68 @@ async def login(user: UserLogin):
 async def get_current_user_info(current=Depends(require_user)):
     return UserOut(id=current["id"], email=current["email"], role=current["role"], created_at=current["created_at"])
 
+class OAuthCallbackIn(BaseModel):
+    session_id: str
+    role: str
+
+class OAuthCallbackOut(BaseModel):
+    access_token: str
+    user_id: str
+    email: str
+    name: str
+    role: str
+
+@api.post("/auth/oauth/callback", response_model=OAuthCallbackOut)
+async def oauth_callback(payload: OAuthCallbackIn):
+    try:
+        # Call Emergent auth API to get user data
+        headers = {"X-Session-ID": payload.session_id}
+        response = requests.get("https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data", headers=headers)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Invalid session ID")
+        
+        oauth_data = response.json()
+        
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": oauth_data["email"]})
+        
+        if existing_user:
+            # Update existing user with OAuth data but keep original role
+            user_data = existing_user
+        else:
+            # Create new user
+            user_id = str(uuid.uuid4())
+            user_data = {
+                "_id": user_id,
+                "id": user_id,
+                "email": oauth_data["email"],
+                "name": oauth_data.get("name", ""),
+                "picture": oauth_data.get("picture", ""),
+                "role": payload.role,
+                "auth_method": "oauth",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await db.users.insert_one(user_data)
+        
+        # Create JWT access token
+        access_token = create_access_token(data={"sub": user_data["id"]})
+        
+        return OAuthCallbackOut(
+            access_token=access_token,
+            user_id=user_data["id"],
+            email=user_data["email"],
+            name=user_data.get("name", ""),
+            role=user_data["role"]
+        )
+        
+    except requests.RequestException:
+        raise HTTPException(status_code=500, detail="Failed to validate OAuth session")
+    except Exception as e:
+        logger.error(f"OAuth callback error: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
 # ---------------- Minimal Assessment Schema for readiness calc ----------------
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
