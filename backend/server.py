@@ -1,6 +1,5 @@
-# NOTE: This file contains all Polaris backend endpoints. Additions for homepages, business profiles, engagements, top-5 invites, and provider proposal attachments are appended near the end.
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends, Header, Query, Request
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -14,6 +13,7 @@ from datetime import datetime, timedelta
 import aiofiles
 from jose import jwt, JWTError
 from passlib.hash import pbkdf2_sha256
+import requests
 
 try:
     from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -37,7 +37,6 @@ UPLOAD_BASE.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# ---------------- Auth Core (omitted unchanged parts for brevity in this header block) ----------------
 ALGO = "HS256"
 AUTH_SECRET = os.environ.get("AUTH_SECRET", "dev-secret-change-me")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
@@ -113,10 +112,90 @@ def require_role(role: str):
         return current
     return role_dep
 
-# ---------------- Existing models, schema, assessment, uploads, AI, navigator, provider, matching, agency, revenue, analytics, certificates ----------------
-# NOTE: For brevity, we assume the previously-added endpoints in this file remain intact.
+@api.post("/auth/register", response_model=UserOut)
+async def register(user: UserRegister):
+    created_user = await create_user(user.email, user.password, user.role)
+    return UserOut(id=created_user["id"], email=created_user["email"], role=created_user["role"], created_at=created_user["created_at"])
 
-# ---------------- New: Business Profiles (client & provider) ----------------
+@api.post("/auth/login", response_model=Token)
+async def login(user: UserLogin):
+    verified_user = await verify_user(user.email, user.password)
+    if not verified_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    access_token = create_access_token(data={"sub": verified_user["id"]})
+    return Token(access_token=access_token)
+
+@api.get("/auth/me", response_model=UserOut)
+async def get_current_user_info(current=Depends(require_user)):
+    return UserOut(id=current["id"], email=current["email"], role=current["role"], created_at=current["created_at"])
+
+# ---------------- Minimal Assessment Schema for readiness calc ----------------
+ASSESSMENT_SCHEMA: Dict[str, Dict] = {
+    "areas": [
+        {"id": "area1", "title": "Business Formation & Registration", "questions": [{"id": "q1", "text": "Vendor registration confirmation"}]},
+        {"id": "area2", "title": "Financial Operations", "questions": [{"id": "q1", "text": "Accounting system settings screenshot"}]},
+        {"id": "area3", "title": "Legal & Contracting", "questions": [{"id": "q1", "text": "Services agreement template"}]},
+    ]
+}
+
+# ---------------- AI resources for "No" pathway ----------------
+class AIResourcesReq(BaseModel):
+    area_id: str
+    question_id: str
+    question_text: Optional[str] = None
+    locality: str = "San Antonio, TX"
+    count: int = 3
+    prefer: str = "gov_edu_nonprofit"
+
+class ResourceItem(BaseModel):
+    name: str
+    url: str
+    summary: str
+    source_type: str
+    locality: str
+
+class AIResourcesResp(BaseModel):
+    resources: List[ResourceItem]
+
+@api.post("/ai/resources", response_model=AIResourcesResp)
+async def ai_resources(req: AIResourcesReq, current=Depends(require_user)):
+    llm_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not llm_key or not EMERGENT_OK:
+        return AIResourcesResp(resources=[
+            ResourceItem(name="UTSA Small Business Development Center", url="https://sasbdc.org/", summary="Free advising, workshops, and templates for small businesses.", source_type="edu/nonprofit", locality="local"),
+            ResourceItem(name="SCORE San Antonio", url="https://www.score.org/sanantonio", summary="No-cost mentoring and resources for entrepreneurs.", source_type="nonprofit", locality="local"),
+            ResourceItem(name="SBA Resource Partners", url="https://www.sba.gov/local-assistance", summary="Federal resources and partners offering guidance and tools.", source_type="gov", locality="online"),
+        ])
+    system = ("You are a procurement readiness navigator. Return concise, credible free resources. Prefer .gov, .edu, or nonprofit sources; tailor to the question and San Antonio, TX. Return JSON array of {name,url,summary,source_type,locality}.")
+    chat = LlmChat(api_key=llm_key, session_id=str(uuid.uuid4()), system_message=system).with_model("openai", "gpt-4o-mini")
+    prompt = f"Locality: {req.locality}\nCount: {req.count}\nQuestion: {req.question_text or req.question_id}\nArea: {req.area_id}."
+    try:
+        resp = await chat.send_message(UserMessage(text=prompt))
+        import json as pyjson
+        data = None
+        try:
+            data = pyjson.loads(str(resp))
+        except Exception:
+            txt = str(resp)
+            s = txt.find('['); e = txt.rfind(']')
+            if s != -1 and e != -1 and e > s:
+                data = pyjson.loads(txt[s:e+1])
+        items = []
+        if isinstance(data, list):
+            for it in data[: req.count]:
+                items.append(ResourceItem(name=str(it.get("name","Resource")), url=str(it.get("url","")), summary=str(it.get("summary",""))[:200], source_type=str(it.get("source_type","other")), locality=str(it.get("locality","online"))))
+        if not items:
+            items = [
+                ResourceItem(name="UTSA Small Business Development Center", url="https://sasbdc.org/", summary="Free advising, workshops, and templates for small businesses.", source_type="edu/nonprofit", locality="local"),
+                ResourceItem(name="SCORE San Antonio", url="https://www.score.org/sanantonio", summary="No-cost mentoring and resources for entrepreneurs.", source_type="nonprofit", locality="local"),
+                ResourceItem(name="SBA Resource Partners", url="https://www.sba.gov/local-assistance", summary="Federal resources and partners offering guidance and tools.", source_type="gov", locality="online"),
+            ]
+        return AIResourcesResp(resources=items[: req.count])
+    except Exception as e:
+        logger.exception("AI resources failed")
+        raise HTTPException(status_code=500, detail=f"AI error: {e}")
+
+# ---------------- Business Profiles (client & provider) ----------------
 class BusinessProfileIn(BaseModel):
     company_name: str
     legal_entity_type: str
@@ -194,7 +273,6 @@ async def business_profile_completion(current=Depends(require_user)):
             missing.append("logo_upload_id")
     return {"complete": len(missing)==0, "missing": missing}
 
-# Business logo uploads (chunked)
 @api.post("/business/logo/initiate")
 async def biz_logo_initiate(file_name: str = Form(...), total_size: int = Form(...), mime_type: str = Form("application/octet-stream"), current=Depends(require_user)):
     if current.get("role") not in ("client","provider"):
@@ -236,11 +314,10 @@ async def biz_logo_complete(upload_id: str = Form(...), total_chunks: int = Form
                     await out.write(data)
     size = final_path.stat().st_size
     await db.uploads.update_one({"_id": upload_id}, {"$set": {"status": "completed", "stored_path": str(final_path), "final_size": size, "completed_at": datetime.utcnow()}})
-    # Link to business profile
     await db.business_profiles.update_one({"user_id": current["id"]}, {"$set": {"logo_upload_id": upload_id, "updated_at": datetime.utcnow()}}, upsert=True)
     return {"ok": True, "upload_id": upload_id, "size": size}
 
-# ---------------- New: Engagements lifecycle ----------------
+# ---------------- Engagements ----------------
 class EngagementCreateIn(BaseModel):
     request_id: str
     response_id: str
@@ -248,23 +325,19 @@ class EngagementCreateIn(BaseModel):
 
 @api.post("/engagements/create")
 async def create_engagement(payload: EngagementCreateIn, current=Depends(require_role("client"))):
-    # Validate response belongs to request
     resp = await db.match_responses.find_one({"_id": payload.response_id, "request_id": payload.request_id})
     if not resp:
         raise HTTPException(status_code=404, detail="Response not found")
     req = await db.match_requests.find_one({"_id": payload.request_id, "user_id": current["id"]})
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
-    # Create engagement
     eid = str(uuid.uuid4())
     doc = {"_id": eid, "id": eid, "request_id": req["_id"], "response_id": resp["_id"], "client_user_id": current["id"], "provider_user_id": resp.get("provider_user_id"), "status": "active", "agreed_fee": payload.agreed_fee, "created_at": datetime.utcnow()}
     await db.engagements.insert_one(doc)
-    # Book 5% marketplace fee
     fee = round(payload.agreed_fee * 0.05, 2)
     rid = str(uuid.uuid4())
     tx = {"_id": rid, "id": rid, "transaction_type": "marketplace_fee", "amount": fee, "currency": "USD", "status": "pending", "created_at": datetime.utcnow(), "metadata": {"engagement_id": eid, "request_id": req["_id"], "response_id": resp["_id"], "agreed_fee": payload.agreed_fee, "pct": 0.05}}
     await db.revenue_transactions.insert_one(tx)
-    # Mark request engaged
     await db.match_requests.update_one({"_id": req["_id"]}, {"$set": {"status": "engaged", "engagement_id": eid}})
     return {"ok": True, "engagement_id": eid, "fee": fee}
 
@@ -274,7 +347,7 @@ async def list_engagements(current=Depends(require_role("navigator"))):
     return {"engagements": engs}
 
 class EngagementStatusIn(BaseModel):
-    status: str  # active | on_hold | completed | cancelled
+    status: str
 
 @api.post("/navigator/engagements/{engagement_id}/status")
 async def set_engagement_status(engagement_id: str, payload: EngagementStatusIn, current=Depends(require_role("navigator"))):
@@ -283,13 +356,12 @@ async def set_engagement_status(engagement_id: str, payload: EngagementStatusIn,
     await db.engagements.update_one({"_id": engagement_id}, {"$set": {"status": payload.status, "updated_at": datetime.utcnow()}})
     return {"ok": True}
 
-# ---------------- New: Invite Top-5 providers ----------------
+# ---------------- Invite Top-5 Providers ----------------
 @api.post("/match/{request_id}/invite-top5")
 async def invite_top5(request_id: str, current=Depends(require_role("client"))):
     req = await db.match_requests.find_one({"_id": request_id, "user_id": current["id"]})
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
-    # Reuse matching logic
     providers = await db.provider_profiles.find({}).to_list(5000)
     matches = []
     for p in providers:
@@ -315,7 +387,6 @@ async def invite_top5(request_id: str, current=Depends(require_role("client"))):
         invited.append(m["provider_profile_id"])
     return {"ok": True, "invited": invited}
 
-# Enhance provider eligible endpoint to mark invited
 @api.get("/match/eligible")
 async def get_eligible_for_provider(current=Depends(require_role("provider"))):
     prof = await db.provider_profiles.find_one({"user_id": current["id"]})
@@ -335,10 +406,9 @@ async def get_eligible_for_provider(current=Depends(require_role("provider"))):
                 out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description"), "invited": bool(invited)})
     return {"requests": out[:20]}
 
-# ---------------- New: Provider proposal attachments (chunked) ----------------
+# ---------------- Provider proposal attachments ----------------
 @api.post("/provider/proposals/upload/initiate")
 async def proposal_upload_initiate(response_id: str = Form(...), file_name: str = Form(...), total_size: int = Form(...), mime_type: str = Form("application/octet-stream"), current=Depends(require_role("provider"))):
-    # validate response belongs to provider
     resp = await db.match_responses.find_one({"_id": response_id, "provider_user_id": current["id"]})
     if not resp:
         raise HTTPException(status_code=404, detail="Response not found")
@@ -383,7 +453,6 @@ async def proposal_upload_complete(upload_id: str = Form(...), total_chunks: int
 
 @api.get("/provider/proposals/{response_id}/attachments")
 async def proposal_attachments(response_id: str, current=Depends(require_user)):
-    # providers can see theirs; client/navigator can view if related to the request
     resp = await db.match_responses.find_one({"_id": response_id})
     if not resp:
         raise HTTPException(status_code=404, detail="Response not found")
@@ -400,10 +469,164 @@ async def proposal_attachments(response_id: str, current=Depends(require_user)):
     files = await db.uploads.find({"type": "proposal_attachment", "response_id": response_id, "status": "completed"}).to_list(100)
     return {"attachments": [{"id": f["_id"], "file_name": f.get("file_name"), "size": f.get("final_size")} for f in files]}
 
-# ---------------- New: Home dashboards endpoints ----------------
+# ---------------- Opportunities gating ----------------
+ASSESSMENT_TIERING = os.environ.get("ASSESSMENT_TIERING", "flat")
+ASSESSMENT_FLAT_AMOUNT = float(os.environ.get("ASSESSMENT_FLAT_AMOUNT", 100))
+
+@api.post("/client/assessment/pay")
+async def client_assessment_pay(current=Depends(require_role("client"))):
+    rid = str(uuid.uuid4())
+    tx = {"_id": rid, "id": rid, "transaction_type": "assessment_fee", "amount": ASSESSMENT_FLAT_AMOUNT, "currency": "USD", "status": "processed", "created_at": datetime.utcnow(), "metadata": {"client_user_id": current["id"], "self_paid": True}}
+    await db.revenue_transactions.insert_one(tx)
+    return {"ok": True, "transaction_id": rid}
+
+@api.get("/opportunities/available")
+async def available_opportunities(current=Depends(require_role("client"))):
+    inv = await db.agency_invitations.find_one({"client_user_id": current["id"], "status": "accepted"})
+    if inv:
+        opps = await db.agency_opportunities.find({"created_by": inv["agency_user_id"]}).to_list(2000)
+        return {"opportunities": opps, "unlock": "sponsored"}
+    paid = await db.revenue_transactions.find_one({"transaction_type": "assessment_fee", "status": "processed", "metadata.client_user_id": current["id"]})
+    if paid:
+        opps = await db.agency_opportunities.find({}).to_list(5000)
+        return {"opportunities": opps, "unlock": "self_paid"}
+    return {"opportunities": []}
+
+# ---------------- Certificates (JSON + PDF + Public verify) ----------------
+CERT_MIN_READINESS = float(os.environ.get("CERT_MIN_READINESS", 75))
+
+class IssueCertIn(BaseModel):
+    client_user_id: str
+
+class CertOut(BaseModel):
+    id: str
+    title: str
+    agency_user_id: str
+    client_user_id: str
+    session_id: str
+    readiness_percent: float
+    issued_at: datetime
+
+async def compute_readiness(session_id: str) -> float:
+    answers = await db.answers.find({"session_id": session_id}).to_list(1000)
+    total_q = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
+    approved = 0
+    for a in answers:
+        if a.get("value") is True and a.get("evidence_ids"):
+            ev_ids = a.get("evidence_ids") or []
+            ok = await db.reviews.find_one({"session_id": session_id, "area_id": a["area_id"], "question_id": a["question_id"], "evidence_id": {"$in": ev_ids}, "status": "approved"})
+            if ok:
+                approved += 1
+    return round((approved / total_q) * 100, 2) if total_q else 0.0
+
+@api.post("/agency/certificates/issue", response_model=CertOut)
+async def issue_certificate(payload: IssueCertIn, current=Depends(require_role("agency"))):
+    inv = await db.agency_invitations.find_one({"agency_user_id": current["id"], "client_user_id": payload.client_user_id, "status": "accepted"})
+    if not inv:
+        raise HTTPException(status_code=400, detail="No accepted invitation for this client under your agency")
+    sid = inv.get("session_id")
+    if not sid:
+        raise HTTPException(status_code=400, detail="No assessment session linked yet")
+    rpct = await compute_readiness(sid)
+    if rpct < CERT_MIN_READINESS:
+        raise HTTPException(status_code=400, detail=f"Readiness {rpct}% below certificate threshold {CERT_MIN_READINESS}%")
+    cid = str(uuid.uuid4())
+    doc = {"_id": cid, "id": cid, "title": "Small Business Maturity Assurance", "agency_user_id": current["id"], "client_user_id": payload.client_user_id, "session_id": sid, "readiness_percent": rpct, "issued_at": datetime.utcnow()}
+    await db.certificates.insert_one(doc)
+    return CertOut(**doc)
+
+@api.get("/certificates/{cert_id}")
+async def get_certificate(cert_id: str, current=Depends(require_user)):
+    cert = await db.certificates.find_one({"_id": cert_id})
+    if not cert:
+        raise HTTPException(status_code=404, detail="Not found")
+    if current.get("role") not in ("navigator",) and current.get("id") not in (cert.get("agency_user_id"), cert.get("client_user_id")):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return cert
+
+@api.get("/certificates/{cert_id}/public")
+async def get_certificate_public(cert_id: str):
+    cert = await db.certificates.find_one({"_id": cert_id})
+    if not cert:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"id": cert["_id"], "title": cert.get("title"), "issued_at": cert.get("issued_at"), "readiness_percent": cert.get("readiness_percent"), "agency_user_id": cert.get("agency_user_id")}
+
+@api.get("/certificates/{cert_id}/download")
+async def download_certificate_pdf(cert_id: str, request: Request, current=Depends(require_user)):
+    cert = await db.certificates.find_one({"_id": cert_id})
+    if not cert:
+        raise HTTPException(status_code=404, detail="Not found")
+    if current.get("role") not in ("navigator",) and current.get("id") not in (cert.get("agency_user_id"), cert.get("client_user_id")):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    from reportlab.lib.pagesizes import LETTER
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import inch
+    from reportlab.graphics.barcode import qr
+    from reportlab.graphics.shapes import Drawing
+    from reportlab.graphics import renderPDF
+
+    base = str(request.base_url)
+    verify_url = f"{base}verify/cert/{cert_id}"
+
+    tmp_path = UPLOAD_BASE / f"certificate_{cert_id}.pdf"
+    c = canvas.Canvas(str(tmp_path), pagesize=LETTER)
+    width, height = LETTER
+    c.setFillColorRGB(0.105, 0.211, 0.365)
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(1*inch, height-1*inch, "Polaris – Small Business Maturity Assurance")
+    c.setFont("Helvetica", 11)
+    c.drawString(1*inch, height-1.3*inch, "City of San Antonio – Procurement Readiness Platform")
+    c.setFillColorRGB(0,0,0)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(1*inch, height-2*inch, "Certificate of Opportunity Readiness")
+    c.setFont("Helvetica", 12)
+    c.drawString(1*inch, height-2.4*inch, f"Issued to Client ID: {cert.get('client_user_id')}")
+    c.drawString(1*inch, height-2.7*inch, f"Sponsoring Agency ID: {cert.get('agency_user_id')}")
+    c.drawString(1*inch, height-3.0*inch, f"Assessment Session ID: {cert.get('session_id')}")
+    c.drawString(1*inch, height-3.3*inch, f"Readiness: {cert.get('readiness_percent')}%")
+    c.drawString(1*inch, height-3.6*inch, f"Issued at: {cert.get('issued_at')}")
+
+    qrobj = qr.QrCodeWidget(verify_url)
+    bounds = qrobj.getBounds()
+    size = 1.8*inch
+    w = bounds[2]-bounds[0]
+    h = bounds[3]-bounds[1]
+    d = Drawing(size, size, transform=[size/w, 0, 0, size/h, 0, 0])
+    d.add(qrobj)
+    renderPDF.draw(d, c, width - (size + 1*inch), height - (size + 1*inch))
+    c.setFont("Helvetica", 8)
+    c.drawString(width - (size + 1*inch), height - (size + 1*inch) - 12, f"Verified at: {verify_url}")
+
+    c.setFont("Helvetica-Oblique", 10)
+    c.drawString(1*inch, height-4.1*inch, "This certificate signifies the business has met the evidence-backed readiness threshold.")
+    c.drawString(1*inch, height-4.35*inch, "Validated by the sponsoring agency within the Polaris platform.")
+    c.showPage()
+    c.save()
+    return FileResponse(str(tmp_path), media_type="application/pdf", filename=f"Polaris_Certificate_{cert_id}.pdf")
+
+# ---------------- Agency impact for home ----------------
+@api.get("/agency/dashboard/impact")
+async def agency_impact(current=Depends(require_role("agency"))):
+    aid = current["id"]
+    invites_total = await db.agency_invitations.count_documents({"agency_user_id": aid})
+    invites_paid = await db.agency_invitations.count_documents({"agency_user_id": aid, "status": "paid"})
+    invites_accepted = await db.agency_invitations.count_documents({"agency_user_id": aid, "status": "accepted"})
+    agg = await db.revenue_transactions.aggregate([
+        {"$match": {"transaction_type": "assessment_fee", "metadata.agency_user_id": aid}},
+        {"$group": {"_id": None, "amount": {"$sum": "$amount"}}}
+    ]).to_list(1)
+    assessment_revenue = agg[0]["amount"] if agg else 0
+    mkt_agg = await db.revenue_transactions.aggregate([
+        {"$match": {"transaction_type": "marketplace_fee"}},
+        {"$group": {"_id": None, "amount": {"$sum": "$amount"}}}
+    ]).to_list(1)
+    marketplace_revenue = mkt_agg[0]["amount"] if mkt_agg else 0
+    opp_count = await db.agency_opportunities.count_documents({"created_by": aid})
+    return {"invites": {"total": invites_total, "paid": invites_paid, "accepted": invites_accepted}, "revenue": {"assessment_fees": assessment_revenue, "marketplace_fees": marketplace_revenue}, "opportunities": {"count": opp_count}}
+
+# ---------------- Home dashboards ----------------
 @api.get("/home/client")
 async def home_client(current=Depends(require_role("client"))):
-    # readiness
     sess = await db.sessions.find_one({"user_id": current["id"]})
     readiness = 0.0
     if sess:
@@ -417,7 +640,7 @@ async def home_client(current=Depends(require_role("client"))):
                     approved += 1
         readiness = round((approved/total_q)*100,2) if total_q else 0.0
     cert = await db.certificates.find_one({"client_user_id": current["id"]})
-    avail = await available_opportunities.__wrapped__(current=current)  # reuse logic
+    avail = await available_opportunities.__wrapped__(current=current)
     prof = await db.business_profiles.find_one({"user_id": current["id"]})
     return {"readiness": readiness, "has_certificate": bool(cert), "opportunities": len(avail.get("opportunities", [])), "profile_complete": bool(prof and prof.get("logo_upload_id"))}
 
@@ -439,6 +662,57 @@ async def home_navigator(current=Depends(require_role("navigator"))):
 async def home_agency(current=Depends(require_role("agency"))):
     impact = await agency_impact.__wrapped__(current=current)
     return impact
+
+# ---------------- Google OAuth (skeleton; requires keys) ----------------
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI")  # e.g., https://yourhost/oauth/google/callback
+
+@api.get("/auth/google/start")
+async def google_start(role: Optional[str] = "client"):
+    if not GOOGLE_CLIENT_ID or not GOOGLE_REDIRECT_URI:
+        raise HTTPException(status_code=400, detail="Google OAuth not configured")
+    scope = "openid email profile"
+    auth_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&response_type=code&scope={scope}&access_type=online&prompt=consent&state={role}"
+    )
+    return {"auth_url": auth_url}
+
+@api.get("/auth/google/callback")
+async def google_callback(code: Optional[str] = None, state: Optional[str] = None):
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not GOOGLE_REDIRECT_URI:
+        raise HTTPException(status_code=400, detail="Google OAuth not configured")
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing code")
+    # Exchange code
+    token_resp = requests.post("https://oauth2.googleapis.com/token", data={
+        "code": code,
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "grant_type": "authorization_code",
+    })
+    if token_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Token exchange failed")
+    tokens = token_resp.json()
+    access_token = tokens.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="No access token")
+    # Fetch userinfo
+    ui = requests.get("https://www.googleapis.com/oauth2/v3/userinfo", headers={"Authorization": f"Bearer {access_token}"})
+    if ui.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch userinfo")
+    info = ui.json()
+    email = (info.get("email") or "").lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email not found in userinfo")
+    user = await get_user_by_email(email)
+    if not user:
+        role = state if state in ("client","provider","navigator","agency") else "client"
+        user = await create_user(email, uuid.uuid4().hex, role)
+    token = create_access_token({"sub": user["id"]})
+    return {"access_token": token, "token_type": "bearer"}
 
 # Include router and CORS
 app.include_router(api)
