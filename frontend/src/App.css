@@ -76,10 +76,20 @@ body { @apply bg-slate-50 text-slate-900; }
 .skel { @apply animate-pulse rounded bg-slate-200; }
 
 /* Home dashboard tiles */
-.tile { @apply p-4 rounded-lg border bg-white shadow-sm; }
+.tile { 
+  @apply p-6 rounded-lg bg-gradient-to-br from-white to-slate-50 border shadow-sm hover:shadow-md transition-all duration-200; 
+  background-image: linear-gradient(135deg, rgba(27, 54, 93, 0.02) 0%, rgba(74, 144, 194, 0.02) 100%);
+}
 .tile-title { @apply text-sm font-medium text-slate-600; }
-.tile-num { @apply text-2xl font-semibold text-slate-900 mt-1; }
-.tile-sub { @apply text-xs text-slate-500 mt-1; }
+.tile-num { 
+  @apply text-3xl font-bold mt-2 mb-1;
+  background: linear-gradient(135deg, #1B365D 0%, #4A90C2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tile-sub { @apply text-xs text-slate-500; }
+.tile:hover { @apply scale-105 cursor-pointer; }
 
 /* Button sizes */
 .btn-sm { @apply px-2 py-1 text-xs; }
