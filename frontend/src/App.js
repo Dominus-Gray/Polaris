@@ -159,6 +159,21 @@ function QuestionCard({ area, q, sessionId, saveAnswer, current }) {
           <button className={no ? "off" : ""} onClick={() => saveAnswer(area.id, q.id, false, [])}>No</button>
         </div>
         <DeliverablesHint sessionId={sessionId} area={area} q={q} />
+        {no && (
+          <div className="mt-2 p-3 border rounded bg-slate-50">
+            <div className="text-sm font-semibold mb-2">If you answered No:</div>
+            <div className="text-sm mb-1">1) Free support resources (San Antonio & online)</div>
+            <ul className="list-disc pl-5 text-sm">
+              <li><a className="link" href="https://www.sanantonio.gov/EDD" target="_blank" rel="noreferrer">City of San Antonio Economic Development Department</a></li>
+              <li><a className="link" href="https://sasbdc.org/" target="_blank" rel="noreferrer">UTSA Small Business Development Center</a></li>
+              <li><a className="link" href="https://www.score.org/sanantonio" target="_blank" rel="noreferrer">SCORE San Antonio</a></li>
+              <li><a className="link" href="https://www.sba.gov/local-assistance/resource-partners/small-business-development-centers-sbdc" target="_blank" rel="noreferrer">SBA SBDC Resources</a></li>
+            </ul>
+            <div className="text-sm mt-3 mb-1">2) Prefer a professional? Request a provider match now</div>
+            <a className="btn btn-primary" href={matchHref}>Open provider matching</a>
+            <div className="text-xs text-slate-500 mt-2">Service providers are matched by areas of expertise.</div>
+          </div>
+        )}
         {yes && (
           <div className="upload-box">
             <div className="text-xs mb-1">Upload supporting evidence</div>
