@@ -96,14 +96,175 @@ function VerifyCert(){
 // ---------------- Business Profile Form ----------------
 function BusinessProfileForm(){
   const navigate = useNavigate();
-  const [form, setForm] = useState({ company_name:'', legal_entity_type:'LLC', tax_id:'', registered_address:'', mailing_address:'', website_url:'', industry:'', primary_products_services:'', revenue_range:'', revenue_currency:'USD', employees_count:'', year_founded:'', ownership_structure:'private', contact_name:'', contact_title:'', contact_email:'', contact_phone:'', billing_contact_name:'', billing_contact_email:'', billing_contact_phone:'', payment_methods:'Card, ACH', subscription_plan:'Basic', subscription_features:'', billing_frequency:'monthly' });
+  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const [form, setForm] = useState({ 
+    company_name:'', legal_entity_type:'LLC', tax_id:'', registered_address:'', mailing_address:'', 
+    website_url:'', industry:'', primary_products_services:'', revenue_range:'', revenue_currency:'USD', 
+    employees_count:'', year_founded:'', ownership_structure:'private', contact_name:'', contact_title:'', 
+    contact_email:'', contact_phone:'', billing_contact_name:'', billing_contact_email:'', 
+    billing_contact_phone:'', payment_methods:'Card, ACH', subscription_plan:'Basic', 
+    subscription_features:'', billing_frequency:'monthly' 
+  });
   const [logo, setLogo] = useState(null);
   const [missing, setMissing] = useState([]);
-  useEffect(()=>{ const load=async()=>{ try{ const {data} = await axios.get(`${API}/business/profile/me`); if(data){ setForm({ ...form, ...data, payment_methods: (data.payment_methods||[]).join(', ')}); } const c = await axios.get(`${API}/business/profile/me/completion`); setMissing(c.data.missing||[]);}catch{} }; load(); },[]);
+  const [errors, setErrors] = useState({});
+  const [isValidating, setIsValidating] = useState(false);
+
+  // Validation patterns
+  const validationPatterns = {
+    email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    phone: /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/,
+    ein: /^\d{2}-?\d{7}$/,
+    website: /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
+    year: /^\d{4}$/
+  };
+
+  // Validation rules
+  const validateField = (name, value) => {
+    const errors = [];
+    
+    switch(name) {
+      case 'company_name':
+        if (!value.trim()) errors.push('Company name is required');
+        else if (value.trim().length < 2) errors.push('Company name must be at least 2 characters');
+        else if (value.trim().length > 100) errors.push('Company name must be less than 100 characters');
+        break;
+      
+      case 'tax_id':
+        if (!value.trim()) errors.push('Tax ID/EIN is required');
+        else if (!validationPatterns.ein.test(value.replace(/-/g, ''))) errors.push('Invalid Tax ID/EIN format (e.g., 12-3456789)');
+        break;
+      
+      case 'registered_address':
+      case 'mailing_address':
+        if (!value.trim()) errors.push(`${name.replace('_', ' ')} is required`);
+        else if (value.trim().length < 10) errors.push('Address must be at least 10 characters');
+        break;
+      
+      case 'website_url':
+        if (value && !validationPatterns.website.test(value)) errors.push('Invalid website URL format');
+        break;
+      
+      case 'industry':
+        if (!value.trim()) errors.push('Industry is required');
+        else if (value.trim().length < 2) errors.push('Industry must be at least 2 characters');
+        break;
+      
+      case 'primary_products_services':
+        if (!value.trim()) errors.push('Primary products/services is required');
+        else if (value.trim().length < 5) errors.push('Products/services description must be at least 5 characters');
+        break;
+      
+      case 'revenue_range':
+        if (!value.trim()) errors.push('Revenue range is required');
+        break;
+      
+      case 'employees_count':
+        if (!value.trim()) errors.push('Employee count is required');
+        break;
+      
+      case 'year_founded':
+        if (value && !validationPatterns.year.test(value)) errors.push('Invalid year format');
+        else if (value && (parseInt(value) < 1800 || parseInt(value) > new Date().getFullYear())) {
+          errors.push('Year founded must be between 1800 and current year');
+        }
+        break;
+      
+      case 'contact_name':
+        if (!value.trim()) errors.push('Contact name is required');
+        else if (value.trim().length < 2) errors.push('Contact name must be at least 2 characters');
+        break;
+      
+      case 'contact_email':
+        if (!value.trim()) errors.push('Contact email is required');
+        else if (!validationPatterns.email.test(value)) errors.push('Invalid email format');
+        break;
+      
+      case 'contact_phone':
+        if (!value.trim()) errors.push('Contact phone is required');
+        else if (!validationPatterns.phone.test(value)) errors.push('Invalid phone format (e.g., (123) 456-7890)');
+        break;
+      
+      case 'billing_contact_email':
+        if (value && !validationPatterns.email.test(value)) errors.push('Invalid billing email format');
+        break;
+      
+      case 'billing_contact_phone':
+        if (value && !validationPatterns.phone.test(value)) errors.push('Invalid billing phone format (e.g., (123) 456-7890)');
+        break;
+    }
+    
+    return errors;
+  };
+
+  // Real-time validation
+  const handleFieldChange = (name, value) => {
+    // Format specific fields
+    if (name === 'tax_id') {
+      value = value.replace(/[^\d-]/g, '').replace(/^(\d{2})(\d{7})$/, '$1-$2');
+    }
+    if (name === 'contact_phone' || name === 'billing_contact_phone') {
+      value = value.replace(/[^\d()-.\s]/g, '');
+    }
+    if (name === 'contact_email' || name === 'billing_contact_email') {
+      value = value.toLowerCase().trim();
+    }
+    
+    setForm({...form, [name]: value});
+    
+    // Validate field
+    const fieldErrors = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: fieldErrors.length > 0 ? fieldErrors[0] : null
+    }));
+  };
+
+  // Validate all fields
+  const validateForm = () => {
+    const newErrors = {};
+    let hasErrors = false;
+    
+    Object.keys(form).forEach(key => {
+      const fieldErrors = validateField(key, form[key]);
+      if (fieldErrors.length > 0) {
+        newErrors[key] = fieldErrors[0];
+        hasErrors = true;
+      }
+    });
+    
+    setErrors(newErrors);
+    return !hasErrors;
+  };
+
+  useEffect(()=>{ 
+    const load=async()=>{ 
+      try{ 
+        const {data} = await axios.get(`${API}/business/profile/me`); 
+        if(data){ 
+          setForm({ ...form, ...data, payment_methods: (data.payment_methods||[]).join(', ')});
+        } 
+        const c = await axios.get(`${API}/business/profile/me/completion`); 
+        setMissing(c.data.missing||[]);
+      }catch{} 
+    }; 
+    load(); 
+  },[]);
+
   const save = async()=>{
+    setIsValidating(true);
+    
+    if (!validateForm()) {
+      toast.error('Please fix validation errors before saving');
+      setIsValidating(false);
+      return;
+    }
+
     try{
       const payload = { ...form, payment_methods: form.payment_methods.split(',').map(s=>s.trim()).filter(Boolean) };
-      const { data } = await axios.post(`${API}/business/profile`, payload); toast.success('Profile saved', { description: data.company_name });
+      const { data } = await axios.post(`${API}/business/profile`, payload); 
+      toast.success('Profile saved', { description: data.company_name });
+      
       if (logo){
         const init = await axios.post(`${API}/business/logo/initiate`, new URLSearchParams({ file_name: logo.name, total_size: String(logo.size), mime_type: logo.type }));
         const uploadId = init.data.upload_id; const chunkSize = init.data.chunk_size; const totalChunks = Math.ceil(logo.size / chunkSize);
@@ -111,13 +272,23 @@ function BusinessProfileForm(){
           const start=i*chunkSize; const end=Math.min(start+chunkSize, logo.size); const blob=logo.slice(start,end); const fd=new FormData(); fd.append('upload_id', uploadId); fd.append('chunk_index', String(i)); fd.append('file', blob, `${logo.name}.part`); await fetch(`${API}/business/logo/chunk`, { method:'POST', body: fd }); }
         await axios.post(`${API}/business/logo/complete`, new URLSearchParams({ upload_id: uploadId, total_chunks: String(totalChunks) }));
       }
-      navigate('/home');
-    }catch(e){ toast.error('Save failed', { description: e?.response?.data?.detail || e.message}); }
+      
+      // Navigate based on user role
+      if (me?.role === 'client') {
+        navigate('/assessment');
+      } else {
+        navigate('/home');
+      }
+    }catch(e){ 
+      toast.error('Save failed', { description: e?.response?.data?.detail || e.message}); 
+    }
+    setIsValidating(false);
   };
+
   return (
     <div className="container max-w-4xl mt-6">
       <h2 className="text-xl font-semibold mb-1">Business Profile</h2>
-      <p className="text-sm text-slate-600 mb-4">Complete these details to unlock your personalized home dashboard.</p>
+      <p className="text-sm text-slate-600 mb-4">Complete these details to unlock your personalized dashboard.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <input className="input" placeholder="Company name" value={form.company_name} onChange={e=>setForm({...form, company_name:e.target.value})} />
         <select className="input" value={form.legal_entity_type} onChange={e=>setForm({...form, legal_entity_type:e.target.value})}>
