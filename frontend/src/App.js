@@ -930,28 +930,178 @@ function Header(){
 function Landing(){
   return (
     <div>
+      {/* Enhanced Hero Section */}
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-inner">
           <div className="flex-1 text-white">
-            <PolarisLogo size={28} />
-            <h1 className="hero-title mt-2">Your North Star for Procurement Readiness</h1>
-            <p className="hero-sub">Assess your business, match with providers, and unlock local opportunities.</p>
+            <PolarisLogo size={32} />
+            <h1 className="hero-title mt-4">Your North Star for Procurement Success</h1>
+            <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
             <div className="hero-ctas">
-              <a className="btn btn-primary" href="#auth">Create an account</a>
-              <a className="btn" href="#auth">Sign in</a>
+              <a className="btn btn-primary" href="#auth">Start Your Journey</a>
+              <a className="btn bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20" href="#auth">Sign In</a>
             </div>
           </div>
           <div className="w-[420px] max-w-full"><AuthWidget /></div>
         </div>
       </section>
+
+      {/* Value Proposition for Each User Type */}
       <section className="container section">
-        <h3 className="section-title">Why Polaris</h3>
-        <p className="section-sub">Designed with the City of San Antonio to accelerate procurement readiness for small businesses.</p>
-        <div className="features">
-          <div className="card"><div className="card-visual">📋</div><div className="card-body"><div className="card-title">Focused Assessment</div><div className="card-sub">Concrete, non-sensitive deliverables with AI guidance and free resources.</div></div></div>
-          <div className="card"><div className="card-visual">🤝</div><div className="card-body"><div className="card-title">Expert Matching</div><div className="card-sub">Providers by area of expertise; accept and create engagements in a click.</div></div></div>
-          <div className="card"><div className="card-visual">📈</div><div className="card-body"><div className="card-title">Impact & Certificates</div><div className="card-sub">Certificates verified publicly, with agency impact dashboards.</div></div></div>
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Built for Every Step of Your Procurement Journey</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto">Whether you're a small business, service provider, navigator, or local agency, Polaris provides tailored solutions for procurement readiness.</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="user-segment">
+            <div className="segment-icon bg-blue-50">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 className="segment-title">Small Businesses</h3>
+            <p className="segment-desc">Assess your readiness, get certified, and unlock government contracting opportunities.</p>
+            <ul className="segment-features">
+              <li>Comprehensive maturity assessment</li>
+              <li>Public verification certificates</li>
+              <li>Free resources and guidance</li>
+            </ul>
+          </div>
+
+          <div className="user-segment">
+            <div className="segment-icon bg-emerald-50">
+              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 className="segment-title">Service Providers</h3>
+            <p className="segment-desc">Connect with businesses needing your expertise and grow your client base.</p>
+            <ul className="segment-features">
+              <li>Automated client matching</li>
+              <li>Proposal management system</li>
+              <li>Engagement tracking</li>
+            </ul>
+          </div>
+
+          <div className="user-segment">
+            <div className="segment-icon bg-purple-50">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <h3 className="segment-title">Navigators</h3>
+            <p className="segment-desc">Review assessments, validate evidence, and guide businesses to success.</p>
+            <ul className="segment-features">
+              <li>Evidence review queue</li>
+              <li>Assessment validation tools</li>
+              <li>Progress tracking</li>
+            </ul>
+          </div>
+
+          <div className="user-segment">
+            <div className="segment-icon bg-orange-50">
+              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 className="segment-title">Local Agencies</h3>
+            <p className="segment-desc">Invite businesses, manage assessments, and track community impact.</p>
+            <ul className="segment-features">
+              <li>Volume-based pricing tiers</li>
+              <li>Impact dashboards</li>
+              <li>Opportunity management</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Features Section with High-Quality Images */}
+      <section className="bg-slate-50 py-12">
+        <div className="container">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Comprehensive Procurement Readiness Platform</h2>
+            <p className="text-slate-600">Everything you need to succeed in government contracting</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="feature-card">
+              <div className="feature-image">
+                <img src="https://images.unsplash.com/photo-1626148750586-df6e1b0bebf2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwyfHxidXNpbmVzcyUyMGFzc2Vzc21lbnR8ZW58MHx8fGJsdWV8MTc1NTM4MDIxMnww&ixlib=rb-4.1.0&q=85&w=600" alt="Business Assessment" className="w-full h-48 object-cover" />
+              </div>
+              <div className="p-6">
+                <h3 className="font-semibold text-lg text-slate-900 mb-2">Smart Assessment System</h3>
+                <p className="text-slate-600 text-sm">Comprehensive evaluation across 8 key business areas with AI-powered guidance and concrete deliverables.</p>
+                <ul className="mt-3 text-xs text-slate-500 space-y-1">
+                  <li>• Evidence-based evaluation</li>
+                  <li>• AI-generated free resources</li>
+                  <li>• Real-time progress tracking</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-image">
+                <img src="https://images.unsplash.com/photo-1528747045269-390fe33c19f2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwY29udHJhY3Rpbmd8ZW58MHx8fGJsdWV8MTc1NTM4MDIxN3ww&ixlib=rb-4.1.0&q=85&w=600" alt="Expert Matching" className="w-full h-48 object-cover" />
+              </div>
+              <div className="p-6">
+                <h3 className="font-semibold text-lg text-slate-900 mb-2">Expert Provider Network</h3>
+                <p className="text-slate-600 text-sm">Connect with qualified service providers based on your specific needs and expertise requirements.</p>
+                <ul className="mt-3 text-xs text-slate-500 space-y-1">
+                  <li>• Intelligent matching algorithm</li>
+                  <li>• Proposal management system</li>
+                  <li>• Secure engagement platform</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-image">
+                <img src="https://images.unsplash.com/photo-1648135589394-6926ddf85316?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwyfHxnb3Zlcm5tZW50JTIwY29udHJhY3Rpbmd8ZW58MHx8fGJsdWV8MTc1NTM4MDIxN3ww&ixlib=rb-4.1.0&q=85&w=600" alt="Certification" className="w-full h-48 object-cover" />
+              </div>
+              <div className="p-6">
+                <h3 className="font-semibold text-lg text-slate-900 mb-2">Verified Certification</h3>
+                <p className="text-slate-600 text-sm">Earn publicly verifiable certificates that demonstrate your procurement readiness to potential partners.</p>
+                <ul className="mt-3 text-xs text-slate-500 space-y-1">
+                  <li>• Public verification system</li>
+                  <li>• PDF certificate download</li>
+                  <li>• QR code authentication</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Statistics and Impact */}
+      <section className="container section">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Driving Procurement Success</h2>
+          <p className="text-slate-600">Built in partnership with the City of San Antonio's Small Business Assurance Program</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="stat-card">
+            <div className="stat-number">8</div>
+            <div className="stat-label">Assessment Areas</div>
+            <div className="stat-desc">Comprehensive business evaluation</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">75%</div>
+            <div className="stat-label">Readiness Threshold</div>
+            <div className="stat-desc">For certificate eligibility</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">4</div>
+            <div className="stat-label">User Types</div>
+            <div className="stat-desc">Tailored experiences</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">24/7</div>
+            <div className="stat-label">Platform Access</div>
+            <div className="stat-desc">Always available</div>
+          </div>
         </div>
       </section>
     </div>
