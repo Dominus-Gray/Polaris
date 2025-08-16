@@ -56,9 +56,11 @@ body { @apply bg-slate-50 text-slate-900; }
 .hero-ctas { @apply mt-4 flex items-center gap-3; }
 .hero-img { @apply rounded-lg shadow-2xl ring-1 ring-white/10; }
 
-/* Feature cards */
+/* Feature cards with illustration backgrounds */
 .features { @apply grid grid-cols-1 md:grid-cols-3 gap-4 mt-6; }
-.card { @apply p-4 rounded-lg border bg-white shadow-sm hover:shadow-md transition; }
+.card { @apply p-0 rounded-lg border bg-white shadow-sm overflow-hidden hover:shadow-md transition; }
+.card-visual { @apply h-36 bg-cover bg-center; }
+.card-body { @apply p-4; }
 .card-title { @apply font-semibold text-slate-900; }
 .card-sub { @apply text-slate-600 text-sm; }
 
