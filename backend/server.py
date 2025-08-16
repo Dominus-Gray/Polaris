@@ -104,8 +104,71 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-app = FastAPI()
+app = FastAPI(
+    title="Polaris - Small Business Procurement Readiness Platform",
+    description="Secure platform for assessing small business procurement readiness",
+    version="1.0.0",
+    docs_url="/docs" if os.environ.get("ENVIRONMENT") == "development" else None,
+    redoc_url=None
+)
 api = APIRouter(prefix="/api")
+
+# Security Middleware
+app.add_middleware(
+    TrustedHostMiddleware, 
+    allowed_hosts=SECURITY_CONFIG["ALLOWED_HOSTS"]
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://polaris-sbap.preview.emergentagent.com", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
+# Security headers middleware
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    
+    # Remove server header
+    if "server" in response.headers:
+        del response.headers["server"]
+    
+    return response
+
+# Audit logging middleware  
+@app.middleware("http")
+async def audit_logging_middleware(request: Request, call_next):
+    start_time = time.time()
+    
+    response = await call_next(request)
+    
+    process_time = time.time() - start_time
+    
+    # Log API access for audit trail
+    log_data = {
+        "method": request.method,
+        "url": str(request.url),
+        "status_code": response.status_code,
+        "process_time": f"{process_time:.3f}s",
+        "client_ip": request.client.host,
+        "user_agent": request.headers.get("user-agent", "")
+    }
+    
+    if response.status_code >= 400:
+        log_security_event("API_ERROR", details=log_data)
+    
+    return response
 
 UPLOAD_BASE = ROOT_DIR / "uploads"
 UPLOAD_BASE.mkdir(parents=True, exist_ok=True)
