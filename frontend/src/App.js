@@ -33,6 +33,7 @@ function AuthWidget(){
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const submit = async()=>{
     if (mode === 'register' && !termsAccepted) {
@@ -40,18 +41,42 @@ function AuthWidget(){
       return;
     }
     
+    setIsSubmitting(true);
+    
     try{
       if(mode==='register'){
         await axios.post(`${API}/auth/register`, { email, password, role, terms_accepted: termsAccepted });
+        toast.success('Registration successful', { description: 'Please sign in with your credentials' });
+        setMode('login');
+      } else {
+        const { data } = await axios.post(`${API}/auth/login`, { email, password });
+        localStorage.setItem('polaris_token', data.access_token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+        const me = await axios.get(`${API}/auth/me`);
+        localStorage.setItem('polaris_me', JSON.stringify(me.data));
+        toast.success('Welcome', { description: me.data.email });
+        navigate('/home');
       }
-      const { data } = await axios.post(`${API}/auth/login`, { email, password });
-      localStorage.setItem('polaris_token', data.access_token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
-      const me = await axios.get(`${API}/auth/me`);
-      localStorage.setItem('polaris_me', JSON.stringify(me.data));
-      toast.success('Welcome', { description: me.data.email });
-      navigate('/home');
-    }catch(e){ toast.error('Auth failed', { description: e?.response?.data?.detail || e.message }); }
+    }catch(e){ 
+      let errorMessage = 'Authentication failed';
+      let errorDescription = 'Please try again';
+      
+      if (e.response?.data?.detail) {
+        if (typeof e.response.data.detail === 'string') {
+          errorDescription = e.response.data.detail;
+        } else if (Array.isArray(e.response.data.detail)) {
+          errorDescription = e.response.data.detail.map(err => {
+            if (typeof err === 'string') return err;
+            if (err.msg) return err.msg;
+            return 'Validation error';
+          }).join(', ');
+        }
+      }
+      
+      toast.error(errorMessage, { description: errorDescription });
+    }
+    
+    setIsSubmitting(false);
   };
 
   const handleGoogleAuth = () => {
@@ -69,6 +94,7 @@ function AuthWidget(){
         <button 
           className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-slate-300 rounded-md bg-white hover:bg-slate-50 transition-colors mb-4"
           onClick={handleGoogleAuth}
+          disabled={isSubmitting}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -91,12 +117,12 @@ function AuthWidget(){
         {/* Traditional Auth Form */}
         <div className="space-y-3">
           <div className="flex gap-2">
-            <select className="input flex-1" value={mode} onChange={e=>setMode(e.target.value)}>
+            <select className="input flex-1" value={mode} onChange={e=>setMode(e.target.value)} disabled={isSubmitting}>
               <option value="login">Login</option>
               <option value="register">Register</option>
             </select>
             {mode==='register' && (
-              <select className="input flex-1" value={role} onChange={e=>setRole(e.target.value)}>
+              <select className="input flex-1" value={role} onChange={e=>setRole(e.target.value)} disabled={isSubmitting}>
                 <option value="client">Client</option>
                 <option value="provider">Provider</option>
                 <option value="navigator">Navigator</option>
@@ -104,8 +130,22 @@ function AuthWidget(){
               </select>
             )}
           </div>
-          <input className="input w-full" placeholder="Email address" type="email" value={email} onChange={e=>setEmail(e.target.value)} />
-          <input className="input w-full" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+          <input 
+            className="input w-full" 
+            placeholder="Email address" 
+            type="email" 
+            value={email} 
+            onChange={e=>setEmail(e.target.value)}
+            disabled={isSubmitting}
+          />
+          <input 
+            className="input w-full" 
+            placeholder="Password" 
+            type="password" 
+            value={password} 
+            onChange={e=>setPassword(e.target.value)}
+            disabled={isSubmitting}
+          />
           
           {mode === 'register' && (
             <div className="flex items-start gap-3 p-3 bg-slate-50 rounded border">
@@ -115,6 +155,7 @@ function AuthWidget(){
                 checked={termsAccepted} 
                 onChange={e=>setTermsAccepted(e.target.checked)}
                 className="mt-1"
+                disabled={isSubmitting}
               />
               <label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed">
                 I agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>. I understand that service providers must be approved by Digital Navigators before joining the marketplace, and that my data will be protected according to NIST cybersecurity standards.
@@ -122,8 +163,12 @@ function AuthWidget(){
             </div>
           )}
           
-          <button className="btn btn-primary w-full" onClick={submit}>
-            {mode==='login' ? 'Sign In' : 'Create Account'}
+          <button 
+            className="btn btn-primary w-full" 
+            onClick={submit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Processing...' : (mode==='login' ? 'Sign In' : 'Create Account')}
           </button>
         </div>
 
