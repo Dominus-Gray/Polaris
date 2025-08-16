@@ -606,7 +606,7 @@ async def respond_to_match(request_id: str = Form(...), proposal_note: Optional[
     if not req or req.get("status") != "open":
         raise HTTPException(status_code=400, detail="Request not open")
     resp_count = await db.match_responses.count_documents({"request_id": request_id})
-    if resp_count &gt;= 5:
+    if resp_count >= 5:
         return {"ok": False, "reason": "First-5 responses have already been received"}
     existing = await db.match_responses.find_one({"request_id": request_id, "provider_user_id": current["id"]})
     if existing:
