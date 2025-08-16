@@ -595,7 +595,7 @@ async def get_eligible_for_provider(current=Depends(require_role("provider"))):
     for r in reqs:
         if r.get("area_id") in service_areas:
             b = r.get("budget") or 0
-            budget_ok = (not pmin and not pmax) or (pmin &lt;= b &lt;= (pmax or b))
+            budget_ok = (not pmin and not pmax) or (pmin <= b <= (pmax or b))
             if budget_ok:
                 out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
     return {"requests": out[:20]}
