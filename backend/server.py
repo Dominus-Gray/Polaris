@@ -629,6 +629,17 @@ async def get_eligible_for_provider(current=Depends(require_role("provider"))):
                 out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
     return {"requests": out[:20]}
 
+    pmax = prof.get("price_max") or 0
+    reqs = await db.match_requests.find({"status": "open"}).to_list(5000)
+    out = []
+    for r in reqs:
+        if r.get("area_id") in service_areas:
+            b = r.get("budget") or 0
+            budget_ok = (not pmin and not pmax) or (pmin <= b <= (pmax or b))
+            if budget_ok:
+                out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
+    return {"requests": out[:20]}
+
 @api.post("/match/respond")
 async def respond_to_match(request_id: str = Form(...), proposal_note: Optional[str] = Form(None), current=Depends(require_role("provider"))):
     req = await db.match_requests.find_one({"_id": request_id})
