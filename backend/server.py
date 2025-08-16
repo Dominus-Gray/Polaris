@@ -250,7 +250,6 @@ async def login(user: UserLogin):
     verified_user = await verify_user(user.email, user.password)
     if not verified_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
     access_token = create_access_token(data={"sub": verified_user["id"]})
     return Token(access_token=access_token)
 
@@ -496,7 +495,7 @@ async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
         logger.exception("AI call failed")
         raise HTTPException(status_code=500, detail=f"AI error: {e}")
 
-# ---------- Navigator Review & Matching (unchanged from previous refined version) ----------
+# ---------- Navigator Review & Matching ----------
 @api.get("/navigator/reviews")
 async def get_reviews(status: str = Query("pending"), current=Depends(require_role("navigator"))):
     q = {"status": status}
@@ -629,17 +628,6 @@ async def get_eligible_for_provider(current=Depends(require_role("provider"))):
                 out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
     return {"requests": out[:20]}
 
-    pmax = prof.get("price_max") or 0
-    reqs = await db.match_requests.find({"status": "open"}).to_list(5000)
-    out = []
-    for r in reqs:
-        if r.get("area_id") in service_areas:
-            b = r.get("budget") or 0
-            budget_ok = (not pmin and not pmax) or (pmin <= b <= (pmax or b))
-            if budget_ok:
-                out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
-    return {"requests": out[:20]}
-
 @api.post("/match/respond")
 async def respond_to_match(request_id: str = Form(...), proposal_note: Optional[str] = Form(None), current=Depends(require_role("provider"))):
     req = await db.match_requests.find_one({"_id": request_id})
@@ -666,6 +654,171 @@ async def list_responses(request_id: str, current=Depends(require_user)):
         raise HTTPException(status_code=403, detail="Forbidden")
     resps = await db.match_responses.find({"request_id": request_id}).to_list(100)
     return {"responses": resps}
+
+# ---------------- Agency Role &amp; Features ----------------
+class OpportunityIn(BaseModel):
+    title: str
+    agency: Optional[str] = None
+    due_date: Optional[str] = None
+    est_value: Optional[float] = None
+
+class OpportunityOut(OpportunityIn):
+    id: str
+
+AGENCY_MIN_READINESS = float(os.environ.get("AGENCY_MIN_READINESS", 50))
+
+@api.get("/agency/approved-businesses")
+async def agency_approved_businesses(current=Depends(require_role("agency"))):
+    sessions = await db.sessions.find({}).to_list(5000)
+    out = []
+    for s in sessions:
+        sid = s["_id"]
+        answers = await db.answers.find({"session_id": sid}).to_list(1000)
+        total_q = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
+        approved = 0
+        for a in answers:
+            if a.get("value") is True and a.get("evidence_ids"):
+                ev_ids = a.get("evidence_ids") or []
+                ok = await db.reviews.find_one({"session_id": sid, "area_id": a["area_id"], "question_id": a["question_id"], "evidence_id": {"$in": ev_ids}, "status": "approved"})
+                if ok:
+                    approved += 1
+        pct = round((approved / total_q) * 100, 2) if total_q else 0.0
+        if pct >= AGENCY_MIN_READINESS:
+            out.append({"id": s["_id"], "business_id": s.get("user_id"), "business_name": s.get("user_id"), "readiness": pct})
+    return {"businesses": out}
+
+@api.get("/agency/opportunities")
+async def list_opportunities(current=Depends(require_role("agency"))):
+    opps = await db.agency_opportunities.find({}).to_list(2000)
+    return {"opportunities": opps}
+
+@api.post("/agency/opportunities", response_model=OpportunityOut)
+async def upsert_opportunity(payload: OpportunityIn, current=Depends(require_role("agency"))):
+    existing = await db.agency_opportunities.find_one({"title": payload.title, "agency": payload.agency})
+    now = datetime.utcnow()
+    if existing:
+        await db.agency_opportunities.update_one({"_id": existing["_id"]}, {"$set": {**payload.dict(), "updated_at": now}})
+        doc = await db.agency_opportunities.find_one({"_id": existing["_id"]})
+        return OpportunityOut(id=doc["_id"], title=doc.get("title"), agency=doc.get("agency"), due_date=doc.get("due_date"), est_value=doc.get("est_value"))
+    oid = str(uuid.uuid4())
+    doc = {"_id": oid, "id": oid, **payload.dict(), "created_at": now, "updated_at": now}
+    await db.agency_opportunities.insert_one(doc)
+    return OpportunityOut(id=oid, title=payload.title, agency=payload.agency, due_date=payload.due_date, est_value=payload.est_value)
+
+@api.get("/agency/schedule/ics")
+async def generate_ics(business_id: str, current=Depends(require_role("agency"))):
+    dt = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    uid = str(uuid.uuid4())
+    ics = (
+        "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Polaris//EN\nBEGIN:VEVENT\n"
+        f"UID:{uid}\nDTSTAMP:{dt}\nSUMMARY:Meeting with Business {business_id}\n"
+        f"DTSTART:{dt}\nDTEND:{dt}\nDESCRIPTION:Initial meeting generated by Polaris\nEND:VEVENT\nEND:VCALENDAR"
+    )
+    return JSONResponse({"ics": ics})
+
+# ---------------- Financial Core APIs (skeleton) ----------------
+class SuccessFeeCalcIn(BaseModel):
+    contractValue: float
+    businessTier: str
+    contractType: str
+    riskLevel: str
+    platformMaturityLevel: int
+
+class SuccessFeeCalcOut(BaseModel):
+    feePercentage: float
+    feeAmount: float
+
+DEFAULT_SUCCESS_TIERS = [
+    {"max": 250000, "pct": 0.04},
+    {"max": 1000000, "pct": 0.03},
+    {"max": None, "pct": 0.02},
+]
+
+@api.post("/v1/revenue/calculate-success-fee", response_model=SuccessFeeCalcOut)
+async def calc_success_fee(payload: SuccessFeeCalcIn, current=Depends(require_user)):
+    v = payload.contractValue
+    pct = 0.03
+    for tier in DEFAULT_SUCCESS_TIERS:
+        if tier["max"] is None or v <= tier["max"]:
+            pct = tier["pct"]
+            break
+    if payload.riskLevel == "high":
+        pct += 0.005
+    elif payload.riskLevel == "low":
+        pct -= 0.002
+    pct = max(0.01, min(pct, 0.06))
+    fee = round(v * pct, 2)
+    return SuccessFeeCalcOut(feePercentage=round(pct * 100, 2), feeAmount=fee)
+
+class PremiumPaymentIn(BaseModel):
+    business_id: str
+    tier: str = "base"
+    amount: float = 1500.0
+
+@api.post("/v1/revenue/process-premium-payment")
+async def premium_payment(payload: PremiumPaymentIn, current=Depends(require_user)):
+    rid = str(uuid.uuid4())
+    tx = {
+        "_id": rid,
+        "id": rid,
+        "business_id": payload.business_id,
+        "transaction_type": "premium_service",
+        "amount": payload.amount,
+        "currency": "USD",
+        "status": "pending",
+        "created_at": datetime.utcnow(),
+    }
+    await db.revenue_transactions.insert_one(tx)
+    return {"ok": True, "transaction_id": rid}
+
+class MarketplaceTxIn(BaseModel):
+    request_id: str
+    service_provider_id: str
+    service_fee: float
+
+@api.post("/v1/revenue/marketplace-transaction")
+async def marketplace_tx(payload: MarketplaceTxIn, current=Depends(require_user)):
+    pct = 0.06
+    if payload.service_fee <= 10000:
+        pct = 0.08
+    elif payload.service_fee > 50000:
+        pct = 0.05
+    fee = round(payload.service_fee * pct, 2)
+    rid = str(uuid.uuid4())
+    tx = {
+        "_id": rid,
+        "id": rid,
+        "transaction_type": "marketplace_fee",
+        "amount": fee,
+        "currency": "USD",
+        "status": "pending",
+        "created_at": datetime.utcnow(),
+        "metadata": {
+            "request_id": payload.request_id,
+            "service_provider_id": payload.service_provider_id,
+            "service_fee": payload.service_fee,
+            "pct": pct,
+        },
+    }
+    await db.revenue_transactions.insert_one(tx)
+    return {"ok": True, "transaction_id": rid, "fee": fee}
+
+@api.get("/v1/revenue/dashboard/{stakeholder_type}")
+async def revenue_dashboard(stakeholder_type: str, current=Depends(require_user)):
+    agg = await db.revenue_transactions.aggregate([
+        {"$group": {"_id": "$transaction_type", "amount": {"$sum": "$amount"}, "count": {"$sum": 1}}}
+    ]).to_list(100)
+    return {"totals": agg, "stakeholder": stakeholder_type}
+
+@api.get("/v1/analytics/revenue-forecast")
+async def revenue_forecast(current=Depends(require_user)):
+    cutoff = datetime.utcnow() - timedelta(days=30)
+    agg = await db.revenue_transactions.aggregate([
+        {"$match": {"created_at": {"$gte": cutoff}}},
+        {"$group": {"_id": None, "amount": {"$sum": "$amount"}}},
+    ]).to_list(1)
+    m = agg[0]["amount"] if agg else 0
+    return {"monthly": m, "annualized": round(m * 12, 2)}
 
 # Include router
 app.include_router(api)
