@@ -188,7 +188,7 @@ def qs(items: List[Dict]) -> List[Dict]:
 
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
-        {"id": "area1", "title": "Business Formation &amp; Registration", "questions": qs([
+        {"id": "area1", "title": "Business Formation & Registration", "questions": qs([
             {"id": "q1", "text": "Upload your City/County vendor registration confirmation or screenshot (no PII)."},
             {"id": "q2", "text": "Provide your entity formation certificate or assumed name certificate (redactions allowed)."},
             {"id": "q3", "text": "Upload your current business license/permit list (document listing license names &amp; IDs only)."},
