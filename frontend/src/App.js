@@ -131,6 +131,32 @@ function DeliverablesHint({ sessionId, area, q }){
     } catch (e) { setMsg("AI unavailable."); }
     finally { setLoading(false); }
   };
+function AIResources({ area, q }){
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const load = async ()=>{
+    try{
+      setLoading(true);
+      const { data } = await axios.post(`${API}/ai/resources`, { area_id: area.id, question_id: q.id, question_text: q.text, locality: 'San Antonio, TX', count: 3 });
+      setItems(data.resources||[]);
+    }catch(e){ setItems([]); }
+    finally{ setLoading(false); }
+  };
+  useEffect(()=>{ load(); }, [area.id, q.id]);
+  return (
+    <div>
+      <div className="text-sm mb-1">Free support resources (San Antonio & online)</div>
+      {loading && <div className="text-xs text-slate-500">Finding resources…</div>}
+      <ul className="list-disc pl-5 text-sm">
+        {items.map((r,i)=> (
+          <li key={i}><a className="link" href={r.url} target="_blank" rel="noreferrer">{r.name}</a> <span className="text-xs text-slate-500">({r.source_type}, {r.locality})</span><div className="text-xs">{r.summary}</div></li>
+        ))}
+      </ul>
+      <button className="btn mt-2" onClick={load} disabled={loading}>{loading? 'Refreshing…' : 'Refresh resources'}</button>
+    </div>
+  );
+}
+
   return (
     <div className="mt-2">
       <button className="btn" onClick={get} disabled={loading}>{loading ? 'Thinking…' : 'Deliverables (AI)'}</button>
