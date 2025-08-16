@@ -113,7 +113,7 @@ function AuthBar({ auth }) {
       </select>
       <input className="input" placeholder="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
       <input className="input" placeholder="password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-      {mode==='register' && (<select className="input" value={role} onChange={(e)=>setRole(e.target.value)}><option value="client">client</option><option value="navigator">navigator</option><option value="provider">provider</option></select>)}
+      {mode==='register' && (<select className="input" value={role} onChange={(e)=>setRole(e.target.value)}><option value="client">client</option><option value="navigator">navigator</option><option value="provider">provider</option><option value="agency">agency</option></select>)}
       <button className="btn btn-primary" onClick={async()=>{ try{ if(mode==='login') await auth.login(email,password); else await auth.register(email,password,role); const profile = JSON.parse(localStorage.getItem('polaris_me') || '{}'); if (profile?.role === 'navigator') navigate('/navigator'); else if (profile?.role === 'provider') navigate('/provider'); else if (profile?.role === 'client') navigate('/assessment'); else navigate('/assessment'); }catch(e){ const msg = e?.response?.data?.detail || e.message; toast.error("Auth failed", { description: msg.includes('Invalid credentials') ? 'No account found. Please switch to Register.' : msg }); } }}>{mode==='login'? 'Sign in':'Create account'}</button>
     </div>
   );
