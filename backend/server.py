@@ -856,11 +856,8 @@ class MarketplaceTxIn(BaseModel):
 
 @api.post("/v1/revenue/marketplace-transaction")
 async def marketplace_tx(payload: MarketplaceTxIn, current=Depends(require_user)):
-    pct = 0.06
-    if payload.service_fee <= 10000:
-        pct = 0.08
-    elif payload.service_fee > 50000:
-        pct = 0.05
+    # Flat 5% marketplace fee per updated policy
+    pct = 0.05
     fee = round(payload.service_fee * pct, 2)
     rid = str(uuid.uuid4())
     tx = {"_id": rid, "id": rid, "transaction_type": "marketplace_fee", "amount": fee, "currency": "USD", "status": "pending", "created_at": datetime.utcnow(), "metadata": {"request_id": payload.request_id, "service_provider_id": payload.service_provider_id, "service_fee": payload.service_fee, "pct": pct}}
