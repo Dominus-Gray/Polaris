@@ -85,5 +85,6 @@ body { @apply bg-slate-50 text-slate-900; }
 .btn-sm { @apply px-2 py-1 text-xs; }
 
 /* Form validation */
-.input.border-red-500 { @apply border-red-500 focus:border-red-500 focus:ring-red-200; }
+.input.border-red-500 { border-color: #ef4444 !important; }
+.input.border-red-500:focus { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
 .error-message { @apply text-red-500 text-xs mt-1; }
