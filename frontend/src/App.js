@@ -299,6 +299,13 @@ function MatchingPage(){
   const [requestId, setRequestId] = useState('');
   const [matches, setMatches] = useState([]);
   const createReq = async()=>{
+  useEffect(()=>{
+    const params = new URLSearchParams(location.search);
+    const area = params.get('area_id');
+    const desc = params.get('desc');
+    if (area || desc) setReq(prev=>({ ...prev, area_id: area || prev.area_id, description: desc || prev.description }));
+  }, [location.search]);
+
     try{
       const payload = { ...req, budget: Number(req.budget) };
       const {data} = await axios.post(`${API}/match/request`, payload);
