@@ -776,6 +776,239 @@ function BusinessProfileForm(){
     <div className="container max-w-4xl mt-6">
       <h2 className="text-xl font-semibold mb-1">Business Profile</h2>
       <p className="text-sm text-slate-600 mb-4">Complete these details to unlock your personalized dashboard.</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Company Name */}
+        <div>
+          <input 
+            className={`input ${errors.company_name ? 'border-red-500' : ''}`} 
+            placeholder="Company Name *" 
+            value={form.company_name} 
+            onChange={e=>handleFieldChange('company_name', e.target.value)} 
+          />
+          {errors.company_name && <div className="error-message">{errors.company_name}</div>}
+        </div>
+
+        {/* Legal Entity Type */}
+        <div>
+          <select 
+            className={`input ${errors.legal_entity_type ? 'border-red-500' : ''}`} 
+            value={form.legal_entity_type} 
+            onChange={e=>handleFieldChange('legal_entity_type', e.target.value)}
+          >
+            <option value="">Select Legal Entity Type *</option>
+            {dropdownOptions.legal_entity_type.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.legal_entity_type && <div className="error-message">{errors.legal_entity_type}</div>}
+        </div>
+
+        {/* Tax ID */}
+        <div>
+          <input 
+            className={`input ${errors.tax_id ? 'border-red-500' : ''}`} 
+            placeholder="Federal Tax ID (EIN) *" 
+            value={form.tax_id} 
+            onChange={e=>handleFieldChange('tax_id', e.target.value)} 
+          />
+          {errors.tax_id && <div className="error-message">{errors.tax_id}</div>}
+        </div>
+
+        {/* Industry */}
+        <div>
+          <select 
+            className={`input ${errors.industry ? 'border-red-500' : ''}`} 
+            value={form.industry} 
+            onChange={e=>handleFieldChange('industry', e.target.value)}
+          >
+            <option value="">Select Industry *</option>
+            {dropdownOptions.industry.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.industry && <div className="error-message">{errors.industry}</div>}
+        </div>
+
+        {/* Registered Address */}
+        <div className="md:col-span-2">
+          <input 
+            className={`input ${errors.registered_address ? 'border-red-500' : ''}`} 
+            placeholder="Registered Business Address *" 
+            value={form.registered_address} 
+            onChange={e=>handleFieldChange('registered_address', e.target.value)} 
+          />
+          {errors.registered_address && <div className="error-message">{errors.registered_address}</div>}
+        </div>
+
+        {/* Mailing Address */}
+        <div className="md:col-span-2">
+          <input 
+            className={`input ${errors.mailing_address ? 'border-red-500' : ''}`} 
+            placeholder="Mailing Address *" 
+            value={form.mailing_address} 
+            onChange={e=>handleFieldChange('mailing_address', e.target.value)} 
+          />
+          {errors.mailing_address && <div className="error-message">{errors.mailing_address}</div>}
+        </div>
+
+        {/* Website URL */}
+        <div>
+          <input 
+            className={`input ${errors.website_url ? 'border-red-500' : ''}`} 
+            placeholder="Website URL (optional)" 
+            value={form.website_url} 
+            onChange={e=>handleFieldChange('website_url', e.target.value)} 
+          />
+          {errors.website_url && <div className="error-message">{errors.website_url}</div>}
+        </div>
+
+        {/* Primary Products/Services */}
+        <div>
+          <input 
+            className={`input ${errors.primary_products_services ? 'border-red-500' : ''}`} 
+            placeholder="Primary Products/Services *" 
+            value={form.primary_products_services} 
+            onChange={e=>handleFieldChange('primary_products_services', e.target.value)} 
+          />
+          {errors.primary_products_services && <div className="error-message">{errors.primary_products_services}</div>}
+        </div>
+
+        {/* Revenue Range */}
+        <div>
+          <select 
+            className={`input ${errors.revenue_range ? 'border-red-500' : ''}`} 
+            value={form.revenue_range} 
+            onChange={e=>handleFieldChange('revenue_range', e.target.value)}
+          >
+            <option value="">Select Annual Revenue *</option>
+            {dropdownOptions.revenue_range.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.revenue_range && <div className="error-message">{errors.revenue_range}</div>}
+        </div>
+
+        {/* Employee Count */}
+        <div>
+          <select 
+            className={`input ${errors.employees_count ? 'border-red-500' : ''}`} 
+            value={form.employees_count} 
+            onChange={e=>handleFieldChange('employees_count', e.target.value)}
+          >
+            <option value="">Select Employee Count *</option>
+            {dropdownOptions.employees_count.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.employees_count && <div className="error-message">{errors.employees_count}</div>}
+        </div>
+
+        {/* Year Founded */}
+        <div>
+          <input 
+            className={`input ${errors.year_founded ? 'border-red-500' : ''}`} 
+            placeholder="Year Founded (optional)" 
+            value={form.year_founded} 
+            onChange={e=>handleFieldChange('year_founded', e.target.value)} 
+          />
+          {errors.year_founded && <div className="error-message">{errors.year_founded}</div>}
+        </div>
+
+        {/* Ownership Structure */}
+        <div>
+          <select 
+            className={`input ${errors.ownership_structure ? 'border-red-500' : ''}`} 
+            value={form.ownership_structure} 
+            onChange={e=>handleFieldChange('ownership_structure', e.target.value)}
+          >
+            <option value="">Select Ownership Structure *</option>
+            {dropdownOptions.ownership_structure.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.ownership_structure && <div className="error-message">{errors.ownership_structure}</div>}
+        </div>
+
+        {/* Contact Information Section */}
+        <div className="md:col-span-2 mt-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Primary Contact Information</h3>
+        </div>
+
+        {/* Contact Name */}
+        <div>
+          <input 
+            className={`input ${errors.contact_name ? 'border-red-500' : ''}`} 
+            placeholder="Contact Name *" 
+            value={form.contact_name} 
+            onChange={e=>handleFieldChange('contact_name', e.target.value)} 
+          />
+          {errors.contact_name && <div className="error-message">{errors.contact_name}</div>}
+        </div>
+
+        {/* Contact Title */}
+        <div>
+          <select 
+            className={`input ${errors.contact_title ? 'border-red-500' : ''}`} 
+            value={form.contact_title} 
+            onChange={e=>handleFieldChange('contact_title', e.target.value)}
+          >
+            <option value="">Select Title *</option>
+            {dropdownOptions.contact_title.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.contact_title && <div className="error-message">{errors.contact_title}</div>}
+        </div>
+
+        {/* Contact Email */}
+        <div>
+          <input 
+            className={`input ${errors.contact_email ? 'border-red-500' : ''}`} 
+            placeholder="Contact Email *" 
+            type="email"
+            value={form.contact_email} 
+            onChange={e=>handleFieldChange('contact_email', e.target.value)} 
+          />
+          {errors.contact_email && <div className="error-message">{errors.contact_email}</div>}
+        </div>
+
+        {/* Contact Phone */}
+        <div>
+          <input 
+            className={`input ${errors.contact_phone ? 'border-red-500' : ''}`} 
+            placeholder="Contact Phone *" 
+            value={form.contact_phone} 
+            onChange={e=>handleFieldChange('contact_phone', e.target.value)} 
+          />
+          {errors.contact_phone && <div className="error-message">{errors.contact_phone}</div>}
+        </div>
+
+        {/* Logo Upload Section */}
+        <div className="md:col-span-2 mt-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Company Logo (Optional)</h3>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={e=>setLogo(e.target.files?.[0]||null)} 
+            className="input"
+          />
+          <p className="text-xs text-slate-500 mt-1">Upload your company logo for a professional profile appearance.</p>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="mt-8 flex justify-end">
+        <button 
+          className="btn btn-primary px-8"
+          onClick={save}
+          disabled={isValidating}
+        >
+          {isValidating ? 'Saving...' : 'Save Profile'}
+        </button>
+      </div>
+    </div>
+  );
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <input 
