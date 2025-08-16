@@ -221,7 +221,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q2", "text": "Upload a CRM pipeline screenshot with test data (no real customer names)."},
             {"id": "q3", "text": "Provide your proposal template (PDF or DOC template)."},
         ])},
-        {"id": "area7", "title": "Procurement &amp; Supply Chain", "questions": qs([
+        {"id": "area7", "title": "Procurement & Supply Chain", "questions": qs([
             {"id": "q1", "text": "Provide your approved vendor list (names/categories; no pricing)."},
             {"id": "q2", "text": "Upload your standard PO or subcontract template (if applicable)."},
             {"id": "q3", "text": "Provide your insurance certificate page showing coverage types and dates (no premiums)."},
