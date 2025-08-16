@@ -247,8 +247,8 @@ function ProviderHome(){
   return (
     <div className="container mt-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="tile"><div className="tile-title">Eligible Requests</div><div className="tile-num">{data.eligible_requests}</div><div className="tile-sub">by expertise</div></div>
-        <div className="tile"><div className="tile-title">Responses</div><div className="tile-num">{data.responses}</div><div className="tile-sub">submitted</div></div>
+        <div className="tile"><div className="tile-title">Eligible Requests</div><div className="tile-num">{String(data.eligible_requests || 0)}</div><div className="tile-sub">by expertise</div></div>
+        <div className="tile"><div className="tile-title">Responses</div><div className="tile-num">{String(data.responses || 0)}</div><div className="tile-sub">submitted</div></div>
         <div className="tile"><div className="tile-title">Profile</div><div className="tile-num">✓</div><div className="tile-sub">Complete</div></div>
       </div>
       <div className="mt-4 flex gap-2">
