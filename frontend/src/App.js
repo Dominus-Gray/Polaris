@@ -294,6 +294,7 @@ function ProviderProfilePage(){
 }
 
 function MatchingPage(){
+  const location = useLocation();
   const [req, setReq] = useState({ budget: '', payment_pref: '', timeline: '', area_id: 'area6', description: '' });
   const [requestId, setRequestId] = useState('');
   const [matches, setMatches] = useState([]);
