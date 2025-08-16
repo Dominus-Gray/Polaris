@@ -1219,20 +1219,117 @@ function ProviderProposalsPage(){
 }
 
 function Header(){
+  const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  const logout = () => {
+    localStorage.removeItem('polaris_token');
+    localStorage.removeItem('polaris_me');
+    delete axios.defaults.headers.common['Authorization'];
+    toast.success('Logged out successfully');
+    navigate('/');
+  };
+
   return (
-    <header className="header">
-      <div className="header-inner">
-        <PolarisLogo />
-        <nav className="nav">
-          {me && <Link className="link" to="/home">Home</Link>}
-          {me && me.role==='client' && <Link className="link" to="/matching">Matching</Link>}
-          {me && me.role==='provider' && <Link className="link" to="/provider/proposals">Proposals</Link>}
-          {me && me.role==='navigator' && <Link className="link" to="/navigator">Navigator</Link>}
-          {me && me.role==='agency' && <Link className="link" to="/agency">Agency</Link>}
-        </nav>
-        <div className="flex-1" />
-        {!me ? <a className="btn" href="#auth">Sign in</a> : <Link className="btn" to="/home">Dashboard</Link>}
+    <header className="professional-header">
+      <div className="header-container">
+        {/* Logo */}
+        <div className="header-logo">
+          <Link to={me ? '/home' : '/'}>
+            <PolarisLogo size={24} />
+          </Link>
+        </div>
+
+        {/* Professional Navigation */}
+        {me && (
+          <nav className="main-navigation">
+            <Link className="nav-item" to="/home">
+              <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2V7z" />
+              </svg>
+              <span>Dashboard</span>
+            </Link>
+            
+            {me.role === 'client' && (
+              <Link className="nav-item" to="/matching">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Provider Network</span>
+              </Link>
+            )}
+            
+            {me.role === 'provider' && (
+              <Link className="nav-item" to="/provider/proposals">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Proposals</span>
+              </Link>
+            )}
+            
+            {me.role === 'navigator' && (
+              <Link className="nav-item" to="/navigator">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                <span>Review Queue</span>
+              </Link>
+            )}
+            
+            {me.role === 'agency' && (
+              <Link className="nav-item" to="/agency">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span>Agency Portal</span>
+              </Link>
+            )}
+          </nav>
+        )}
+
+        {/* User Menu */}
+        <div className="header-actions">
+          {!me ? (
+            <a className="btn btn-primary" href="#auth">Sign In</a>
+          ) : (
+            <div className="user-menu-container">
+              <button 
+                className="user-menu-trigger"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+              >
+                <div className="user-avatar">
+                  <span>{me.email?.charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="user-info">
+                  <div className="user-email">{me.email}</div>
+                  <div className="user-role">{me.role}</div>
+                </div>
+                <svg className="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showUserMenu && (
+                <div className="user-menu-dropdown">
+                  <Link className="menu-item" to="/business/profile">
+                    <svg className="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Profile Settings
+                  </Link>
+                  <button className="menu-item logout-button" onClick={logout}>
+                    <svg className="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
