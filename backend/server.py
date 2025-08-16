@@ -216,7 +216,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q2", "text": "Provide your Onboarding checklist template (roles generic)."},
             {"id": "q3", "text": "Provide your EEO/Anti-Discrimination policy statement (1 page)."},
         ])},
-        {"id": "area6", "title": "Marketing &amp; Sales Enablement", "questions": qs([
+        {"id": "area6", "title": "Marketing & Sales Enablement", "questions": qs([
             {"id": "q1", "text": "Provide your Brand Guidelines (logo usage, colors, typography)."},
             {"id": "q2", "text": "Upload a CRM pipeline screenshot with test data (no real customer names)."},
             {"id": "q3", "text": "Provide your proposal template (PDF or DOC template)."},
