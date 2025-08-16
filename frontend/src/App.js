@@ -189,7 +189,7 @@ function AssessmentApp() {
   const [activeArea, setActiveArea] = useState(null);
   const [answers, setAnswers] = useState({});
   useEffect(()=>{ async function load(){ if(!sessionId) return; try{ const { data } = await axios.get(`${API}/assessment/session/${sessionId}`); const amap={}; for(const a of data.answers||[]){ if(!amap[a.area_id]) amap[a.area_id]={}; amap[a.area_id][a.question_id]={ value:a.value, evidence_ids:a.evidence_ids||[]}; } setAnswers(amap);}catch{}} load(); },[sessionId]);
-  useEffect(()=>{ if(schema &amp;&amp; !activeArea) setActiveArea(schema.areas[0]); },[schema]);
+  useEffect(()=>{ if(schema && !activeArea) setActiveArea(schema.areas[0]); },[schema]);
   const saveAnswer = async (areaId,qId,value,evidence_ids)=>{ setAnswers(prev=>({...prev,[areaId]:{...(prev[areaId]||{}),[qId]:{ value, evidence_ids:evidence_ids||[] }}})); if(!sessionId) return; await axios.post(`${API}/assessment/answers/bulk`, { session_id: sessionId, answers:[{ area_id: areaId, question_id: qId, value, evidence_ids }]}); };
   const saveAll = async ()=>{ if(!sessionId || !schema) return; const payload=[]; for(const area of schema.areas){ const amap=answers[area.id]||{}; for(const q of area.questions){ const a=amap[q.id]; if(a) payload.push({ area_id:area.id, question_id:q.id, value:a.value, evidence_ids:a.evidence_ids||[] }); } } if(payload.length){ await axios.post(`${API}/assessment/answers/bulk`, { session_id: sessionId, answers: payload }); toast.success("Progress saved"); } };
   if(!schema) return <div className="container mt-6"><div className="skel h-8 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
