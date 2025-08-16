@@ -302,6 +302,28 @@
       - working: NA
         agent: "main"
         comment: "Added AgencyDashboard with approved businesses table, opportunity CRUD (create), and ICS download stub. Added Agency link in auth bar and route /agency (role-gated)."
+  - task: "Provider Proposal Composer UI + Client Accept→Engagement"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added /provider/proposals page with note+attachments and /matching Accept flow to create engagements."
+  - task: "Landing redesign + visibility"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Restored hero with gradient background, in-page auth widget, and Why Polaris feature cards. Ensured landing renders when logged out."
 
 ## agent_communication:
   - agent: "main"
