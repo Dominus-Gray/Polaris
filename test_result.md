@@ -393,9 +393,11 @@
 
 ## test_plan:
   current_focus:
-    - "AI Deliverables now include Acceptable alternatives"
-    - "Re-enabled Navigator/Provider/Matching minimal UI"
-  stuck_tasks: []
+    - "Agency role + endpoints"
+    - "Financial core skeleton APIs"
+  stuck_tasks:
+    - "Agency role + endpoints"
+    - "Financial core skeleton APIs"
   test_all: false
   test_priority: "high_first"
 
