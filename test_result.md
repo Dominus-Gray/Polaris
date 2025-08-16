@@ -233,6 +233,39 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Agency impact dashboard fully functional. GET /api/agency/dashboard/impact returns all required metrics with numeric values: invites totals (total=1, paid=0, accepted=1), assessment_fees revenue (100.0), opportunities count (1), and readiness_buckets distribution (0_25=1, 25_50=0, 50_75=0, 75_100=0). Dashboard aggregates data correctly from agency_invitations, revenue_transactions, agency_opportunities, and calculates readiness percentages from session progress."
+  - task: "AI Resources"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: AI Resources endpoint fully implemented and working. POST /api/ai/resources with payload {area_id:'area2', question_id:'q1', question_text:'Upload a screenshot of your accounting system settings', locality:'San Antonio, TX', count:3} correctly requires authentication and responds with proper structure. Endpoint exists at server.py line 204 and handles both EMERGENT_LLM_KEY present (returns 3 AI-generated resource items) and fallback scenarios (returns 3 static reputable sources). All resource items contain required fields: name, url, summary, source_type, locality."
+  - task: "Assessment fees (volume + flat and client self-pay)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Assessment fees system fully implemented and working. Agency flow: POST /api/agency/invitations/{id}/pay correctly implements volume-based pricing (starts at $100), creates revenue_transactions entry with proper amount, and returns 'already paid' on subsequent calls. Client flow: POST /api/client/assessment/pay creates processed transaction and enables GET /api/opportunities/available to return unlock:'self_paid'. Both endpoints properly require authentication and role-based access control."
+  - task: "Certificates"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Certificate system fully implemented and working. POST /api/agency/certificates/issue {client_user_id} correctly validates readiness >= CERT_MIN_READINESS (75%), returns certificate with all required fields (id, title, agency_user_id, client_user_id, session_id, readiness_percent, issued_at). GET /api/agency/certificates lists certificates for agency. GET /api/certificates/{id} properly authorizes access for agency/client/navigator roles. All certificate endpoints implemented at server.py lines 343-372 with proper authentication and business logic."
 
 
 ## frontend:
