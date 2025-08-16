@@ -7,14 +7,29 @@ import { Toaster, toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-function PolarisLogo({ size = 22 }) {
+function PolarisLogo({ size = 22, variant = 'default' }) {
+  const logoColor = variant === 'white' ? '#ffffff' : '#1B365D';
+  const starColor = variant === 'white' ? '#ffffff' : '#4A90C2';
+  
   return (
-    <div className="flex items-center gap-2" aria-label="Polaris">
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 1 L13.8 8.2 L21 10 L13.8 11.8 L12 19 L10.2 11.8 L3 10 L10.2 8.2 Z" fill="#1B365D"/>
-        <path d="M12 5 L12.9 7.8 L15.5 8.6 L12.9 9.4 L12 12.2 L11.1 9.4 L8.5 8.6 L11.1 7.8 Z" fill="#4A90C2"/>
+    <div className={`polaris-logo-container ${variant === 'large' ? 'logo-large' : ''}`} style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        {/* North Star - Polaris */}
+        <path d="M12 2L13.09 8.26L19 7L14.91 11.09L21 12L14.74 13.09L16 19L11.91 14.91L12 21L10.91 14.74L5 16L9.09 11.91L3 12L9.26 10.91L8 5L12.09 9.09L12 2Z" fill={logoColor} />
+        {/* Constellation dots */}
+        <circle cx="6" cy="6" r="1" fill={starColor} opacity="0.6" />
+        <circle cx="18" cy="6" r="0.8" fill={starColor} opacity="0.4" />
+        <circle cx="6" cy="18" r="0.8" fill={starColor} opacity="0.4" />
+        <circle cx="18" cy="18" r="1" fill={starColor} opacity="0.6" />
+        <circle cx="4" cy="12" r="0.6" fill={starColor} opacity="0.3" />
+        <circle cx="20" cy="12" r="0.6" fill={starColor} opacity="0.3" />
       </svg>
-      <span className="font-semibold tracking-tight" style={{color:'#1B365D'}}>POLARIS</span>
+      {variant === 'large' && (
+        <div className="logo-text">
+          <span className="logo-brand">POLARIS</span>
+          <span className="logo-tagline">Procurement Readiness</span>
+        </div>
+      )}
     </div>
   );
 }
