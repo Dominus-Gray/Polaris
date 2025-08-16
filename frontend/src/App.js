@@ -1667,7 +1667,7 @@ function Landing(){
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="feature-card">
               <div className="feature-image">
-                <img src="https://images.unsplash.com/photo-1545063328-c8e3faffa16f?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=600" alt="Assessment Dashboard" className="w-full h-48 object-cover" />
+                <img src="https://images.unsplash.com/photo-1659035259667-b7ff7efe29dd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGNoZWNrbGlzdHxlbnwwfHx8Ymx1ZXwxNzU1Mzg0OTU1fDA&ixlib=rb-4.1.0&q=85&w=600" alt="Assessment Checklist" className="w-full h-48 object-cover" />
               </div>
               <div className="p-6">
                 <h3 className="font-semibold text-lg text-slate-900 mb-2">Smart Assessment System</h3>
@@ -1682,10 +1682,10 @@ function Landing(){
 
             <div className="feature-card">
               <div className="feature-image">
-                <img src="https://images.unsplash.com/photo-1477013743164-ffc3a5e556da?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=600" alt="Analytics Dashboard" className="w-full h-48 object-cover" />
+                <img src="https://images.unsplash.com/photo-1660020619062-70b16c44bf0f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGFuYWx5dGljc3xlbnwwfHx8Ymx1ZXwxNzU1Mjk0NjcyfDA&ixlib=rb-4.1.0&q=85&w=600" alt="Analytics Dashboard" className="w-full h-48 object-cover" />
               </div>
               <div className="p-6">
-                <h3 className="font-semibold text-lg text-slate-900 mb-2">Data-Driven Insights</h3>
+                <h3 className="font-semibold text-lg text-slate-900 mb-2">Readiness Analytics</h3>
                 <p className="text-slate-600 text-sm">Advanced analytics and reporting to track your procurement readiness journey and identify improvement areas.</p>
                 <ul className="mt-3 text-xs text-slate-500 space-y-1">
                   <li>• Performance analytics</li>
@@ -1697,7 +1697,7 @@ function Landing(){
 
             <div className="feature-card">
               <div className="feature-image">
-                <img src="https://images.unsplash.com/photo-1532102235608-dc8fc689c9ab?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=600" alt="Strategic Planning" className="w-full h-48 object-cover" />
+                <img src="https://images.unsplash.com/photo-1586281381264-de3d24d4fbd3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwyfHxidXNpbmVzcyUyMGNoZWNrbGlzdHxlbnwwfHx8Ymx1ZXwxNzU1Mzg0OTU1fDA&ixlib=rb-4.1.0&q=85&w=600" alt="Compliance Verification" className="w-full h-48 object-cover" />
               </div>
               <div className="p-6">
                 <h3 className="font-semibold text-lg text-slate-900 mb-2">Strategic Certification</h3>
