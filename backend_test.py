@@ -1195,6 +1195,64 @@ def main():
     else:
         results['evidence_delete_navigator'] = False
     
+    # ========== PHASE 3 TESTS (NEW) ==========
+    print("\n" + "="*60)
+    print("PHASE 3 TESTS - Agency + Financial Core Skeleton")
+    print("="*60)
+    
+    # Test 21: Auth Register Agency
+    agency_email, agency_password = test_auth_register_agency()
+    results['auth_register_agency'] = agency_email is not None
+    
+    agency_token = None
+    if agency_email and agency_password:
+        # Test 22: Auth Login Agency
+        agency_token = test_auth_login(agency_email, agency_password, "agency")
+        results['auth_login_agency'] = agency_token is not None
+        
+        if agency_token:
+            # Test 23: Auth Me Agency
+            results['auth_me_agency'] = test_auth_me(agency_token, "agency")
+    else:
+        results['auth_login_agency'] = False
+        results['auth_me_agency'] = False
+    
+    # Agency Endpoints Tests
+    if agency_token:
+        # Test 24: Agency Approved Businesses
+        results['agency_approved_businesses'] = test_agency_approved_businesses(agency_token)
+        
+        # Test 25: Agency Opportunities
+        results['agency_opportunities'] = test_agency_opportunities(agency_token)
+        
+        # Test 26: Agency Schedule ICS
+        results['agency_schedule_ics'] = test_agency_schedule_ics(agency_token)
+        
+        # Financial Core Skeleton Tests
+        # Test 27: Revenue Calculate Success Fee
+        results['revenue_calculate_success_fee'] = test_revenue_calculate_success_fee(agency_token)
+        
+        # Test 28: Revenue Process Premium Payment
+        results['revenue_process_premium_payment'] = test_revenue_process_premium_payment(agency_token)
+        
+        # Test 29: Revenue Marketplace Transaction
+        results['revenue_marketplace_transaction'] = test_revenue_marketplace_transaction(agency_token)
+        
+        # Test 30: Revenue Dashboard Agency
+        results['revenue_dashboard_agency'] = test_revenue_dashboard_agency(agency_token)
+        
+        # Test 31: Analytics Revenue Forecast
+        results['analytics_revenue_forecast'] = test_analytics_revenue_forecast(agency_token)
+    else:
+        results['agency_approved_businesses'] = False
+        results['agency_opportunities'] = False
+        results['agency_schedule_ics'] = False
+        results['revenue_calculate_success_fee'] = False
+        results['revenue_process_premium_payment'] = False
+        results['revenue_marketplace_transaction'] = False
+        results['revenue_dashboard_agency'] = False
+        results['analytics_revenue_forecast'] = False
+    
     # Summary
     print("\n" + "="*60)
     print("📊 COMPREHENSIVE TEST SUMMARY")
