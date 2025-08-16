@@ -290,32 +290,156 @@ function BusinessProfileForm(){
       <h2 className="text-xl font-semibold mb-1">Business Profile</h2>
       <p className="text-sm text-slate-600 mb-4">Complete these details to unlock your personalized dashboard.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <input className="input" placeholder="Company name" value={form.company_name} onChange={e=>setForm({...form, company_name:e.target.value})} />
-        <select className="input" value={form.legal_entity_type} onChange={e=>setForm({...form, legal_entity_type:e.target.value})}>
+        <div>
+          <input 
+            className={`input ${errors.company_name ? 'border-red-500' : ''}`} 
+            placeholder="Company name *" 
+            value={form.company_name} 
+            onChange={e=>handleFieldChange('company_name', e.target.value)} 
+          />
+          {errors.company_name && <div className="text-red-500 text-xs mt-1">{errors.company_name}</div>}
+        </div>
+        <select className="input" value={form.legal_entity_type} onChange={e=>handleFieldChange('legal_entity_type', e.target.value)}>
           <option>LLC</option><option>C-Corp</option><option>S-Corp</option><option>Partnership</option><option>Sole Proprietorship</option>
         </select>
-        <input className="input" placeholder="EIN / Tax ID" value={form.tax_id} onChange={e=>setForm({...form, tax_id:e.target.value})} />
-        <input className="input" placeholder="Registered business address" value={form.registered_address} onChange={e=>setForm({...form, registered_address:e.target.value})} />
-        <input className="input" placeholder="Mailing address" value={form.mailing_address} onChange={e=>setForm({...form, mailing_address:e.target.value})} />
-        <input className="input" placeholder="Website URL" value={form.website_url} onChange={e=>setForm({...form, website_url:e.target.value})} />
-        <input className="input" placeholder="Industry / Sector" value={form.industry} onChange={e=>setForm({...form, industry:e.target.value})} />
-        <input className="input" placeholder="Primary products / services" value={form.primary_products_services} onChange={e=>setForm({...form, primary_products_services:e.target.value})} />
-        <input className="input" placeholder="Revenue range (e.g., $0-$100k)" value={form.revenue_range} onChange={e=>setForm({...form, revenue_range:e.target.value})} />
-        <select className="input" value={form.revenue_currency} onChange={e=>setForm({...form, revenue_currency:e.target.value})}><option>USD</option><option>MXN</option><option>EUR</option></select>
-        <input className="input" placeholder="Employees (range or exact)" value={form.employees_count} onChange={e=>setForm({...form, employees_count:e.target.value})} />
-        <input className="input" placeholder="Year founded" value={form.year_founded} onChange={e=>setForm({...form, year_founded:e.target.value})} />
-        <input className="input" placeholder="Ownership structure (private/public)" value={form.ownership_structure} onChange={e=>setForm({...form, ownership_structure:e.target.value})} />
-        <input className="input" placeholder="Contact name" value={form.contact_name} onChange={e=>setForm({...form, contact_name:e.target.value})} />
-        <input className="input" placeholder="Contact title" value={form.contact_title} onChange={e=>setForm({...form, contact_title:e.target.value})} />
-        <input className="input" placeholder="Contact email" value={form.contact_email} onChange={e=>setForm({...form, contact_email:e.target.value})} />
-        <input className="input" placeholder="Contact phone" value={form.contact_phone} onChange={e=>setForm({...form, contact_phone:e.target.value})} />
-        <input className="input" placeholder="Billing contact name" value={form.billing_contact_name} onChange={e=>setForm({...form, billing_contact_name:e.target.value})} />
-        <input className="input" placeholder="Billing contact email" value={form.billing_contact_email} onChange={e=>setForm({...form, billing_contact_email:e.target.value})} />
-        <input className="input" placeholder="Billing contact phone" value={form.billing_contact_phone} onChange={e=>setForm({...form, billing_contact_phone:e.target.value})} />
-        <input className="input" placeholder="Payment methods accepted" value={form.payment_methods} onChange={e=>setForm({...form, payment_methods:e.target.value})} />
-        <input className="input" placeholder="Subscription plan (tier)" value={form.subscription_plan} onChange={e=>setForm({...form, subscription_plan:e.target.value})} />
-        <input className="input" placeholder="Subscription features (optional)" value={form.subscription_features} onChange={e=>setForm({...form, subscription_features:e.target.value})} />
-        <select className="input" value={form.billing_frequency} onChange={e=>setForm({...form, billing_frequency:e.target.value})}><option>monthly</option><option>annual</option></select>
+        <div>
+          <input 
+            className={`input ${errors.tax_id ? 'border-red-500' : ''}`} 
+            placeholder="EIN / Tax ID *" 
+            value={form.tax_id} 
+            onChange={e=>handleFieldChange('tax_id', e.target.value)} 
+          />
+          {errors.tax_id && <div className="text-red-500 text-xs mt-1">{errors.tax_id}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.registered_address ? 'border-red-500' : ''}`} 
+            placeholder="Registered business address *" 
+            value={form.registered_address} 
+            onChange={e=>handleFieldChange('registered_address', e.target.value)} 
+          />
+          {errors.registered_address && <div className="text-red-500 text-xs mt-1">{errors.registered_address}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.mailing_address ? 'border-red-500' : ''}`} 
+            placeholder="Mailing address *" 
+            value={form.mailing_address} 
+            onChange={e=>handleFieldChange('mailing_address', e.target.value)} 
+          />
+          {errors.mailing_address && <div className="text-red-500 text-xs mt-1">{errors.mailing_address}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.website_url ? 'border-red-500' : ''}`} 
+            placeholder="Website URL" 
+            value={form.website_url} 
+            onChange={e=>handleFieldChange('website_url', e.target.value)} 
+          />
+          {errors.website_url && <div className="text-red-500 text-xs mt-1">{errors.website_url}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.industry ? 'border-red-500' : ''}`} 
+            placeholder="Industry / Sector *" 
+            value={form.industry} 
+            onChange={e=>handleFieldChange('industry', e.target.value)} 
+          />
+          {errors.industry && <div className="text-red-500 text-xs mt-1">{errors.industry}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.primary_products_services ? 'border-red-500' : ''}`} 
+            placeholder="Primary products / services *" 
+            value={form.primary_products_services} 
+            onChange={e=>handleFieldChange('primary_products_services', e.target.value)} 
+          />
+          {errors.primary_products_services && <div className="text-red-500 text-xs mt-1">{errors.primary_products_services}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.revenue_range ? 'border-red-500' : ''}`} 
+            placeholder="Revenue range (e.g., $0-$100k) *" 
+            value={form.revenue_range} 
+            onChange={e=>handleFieldChange('revenue_range', e.target.value)} 
+          />
+          {errors.revenue_range && <div className="text-red-500 text-xs mt-1">{errors.revenue_range}</div>}
+        </div>
+        <select className="input" value={form.revenue_currency} onChange={e=>handleFieldChange('revenue_currency', e.target.value)}>
+          <option>USD</option><option>MXN</option><option>EUR</option>
+        </select>
+        <div>
+          <input 
+            className={`input ${errors.employees_count ? 'border-red-500' : ''}`} 
+            placeholder="Employees (range or exact) *" 
+            value={form.employees_count} 
+            onChange={e=>handleFieldChange('employees_count', e.target.value)} 
+          />
+          {errors.employees_count && <div className="text-red-500 text-xs mt-1">{errors.employees_count}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.year_founded ? 'border-red-500' : ''}`} 
+            placeholder="Year founded" 
+            value={form.year_founded} 
+            onChange={e=>handleFieldChange('year_founded', e.target.value)} 
+          />
+          {errors.year_founded && <div className="text-red-500 text-xs mt-1">{errors.year_founded}</div>}
+        </div>
+        <input className="input" placeholder="Ownership structure (private/public)" value={form.ownership_structure} onChange={e=>handleFieldChange('ownership_structure', e.target.value)} />
+        <div>
+          <input 
+            className={`input ${errors.contact_name ? 'border-red-500' : ''}`} 
+            placeholder="Contact name *" 
+            value={form.contact_name} 
+            onChange={e=>handleFieldChange('contact_name', e.target.value)} 
+          />
+          {errors.contact_name && <div className="text-red-500 text-xs mt-1">{errors.contact_name}</div>}
+        </div>
+        <input className="input" placeholder="Contact title" value={form.contact_title} onChange={e=>handleFieldChange('contact_title', e.target.value)} />
+        <div>
+          <input 
+            className={`input ${errors.contact_email ? 'border-red-500' : ''}`} 
+            placeholder="Contact email *" 
+            value={form.contact_email} 
+            onChange={e=>handleFieldChange('contact_email', e.target.value)} 
+          />
+          {errors.contact_email && <div className="text-red-500 text-xs mt-1">{errors.contact_email}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.contact_phone ? 'border-red-500' : ''}`} 
+            placeholder="Contact phone *" 
+            value={form.contact_phone} 
+            onChange={e=>handleFieldChange('contact_phone', e.target.value)} 
+          />
+          {errors.contact_phone && <div className="text-red-500 text-xs mt-1">{errors.contact_phone}</div>}
+        </div>
+        <input className="input" placeholder="Billing contact name" value={form.billing_contact_name} onChange={e=>handleFieldChange('billing_contact_name', e.target.value)} />
+        <div>
+          <input 
+            className={`input ${errors.billing_contact_email ? 'border-red-500' : ''}`} 
+            placeholder="Billing contact email" 
+            value={form.billing_contact_email} 
+            onChange={e=>handleFieldChange('billing_contact_email', e.target.value)} 
+          />
+          {errors.billing_contact_email && <div className="text-red-500 text-xs mt-1">{errors.billing_contact_email}</div>}
+        </div>
+        <div>
+          <input 
+            className={`input ${errors.billing_contact_phone ? 'border-red-500' : ''}`} 
+            placeholder="Billing contact phone" 
+            value={form.billing_contact_phone} 
+            onChange={e=>handleFieldChange('billing_contact_phone', e.target.value)} 
+          />
+          {errors.billing_contact_phone && <div className="text-red-500 text-xs mt-1">{errors.billing_contact_phone}</div>}
+        </div>
+        <input className="input" placeholder="Payment methods accepted" value={form.payment_methods} onChange={e=>handleFieldChange('payment_methods', e.target.value)} />
+        <input className="input" placeholder="Subscription plan (tier)" value={form.subscription_plan} onChange={e=>handleFieldChange('subscription_plan', e.target.value)} />
+        <input className="input" placeholder="Subscription features (optional)" value={form.subscription_features} onChange={e=>handleFieldChange('subscription_features', e.target.value)} />
+        <select className="input" value={form.billing_frequency} onChange={e=>handleFieldChange('billing_frequency', e.target.value)}>
+          <option>monthly</option><option>annual</option>
+        </select>
         <div className="col-span-1 md:col-span-2">
           <label className="text-sm font-medium">Business logo</label>
           <input type="file" className="input mt-1" onChange={e=>setLogo(e.target.files?.[0]||null)} />
