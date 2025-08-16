@@ -93,6 +93,17 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Agency tier banner working perfectly! Comprehensive testing completed: 1) Tier banner displays correctly on AgencyHome with proper gradient styling, 2) Shows 'Basic Plan' for new agency with 0 invitations, 3) Displays correct current price '$100 per invitation', 4) Shows accurate next tier information 'Volume (5+ invites = $85 each)', 5) Total invitations count displays '0' correctly, 6) All tier calculation logic working as expected based on invitation count thresholds (Basic: 0-4, Volume: 5-24, Growth: 25-99, Enterprise: 100+), 7) Banner responsive design working across desktop/tablet/mobile viewports. Volume-based pricing display fully functional and production-ready."
+  - task: "Business profile validation and client assessment flow"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js, /app/frontend/src/App.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Implemented comprehensive business profile form validation with real-time error checking, input formatting, and data quality standards. Added role-based navigation: clients redirect to /assessment after profile completion, others go to /home. Created AssessmentPage component with overview of 8 business areas. Enhanced form with regex validation patterns for email, phone, EIN, website URL, and year formats. Added visual error indicators and user-friendly error messages."
 
 ## agent_communication:
   - agent: "main"
