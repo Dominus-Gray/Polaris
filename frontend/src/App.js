@@ -161,8 +161,45 @@ function BusinessProfileForm(){
 // ---------------- Home Pages ----------------
 function ClientHome(){
   const [data, setData] = useState(null);
+  const [certificates, setCertificates] = useState([]);
   const navigate = useNavigate();
-  useEffect(()=>{ const load=async()=>{ const {data} = await axios.get(`${API}/home/client`); setData(data); }; load(); },[]);
+  useEffect(()=>{ 
+    const load=async()=>{ 
+      const {data} = await axios.get(`${API}/home/client`); 
+      setData(data); 
+      try{
+        const certs = await axios.get(`${API}/client/certificates`);
+        setCertificates(certs.data.certificates || []);
+      }catch{}
+    }; 
+    load(); 
+  },[]);
+
+  const downloadCertificate = async(certId) => {
+    try{
+      const response = await fetch(`${API}/certificates/${certId}/download`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('polaris_token')}` }
+      });
+      if(!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Polaris_Certificate_${certId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success('Certificate downloaded');
+    }catch(e){ toast.error('Download failed', { description: e.message }); }
+  };
+
+  const copyVerificationLink = async(certId) => {
+    try{
+      const link = `${window.location.origin}/verify/cert/${certId}`;
+      await navigator.clipboard.writeText(link);
+      toast.success('Verification link copied to clipboard');
+    }catch(e){ toast.error('Failed to copy link', { description: e.message }); }
+  };
+
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
   if(!data.profile_complete) return <BusinessProfileForm/>;
   return (
@@ -173,6 +210,27 @@ function ClientHome(){
         <div className="tile"><div className="tile-title">Certificate</div><div className="tile-num">{data.has_certificate? 'Yes' : 'No'}</div><div className="tile-sub">Download once issued</div></div>
         <div className="tile"><div className="tile-title">Assessment</div><div className="tile-num">→</div><div className="tile-sub">Continue</div></div>
       </div>
+      
+      {certificates.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">Your Certificates</h3>
+          <div className="space-y-2">
+            {certificates.map(cert => (
+              <div key={cert.id} className="p-4 border rounded bg-white shadow-sm flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{cert.title}</div>
+                  <div className="text-sm text-slate-600">Readiness: {cert.readiness_percent}% • Issued: {new Date(cert.issued_at).toLocaleDateString()}</div>
+                </div>
+                <div className="flex gap-2">
+                  <button className="btn btn-sm" onClick={()=>downloadCertificate(cert.id)}>Download PDF</button>
+                  <button className="btn btn-sm" onClick={()=>copyVerificationLink(cert.id)}>Copy verification link</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 flex gap-2">
         <button className="btn btn-primary" onClick={()=>navigate('/matching')}>Request a provider</button>
       </div>
