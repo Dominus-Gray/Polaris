@@ -58,15 +58,18 @@
 ##
   - task: "Certificate download and copy verification links"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Added /api/client/certificates and /api/agency/certificates endpoints for listing certificates. Updated ClientHome and AgencyHome to fetch certificates and display download/copy verification link buttons."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Certificate listing endpoints fully functional! Comprehensive testing completed: 1) GET /api/client/certificates returns proper structure with certificates array for authenticated client users, 2) GET /api/agency/certificates returns proper structure with certificates array for authenticated agency users, 3) Role-based access control working perfectly - clients denied access to agency endpoint (403), agencies denied access to client endpoint (403), navigators denied access to both listing endpoints (403), 4) Authentication required - both endpoints return 401 without valid JWT token, 5) Error handling working - users without certificates get empty array instead of errors. Regression testing confirmed existing certificate endpoints operational: POST /api/agency/certificates/issue (expected business logic validation), GET /api/certificates/{id} (individual access), GET /api/certificates/{id}/public (public verification), GET /api/certificates/{id}/download (PDF generation). All 12/12 tests passed including 4/4 critical new functionality tests."
   - task: "Agency tier banner for volume-based pricing"
     implemented: true
     working: false
