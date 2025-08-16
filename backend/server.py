@@ -662,7 +662,8 @@ async def home_navigator(current=Depends(require_role("navigator"))):
 
 @api.get("/home/agency")
 async def home_agency(current=Depends(require_role("agency"))):
-    impact = await agency_impact.__wrapped__(current=current)
+    # Call agency_impact directly
+    impact = await agency_impact(current=current)
     return impact
 
 # ---------------- Google OAuth (skeleton; requires keys) ----------------
