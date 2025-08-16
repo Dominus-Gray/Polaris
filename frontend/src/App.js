@@ -93,6 +93,85 @@ function VerifyCert(){
   );
 }
 
+function AssessmentPage(){
+  const navigate = useNavigate();
+  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  
+  // Redirect non-clients to home
+  if (!me || me.role !== 'client') {
+    return <Navigate to="/home" replace />;
+  }
+
+  return (
+    <div className="container mt-6">
+      <h2 className="text-xl font-semibold mb-3">Small Business Maturity Assessment</h2>
+      <p className="text-slate-600 mb-6">Complete your assessment to determine your business maturity and procurement readiness.</p>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center">
+            <span className="text-sm font-semibold">1</span>
+          </div>
+          <h3 className="text-lg font-semibold">Assessment Overview</h3>
+        </div>
+        <p className="text-sm text-slate-600 mb-4">
+          This assessment covers 8 key business areas to evaluate your procurement readiness. 
+          Each area focuses on concrete deliverables and evidence-based requirements.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Business Formation & Registration</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Financial Operations</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Legal & Contracting</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Technology & Cybersecurity</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Human Resources</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Marketing & Sales</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Supply Chain Management</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Quality Assurance</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-2 text-amber-800">
+          <span className="text-lg">⚠️</span>
+          <div>
+            <div className="font-medium">Assessment Coming Soon</div>
+            <div className="text-sm">The full interactive assessment is currently under development. Please check back soon or contact support for assistance.</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <button className="btn btn-primary" onClick={()=>navigate('/home')}>Return to Dashboard</button>
+        <button className="btn" onClick={()=>navigate('/matching')}>Request Provider Assistance</button>
+      </div>
+    </div>
+  );
+}
+
 // ---------------- Business Profile Form ----------------
 function BusinessProfileForm(){
   const navigate = useNavigate();
