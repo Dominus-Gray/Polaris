@@ -333,16 +333,24 @@ function AgencyDashboard(){
   const [approved, setApproved] = useState([]);
   const [opps, setOpps] = useState([]);
   const [form, setForm] = useState({ title: '', agency: '', due_date: '', est_value: '' });
-  useEffect(()=>{ const load=async()=>{
+  const [invites, setInvites] = useState([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [impact, setImpact] = useState(null);
+  const loadAll = async()=>{
     try{ const {data} = await axios.get(`${API}/agency/approved-businesses`); setApproved(data.businesses||[]);}catch{}
     try{ const {data} = await axios.get(`${API}/agency/opportunities`); setOpps(data.opportunities||[]);}catch{}
-  }; load(); },[]);
-  const saveOpp = async()=>{ try{ const payload = { ...form, est_value: form.est_value? Number(form.est_value): null }; const {data} = await axios.post(`${API}/agency/opportunities`, payload); setForm({ title:'', agency:'', due_date:'', est_value:''}); const r = await axios.get(`${API}/agency/opportunities`); setOpps(r.data.opportunities||[]); toast.success('Saved'); }catch{ toast.error('Save failed'); } };
+    try{ const {data} = await axios.get(`${API}/agency/invitations`); setInvites(data.invitations||[]);}catch{}
+    try{ const {data} = await axios.get(`${API}/agency/dashboard/impact`); setImpact(data);}catch{}
+  };
+  useEffect(()=>{ loadAll(); },[]);
+  const saveOpp = async()=>{ try{ const payload = { ...form, est_value: form.est_value? Number(form.est_value): null }; await axios.post(`${API}/agency/opportunities`, payload); setForm({ title:'', agency:'', due_date:'', est_value:''}); await loadAll(); toast.success('Saved'); }catch{ toast.error('Save failed'); } };
+  const createInvite = async()=>{ try{ await axios.post(`${API}/agency/invitations`, { invite_email: inviteEmail, amount: 100 }); setInviteEmail(''); await loadAll(); toast.success('Invite created'); }catch{ toast.error('Invite failed'); } };
+  const payInvite = async(id)=>{ try{ await axios.post(`${API}/agency/invitations/${id}/pay`); await loadAll(); toast.success('Assessment paid'); }catch{ toast.error('Payment failed'); } };
   const ics = async(biz)=>{ try{ const {data} = await axios.get(`${API}/agency/schedule/ics?business_id=${biz.id||biz.business_id}`); const blob=new Blob([data.ics||data], {type:'text/calendar'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`meeting-${(biz.name||biz.business_name||'business')}.ics`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);}catch{ toast.error('Could not generate ICS'); } };
   return (
     <div className="container mt-6">
       <h2 className="text-lg font-semibold mb-3">Agency Dashboard</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="p-4 border rounded bg-white shadow-sm">
           <div className="font-semibold mb-2">Approved Businesses</div>
           <table className="table"><thead><tr><th>Name</th><th>Readiness</th><th>Action</th></tr></thead><tbody>
@@ -366,7 +374,38 @@ function AgencyDashboard(){
             </tbody></table>
           </div>
         </div>
+        <div className="p-4 border rounded bg-white shadow-sm">
+          <div className="font-semibold mb-2">Invitations & Payments</div>
+          <div className="flex gap-2 mb-2">
+            <input className="input" placeholder="Small business email" value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} />
+            <button className="btn btn-primary" onClick={createInvite}>Create $100 Invite</button>
+          </div>
+          <table className="table"><thead><tr><th>Email</th><th>Status</th><th>Amount</th><th>Actions</th></tr></thead><tbody>
+            {invites.map(i => (<tr key={i.id}><td>{i.invite_email}</td><td>{i.status}</td><td>${i.amount}</td><td>{i.status==='pending' && <button className="btn" onClick={()=>payInvite(i.id)}>Mark Paid</button>}</td></tr>))}
+          </tbody></table>
+        </div>
       </div>
+
+      {impact && (
+        <div className="mt-6 p-4 border rounded bg-white shadow-sm">
+          <div className="font-semibold mb-3">Impact Overview</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+            <div className="kpi"><div className="kpi-num">{impact.invites.total}</div><div className="kpi-label">Invites</div></div>
+            <div className="kpi"><div className="kpi-num">{impact.invites.paid}</div><div className="kpi-label">Paid</div></div>
+            <div className="kpi"><div className="kpi-num">{impact.invites.accepted}</div><div className="kpi-label">Accepted</div></div>
+            <div className="kpi"><div className="kpi-num">${impact.revenue.assessment_fees}</div><div className="kpi-label">Assessment revenue</div></div>
+          </div>
+          <div className="mt-4">
+            <div className="text-sm font-semibold mb-2">Readiness distribution</div>
+            <ul className="list-disc pl-5 text-sm">
+              <li>0-25%: {impact.readiness_buckets['0_25']}</li>
+              <li>25-50%: {impact.readiness_buckets['25_50']}</li>
+              <li>50-75%: {impact.readiness_buckets['50_75']}</li>
+              <li>75-100%: {impact.readiness_buckets['75_100']}</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
