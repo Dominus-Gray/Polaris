@@ -1,19 +1,95 @@
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends, Header, Query, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field, EmailStr, HttpUrl, validator
+from typing import List, Dict, Optional, Any
+from datetime import datetime, timedelta
+from passlib.hash import pbkdf2_sha256
+from jose import jwt, JWTError
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr, HttpUrl
-from typing import List, Dict, Optional
 import uuid
-from datetime import datetime, timedelta
 import aiofiles
-from jose import jwt, JWTError
-from passlib.hash import pbkdf2_sha256
 import requests
+import hashlib
+import secrets
+import re
+from functools import wraps
+import time
+
+# Security Configuration
+SECURITY_CONFIG = {
+    "JWT_SECRET_KEY": os.environ.get("JWT_SECRET_KEY", secrets.token_urlsafe(32)),
+    "JWT_ALGORITHM": "HS256", 
+    "JWT_EXPIRE_MINUTES": 60,
+    "PASSWORD_MIN_LENGTH": 8,
+    "MAX_LOGIN_ATTEMPTS": 5,
+    "LOGIN_LOCKOUT_MINUTES": 15,
+    "REQUIRE_HTTPS": os.environ.get("REQUIRE_HTTPS", "true").lower() == "true",
+    "ALLOWED_HOSTS": os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,*.emergentagent.com").split(",")
+}
+
+# Security logging
+security_logger = logging.getLogger("polaris.security")
+security_logger.setLevel(logging.INFO)
+
+def log_security_event(event_type: str, user_id: str = None, details: dict = None):
+    """Log security events for auditing"""
+    event_data = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "event_type": event_type,
+        "user_id": user_id,
+        "details": details or {}
+    }
+    security_logger.info(f"SECURITY_EVENT: {event_data}")
+
+def validate_password_strength(password: str) -> bool:
+    """Validate password meets security requirements"""
+    if len(password) < SECURITY_CONFIG["PASSWORD_MIN_LENGTH"]:
+        return False
+    if not re.search(r"[A-Z]", password):  # Uppercase letter
+        return False
+    if not re.search(r"[a-z]", password):  # Lowercase letter  
+        return False
+    if not re.search(r"\d", password):     # Digit
+        return False
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?]", password):  # Special char
+        return False
+    return True
+
+def rate_limit(max_requests: int, window_seconds: int):
+    """Rate limiting decorator"""
+    def decorator(func):
+        requests_count = {}
+        
+        @wraps(func)
+        async def wrapper(request: Request, *args, **kwargs):
+            client_ip = request.client.host
+            current_time = time.time()
+            
+            # Clean old entries
+            requests_count[client_ip] = [
+                req_time for req_time in requests_count.get(client_ip, [])
+                if current_time - req_time < window_seconds
+            ]
+            
+            # Check rate limit
+            if len(requests_count.get(client_ip, [])) >= max_requests:
+                log_security_event("RATE_LIMIT_EXCEEDED", details={"ip": client_ip})
+                raise HTTPException(status_code=429, detail="Rate limit exceeded")
+            
+            # Add current request
+            requests_count.setdefault(client_ip, []).append(current_time)
+            
+            return await func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 try:
     from emergentintegrations.llm.chat import LlmChat, UserMessage
