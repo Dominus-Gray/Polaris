@@ -32,11 +32,17 @@ function AuthWidget(){
   const [role, setRole] = useState('client');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   
   const submit = async()=>{
+    if (mode === 'register' && !termsAccepted) {
+      toast.error('Please accept the Terms of Service and Privacy Policy to continue');
+      return;
+    }
+    
     try{
       if(mode==='register'){
-        await axios.post(`${API}/auth/register`, { email, password, role });
+        await axios.post(`${API}/auth/register`, { email, password, role, terms_accepted: termsAccepted });
       }
       const { data } = await axios.post(`${API}/auth/login`, { email, password });
       localStorage.setItem('polaris_token', data.access_token);
@@ -100,13 +106,29 @@ function AuthWidget(){
           </div>
           <input className="input w-full" placeholder="Email address" type="email" value={email} onChange={e=>setEmail(e.target.value)} />
           <input className="input w-full" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+          
+          {mode === 'register' && (
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded border">
+              <input 
+                type="checkbox" 
+                id="terms" 
+                checked={termsAccepted} 
+                onChange={e=>setTermsAccepted(e.target.checked)}
+                className="mt-1"
+              />
+              <label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed">
+                I agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>. I understand that service providers must be approved by Digital Navigators before joining the marketplace, and that my data will be protected according to NIST cybersecurity standards.
+              </label>
+            </div>
+          )}
+          
           <button className="btn btn-primary w-full" onClick={submit}>
             {mode==='login' ? 'Sign In' : 'Create Account'}
           </button>
         </div>
 
         <p className="text-xs text-slate-500 text-center mt-4">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
+          Secure platform with enterprise-grade data protection and compliance standards.
         </p>
       </div>
     </div>
