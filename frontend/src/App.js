@@ -306,7 +306,7 @@ function MatchingPage(){
             <option value="area5">People & HR</option>
             <option value="area6">Marketing & Sales</option>
             <option value="area7">Procurement & Supply Chain</option>
-            <option value="area8">Quality &amp; Continuous Improvement</option>
+            <option value="area8">Quality & Continuous Improvement</option>
           </select>
           <input className="input" placeholder="Short description" value={req.description} onChange={e=>setReq({...req, description:e.target.value})} />
         </div>
