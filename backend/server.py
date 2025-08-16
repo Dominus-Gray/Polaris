@@ -234,7 +234,7 @@ async def create_user(email: str, password: str, role: str) -> dict:
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     uid = str(uuid.uuid4())
-    user_doc = {"_id": uid, "id": uid, "email": email.lower(), "password_hash": pbkdf2_sha256.hash(password), "role": role, "created_at": datetime.utcnow()}
+    user_doc = {"_id": uid, "id": uid, "email": email.lower(), "hashed_password": pbkdf2_sha256.hash(password), "role": role, "created_at": datetime.utcnow()}
     await db.users.insert_one(user_doc)
     return user_doc
 
