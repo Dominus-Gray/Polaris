@@ -135,7 +135,7 @@ function BrandHero() {
         <div className="flex-1 text-white">
           <PolarisLogo size={28} />
           <h1 className="hero-title mt-2">Your North Star for Procurement Readiness</h1>
-          <p className="hero-sub">Polaris streamlines small business maturity to prepare for opportunity readiness — all in one place</p>
+          <p className="hero-sub">Polaris streamlines small business maturity to prepare for opportunity</p>
           <div className="hero-ctas">
             <button className="btn btn-primary" onClick={()=>scrollToAuth('register')}>Create an account</button>
             <button className="btn" onClick={()=>scrollToAuth('login')}>Sign in</button>
