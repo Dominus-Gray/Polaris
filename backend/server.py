@@ -195,7 +195,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q4", "text": "Provide an Operating Agreement or Governance Policy (signature page acceptable; redact sensitive details)."},
         ])},
         {"id": "area2", "title": "Financial Operations (Non-sensitive)", "questions": qs([
-            {"id": "q1", "text": "Upload a screenshot of your accounting system settings page (name &amp; fiscal year, no balances)."},
+            {"id": "q1", "text": "Upload a screenshot of your accounting system settings page (name & fiscal year, no balances)."},
             {"id": "q2", "text": "Provide your Financial Policies document (spend approvals, reimbursement, card usage)."},
             {"id": "q3", "text": "Provide a sample invoice template with dummy data (no customer info)."},
             {"id": "q4", "text": "Provide a Month-End Close checklist (template)."},
