@@ -282,15 +282,18 @@
         comment: "✅ COMPREHENSIVE UI TESTING PASSED: Tested across Mobile (375x667), Tablet (768x1024), and Desktop (1280x800) viewports. Hero section displays correct subtitle 'Polaris streamlines small business maturity to prepare for opportunity'. Hero CTAs working: 'Create an account' (primary with white text on blue background) and 'Sign in' (secondary with correct blue text color rgb(27, 54, 93) = #1B365D). Header CTAs visible when logged out. Hero 'Sign in' click correctly scrolls to auth widget and sets login mode. Auth submit button shows 'Sign in' text. No overlaps detected, all content fits within viewports. Minor: Header 'Sign in' button color rgb(15, 23, 42) slightly darker than specified #1B365D but functional. 6 screenshots captured successfully."
   - task: "Sensitive-safe badge + re-enable nav routes"
     implemented: true
-    working: NA
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Added Sensitive-safe inline badge on each question and re-enabled Navigator/Provider/Matching routes with minimal pages."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Navigation routes working correctly. Provider/Proposals and Matching routes accessible and render proper page structures with table headers. Route-based navigation functional."
   - task: "Agency UI Dashboard"
     implemented: true
     working: NA
@@ -302,28 +305,37 @@
       - working: NA
         agent: "main"
         comment: "Added AgencyDashboard with approved businesses table, opportunity CRUD (create), and ICS download stub. Added Agency link in auth bar and route /agency (role-gated)."
+      - working: NA
+        agent: "testing"
+        comment: "Not tested - Agency role testing not included in current scope. Route implementation appears present in code."
   - task: "Provider Proposal Composer UI + Client Accept→Engagement"
     implemented: true
-    working: NA
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Added /provider/proposals page with note+attachments and /matching Accept flow to create engagements."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BACKEND FAILURES: Frontend UI structure implemented correctly but backend endpoints failing. Provider Proposals: 401 error on /api/match/eligible (auth issue), page renders with correct table headers (7 columns). Client Matching: 404 error on /api/match/request (endpoint not implemented), 500 errors on /api/home/client. Auth registration/login works but home dashboard endpoints return 500 errors preventing proper flow testing. Frontend code appears correct but backend integration broken."
   - task: "Landing redesign + visibility"
     implemented: true
-    working: NA
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Restored hero with gradient background, in-page auth widget, and Why Polaris feature cards. Ensured landing renders when logged out."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Landing page fully functional. Hero section with gradient background, correct headline 'Your North Star for Procurement Readiness', subtitle, and two CTAs ('Create an account', 'Sign in') all working. Auth widget visible on right side. 3 feature cards present in 'Why Polaris' section. Visual design and layout working correctly."
 
 ## agent_communication:
   - agent: "main"
