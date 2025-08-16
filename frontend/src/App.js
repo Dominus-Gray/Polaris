@@ -353,7 +353,8 @@ function BusinessProfileForm(){
       }
       
       // Navigate based on user role
-      if (me?.role === 'client') {
+      const currentUser = JSON.parse(localStorage.getItem('polaris_me')||'{}');
+      if (currentUser && currentUser.role === 'client') {
         navigate('/assessment');
       } else {
         navigate('/home');
