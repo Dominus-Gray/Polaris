@@ -74,3 +74,12 @@ body { @apply bg-slate-50 text-slate-900; }
 
 /* Skeleton */
 .skel { @apply animate-pulse rounded bg-slate-200; }
+
+/* Home dashboard tiles */
+.tile { @apply p-4 rounded-lg border bg-white shadow-sm; }
+.tile-title { @apply text-sm font-medium text-slate-600; }
+.tile-num { @apply text-2xl font-semibold text-slate-900 mt-1; }
+.tile-sub { @apply text-xs text-slate-500 mt-1; }
+
+/* Button sizes */
+.btn-sm { @apply px-2 py-1 text-xs; }
