@@ -200,7 +200,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q3", "text": "Provide a sample invoice template with dummy data (no customer info)."},
             {"id": "q4", "text": "Provide a Month-End Close checklist (template)."},
         ])},
-        {"id": "area3", "title": "Legal &amp; Contracting", "questions": qs([
+        {"id": "area3", "title": "Legal & Contracting", "questions": qs([
             {"id": "q1", "text": "Upload your standard services agreement or terms (template)."},
             {"id": "q2", "text": "Provide your NDA template (mutual or unilateral)."},
             {"id": "q3", "text": "Provide a Contracts Register (list file with contract name, counterparty, term)."},
