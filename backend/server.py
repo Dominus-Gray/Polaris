@@ -640,7 +640,8 @@ async def home_client(current=Depends(require_role("client"))):
                     approved += 1
         readiness = round((approved/total_q)*100,2) if total_q else 0.0
     cert = await db.certificates.find_one({"client_user_id": current["id"]})
-    avail = await available_opportunities.__wrapped__(current=current)
+    # Call available_opportunities directly
+    avail = await available_opportunities(current=current)
     prof = await db.business_profiles.find_one({"user_id": current["id"]})
     return {"readiness": readiness, "has_certificate": bool(cert), "opportunities": len(avail.get("opportunities", [])), "profile_complete": bool(prof and prof.get("logo_upload_id"))}
 
@@ -648,7 +649,8 @@ async def home_client(current=Depends(require_role("client"))):
 async def home_provider(current=Depends(require_role("provider"))):
     prof = await db.business_profiles.find_one({"user_id": current["id"]})
     prov_prof = await db.provider_profiles.find_one({"user_id": current["id"]})
-    elig = await get_eligible_for_provider.__wrapped__(current=current)
+    # Call get_eligible_for_provider directly
+    elig = await get_eligible_for_provider(current=current)
     responses = await db.match_responses.count_documents({"provider_user_id": current["id"]})
     return {"eligible_requests": len(elig.get("requests", [])), "responses": responses, "profile_complete": bool(prof and prof.get("logo_upload_id") and prov_prof)}
 
