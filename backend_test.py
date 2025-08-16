@@ -1272,6 +1272,13 @@ def main():
     else:
         results['evidence_delete_navigator'] = False
     
+    # ========== REGRESSION TESTS ==========
+    print("\n" + "="*60)
+    print("REGRESSION TESTS - Existing Endpoints with Auth")
+    print("="*60)
+    
+    results['regression_with_auth'] = test_regression_with_auth()
+    
     # ========== PHASE 3 TESTS (NEW) ==========
     print("\n" + "="*60)
     print("PHASE 3 TESTS - Agency + Financial Core Skeleton")
