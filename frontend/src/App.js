@@ -301,7 +301,7 @@ function MatchingPage(){
           <select className="input" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
             <option value="area1">Business Formation & Registration</option>
             <option value="area2">Financial Operations</option>
-            <option value="area3">Legal &amp; Contracting</option>
+            <option value="area3">Legal & Contracting</option>
             <option value="area4">Technology &amp; Cybersecurity</option>
             <option value="area5">People &amp; HR</option>
             <option value="area6">Marketing &amp; Sales</option>
