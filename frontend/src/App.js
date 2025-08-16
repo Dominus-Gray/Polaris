@@ -340,7 +340,7 @@ function AgencyHome(){
             {tierInfo.next && <div className="text-blue-200 text-sm mt-1">Next tier: {tierInfo.next}</div>}
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold">{impact.invites.total}</div>
+            <div className="text-2xl font-bold">{String(impact.invites?.total || 0)}</div>
             <div className="text-blue-100 text-sm">Total invitations</div>
           </div>
         </div>
