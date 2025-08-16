@@ -205,7 +205,7 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
             {"id": "q2", "text": "Provide your NDA template (mutual or unilateral)."},
             {"id": "q3", "text": "Provide a Contracts Register (list file with contract name, counterparty, term)."},
         ])},
-        {"id": "area4", "title": "Technology &amp; Cybersecurity", "questions": qs([
+        {"id": "area4", "title": "Technology & Cybersecurity", "questions": qs([
             {"id": "q1", "text": "Provide your Backup Policy or a screenshot of backup schedule (no hostnames)."},
             {"id": "q2", "text": "Provide your MFA Policy or screenshot showing MFA enabled (no usernames/emails)."},
             {"id": "q3", "text": "Provide an Asset Inventory list (categories &amp; counts acceptable)."},
