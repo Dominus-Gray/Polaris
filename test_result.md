@@ -157,6 +157,28 @@
       - working: true
         agent: "testing"
         comment: "✅ FIXED: Added missing auth endpoints to server.py. POST /api/auth/register, POST /api/auth/login, and GET /api/auth/me now working correctly with proper JWT token handling and role validation. All auth-dependent tests now passing."
+  - task: "Agency role + endpoints"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added role=agency; endpoints: /api/agency/approved-businesses, /api/agency/opportunities (GET/POST), /api/agency/schedule/ics."
+  - task: "Financial core skeleton APIs"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added /api/v1/revenue/calculate-success-fee, /api/v1/revenue/process-premium-payment, /api/v1/revenue/marketplace-transaction, /api/v1/revenue/dashboard/{stakeholder_type}, /api/v1/analytics/revenue-forecast."
 
 
 ## frontend:
