@@ -140,6 +140,17 @@
       - working: true
         agent: "testing"
         comment: "✅ COMPREHENSIVE UI TESTING PASSED: Tested across Mobile (375x667), Tablet (768x1024), and Desktop (1280x800) viewports. Hero section displays correct subtitle 'Polaris streamlines small business maturity to prepare for opportunity'. Hero CTAs working: 'Create an account' (primary with white text on blue background) and 'Sign in' (secondary with correct blue text color rgb(27, 54, 93) = #1B365D). Header CTAs visible when logged out. Hero 'Sign in' click correctly scrolls to auth widget and sets login mode. Auth submit button shows 'Sign in' text. No overlaps detected, all content fits within viewports. Minor: Header 'Sign in' button color rgb(15, 23, 42) slightly darker than specified #1B365D but functional. 6 screenshots captured successfully."
+  - task: "Sensitive-safe badge + re-enable nav routes"
+    implemented: true
+    working: NA
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Added Sensitive-safe inline badge on each question and re-enabled Navigator/Provider/Matching routes with minimal pages."
 
 ## agent_communication:
   - agent: "main"
