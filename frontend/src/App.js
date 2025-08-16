@@ -266,8 +266,8 @@ function NavigatorHome(){
   return (
     <div className="container mt-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="tile"><div className="tile-title">Pending Reviews</div><div className="tile-num">{data.pending_reviews}</div><div className="tile-sub">awaiting review</div></div>
-        <div className="tile"><div className="tile-title">Active Engagements</div><div className="tile-num">{data.active_engagements}</div></div>
+        <div className="tile"><div className="tile-title">Pending Reviews</div><div className="tile-num">{String(data.pending_reviews || 0)}</div><div className="tile-sub">awaiting review</div></div>
+        <div className="tile"><div className="tile-title">Active Engagements</div><div className="tile-num">{String(data.active_engagements || 0)}</div></div>
         <div className="tile"><div className="tile-title">Queue</div><div className="tile-num">→</div><div className="tile-sub">Open</div></div>
       </div>
       <div className="mt-4"><Link className="btn btn-primary" to="/navigator">Open review queue</Link></div>
