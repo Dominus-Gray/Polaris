@@ -179,11 +179,9 @@ class ReviewDecisionReq(BaseModel):
     decision: str  # approved or rejected
     notes: Optional[str] = None
 
-# ---------- Assessment Schema (refined: specific, non-sensitive, non-redundant) ----------
-# Each question requests a concrete deliverable for attestation. Avoids sensitive financial data.
+# ---------- Assessment Schema ----------
 
 def qs(items: List[Dict]) -> List[Dict]:
-    # items: list of dicts with keys: id, text, requires
     return [{"id": it["id"], "text": it["text"], "requires_evidence_on_yes": it.get("requires", True)} for it in items]
 
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
@@ -279,7 +277,6 @@ async def get_session(session_id: str, current=Depends(require_user)):
     s = await db.sessions.find_one({"_id": session_id})
     if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    # Claim orphan session to current user to prevent 403s during evidence removal
     if not s.get("user_id"):
         await db.sessions.update_one({"_id": session_id}, {"$set": {"user_id": current["id"], "updated_at": datetime.utcnow()}})
         s["user_id"] = current["id"]
@@ -314,11 +311,9 @@ async def progress(session_id: str, current=Depends(require_user)):
     answers = await db.answers.find({"session_id": session_id}).to_list(1000)
     total_q = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
     answered = sum(1 for a in answers if a.get("value") is not None)
-    # Count answers with approved evidence
     approved = 0
     for a in answers:
         if a.get("value") is True and a.get("evidence_ids"):
-            # Check if there is at least one approved review for any evidence id
             ev_ids = a.get("evidence_ids") or []
             ok = await db.reviews.find_one({"session_id": session_id, "area_id": a["area_id"], "question_id": a["question_id"], "evidence_id": {"$in": ev_ids}, "status": "approved"})
             if ok:
@@ -366,29 +361,24 @@ async def delete_evidence(upload_id: str, current=Depends(require_user)):
     s = await db.sessions.find_one({"_id": up["session_id"]})
     if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    # Claim orphan session if needed
     if not s.get("user_id"):
         await db.sessions.update_one({"_id": s["_id"]}, {"$set": {"user_id": current["id"], "updated_at": datetime.utcnow()}})
         s["user_id"] = current["id"]
     if current.get("role") != "navigator" and s.get("user_id") != current.get("id"):
         raise HTTPException(status_code=403, detail="Forbidden")
-
-    # Remove file from disk
     try:
         p = Path(up["stored_path"]) if up.get("stored_path") else None
         if p and p.exists():
             p.unlink()
     except Exception:
         logger.warning("Failed to delete file from disk for %s", upload_id)
-
-    # Update DB references
     await db.uploads.delete_one({"_id": upload_id})
     await db.answers.update_many({"session_id": up["session_id"], "area_id": up["area_id"], "question_id": up["question_id"]}, {"$pull": {"evidence_ids": upload_id}})
     await db.reviews.update_many({"session_id": up["session_id"], "area_id": up["area_id"], "question_id": up["question_id"], "evidence_id": upload_id}, {"$set": {"status": "deleted", "updated_at": datetime.utcnow()}})
     return {"ok": True}
 
 # ---------- Chunked Uploads ----------
-CHUNK_SIZE = 5 * 1024 * 1024  # 5MB
+CHUNK_SIZE = 5 * 1024 * 1024
 
 @api.post("/upload/initiate", response_model=UploadInitiateResp)
 async def upload_initiate(payload: UploadInitiateReq, current=Depends(require_user)):
@@ -460,10 +450,9 @@ async def upload_complete(req: UploadCompleteReq, current=Depends(require_user))
 
     return {"ok": True, "upload_id": req.upload_id, "size": size, "review_id": review_id}
 
-# ---------- AI Deliverables (auth gated) ----------
+# ---------- AI Deliverables ----------
 @api.post("/ai/explain", response_model=AIExplainResp)
 async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
-    # Repurposed: return deliverables and brief importance (concise)
     llm_key = os.environ.get("EMERGENT_LLM_KEY")
     if not llm_key:
         return AIExplainResp(ok=False, message="AI key missing. Please set EMERGENT_LLM_KEY in backend/.env and restart backend.")
@@ -655,7 +644,7 @@ async def list_responses(request_id: str, current=Depends(require_user)):
     resps = await db.match_responses.find({"request_id": request_id}).to_list(100)
     return {"responses": resps}
 
-# ---------------- Agency Role &amp; Features ----------------
+# ---------------- Agency Role & Features ----------------
 class OpportunityIn(BaseModel):
     title: str
     agency: Optional[str] = None
@@ -689,32 +678,130 @@ async def agency_approved_businesses(current=Depends(require_role("agency"))):
 
 @api.get("/agency/opportunities")
 async def list_opportunities(current=Depends(require_role("agency"))):
-    opps = await db.agency_opportunities.find({}).to_list(2000)
+    opps = await db.agency_opportunities.find({"created_by": current["id"]}).to_list(2000)
     return {"opportunities": opps}
 
 @api.post("/agency/opportunities", response_model=OpportunityOut)
 async def upsert_opportunity(payload: OpportunityIn, current=Depends(require_role("agency"))):
-    existing = await db.agency_opportunities.find_one({"title": payload.title, "agency": payload.agency})
+    existing = await db.agency_opportunities.find_one({"title": payload.title, "agency": payload.agency, "created_by": current["id"]})
     now = datetime.utcnow()
     if existing:
         await db.agency_opportunities.update_one({"_id": existing["_id"]}, {"$set": {**payload.dict(), "updated_at": now}})
         doc = await db.agency_opportunities.find_one({"_id": existing["_id"]})
         return OpportunityOut(id=doc["_id"], title=doc.get("title"), agency=doc.get("agency"), due_date=doc.get("due_date"), est_value=doc.get("est_value"))
     oid = str(uuid.uuid4())
-    doc = {"_id": oid, "id": oid, **payload.dict(), "created_at": now, "updated_at": now}
+    doc = {"_id": oid, "id": oid, **payload.dict(), "created_at": now, "updated_at": now, "created_by": current["id"]}
     await db.agency_opportunities.insert_one(doc)
     return OpportunityOut(id=oid, title=payload.title, agency=payload.agency, due_date=payload.due_date, est_value=payload.est_value)
 
-@api.get("/agency/schedule/ics")
-async def generate_ics(business_id: str, current=Depends(require_role("agency"))):
-    dt = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-    uid = str(uuid.uuid4())
-    ics = (
-        "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Polaris//EN\nBEGIN:VEVENT\n"
-        f"UID:{uid}\nDTSTAMP:{dt}\nSUMMARY:Meeting with Business {business_id}\n"
-        f"DTSTART:{dt}\nDTEND:{dt}\nDESCRIPTION:Initial meeting generated by Polaris\nEND:VEVENT\nEND:VCALENDAR"
-    )
-    return JSONResponse({"ics": ics})
+class InviteCreateIn(BaseModel):
+    invite_email: EmailStr
+    amount: float = 100.0
+
+class InviteOut(BaseModel):
+    id: str
+    invite_email: EmailStr
+    status: str
+    amount: float
+    created_at: datetime
+    paid_at: Optional[datetime] = None
+    accepted_at: Optional[datetime] = None
+
+@api.post("/agency/invitations", response_model=InviteOut)
+async def create_invitation(payload: InviteCreateIn, current=Depends(require_role("agency"))):
+    iid = str(uuid.uuid4())
+    now = datetime.utcnow()
+    doc = {"_id": iid, "id": iid, "agency_user_id": current["id"], "invite_email": payload.invite_email.lower(), "amount": payload.amount, "status": "pending", "created_at": now, "paid_at": None, "accepted_at": None, "session_id": None}
+    await db.agency_invitations.insert_one(doc)
+    return InviteOut(id=iid, invite_email=payload.invite_email.lower(), status="pending", amount=payload.amount, created_at=now)
+
+@api.get("/agency/invitations")
+async def list_invitations(current=Depends(require_role("agency"))):
+    invs = await db.agency_invitations.find({"agency_user_id": current["id"]}).to_list(2000)
+    return {"invitations": invs}
+
+@api.post("/agency/invitations/{invitation_id}/pay")
+async def pay_invitation(invitation_id: str, current=Depends(require_role("agency"))):
+    inv = await db.agency_invitations.find_one({"_id": invitation_id, "agency_user_id": current["id"]})
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    if inv.get("status") == "paid":
+        return {"ok": True, "message": "Already paid"}
+    rid = str(uuid.uuid4())
+    tx = {"_id": rid, "id": rid, "transaction_type": "assessment_fee", "amount": inv.get("amount", 100.0), "currency": "USD", "status": "processed", "created_at": datetime.utcnow(), "metadata": {"invitation_id": invitation_id, "agency_user_id": current["id"]}}
+    await db.revenue_transactions.insert_one(tx)
+    await db.agency_invitations.update_one({"_id": invitation_id}, {"$set": {"status": "paid", "paid_at": datetime.utcnow(), "payment_transaction_id": rid}})
+    return {"ok": True, "transaction_id": rid}
+
+class AcceptInviteIn(BaseModel):
+    invitation_id: str
+
+@api.post("/agency/invitations/{invitation_id}/accept")
+async def accept_invitation(invitation_id: str, current=Depends(require_role("client"))):
+    inv = await db.agency_invitations.find_one({"_id": invitation_id})
+    if not inv or inv.get("status") != "paid":
+        raise HTTPException(status_code=400, detail="Invitation not available")
+    # Create or reuse a session for client
+    existing = await db.sessions.find_one({"user_id": current["id"]})
+    if existing:
+        sid = existing["_id"]
+    else:
+        sid = str(uuid.uuid4())
+        await db.sessions.insert_one({"_id": sid, "id": sid, "user_id": current["id"], "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()})
+    await db.agency_invitations.update_one({"_id": invitation_id}, {"$set": {"status": "accepted", "accepted_at": datetime.utcnow(), "session_id": sid, "client_user_id": current["id"]}})
+    return {"ok": True, "session_id": sid}
+
+@api.get("/opportunities/available")
+async def available_opportunities(current=Depends(require_role("client"))):
+    # Gate by accepted invitation
+    inv = await db.agency_invitations.find_one({"client_user_id": current["id"], "status": "accepted"})
+    if not inv:
+        return {"opportunities": []}
+    # opportunities created by the inviting agency
+    opps = await db.agency_opportunities.find({"created_by": inv["agency_user_id"]}).to_list(2000)
+    return {"opportunities": opps}
+
+@api.get("/agency/dashboard/impact")
+async def agency_impact(current=Depends(require_role("agency"))):
+    aid = current["id"]
+    # Invitations metrics
+    invites_total = await db.agency_invitations.count_documents({"agency_user_id": aid})
+    invites_paid = await db.agency_invitations.count_documents({"agency_user_id": aid, "status": "paid"})
+    invites_accepted = await db.agency_invitations.count_documents({"agency_user_id": aid, "status": "accepted"})
+    # Assessment fees revenue
+    agg = await db.revenue_transactions.aggregate([
+        {"$match": {"transaction_type": "assessment_fee", "metadata.agency_user_id": aid}},
+        {"$group": {"_id": None, "amount": {"$sum": "$amount"}}}
+    ]).to_list(1)
+    assessment_revenue = agg[0]["amount"] if agg else 0
+    # Opportunities count
+    opp_count = await db.agency_opportunities.count_documents({"created_by": aid})
+    # Readiness distribution among accepted invitations
+    buckets = {"0_25": 0, "25_50": 0, "50_75": 0, "75_100": 0}
+    accepted = await db.agency_invitations.find({"agency_user_id": aid, "status": "accepted"}).to_list(2000)
+    for inv in accepted:
+        sid = inv.get("session_id")
+        if not sid:
+            continue
+        answers = await db.answers.find({"session_id": sid}).to_list(1000)
+        total_q = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
+        approved = 0
+        for a in answers:
+            if a.get("value") is True and a.get("evidence_ids"):
+                ev_ids = a.get("evidence_ids") or []
+                ok = await db.reviews.find_one({"session_id": sid, "area_id": a["area_id"], "question_id": a["question_id"], "evidence_id": {"$in": ev_ids}, "status": "approved"})
+                if ok:
+                    approved += 1
+        pct = round((approved / total_q) * 100, 2) if total_q else 0.0
+        if pct < 25:
+            buckets["0_25"] += 1
+        elif pct < 50:
+            buckets["25_50"] += 1
+        elif pct < 75:
+            buckets["50_75"] += 1
+        else:
+            buckets["75_100"] += 1
+    return {"invites": {"total": invites_total, "paid": invites_paid, "accepted": invites_accepted}, "revenue": {"assessment_fees": assessment_revenue}, "opportunities": {"count": opp_count}, "readiness_buckets": buckets}
 
 # ---------------- Financial Core APIs (skeleton) ----------------
 class SuccessFeeCalcIn(BaseModel):
@@ -758,16 +845,7 @@ class PremiumPaymentIn(BaseModel):
 @api.post("/v1/revenue/process-premium-payment")
 async def premium_payment(payload: PremiumPaymentIn, current=Depends(require_user)):
     rid = str(uuid.uuid4())
-    tx = {
-        "_id": rid,
-        "id": rid,
-        "business_id": payload.business_id,
-        "transaction_type": "premium_service",
-        "amount": payload.amount,
-        "currency": "USD",
-        "status": "pending",
-        "created_at": datetime.utcnow(),
-    }
+    tx = {"_id": rid, "id": rid, "business_id": payload.business_id, "transaction_type": "premium_service", "amount": payload.amount, "currency": "USD", "status": "pending", "created_at": datetime.utcnow()}
     await db.revenue_transactions.insert_one(tx)
     return {"ok": True, "transaction_id": rid}
 
@@ -785,21 +863,7 @@ async def marketplace_tx(payload: MarketplaceTxIn, current=Depends(require_user)
         pct = 0.05
     fee = round(payload.service_fee * pct, 2)
     rid = str(uuid.uuid4())
-    tx = {
-        "_id": rid,
-        "id": rid,
-        "transaction_type": "marketplace_fee",
-        "amount": fee,
-        "currency": "USD",
-        "status": "pending",
-        "created_at": datetime.utcnow(),
-        "metadata": {
-            "request_id": payload.request_id,
-            "service_provider_id": payload.service_provider_id,
-            "service_fee": payload.service_fee,
-            "pct": pct,
-        },
-    }
+    tx = {"_id": rid, "id": rid, "transaction_type": "marketplace_fee", "amount": fee, "currency": "USD", "status": "pending", "created_at": datetime.utcnow(), "metadata": {"request_id": payload.request_id, "service_provider_id": payload.service_provider_id, "service_fee": payload.service_fee, "pct": pct}}
     await db.revenue_transactions.insert_one(tx)
     return {"ok": True, "transaction_id": rid, "fee": fee}
 
@@ -815,7 +879,7 @@ async def revenue_forecast(current=Depends(require_user)):
     cutoff = datetime.utcnow() - timedelta(days=30)
     agg = await db.revenue_transactions.aggregate([
         {"$match": {"created_at": {"$gte": cutoff}}},
-        {"$group": {"_id": None, "amount": {"$sum": "$amount"}}},
+        {"$group": {"_id": None, "amount": {"$sum": "$amount"}}}
     ]).to_list(1)
     m = agg[0]["amount"] if agg else 0
     return {"monthly": m, "annualized": round(m * 12, 2)}
