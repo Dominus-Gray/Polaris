@@ -143,6 +143,20 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: All Navigator/Provider/Matching endpoints fully functional. Provider profile upsert (POST /api/provider/profile) and get (GET /api/provider/profile/me) working with role=provider. Client match request create (POST /api/match/request) working with role=client. Get matches (GET /api/match/{request_id}/matches) returns proper match list for request owner. Provider eligible requests (GET /api/match/eligible) returns filtered requests. POST /api/match/respond respects first-5 rule and handles duplicate responses correctly."
+  - task: "Auth endpoints missing from server"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL: Auth endpoints (POST /api/auth/register, POST /api/auth/login, GET /api/auth/me) were missing from server.py despite auth helper functions being present. All tests failing with 404 Not Found."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIXED: Added missing auth endpoints to server.py. POST /api/auth/register, POST /api/auth/login, and GET /api/auth/me now working correctly with proper JWT token handling and role validation. All auth-dependent tests now passing."
 
 
 ## frontend:
