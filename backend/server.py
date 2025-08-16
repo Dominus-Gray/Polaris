@@ -179,111 +179,57 @@ class ReviewDecisionReq(BaseModel):
     decision: str  # approved or rejected
     notes: Optional[str] = None
 
-# ---------- Assessment Schema (kept generic, not branded as SBAP) ----------
+# ---------- Assessment Schema (refined: specific, non-sensitive, non-redundant) ----------
+# Each question requests a concrete deliverable for attestation. Avoids sensitive financial data.
 
-def mkqs(prefix: str, items: List[str]) -> List[Dict]:
-    qs = []
-    for i, text in enumerate(items, start=1):
-        qs.append({"id": f"q{i}", "text": text, "requires_evidence_on_yes": True if i in (1,2,3,5,7,9) else False})
-    return qs
+def qs(items: List[Dict]) -> List[Dict]:
+    # items: list of dicts with keys: id, text, requires
+    return [{"id": it["id"], "text": it["text"], "requires_evidence_on_yes": it.get("requires", True)} for it in items]
 
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
-        {"id": "area1", "title": "Business Operations", "questions": mkqs("ops", [
-            "Do you maintain a documented strategic plan?",
-            "Are standard operating procedures (SOPs) documented?",
-            "Do you track KPIs for operations?",
-            "Is there a documented risk register?",
-            "Do you conduct quarterly review meetings?",
-            "Do you have defined procurement processes?",
-            "Are roles/responsibilities documented?",
-            "Is there business continuity documentation?",
-            "Do you manage vendor performance with SLAs?",
-            "Do you maintain versioned policies?",
+        {"id": "area1", "title": "Business Formation & Registration", "questions": qs([
+            {"id": "q1", "text": "Upload your City/County vendor registration confirmation or screenshot (no PII)."},
+            {"id": "q2", "text": "Provide your entity formation certificate or assumed name certificate (redactions allowed)."},
+            {"id": "q3", "text": "Upload your current business license/permit list (document listing license names & IDs only)."},
+            {"id": "q4", "text": "Provide an Operating Agreement or Governance Policy (signature page acceptable; redact sensitive details)."},
         ])},
-        {"id": "area2", "title": "Financial Management", "questions": mkqs("fin", [
-            "Is an accounting system (e.g., QuickBooks) implemented?",
-            "Do you produce monthly financial statements?",
-            "Are taxes current and filed on time?",
-            "Is there a cash flow forecast updated monthly?",
-            "Do you perform monthly reconciliations?",
-            "Do you have spend controls/approvals?",
-            "Is there a documented budgeting process?",
-            "Do you maintain AR/AP aging reports?",
-            "Is payroll compliant and timely?",
-            "Are financial policies documented?",
+        {"id": "area2", "title": "Financial Operations (Non-sensitive)", "questions": qs([
+            {"id": "q1", "text": "Upload a screenshot of your accounting system settings page (name & fiscal year, no balances)."},
+            {"id": "q2", "text": "Provide your Financial Policies document (spend approvals, reimbursement, card usage)."},
+            {"id": "q3", "text": "Provide a sample invoice template with dummy data (no customer info)."},
+            {"id": "q4", "text": "Provide a Month-End Close checklist (template)."},
         ])},
-        {"id": "area3", "title": "Legal and Compliance", "questions": mkqs("legal", [
-            "Is your business legally registered in the relevant jurisdictions?",
-            "Do you have all required licenses and permits?",
-            "Are contracts centrally stored and reviewed?",
-            "Are NDAs/MSAs standard templates in use?",
-            "Is IP registered/managed where applicable?",
-            "Is there a compliance calendar?",
-            "Is records retention policy implemented?",
-            "Are regulatory filings tracked?",
-            "Is whistleblower policy documented?",
-            "Do you conduct annual compliance training?",
+        {"id": "area3", "title": "Legal & Contracting", "questions": qs([
+            {"id": "q1", "text": "Upload your standard services agreement or terms (template)."},
+            {"id": "q2", "text": "Provide your NDA template (mutual or unilateral)."},
+            {"id": "q3", "text": "Provide a Contracts Register (list file with contract name, counterparty, term)."},
         ])},
-        {"id": "area4", "title": "Technology and Cybersecurity", "questions": mkqs("tech", [
-            "Are backups configured and tested?",
-            "Is antivirus/EDR deployed across devices?",
-            "Is your website up to date and secure (HTTPS)?",
-            "Are admin accounts protected with MFA?",
-            "Is there a patch management process?",
-            "Are access controls role-based?",
-            "Is incident response plan documented?",
-            "Is vendor security reviewed?",
-            "Are logs monitored centrally?",
-            "Is data encrypted at rest?",
+        {"id": "area4", "title": "Technology & Cybersecurity", "questions": qs([
+            {"id": "q1", "text": "Provide your Backup Policy or a screenshot of backup schedule (no hostnames)."},
+            {"id": "q2", "text": "Provide your MFA Policy or screenshot showing MFA enabled (no usernames/emails)."},
+            {"id": "q3", "text": "Provide an Asset Inventory list (categories & counts acceptable)."},
+            {"id": "q4", "text": "Provide your Incident Response Plan (latest version)."},
         ])},
-        {"id": "area5", "title": "Human Resources", "questions": mkqs("hr", [
-            "Do you have an employee handbook?",
-            "Is payroll system set up and compliant?",
-            "Are role descriptions maintained?",
-            "Are onboarding/offboarding checklists used?",
-            "Is EEO policy implemented?",
-            "Are benefits documented and administered?",
-            "Are training records tracked?",
-            "Is workplace safety policy documented?",
-            "Is time-off policy enforced consistently?",
-            "Do you maintain signed policy acknowledgements?",
+        {"id": "area5", "title": "People & HR (Non-sensitive)", "questions": qs([
+            {"id": "q1", "text": "Upload the table of contents from your Employee Handbook (PDF page)."},
+            {"id": "q2", "text": "Provide your Onboarding checklist template (roles generic)."},
+            {"id": "q3", "text": "Provide your EEO/Anti-Discrimination policy statement (1 page)."},
         ])},
-        {"id": "area6", "title": "Marketing and Sales", "questions": mkqs("mkt", [
-            "Do you have a documented marketing plan?",
-            "Are there defined customer acquisition channels?",
-            "Do you track marketing KPIs?",
-            "Is CRM in place and used consistently?",
-            "Is website content current and accurate?",
-            "Do you maintain case studies/testimonials?",
-            "Is pricing strategy documented?",
-            "Is pipeline reviewed weekly?",
-            "Are proposals templated and versioned?",
-            "Is brand identity documented and enforced?",
+        {"id": "area6", "title": "Marketing & Sales Enablement", "questions": qs([
+            {"id": "q1", "text": "Provide your Brand Guidelines (logo usage, colors, typography)."},
+            {"id": "q2", "text": "Upload a CRM pipeline screenshot with test data (no real customer names)."},
+            {"id": "q3", "text": "Provide your proposal template (PDF or DOC template)."},
         ])},
-        {"id": "area7", "title": "Supply Chain Management", "questions": mkqs("scm", [
-            "Do you have vetted supplier list?",
-            "Are supplier contracts maintained?",
-            "Do you track delivery SLAs?",
-            "Is inventory management system in place?",
-            "Is demand planning performed?",
-            "Are supplier risks tracked?",
-            "Is returns/RMA process documented?",
-            "Are logistics KPIs reported?",
-            "Is quality at intake measured?",
-            "Are alternative suppliers identified?",
+        {"id": "area7", "title": "Procurement & Supply Chain", "questions": qs([
+            {"id": "q1", "text": "Provide your approved vendor list (names/categories; no pricing)."},
+            {"id": "q2", "text": "Upload your standard PO or subcontract template (if applicable)."},
+            {"id": "q3", "text": "Provide your Purchasing Policy (thresholds, approvals, vendor onboarding)."},
         ])},
-        {"id": "area8", "title": "Quality Assurance", "questions": mkqs("qa", [
-            "Is quality policy documented?",
-            "Are QC checklists used?",
-            "Are corrective actions tracked?",
-            "Is customer feedback incorporated?",
-            "Are processes audited periodically?",
-            "Is continuous improvement plan in place?",
-            "Are standards (e.g., ISO) referenced?",
-            "Are test records retained?",
-            "Is defect rate tracked?",
-            "Are suppliers audited for quality?",
+        {"id": "area8", "title": "Quality & Continuous Improvement", "questions": qs([
+            {"id": "q1", "text": "Provide your QC checklist template (for your service/product)."},
+            {"id": "q2", "text": "Provide your Customer Feedback form/template (survey or ticket form)."},
+            {"id": "q3", "text": "Provide your CAPA/Corrective Action log template."},
         ])},
     ]
 }
@@ -329,7 +275,6 @@ async def get_session(session_id: str, current=Depends(require_user)):
     sess = await db.sessions.find_one({"_id": session_id})
     if not sess:
         raise HTTPException(status_code=404, detail="Session not found")
-    # Claim orphan session to authenticated user (MVP fix)
     if not sess.get("user_id"):
         await db.sessions.update_one({"_id": session_id}, {"$set": {"user_id": current["id"], "claimed_at": datetime.utcnow()}})
         sess = await db.sessions.find_one({"_id": session_id})
@@ -468,7 +413,6 @@ CHUNK_SIZE_DEFAULT = 5 * 1024 * 1024
 
 @api.post("/upload/initiate", response_model=UploadInitiateResp)
 async def initiate_upload(req: UploadInitiateReq, current=Depends(require_user)):
-    # Verify session ownership
     sess = await db.sessions.find_one({"_id": req.session_id})
     if not sess or (sess.get("user_id") != current.get("id") and current.get("role") != "navigator"):
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -501,7 +445,6 @@ async def complete_upload(req: UploadCompleteReq, current=Depends(require_user))
     rec = await db.uploads.find_one({"_id": req.upload_id})
     if not rec:
         raise HTTPException(status_code=404, detail="Upload not found")
-    # Verify ownership
     sess = await db.sessions.find_one({"_id": rec.get("session_id")})
     if not sess or (sess.get("user_id") != current.get("id") and current.get("role") != "navigator"):
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -540,9 +483,10 @@ async def complete_upload(req: UploadCompleteReq, current=Depends(require_user))
 
     return {"ok": True, "upload_id": req.upload_id, "size": size, "review_id": review_id}
 
-# ---------- AI Explain (auth gated) ----------
+# ---------- AI Deliverables (auth gated) ----------
 @api.post("/ai/explain", response_model=AIExplainResp)
 async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
+    # Repurposed: return deliverables and brief importance (concise)
     llm_key = os.environ.get("EMERGENT_LLM_KEY")
     if not llm_key:
         return AIExplainResp(ok=False, message="AI key missing. Please set EMERGENT_LLM_KEY in backend/.env and restart backend.")
@@ -550,9 +494,18 @@ async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
         return AIExplainResp(ok=False, message="AI library not installed. Please install emergentintegrations.")
     provider = (req.provider or "openai").lower()
     model = req.model or "gpt-4o-mini"
-    system_message = "You are a procurement readiness coach. Be concise, specific, and action-oriented."
+    system_message = (
+        "You are a procurement readiness coach. Respond concisely. "
+        "Output two parts: 1) Deliverables: bullet list (max 3) naming specific documents/templates/screenshots that satisfy the requirement (non-sensitive). "
+        "2) Why it matters: one sentence tying to opportunity readiness. Avoid asking for financial statements or PII."
+    )
     chat = LlmChat(api_key=llm_key, session_id=req.session_id or str(uuid.uuid4()), system_message=system_message).with_model(provider, model)
-    prompt = f"Explain why this requirement matters for procurement readiness and what evidence typically satisfies it.\nArea: {req.area_id}\nQuestion: {req.question_id} {req.question_text or ''}\nContext: {req.context or {}}\nKeep it under 120 words."
+    qtext = req.question_text or ""
+    prompt = (
+        f"Area: {req.area_id}\nQuestion: {req.question_id} {qtext}\n"
+        f"Context: {req.context or {}}\n"
+        "Return format:\n- Deliverables: <3 concise bullets>\n- Why it matters: <1 sentence>"
+    )
     try:
         response = await chat.send_message(UserMessage(text=prompt))
         return AIExplainResp(ok=True, message=str(response))
@@ -560,7 +513,7 @@ async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
         logger.exception("AI call failed")
         raise HTTPException(status_code=500, detail=f"AI error: {e}")
 
-# ---------- Navigator Review ----------
+# ---------- Navigator Review & Matching (unchanged from previous refined version) ----------
 @api.get("/navigator/reviews")
 async def get_reviews(status: str = Query("pending"), current=Depends(require_role("navigator"))):
     q = {"status": status}
@@ -594,7 +547,6 @@ async def review_decision(review_id: str, payload: ReviewDecisionReq, current=De
     await db.reviews.update_one({"_id": review_id}, {"$set": {"status": payload.decision, "notes": payload.notes, "reviewer_user_id": current["id"], "updated_at": datetime.utcnow()}})
     return {"ok": True}
 
-# ---------- Provider Profiles & Matching (Phase 3 MVP) ----------
 class ProviderProfileIn(BaseModel):
     company_name: str
     service_areas: List[str]
