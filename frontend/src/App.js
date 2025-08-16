@@ -895,6 +895,7 @@ function AppShell(){
           <Route path="/business/profile" element={<BusinessProfileForm />} />
           <Route path="/matching" element={<MatchingPage />} />
           <Route path="/provider/proposals" element={<ProviderProposalsPage />} />
+          <Route path="/assessment" element={<Navigate to="/home" replace />} />
           <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
         </Routes>
       )}
