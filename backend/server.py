@@ -366,10 +366,47 @@ async def get_certificate(cert_id: str, current=Depends(require_user)):
     cert = await db.certificates.find_one({"_id": cert_id})
     if not cert:
         raise HTTPException(status_code=404, detail="Not found")
-    # Only sponsor agency, the client, or navigator can view
     if current.get("role") not in ("navigator",) and current.get("id") not in (cert.get("agency_user_id"), cert.get("client_user_id")):
         raise HTTPException(status_code=403, detail="Forbidden")
     return cert
+
+@api.get("/certificates/{cert_id}/download")
+async def download_certificate_pdf(cert_id: str, current=Depends(require_user)):
+    # Same access policy as viewing
+    cert = await db.certificates.find_one({"_id": cert_id})
+    if not cert:
+        raise HTTPException(status_code=404, detail="Not found")
+    if current.get("role") not in ("navigator",) and current.get("id") not in (cert.get("agency_user_id"), cert.get("client_user_id")):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    # Generate PDF to temp path
+    from reportlab.lib.pagesizes import LETTER
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import inch
+    tmp_path = UPLOAD_BASE / f"certificate_{cert_id}.pdf"
+    c = canvas.Canvas(str(tmp_path), pagesize=LETTER)
+    width, height = LETTER
+    # Header/branding
+    c.setFillColorRGB(0.105, 0.211, 0.365)
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(1*inch, height-1*inch, "Polaris – Small Business Maturity Assurance")
+    c.setFont("Helvetica", 11)
+    c.drawString(1*inch, height-1.3*inch, "City of San Antonio – Procurement Readiness Platform")
+    # Body
+    c.setFillColorRGB(0,0,0)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(1*inch, height-2*inch, "Certificate of Opportunity Readiness")
+    c.setFont("Helvetica", 12)
+    c.drawString(1*inch, height-2.4*inch, f"Issued to Client ID: {cert.get('client_user_id')}")
+    c.drawString(1*inch, height-2.7*inch, f"Sponsoring Agency ID: {cert.get('agency_user_id')}")
+    c.drawString(1*inch, height-3.0*inch, f"Assessment Session ID: {cert.get('session_id')}")
+    c.drawString(1*inch, height-3.3*inch, f"Readiness: {cert.get('readiness_percent')}%")
+    c.drawString(1*inch, height-3.6*inch, f"Issued at: {cert.get('issued_at')}")
+    c.setFont("Helvetica-Oblique", 10)
+    c.drawString(1*inch, height-4.1*inch, "This certificate signifies the business has met the evidence-backed readiness threshold.")
+    c.drawString(1*inch, height-4.35*inch, "Validated by the sponsoring agency within the Polaris platform.")
+    c.showPage()
+    c.save()
+    return FileResponse(str(tmp_path), media_type="application/pdf", filename=f"Polaris_Certificate_{cert_id}.pdf")
 
 # Extend impact with certificates
 @api.get("/agency/dashboard/impact")
