@@ -158,8 +158,8 @@
         agent: "testing"
         comment: "✅ FIXED: Added missing auth endpoints to server.py. POST /api/auth/register, POST /api/auth/login, and GET /api/auth/me now working correctly with proper JWT token handling and role validation. All auth-dependent tests now passing."
   - task: "Agency role + endpoints"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
@@ -174,6 +174,9 @@
       - working: false
         agent: "testing"
         comment: "❌ RE-TEST CONFIRMS: Agency endpoints still NOT IMPLEMENTED. ✅ Agency auth flow working perfectly: registration (agency_ee13dc38@test.com), login, and /api/auth/me role=agency all confirmed working. ❌ All agency endpoints return 404 Not Found: GET /api/agency/approved-businesses, POST /api/agency/opportunities, GET /api/agency/schedule/ics. Review request claimed endpoints are 'now implemented in server.py' but grep search confirms only role validation exists - no actual endpoints implemented."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Agency endpoints NOW FULLY IMPLEMENTED and working! Comprehensive testing completed: 1) GET /api/agency/opportunities returns array (initially empty), 2) POST /api/agency/opportunities creates 'IT Services RFP' with agency='CoSA', due_date='2025-09-30', est_value=250000, returns OpportunityOut with ID, 3) GET list shows created opportunity, 4) POST with same title+agency but est_value=300000 successfully updates (upsert working), 5) GET /api/agency/schedule/ics?business_id=biz123 returns JSON with 'ics' key containing valid BEGIN:VCALENDAR content, 6) GET /api/agency/approved-businesses returns businesses array (empty initially but endpoint working). All agency endpoints implemented in server.py lines 670-717 and functioning correctly with proper role-based authentication."
   - task: "Financial core skeleton APIs"
     implemented: false
     working: false
