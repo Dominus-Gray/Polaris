@@ -115,6 +115,18 @@
       - working: NA
         agent: "main"
         comment: "GET /api/assessment/session/{id} and DELETE /api/upload/{id} now claim orphan sessions to current user (if authenticated) to avoid 403 edge cases."
+  - task: "AI explain: add acceptable alternatives"
+    implemented: true
+    working: NA
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Updated system prompt and output format to include 1-2 acceptable alternatives."
+
 
 ## frontend:
   - task: "UI responsiveness and CTA behavior across breakpoints"
