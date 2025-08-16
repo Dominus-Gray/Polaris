@@ -161,7 +161,7 @@ function QuestionCard({ area, q, sessionId, saveAnswer, current }) {
           <div className="upload-box">
             <div className="text-xs mb-1">Upload supporting evidence</div>
             <input type="file" onChange={onFile} />
-            {uploadPct &gt; 0 &amp;&amp; uploadPct &lt; 100 &amp;&amp; (<div className="mt-1 text-xs">Uploading... {uploadPct}%</div>)}
+            {uploadPct > 0 && uploadPct < 100 && (<div className="mt-1 text-xs">Uploading... {uploadPct}%</div>)}
             {files?.length ? (
               <div className="mt-2">
                 <div className="text-xs font-medium mb-1">Attached</div>
