@@ -328,6 +328,49 @@ function MatchingPage(){
   );
 }
 
+
+function AgencyDashboard(){
+  const [approved, setApproved] = useState([]);
+  const [opps, setOpps] = useState([]);
+  const [form, setForm] = useState({ title: '', agency: '', due_date: '', est_value: '' });
+  useEffect(()=>{ const load=async()=>{
+    try{ const {data} = await axios.get(`${API}/agency/approved-businesses`); setApproved(data.businesses||[]);}catch{}
+    try{ const {data} = await axios.get(`${API}/agency/opportunities`); setOpps(data.opportunities||[]);}catch{}
+  }; load(); },[]);
+  const saveOpp = async()=>{ try{ const payload = { ...form, est_value: form.est_value? Number(form.est_value): null }; const {data} = await axios.post(`${API}/agency/opportunities`, payload); setForm({ title:'', agency:'', due_date:'', est_value:''}); const r = await axios.get(`${API}/agency/opportunities`); setOpps(r.data.opportunities||[]); toast.success('Saved'); }catch{ toast.error('Save failed'); } };
+  const ics = async(biz)=>{ try{ const {data} = await axios.get(`${API}/agency/schedule/ics?business_id=${biz.id||biz.business_id}`); const blob=new Blob([data.ics||data], {type:'text/calendar'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`meeting-${(biz.name||biz.business_name||'business')}.ics`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);}catch{ toast.error('Could not generate ICS'); } };
+  return (
+    <div className="container mt-6">
+      <h2 className="text-lg font-semibold mb-3">Agency Dashboard</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="p-4 border rounded bg-white shadow-sm">
+          <div className="font-semibold mb-2">Approved Businesses</div>
+          <table className="table"><thead><tr><th>Name</th><th>Readiness</th><th>Action</th></tr></thead><tbody>
+            {approved.map(b => (
+              <tr key={b.id}><td>{b.business_name||b.email||b.id}</td><td>{b.readiness}%</td><td><button className="btn" onClick={()=>ics(b)}>Schedule (ICS)</button></td></tr>
+            ))}
+          </tbody></table>
+        </div>
+        <div className="p-4 border rounded bg-white shadow-sm">
+          <div className="font-semibold mb-2">Opportunity Forecasts</div>
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <input className="input" placeholder="Title" value={form.title} onChange={e=>setForm({...form, title:e.target.value})} />
+            <input className="input" placeholder="Agency" value={form.agency} onChange={e=>setForm({...form, agency:e.target.value})} />
+            <input className="input" placeholder="Due date (YYYY-MM-DD)" value={form.due_date} onChange={e=>setForm({...form, due_date:e.target.value})} />
+            <input className="input" placeholder="Est. value" value={form.est_value} onChange={e=>setForm({...form, est_value:e.target.value})} />
+          </div>
+          <button className="btn btn-primary" onClick={saveOpp}>Add/Update</button>
+          <div className="mt-3">
+            <table className="table"><thead><tr><th>Title</th><th>Agency</th><th>Due</th><th>Value</th></tr></thead><tbody>
+              {opps.map(o => (<tr key={o.id}><td>{o.title}</td><td>{o.agency}</td><td>{o.due_date}</td><td>{o.est_value||'-'}</td></tr>))}
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ authed, children }) { return authed ? children : <Navigate to="/" replace />; }
 function RoleRoute({ me, role, children }){ return (me && me.role===role) ? children : <Navigate to="/" replace />; }
 
