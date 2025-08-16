@@ -83,3 +83,7 @@ body { @apply bg-slate-50 text-slate-900; }
 
 /* Button sizes */
 .btn-sm { @apply px-2 py-1 text-xs; }
+
+/* Form validation */
+.input.border-red-500 { @apply border-red-500 focus:border-red-500 focus:ring-red-200; }
+.error-message { @apply text-red-500 text-xs mt-1; }
