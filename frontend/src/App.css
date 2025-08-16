@@ -53,6 +53,8 @@ body { @apply bg-slate-50 text-slate-900; }
 .hero-title { @apply text-white text-2xl lg:text-4xl font-semibold; }
 .hero-sub { @apply text-white/90 text-sm lg:text-base mt-2 max-w-2xl; }
 .hero-ctas { @apply mt-4 flex items-center gap-3; }
+.hero-ctas .btn { @apply text-[#1B365D]; }
+.hero-ctas .btn.btn-primary { @apply text-white; }
 
 /* Feature cards with inline illustrations */
 .features { @apply grid grid-cols-1 md:grid-cols-3 gap-4 mt-6; }
