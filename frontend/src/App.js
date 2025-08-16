@@ -104,7 +104,7 @@ function HeaderCTA({ authed }){
 
 function AuthBar({ auth }) {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [role, setRole] = useState("client"); const [mode, setMode] = useState(() => localStorage.getItem('polaris_auth_mode') || 'login'); const navigate = useNavigate();
-  if (auth.me) { return (<div className="auth"><span className="text-sm">{auth.me.email} • {auth.me.role}</span><Link className="link" to="/assessment">Assessment</Link>{auth.me.role === "client" && <Link className="link" to="/matching">Matching</Link>}{auth.me.role === "provider" && <Link className="link" to="/provider">Provider</Link>}{auth.me.role === "navigator" && <Link className="link" to="/navigator">Navigator</Link>}<button className="btn" onClick={()=>{auth.logout(); navigate("/");}}>Logout</button></div>); }
+  if (auth.me) { return (<div className="auth"><span className="text-sm">{auth.me.email} • {auth.me.role}</span><Link className="link" to="/assessment">Assessment</Link>{auth.me.role === "client" && <Link className="link" to="/matching">Matching</Link>}{auth.me.role === "provider" && <Link className="link" to="/provider">Provider</Link>}{auth.me.role === "navigator" && <Link className="link" to="/navigator">Navigator</Link>}{auth.me.role === "agency" && <Link className="link" to="/agency">Agency</Link>}<button className="btn" onClick={()=>{auth.logout(); navigate("/");}}>Logout</button></div>); }
   return (
     <div className="auth" id="auth">
       <select className="input" value={mode} onChange={(e)=>{ setMode(e.target.value); localStorage.setItem('polaris_auth_mode', e.target.value); }}>
