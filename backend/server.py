@@ -129,8 +129,32 @@ def require_role(role: str):
 
 @api.post("/auth/register", response_model=UserOut)
 async def register(user: UserRegister):
-    created_user = await create_user(user.email, user.password, user.role)
-    return UserOut(id=created_user["id"], email=created_user["email"], role=created_user["role"], created_at=created_user["created_at"])
+    if not user.terms_accepted:
+        raise HTTPException(status_code=400, detail="Terms of Service must be accepted")
+    
+    existing = await db.users.find_one({"email": user.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    hashed_pw = pbkdf2_sha256.hash(user.password)
+    user_id = str(uuid.uuid4())
+    
+    # Set approval status for providers
+    approval_status = "pending" if user.role == "provider" else "approved"
+    
+    doc = {
+        "_id": user_id, 
+        "id": user_id, 
+        "email": user.email, 
+        "password_hash": hashed_pw, 
+        "role": user.role,
+        "approval_status": approval_status,
+        "terms_accepted": user.terms_accepted,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    await db.users.insert_one(doc)
+    return UserOut(id=doc["id"], email=doc["email"], role=doc["role"], created_at=doc["created_at"])
 
 @api.post("/auth/login", response_model=Token)
 async def login(user: UserLogin):
