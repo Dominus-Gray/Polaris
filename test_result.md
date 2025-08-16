@@ -106,26 +106,43 @@
 ## backend:
   - task: "Session ownership claim to reduce 403s on evidence ops"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "GET /api/assessment/session/{id} and DELETE /api/upload/{id} now claim orphan sessions to current user (if authenticated) to avoid 403 edge cases."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Session ownership claim working correctly. Evidence endpoints tested successfully - upload initiate/chunk/complete flow works, evidence listing functional, navigator review queue accessible. All evidence operations working without 403 errors."
   - task: "AI explain: add acceptable alternatives"
     implemented: true
-    working: NA
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Updated system prompt and output format to include 1-2 acceptable alternatives."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: AI explain new format working perfectly. POST /api/ai/explain returns ok=true with message containing all three required sections: 'Deliverables:', 'Acceptable alternatives:', and 'Why it matters:' in plain text. Tested with valid JWT token. AI provides comprehensive responses using openai/gpt-4o-mini model."
+  - task: "Navigator/Provider/Matching endpoints functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: All Navigator/Provider/Matching endpoints fully functional. Provider profile upsert (POST /api/provider/profile) and get (GET /api/provider/profile/me) working with role=provider. Client match request create (POST /api/match/request) working with role=client. Get matches (GET /api/match/{request_id}/matches) returns proper match list for request owner. Provider eligible requests (GET /api/match/eligible) returns filtered requests. POST /api/match/respond respects first-5 rule and handles duplicate responses correctly."
 
 
 ## frontend:
