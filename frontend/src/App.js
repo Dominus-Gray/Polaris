@@ -160,7 +160,7 @@ function FeatureHighlights() {
         </div>
         <div className="card">
           <div className="card-visual"><IlluMatching /></div>
-          <div className="card-body"><div className="card-title">Provider Matching</div><div className="card-sub">Budget-aware ranking and first-5 response to accelerate engagements.</div></div>
+          <div className="card-body"><div className="card-title">Service Provider Ecosystem</div><div className="card-sub">Compliance needs are met with local small business service providers to grow the local economy.</div></div>
         </div>
       </div>
     </div>
