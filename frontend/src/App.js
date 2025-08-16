@@ -1575,7 +1575,7 @@ function Landing(){
         <div className="hero-inner">
           <div className="flex-1 text-white">
             <PolarisLogo size={32} />
-            <h1 className="hero-title mt-4">Your North Star for Procurement Success</h1>
+            <h1 className="hero-title mt-4">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
             <div className="hero-ctas">
               <a className="btn btn-primary" href="#auth">Start Your Journey</a>
