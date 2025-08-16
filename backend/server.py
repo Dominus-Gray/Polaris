@@ -188,281 +188,230 @@ def qs(items: List[Dict]) -> List[Dict]:
 
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
-        {"id": "area1", "title": "Business Formation & Registration", "questions": qs([
+        {"id": "area1", "title": "Business Formation &amp; Registration", "questions": qs([
             {"id": "q1", "text": "Upload your City/County vendor registration confirmation or screenshot (no PII)."},
             {"id": "q2", "text": "Provide your entity formation certificate or assumed name certificate (redactions allowed)."},
-            {"id": "q3", "text": "Upload your current business license/permit list (document listing license names & IDs only)."},
+            {"id": "q3", "text": "Upload your current business license/permit list (document listing license names &amp; IDs only)."},
             {"id": "q4", "text": "Provide an Operating Agreement or Governance Policy (signature page acceptable; redact sensitive details)."},
         ])},
         {"id": "area2", "title": "Financial Operations (Non-sensitive)", "questions": qs([
-            {"id": "q1", "text": "Upload a screenshot of your accounting system settings page (name & fiscal year, no balances)."},
+            {"id": "q1", "text": "Upload a screenshot of your accounting system settings page (name &amp; fiscal year, no balances)."},
             {"id": "q2", "text": "Provide your Financial Policies document (spend approvals, reimbursement, card usage)."},
             {"id": "q3", "text": "Provide a sample invoice template with dummy data (no customer info)."},
             {"id": "q4", "text": "Provide a Month-End Close checklist (template)."},
         ])},
-        {"id": "area3", "title": "Legal & Contracting", "questions": qs([
+        {"id": "area3", "title": "Legal &amp; Contracting", "questions": qs([
             {"id": "q1", "text": "Upload your standard services agreement or terms (template)."},
             {"id": "q2", "text": "Provide your NDA template (mutual or unilateral)."},
             {"id": "q3", "text": "Provide a Contracts Register (list file with contract name, counterparty, term)."},
         ])},
-        {"id": "area4", "title": "Technology & Cybersecurity", "questions": qs([
+        {"id": "area4", "title": "Technology &amp; Cybersecurity", "questions": qs([
             {"id": "q1", "text": "Provide your Backup Policy or a screenshot of backup schedule (no hostnames)."},
             {"id": "q2", "text": "Provide your MFA Policy or screenshot showing MFA enabled (no usernames/emails)."},
-            {"id": "q3", "text": "Provide an Asset Inventory list (categories & counts acceptable)."},
+            {"id": "q3", "text": "Provide an Asset Inventory list (categories &amp; counts acceptable)."},
             {"id": "q4", "text": "Provide your Incident Response Plan (latest version)."},
         ])},
-        {"id": "area5", "title": "People & HR (Non-sensitive)", "questions": qs([
+        {"id": "area5", "title": "People &amp; HR (Non-sensitive)", "questions": qs([
             {"id": "q1", "text": "Upload the table of contents from your Employee Handbook (PDF page)."},
             {"id": "q2", "text": "Provide your Onboarding checklist template (roles generic)."},
             {"id": "q3", "text": "Provide your EEO/Anti-Discrimination policy statement (1 page)."},
         ])},
-        {"id": "area6", "title": "Marketing & Sales Enablement", "questions": qs([
+        {"id": "area6", "title": "Marketing &amp; Sales Enablement", "questions": qs([
             {"id": "q1", "text": "Provide your Brand Guidelines (logo usage, colors, typography)."},
             {"id": "q2", "text": "Upload a CRM pipeline screenshot with test data (no real customer names)."},
             {"id": "q3", "text": "Provide your proposal template (PDF or DOC template)."},
         ])},
-        {"id": "area7", "title": "Procurement & Supply Chain", "questions": qs([
+        {"id": "area7", "title": "Procurement &amp; Supply Chain", "questions": qs([
             {"id": "q1", "text": "Provide your approved vendor list (names/categories; no pricing)."},
             {"id": "q2", "text": "Upload your standard PO or subcontract template (if applicable)."},
-            {"id": "q3", "text": "Provide your Purchasing Policy (thresholds, approvals, vendor onboarding)."},
+            {"id": "q3", "text": "Provide your insurance certificate page showing coverage types and dates (no premiums)."},
         ])},
-        {"id": "area8", "title": "Quality & Continuous Improvement", "questions": qs([
-            {"id": "q1", "text": "Provide your QC checklist template (for your service/product)."},
-            {"id": "q2", "text": "Provide your Customer Feedback form/template (survey or ticket form)."},
-            {"id": "q3", "text": "Provide your CAPA/Corrective Action log template."},
+        {"id": "area8", "title": "Quality &amp; Continuous Improvement", "questions": qs([
+            {"id": "q1", "text": "Provide a SOP template (one completed example with non-sensitive content acceptable)."},
+            {"id": "q2", "text": "Provide your Corrective Action template or log (redacted)."},
+            {"id": "q3", "text": "Provide a simple KPI dashboard screenshot (test data acceptable)."},
         ])},
     ]
 }
 
-# ---------- Basic Routes ----------
-@api.get("/")
-async def root():
-    return {"message": "Hello from Polaris"}
-
-# ---------- Auth Routes ----------
-@api.post("/auth/register", response_model=UserOut)
-async def register(payload: UserRegister):
-    user = await create_user(payload.email, payload.password, payload.role)
-    return UserOut(id=user["id"], email=user["email"], role=user["role"], created_at=user["created_at"])
-
-@api.post("/auth/login", response_model=Token)
-async def login(payload: UserLogin):
-    user = await verify_user(payload.email, payload.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_access_token({"sub": user["id"], "role": user["role"]})
-    return Token(access_token=token)
-
-@api.get("/auth/me", response_model=UserOut)
-async def me(current=Depends(require_user)):
-    return UserOut(id=current["id"], email=current["email"], role=current["role"], created_at=current["created_at"])
-
-# ---------- Assessment Routes (Auth required) ----------
+# ---------- Assessment Endpoints ----------
 @api.get("/assessment/schema")
 async def get_schema(current=Depends(require_user)):
     return ASSESSMENT_SCHEMA
 
 @api.post("/assessment/session", response_model=CreateSessionResp)
 async def create_session(current=Depends(require_user)):
-    session_id = str(uuid.uuid4())
-    now = datetime.utcnow()
-    doc = {"_id": session_id, "id": session_id, "created_at": now, "status": "active", "user_id": current["id"]}
+    sid = str(uuid.uuid4())
+    doc = {"_id": sid, "id": sid, "user_id": current["id"], "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()}
     await db.sessions.insert_one(doc)
-    return CreateSessionResp(session_id=session_id, created_at=now)
+    return CreateSessionResp(session_id=sid, created_at=doc["created_at"])
 
 @api.get("/assessment/session/{session_id}")
 async def get_session(session_id: str, current=Depends(require_user)):
-    sess = await db.sessions.find_one({"_id": session_id})
-    if not sess:
+    s = await db.sessions.find_one({"_id": session_id})
+    if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    if not sess.get("user_id"):
-        await db.sessions.update_one({"_id": session_id}, {"$set": {"user_id": current["id"], "claimed_at": datetime.utcnow()}})
-        sess = await db.sessions.find_one({"_id": session_id})
-    if sess.get("user_id") != current.get("id") and current.get("role") != "navigator":
+    # Claim orphan session to current user to prevent 403s during evidence removal
+    if not s.get("user_id"):
+        await db.sessions.update_one({"_id": session_id}, {"$set": {"user_id": current["id"], "updated_at": datetime.utcnow()}})
+        s["user_id"] = current["id"]
+    if s.get("user_id") != current.get("id") and current.get("role") != "navigator":
         raise HTTPException(status_code=403, detail="Forbidden")
     answers = await db.answers.find({"session_id": session_id}).to_list(1000)
-    return {"session": sess, "answers": answers}
+    return {"id": s["_id"], "session_id": s["_id"], "answers": answers}
 
 @api.post("/assessment/answers/bulk")
-async def save_answers(payload: BulkAnswersReq, current=Depends(require_user)):
-    sess = await db.sessions.find_one({"_id": payload.session_id})
-    if not sess:
+async def upsert_answers(payload: BulkAnswersReq, current=Depends(require_user)):
+    s = await db.sessions.find_one({"_id": payload.session_id})
+    if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    if sess.get("user_id") != current.get("id") and current.get("role") != "navigator":
+    if s.get("user_id") not in (None, current.get("id")) and current.get("role") != "navigator":
         raise HTTPException(status_code=403, detail="Forbidden")
-    for item in payload.answers:
-        existing = await db.answers.find_one({"session_id": payload.session_id, "area_id": item.area_id, "question_id": item.question_id})
-        now = datetime.utcnow()
-        doc = {"session_id": payload.session_id, "area_id": item.area_id, "question_id": item.question_id, "value": item.value, "evidence_ids": item.evidence_ids or [], "updated_at": now}
+    now = datetime.utcnow()
+    for a in payload.answers:
+        existing = await db.answers.find_one({"session_id": payload.session_id, "area_id": a.area_id, "question_id": a.question_id})
         if existing:
-            await db.answers.update_one({"_id": existing["_id"]}, {"$set": doc})
+            await db.answers.update_one({"_id": existing["_id"]}, {"$set": {"value": a.value, "evidence_ids": a.evidence_ids or [], "updated_at": now}})
         else:
-            did = str(uuid.uuid4())
-            await db.answers.insert_one({"_id": did, "id": did, **doc, "created_at": now})
+            aid = str(uuid.uuid4())
+            await db.answers.insert_one({"_id": aid, "id": aid, "session_id": payload.session_id, "area_id": a.area_id, "question_id": a.question_id, "value": a.value, "evidence_ids": a.evidence_ids or [], "created_at": now, "updated_at": now})
+    await db.sessions.update_one({"_id": payload.session_id}, {"$set": {"updated_at": now, "user_id": s.get("user_id") or current.get("id")}})
     return {"ok": True}
+
+@api.get("/assessment/session/{session_id}/progress", response_model=ProgressResp)
+async def progress(session_id: str, current=Depends(require_user)):
+    s = await db.sessions.find_one({"_id": session_id})
+    if not s:
+        raise HTTPException(status_code=404, detail="Session not found")
+    answers = await db.answers.find({"session_id": session_id}).to_list(1000)
+    total_q = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
+    answered = sum(1 for a in answers if a.get("value") is not None)
+    # Count answers with approved evidence
+    approved = 0
+    for a in answers:
+        if a.get("value") is True and a.get("evidence_ids"):
+            # Check if there is at least one approved review for any evidence id
+            ev_ids = a.get("evidence_ids") or []
+            ok = await db.reviews.find_one({"session_id": session_id, "area_id": a["area_id"], "question_id": a["question_id"], "evidence_id": {"$in": ev_ids}, "status": "approved"})
+            if ok:
+                approved += 1
+    pct = round((approved / total_q) * 100, 2) if total_q else 0.0
+    return ProgressResp(session_id=session_id, total_questions=total_q, answered=answered, approved_evidence_answers=approved, percent_complete=pct)
 
 @api.get("/assessment/session/{session_id}/answer/{area_id}/{question_id}/evidence")
 async def list_evidence(session_id: str, area_id: str, question_id: str, current=Depends(require_user)):
-    sess = await db.sessions.find_one({"_id": session_id})
-    if not sess:
+    s = await db.sessions.find_one({"_id": session_id})
+    if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    if sess.get("user_id") != current.get("id") and current.get("role") != "navigator":
+    if s.get("user_id") != current.get("id") and current.get("role") != "navigator":
         raise HTTPException(status_code=403, detail="Forbidden")
+    up_ids = []
     ans = await db.answers.find_one({"session_id": session_id, "area_id": area_id, "question_id": question_id})
-    if not ans:
-        return {"evidence": []}
-    eids = ans.get("evidence_ids", [])
-    if not eids:
-        return {"evidence": []}
-    uploads = await db.uploads.find({"_id": {"$in": eids}}).to_list(100)
-    reviews = await db.reviews.find({"evidence_id": {"$in": eids}}).to_list(500)
-    status_by_eid = {r["evidence_id"]: r.get("status", "pending") for r in reviews}
-    enriched = [{"upload_id": u["_id"], "file_name": u.get("file_name"), "mime_type": u.get("mime_type"), "size": u.get("final_size", u.get("total_size")), "status": status_by_eid.get(u["_id"], "pending")} for u in uploads]
-    return {"evidence": enriched}
-
-@api.delete("/upload/{upload_id}")
-async def delete_evidence(upload_id: str, current=Depends(require_user)):
-    up = await db.uploads.find_one({"_id": upload_id})
-    if not up:
-        raise HTTPException(status_code=404, detail="Upload not found")
-    sess = await db.sessions.find_one({"_id": up.get("session_id")})
-    if current.get("role") != "navigator":
-        if sess and not sess.get("user_id"):
-            await db.sessions.update_one({"_id": sess["_id"]}, {"$set": {"user_id": current["id"], "claimed_at": datetime.utcnow()}})
-            sess = await db.sessions.find_one({"_id": up.get("session_id")})
-        if not sess or sess.get("user_id") != current.get("id"):
-            raise HTTPException(status_code=403, detail="Forbidden")
-    final_path = up.get("stored_path")
-    try:
-        if final_path and os.path.exists(final_path):
-            os.remove(final_path)
-    except Exception as e:
-        logger.warning(f"Failed to delete file {final_path}: {e}")
-    stage_dir = UPLOAD_BASE / upload_id
-    try:
-        if stage_dir.exists():
-            for p in stage_dir.rglob('*'):
-                try:
-                    if p.is_file():
-                        p.unlink()
-                except Exception:
-                    pass
-            for p in sorted(stage_dir.rglob('*'), reverse=True):
-                try:
-                    if p.is_dir():
-                        p.rmdir()
-                except Exception:
-                    pass
-            if stage_dir.exists():
-                stage_dir.rmdir()
-    except Exception:
-        pass
-    await db.answers.update_many({"session_id": up.get("session_id"), "area_id": up.get("area_id"), "question_id": up.get("question_id")}, {"$pull": {"evidence_ids": upload_id}})
-    await db.reviews.update_many({"evidence_id": upload_id}, {"$set": {"status": "deleted", "updated_at": datetime.utcnow()}})
-    await db.uploads.update_one({"_id": upload_id}, {"$set": {"status": "deleted", "deleted_at": datetime.utcnow()}})
-    return {"ok": True}
+    if ans:
+        up_ids = ans.get("evidence_ids") or []
+    out = []
+    for uid in up_ids:
+        up = await db.uploads.find_one({"_id": uid})
+        if not up:
+            continue
+        rev = await db.reviews.find_one({"session_id": session_id, "area_id": area_id, "question_id": question_id, "evidence_id": uid}, sort=[("updated_at", -1)])
+        out.append({"upload_id": uid, "file_name": up.get("file_name"), "mime_type": up.get("mime_type"), "size": up.get("total_size"), "status": rev.get("status") if rev else "pending"})
+    return {"evidence": out}
 
 @api.get("/upload/{upload_id}/download")
 async def download_evidence(upload_id: str, current=Depends(require_user)):
     up = await db.uploads.find_one({"_id": upload_id})
     if not up:
-        raise HTTPException(status_code=404, detail="Upload not found")
-    sess = await db.sessions.find_one({"_id": up.get("session_id")})
-    if current.get("role") != "navigator" and (not sess or sess.get("user_id") != current.get("id")):
-        raise HTTPException(status_code=403, detail="Forbidden")
-    final_path = up.get("stored_path")
-    if not final_path or not os.path.exists(final_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    filename = up.get("file_name") or os.path.basename(final_path)
-    return FileResponse(path=final_path, media_type=up.get("mime_type") or 'application/octet-stream', filename=filename)
-
-@api.get("/assessment/session/{session_id}/progress", response_model=ProgressResp)
-async def get_progress(session_id: str, current=Depends(require_user)):
-    sess = await db.sessions.find_one({"_id": session_id})
-    if not sess:
+        raise HTTPException(status_code=404, detail="Not found")
+    s = await db.sessions.find_one({"_id": up["session_id"]})
+    if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    if sess.get("user_id") != current.get("id") and current.get("role") != "navigator":
+    if current.get("role") not in ("navigator",) and s.get("user_id") != current.get("id"):
         raise HTTPException(status_code=403, detail="Forbidden")
-    total_questions = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
-    answers = await db.answers.find({"session_id": session_id}).to_list(2000)
-    answered = sum(1 for a in answers if a.get("value") is not None)
-    requires = {(area["id"], q["id"]): q["requires_evidence_on_yes"] for area in ASSESSMENT_SCHEMA["areas"] for q in area["questions"]}
-    evidence_ids = [eid for a in answers for eid in (a.get("evidence_ids") or [])]
-    approved_set = set()
-    if evidence_ids:
-        approved = await db.reviews.find({"evidence_id": {"$in": evidence_ids}, "status": "approved"}).to_list(5000)
-        approved_set = set([r["evidence_id"] for r in approved])
-    approved_evidence_answers = 0
-    for a in answers:
-        key = (a["area_id"], a["question_id"])
-        req = requires.get(key, False)
-        val = a.get("value")
-        if val is None:
-            continue
-        if req and val is True:
-            eids = a.get("evidence_ids", []) or []
-            if any(e in approved_set for e in eids):
-                approved_evidence_answers += 1
-        else:
-            approved_evidence_answers += 1
-    percent = round((approved_evidence_answers / total_questions) * 100, 2) if total_questions else 0.0
-    return ProgressResp(session_id=session_id, total_questions=total_questions, answered=answered, approved_evidence_answers=approved_evidence_answers, percent_complete=percent)
+    return FileResponse(path=up["stored_path"], filename=up.get("file_name") or "evidence")
 
-# ---------- Chunked Upload (auth enforced) ----------
-CHUNK_SIZE_DEFAULT = 5 * 1024 * 1024
+@api.delete("/upload/{upload_id}")
+async def delete_evidence(upload_id: str, current=Depends(require_user)):
+    up = await db.uploads.find_one({"_id": upload_id})
+    if not up:
+        raise HTTPException(status_code=404, detail="Not found")
+    s = await db.sessions.find_one({"_id": up["session_id"]})
+    if not s:
+        raise HTTPException(status_code=404, detail="Session not found")
+    # Claim orphan session if needed
+    if not s.get("user_id"):
+        await db.sessions.update_one({"_id": s["_id"]}, {"$set": {"user_id": current["id"], "updated_at": datetime.utcnow()}})
+        s["user_id"] = current["id"]
+    if current.get("role") != "navigator" and s.get("user_id") != current.get("id"):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Remove file from disk
+    try:
+        p = Path(up["stored_path"]) if up.get("stored_path") else None
+        if p and p.exists():
+            p.unlink()
+    except Exception:
+        logger.warning("Failed to delete file from disk for %s", upload_id)
+
+    # Update DB references
+    await db.uploads.delete_one({"_id": upload_id})
+    await db.answers.update_many({"session_id": up["session_id"], "area_id": up["area_id"], "question_id": up["question_id"]}, {"$pull": {"evidence_ids": upload_id}})
+    await db.reviews.update_many({"session_id": up["session_id"], "area_id": up["area_id"], "question_id": up["question_id"], "evidence_id": upload_id}, {"$set": {"status": "deleted", "updated_at": datetime.utcnow()}})
+    return {"ok": True}
+
+# ---------- Chunked Uploads ----------
+CHUNK_SIZE = 5 * 1024 * 1024  # 5MB
 
 @api.post("/upload/initiate", response_model=UploadInitiateResp)
-async def initiate_upload(req: UploadInitiateReq, current=Depends(require_user)):
-    sess = await db.sessions.find_one({"_id": req.session_id})
-    if not sess or (sess.get("user_id") != current.get("id") and current.get("role") != "navigator"):
+async def upload_initiate(payload: UploadInitiateReq, current=Depends(require_user)):
+    s = await db.sessions.find_one({"_id": payload.session_id})
+    if not s:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if s.get("user_id") not in (None, current.get("id")) and current.get("role") != "navigator":
         raise HTTPException(status_code=403, detail="Forbidden")
-    upload_id = str(uuid.uuid4())
-    stage_dir = UPLOAD_BASE / upload_id / "chunks"
-    stage_dir.mkdir(parents=True, exist_ok=True)
-    rec = {"_id": upload_id, "id": upload_id, "file_name": req.file_name, "total_size": req.total_size, "mime_type": req.mime_type, "session_id": req.session_id, "area_id": req.area_id, "question_id": req.question_id, "status": "initiated", "created_at": datetime.utcnow(), "uploader_user_id": current.get("id")}
-    await db.uploads.insert_one(rec)
-    return UploadInitiateResp(upload_id=upload_id, chunk_size=CHUNK_SIZE_DEFAULT)
+    uid = str(uuid.uuid4())
+    doc = {"_id": uid, "id": uid, "session_id": payload.session_id, "area_id": payload.area_id, "question_id": payload.question_id, "file_name": payload.file_name, "mime_type": payload.mime_type, "total_size": payload.total_size, "created_at": datetime.utcnow(), "status": "initiated"}
+    await db.uploads.insert_one(doc)
+    (UPLOAD_BASE / uid).mkdir(parents=True, exist_ok=True)
+    return UploadInitiateResp(upload_id=uid, chunk_size=CHUNK_SIZE)
 
 @api.post("/upload/chunk")
-async def upload_chunk(upload_id: str = Form(...), chunk_index: int = Form(...), file: UploadFile = File(...)):
-    stage_dir = UPLOAD_BASE / upload_id / "chunks"
-    if not stage_dir.exists():
-        raise HTTPException(status_code=400, detail="Upload ID not initiated")
-    chunk_path = stage_dir / f"{chunk_index:06d}.part"
-    try:
-        async with aiofiles.open(chunk_path, 'wb') as out:
-            while True:
-                data = await file.read(1024 * 1024)
-                if not data:
-                    break
-                await out.write(data)
-    finally:
-        await file.close()
-    return {"ok": True, "chunk_index": chunk_index}
+async def upload_chunk(upload_id: str = Form(...), chunk_index: int = Form(...), file: UploadFile = File(...), current=Depends(require_user)):
+    rec = await db.uploads.find_one({"_id": upload_id})
+    if not rec:
+        raise HTTPException(status_code=404, detail="Upload not found")
+    s = await db.sessions.find_one({"_id": rec["session_id"]})
+    if not s:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if s.get("user_id") not in (None, current.get("id")) and current.get("role") != "navigator":
+        raise HTTPException(status_code=403, detail="Forbidden")
+    part_path = UPLOAD_BASE / upload_id / f"part_{chunk_index}"
+    async with aiofiles.open(part_path, "wb") as out:
+        while True:
+            data = await file.read(1024 * 1024)
+            if not data:
+                break
+            await out.write(data)
+    return {"ok": True}
 
 @api.post("/upload/complete")
-async def complete_upload(req: UploadCompleteReq, current=Depends(require_user)):
+async def upload_complete(req: UploadCompleteReq, current=Depends(require_user)):
     rec = await db.uploads.find_one({"_id": req.upload_id})
     if not rec:
         raise HTTPException(status_code=404, detail="Upload not found")
-    sess = await db.sessions.find_one({"_id": rec.get("session_id")})
-    if not sess or (sess.get("user_id") != current.get("id") and current.get("role") != "navigator"):
+    s = await db.sessions.find_one({"_id": rec["session_id"]})
+    if not s:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if s.get("user_id") not in (None, current.get("id")) and current.get("role") != "navigator":
         raise HTTPException(status_code=403, detail="Forbidden")
-    stage_dir = UPLOAD_BASE / req.upload_id / "chunks"
-    if not stage_dir.exists():
-        raise HTTPException(status_code=400, detail="Chunks not found")
-    final_dir = UPLOAD_BASE / req.upload_id
-    final_dir.mkdir(parents=True, exist_ok=True)
-    final_path = final_dir / rec["file_name"]
 
-    async with aiofiles.open(final_path, 'wb') as out:
+    final_path = UPLOAD_BASE / f"{req.upload_id}_{rec.get('file_name') or 'evidence'}"
+    async with aiofiles.open(final_path, "wb") as out:
         for i in range(req.total_chunks):
-            part_path = stage_dir / f"{i:06d}.part"
-            if not part_path.exists():
-                raise HTTPException(status_code=400, detail=f"Missing chunk {i}")
-            async with aiofiles.open(part_path, 'rb') as part:
+            part_path = UPLOAD_BASE / req.upload_id / f"part_{i}"
+            async with aiofiles.open(part_path, "rb") as f:
                 while True:
-                    data = await part.read(1024 * 1024)
+                    data = await f.read(1024 * 1024)
                     if not data:
                         break
                     await out.write(data)
@@ -496,15 +445,20 @@ async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
     model = req.model or "gpt-4o-mini"
     system_message = (
         "You are a procurement readiness coach. Respond concisely. "
-        "Output two parts: 1) Deliverables: bullet list (max 3) naming specific documents/templates/screenshots that satisfy the requirement (non-sensitive). "
-        "2) Why it matters: one sentence tying to opportunity readiness. Avoid asking for financial statements or PII."
+        "Output three parts in plain text: "
+        "1) Deliverables: bullet list (max 3) naming specific documents/templates/screenshots that satisfy the requirement (non-sensitive). "
+        "2) Acceptable alternatives: bullet list (1-2) suggesting pragmatic substitutes if the ideal document is unavailable (keep non-sensitive). "
+        "3) Why it matters: one short sentence tying to opportunity readiness. Avoid asking for financial statements or PII."
     )
     chat = LlmChat(api_key=llm_key, session_id=req.session_id or str(uuid.uuid4()), system_message=system_message).with_model(provider, model)
     qtext = req.question_text or ""
     prompt = (
         f"Area: {req.area_id}\nQuestion: {req.question_id} {qtext}\n"
         f"Context: {req.context or {}}\n"
-        "Return format:\n- Deliverables: <3 concise bullets>\n- Why it matters: <1 sentence>"
+        "Return format strictly as:\n"
+        "- Deliverables:\n  - <up to 3 bullets>\n"
+        "- Acceptable alternatives:\n  - <1-2 bullets>\n"
+        "- Why it matters: <1 sentence>"
     )
     try:
         response = await chat.send_message(UserMessage(text=prompt))
@@ -513,7 +467,7 @@ async def ai_explain(req: AIExplainReq, current=Depends(require_user)):
         logger.exception("AI call failed")
         raise HTTPException(status_code=500, detail=f"AI error: {e}")
 
-# ---------- Navigator Review & Matching (unchanged from previous refined version) ----------
+# ---------- Navigator Review &amp; Matching (unchanged from previous refined version) ----------
 @api.get("/navigator/reviews")
 async def get_reviews(status: str = Query("pending"), current=Depends(require_role("navigator"))):
     q = {"status": status}
@@ -618,9 +572,9 @@ async def get_matches(request_id: str, current=Depends(require_user)):
         b = req.get("budget")
         pmin = p.get("price_min") or 0
         pmax = p.get("price_max") or 0
-        if pmin and pmax and pmin <= b <= pmax:
+        if pmin and pmax and pmin &lt;= b &lt;= pmax:
             score += 40
-        elif pmin and b >= pmin * 0.8:
+        elif pmin and b &gt;= pmin * 0.8:
             score += 20
         if p.get("availability"):
             score += 10
@@ -641,7 +595,7 @@ async def get_eligible_for_provider(current=Depends(require_role("provider"))):
     for r in reqs:
         if r.get("area_id") in service_areas:
             b = r.get("budget") or 0
-            budget_ok = (not pmin and not pmax) or (pmin <= b <= (pmax or b))
+            budget_ok = (not pmin and not pmax) or (pmin &lt;= b &lt;= (pmax or b))
             if budget_ok:
                 out.append({"id": r["_id"], "area_id": r.get("area_id"), "budget": b, "timeline": r.get("timeline"), "description": r.get("description")})
     return {"requests": out[:20]}
@@ -652,7 +606,7 @@ async def respond_to_match(request_id: str = Form(...), proposal_note: Optional[
     if not req or req.get("status") != "open":
         raise HTTPException(status_code=400, detail="Request not open")
     resp_count = await db.match_responses.count_documents({"request_id": request_id})
-    if resp_count >= 5:
+    if resp_count &gt;= 5:
         return {"ok": False, "reason": "First-5 responses have already been received"}
     existing = await db.match_responses.find_one({"request_id": request_id, "provider_user_id": current["id"]})
     if existing:
