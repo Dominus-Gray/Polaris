@@ -171,6 +171,9 @@
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL: Agency endpoints NOT IMPLEMENTED. While role=agency is supported in auth (registration/login/me working perfectly), all agency endpoints return 404 Not Found: GET /api/agency/approved-businesses, POST/GET /api/agency/opportunities, GET /api/agency/schedule/ics. These endpoints do not exist in server.py despite being marked as implemented."
+      - working: false
+        agent: "testing"
+        comment: "❌ RE-TEST CONFIRMS: Agency endpoints still NOT IMPLEMENTED. ✅ Agency auth flow working perfectly: registration (agency_ee13dc38@test.com), login, and /api/auth/me role=agency all confirmed working. ❌ All agency endpoints return 404 Not Found: GET /api/agency/approved-businesses, POST /api/agency/opportunities, GET /api/agency/schedule/ics. Review request claimed endpoints are 'now implemented in server.py' but grep search confirms only role validation exists - no actual endpoints implemented."
   - task: "Financial core skeleton APIs"
     implemented: false
     working: false
