@@ -72,15 +72,18 @@
         comment: "✅ PASS: Certificate listing endpoints fully functional! Comprehensive testing completed: 1) GET /api/client/certificates returns proper structure with certificates array for authenticated client users, 2) GET /api/agency/certificates returns proper structure with certificates array for authenticated agency users, 3) Role-based access control working perfectly - clients denied access to agency endpoint (403), agencies denied access to client endpoint (403), navigators denied access to both listing endpoints (403), 4) Authentication required - both endpoints return 401 without valid JWT token, 5) Error handling working - users without certificates get empty array instead of errors. Regression testing confirmed existing certificate endpoints operational: POST /api/agency/certificates/issue (expected business logic validation), GET /api/certificates/{id} (individual access), GET /api/certificates/{id}/public (public verification), GET /api/certificates/{id}/download (PDF generation). All 12/12 tests passed including 4/4 critical new functionality tests."
   - task: "Agency tier banner for volume-based pricing"
     implemented: true
-    working: false
+    working: NA
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: NA
         agent: "main"
         comment: "Added tier banner to AgencyHome showing current plan (Basic/Volume/Growth/Enterprise) with pricing tiers based on invitation count: Basic ($100), Volume 5+ ($85), Growth 25+ ($75), Enterprise 100+ ($60)."
+      - working: NA
+        agent: "testing"
+        comment: "Not tested - Frontend UI feature outside backend testing scope. This task involves frontend display logic for agency tier banners which is not covered in backend API testing. Main agent should handle frontend testing or request frontend testing agent for UI components."
 
 ## agent_communication:
   - agent: "main"
