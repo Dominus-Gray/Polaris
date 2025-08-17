@@ -1407,11 +1407,11 @@ async def get_ai_explanation(
         question_text = None
         area_name = None
         
-        for area, area_data in ASSESSMENT_SCHEMA.items():
-            for question in area_data["questions"]:
+        for area in ASSESSMENT_SCHEMA["areas"]:
+            for question in area["questions"]:
                 if question["id"] == question_id:
                     question_text = question["text"]
-                    area_name = area
+                    area_name = area["title"]
                     break
             if question_text:
                 break
