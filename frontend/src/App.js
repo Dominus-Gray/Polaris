@@ -1053,8 +1053,8 @@ function AssessmentPage(){
                     Yes, I have this
                   </button>
                   <button 
-                    className={`btn btn-sm ${answers[question.id] === 'no' ? 'bg-orange-600 text-white' : 'border'}`}
-                    onClick={() => handleAnswer(question.id, 'no')}
+                    className={`btn btn-sm ${answers[question.id] === 'no_help' ? 'bg-red-600 text-white border-red-600' : 'border hover:bg-red-50 hover:border-red-300'}`}
+                    onClick={() => handleAnswer(question.id, 'no_help')}
                   >
                     No, I need help
                   </button>
