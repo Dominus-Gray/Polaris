@@ -1904,6 +1904,379 @@ async def set_engagement_status(engagement_id: str, payload: EngagementStatusIn,
     await db.engagements.update_one({"_id": engagement_id}, {"$set": {"status": payload.status, "updated_at": datetime.utcnow()}})
     return {"ok": True}
 
+# ---------------- Payment Endpoints ----------------
+@api.post("/payments/v1/checkout/session")
+async def create_payment_session(request: Request, payload: PaymentTransactionIn, current=Depends(require_user)):
+    """Create Stripe checkout session"""
+    if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
+        raise HTTPException(status_code=503, detail="Payment service unavailable")
+    
+    # Validate package
+    if payload.package_id not in SERVICE_PACKAGES:
+        raise HTTPException(status_code=400, detail="Invalid package")
+    
+    # Get amount from server-side definition only (security)
+    amount = SERVICE_PACKAGES[payload.package_id]
+    
+    try:
+        # Initialize Stripe checkout with dynamic webhook URL
+        host_url = str(request.base_url)
+        webhook_url = f"{host_url}api/webhook/stripe"
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Build URLs from provided origin
+        success_url = f"{payload.origin_url}/service-request?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{payload.origin_url}/service-request"
+        
+        # Add metadata
+        metadata = {
+            "user_id": current["id"],
+            "package_id": payload.package_id,
+            "email": current["email"],
+            **payload.metadata
+        }
+        
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=amount,
+            currency="USD",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata
+        )
+        
+        session = await stripe_client.create_checkout_session(checkout_request)
+        
+        # Create pending transaction record BEFORE redirect
+        transaction_id = str(uuid.uuid4())
+        transaction_doc = {
+            "_id": transaction_id,
+            "id": transaction_id,
+            "user_id": current["id"],
+            "package_id": payload.package_id,
+            "amount": amount,
+            "currency": "USD",
+            "stripe_session_id": session.session_id,
+            "payment_status": "pending",
+            "status": "initiated",
+            "metadata": metadata,
+            "created_at": datetime.utcnow()
+        }
+        await db.payment_transactions.insert_one(transaction_doc)
+        
+        return {"url": session.url, "session_id": session.session_id}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Payment session creation failed: {str(e)}")
+
+@api.get("/payments/v1/checkout/status/{session_id}")
+async def get_payment_status(session_id: str, current=Depends(require_user)):
+    """Get payment status and update database"""
+    if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
+        raise HTTPException(status_code=503, detail="Payment service unavailable")
+    
+    try:
+        # Find transaction record
+        transaction = await db.payment_transactions.find_one({"stripe_session_id": session_id})
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Check if transaction belongs to current user
+        if transaction["user_id"] != current["id"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+        
+        # Initialize Stripe client (we don't need request here, so use dummy webhook)
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="https://dummy.com/webhook")
+        
+        # Get status from Stripe
+        checkout_status = await stripe_client.get_checkout_status(session_id)
+        
+        # Update transaction only if not already processed (prevent double processing)
+        if transaction["payment_status"] != "paid" and checkout_status.payment_status == "paid":
+            update_data = {
+                "payment_status": checkout_status.payment_status,
+                "status": checkout_status.status,
+                "updated_at": datetime.utcnow()
+            }
+            
+            await db.payment_transactions.update_one(
+                {"_id": transaction["_id"]}, 
+                {"$set": update_data}
+            )
+            
+            # Handle successful payment logic
+            await handle_successful_payment(transaction, checkout_status)
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "amount_total": checkout_status.amount_total,
+            "currency": checkout_status.currency,
+            "metadata": checkout_status.metadata
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Payment status check failed: {str(e)}")
+
+@api.post("/payments/service-request")
+async def create_service_payment(request: Request, payload: ServiceRequestPaymentIn, current=Depends(require_user)):
+    """Create payment for service request"""
+    if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
+        raise HTTPException(status_code=503, detail="Payment service unavailable")
+    
+    # Verify service request exists and belongs to user
+    service_request = await db.match_requests.find_one({"_id": payload.request_id, "user_id": current["id"]})
+    if not service_request:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    
+    # Verify provider exists
+    provider = await db.users.find_one({"_id": payload.provider_id, "role": "provider"})
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    
+    try:
+        # Initialize Stripe checkout
+        host_url = str(request.base_url)
+        webhook_url = f"{host_url}api/webhook/stripe"
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Build URLs
+        success_url = f"{payload.origin_url}/service-request?session_id={{CHECKOUT_SESSION_ID}}&request_id={payload.request_id}"
+        cancel_url = f"{payload.origin_url}/service-request"
+        
+        # Add metadata
+        metadata = {
+            "user_id": current["id"],
+            "request_id": payload.request_id,
+            "provider_id": payload.provider_id,
+            "service_type": "service_request",
+            "email": current["email"]
+        }
+        
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=payload.agreed_fee,
+            currency="USD",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata
+        )
+        
+        session = await stripe_client.create_checkout_session(checkout_request)
+        
+        # Create pending transaction record
+        transaction_id = str(uuid.uuid4())
+        transaction_doc = {
+            "_id": transaction_id,
+            "id": transaction_id,
+            "user_id": current["id"],
+            "request_id": payload.request_id,
+            "provider_id": payload.provider_id,
+            "amount": payload.agreed_fee,
+            "currency": "USD",
+            "stripe_session_id": session.session_id,
+            "payment_status": "pending",
+            "status": "initiated",
+            "service_type": "service_request",
+            "metadata": metadata,
+            "created_at": datetime.utcnow()
+        }
+        await db.payment_transactions.insert_one(transaction_doc)
+        
+        return {"url": session.url, "session_id": session.session_id}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Service payment creation failed: {str(e)}")
+
+@api.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
+        return {"status": "disabled"}
+    
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="dummy")
+        webhook_response = await stripe_client.handle_webhook(body, signature)
+        
+        # Update transaction based on webhook
+        if webhook_response.event_type == "checkout.session.completed":
+            await db.payment_transactions.update_one(
+                {"stripe_session_id": webhook_response.session_id},
+                {"$set": {
+                    "payment_status": webhook_response.payment_status,
+                    "webhook_processed": True,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+        
+        return {"status": "processed"}
+        
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+async def handle_successful_payment(transaction: dict, checkout_status: CheckoutStatusResponse):
+    """Handle post-payment processing"""
+    try:
+        if transaction.get("package_id") == "knowledge_base_single":
+            # Unlock single knowledge base area
+            area_id = transaction["metadata"].get("area_id")
+            if area_id:
+                await db.user_access.update_one(
+                    {"user_id": transaction["user_id"]},
+                    {"$addToSet": {f"knowledge_base_access.{area_id}": True}},
+                    upsert=True
+                )
+        
+        elif transaction.get("package_id") == "knowledge_base_all":
+            # Unlock all knowledge base areas
+            await db.user_access.update_one(
+                {"user_id": transaction["user_id"]},
+                {"$set": {"knowledge_base_access.all_areas": True}},
+                upsert=True
+            )
+        
+        elif transaction.get("service_type") == "service_request":
+            # Create engagement for service request
+            engagement_id = str(uuid.uuid4())
+            engagement_doc = {
+                "_id": engagement_id,
+                "id": engagement_id,
+                "request_id": transaction["request_id"],
+                "client_user_id": transaction["user_id"],
+                "provider_user_id": transaction["provider_id"],
+                "agreed_fee": transaction["amount"],
+                "status": "payment_completed",
+                "payment_transaction_id": transaction["_id"],
+                "created_at": datetime.utcnow()
+            }
+            await db.engagements.insert_one(engagement_doc)
+            
+            # Update service request status
+            await db.match_requests.update_one(
+                {"_id": transaction["request_id"]},
+                {"$set": {"status": "payment_completed", "engagement_id": engagement_id}}
+            )
+    
+    except Exception as e:
+        print(f"Post-payment processing error: {e}")
+
+# ---------------- Service Tracking Endpoints ----------------
+@api.post("/engagements/{engagement_id}/update")
+async def update_service_tracking(engagement_id: str, update: ServiceTrackingUpdate, current=Depends(require_user)):
+    """Update service tracking status"""
+    engagement = await db.engagements.find_one({"_id": engagement_id})
+    if not engagement:
+        raise HTTPException(status_code=404, detail="Engagement not found")
+    
+    # Check if user is client or provider involved in engagement
+    if current["id"] not in [engagement.get("client_user_id"), engagement.get("provider_user_id")]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    update_data = {
+        "status": update.status,
+        "updated_at": datetime.utcnow(),
+        "updated_by": current["id"]
+    }
+    
+    if update.progress_percentage is not None:
+        update_data["progress_percentage"] = update.progress_percentage
+    if update.notes:
+        update_data["notes"] = update.notes
+    if update.deliverables:
+        update_data["deliverables"] = update.deliverables
+    
+    await db.engagements.update_one({"_id": engagement_id}, {"$set": update_data})
+    
+    # Add to tracking history
+    tracking_entry = {
+        "_id": str(uuid.uuid4()),
+        "engagement_id": engagement_id,
+        "status": update.status,
+        "progress_percentage": update.progress_percentage,
+        "notes": update.notes,
+        "updated_by": current["id"],
+        "updated_at": datetime.utcnow()
+    }
+    await db.service_tracking.insert_one(tracking_entry)
+    
+    return {"ok": True}
+
+@api.get("/engagements/{engagement_id}/tracking")
+async def get_service_tracking(engagement_id: str, current=Depends(require_user)):
+    """Get service tracking history"""
+    engagement = await db.engagements.find_one({"_id": engagement_id})
+    if not engagement:
+        raise HTTPException(status_code=404, detail="Engagement not found")
+    
+    # Check if user is client or provider involved in engagement
+    if current["id"] not in [engagement.get("client_user_id"), engagement.get("provider_user_id")]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    tracking = await db.service_tracking.find({"engagement_id": engagement_id}).sort("updated_at", -1).to_list(100)
+    
+    return {
+        "engagement": engagement,
+        "tracking_history": tracking
+    }
+
+@api.post("/engagements/{engagement_id}/rating")
+async def rate_service(engagement_id: str, rating: ServiceRatingIn, current=Depends(require_role("client"))):
+    """Rate completed service"""
+    engagement = await db.engagements.find_one({"_id": engagement_id, "client_user_id": current["id"]})
+    if not engagement:
+        raise HTTPException(status_code=404, detail="Engagement not found")
+    
+    if engagement.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Can only rate completed services")
+    
+    rating_id = str(uuid.uuid4())
+    rating_doc = {
+        "_id": rating_id,
+        "id": rating_id,
+        "engagement_id": engagement_id,
+        "client_user_id": current["id"],
+        "provider_user_id": engagement.get("provider_user_id"),
+        "rating": rating.rating,
+        "feedback": rating.feedback,
+        "quality_score": rating.quality_score,
+        "communication_score": rating.communication_score,
+        "timeliness_score": rating.timeliness_score,
+        "created_at": datetime.utcnow()
+    }
+    await db.service_ratings.insert_one(rating_doc)
+    
+    # Update engagement with rating
+    await db.engagements.update_one(
+        {"_id": engagement_id},
+        {"$set": {"rating_id": rating_id, "client_rating": rating.rating}}
+    )
+    
+    return {"ok": True, "rating_id": rating_id}
+
+@api.get("/engagements/my-services")
+async def get_my_services(current=Depends(require_user)):
+    """Get user's service engagements"""
+    if current["role"] == "client":
+        engagements = await db.engagements.find({"client_user_id": current["id"]}).to_list(100)
+    elif current["role"] == "provider":
+        engagements = await db.engagements.find({"provider_user_id": current["id"]}).to_list(100)
+    else:
+        raise HTTPException(status_code=403, detail="Not applicable")
+    
+    # Enrich with tracking data
+    for eng in engagements:
+        tracking = await db.service_tracking.find({"engagement_id": eng["_id"]}).sort("updated_at", -1).limit(1).to_list(1)
+        eng["latest_tracking"] = tracking[0] if tracking else None
+        
+        # Get rating if exists
+        rating = await db.service_ratings.find_one({"engagement_id": eng["_id"]})
+        eng["rating"] = rating
+    
+    return {"engagements": engagements}
+
 # ---------------- Matching Core Endpoints ----------------
 class MatchRequestIn(BaseModel):
     budget: float
