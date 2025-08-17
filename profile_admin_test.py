@@ -159,17 +159,12 @@ def test_profile_update():
     try:
         headers = {"Authorization": f"Bearer {test_user_token}"}
         
-        # Update profile data
+        # Update profile data (only include optional fields for PATCH)
         update_data = {
             "display_name": "Updated Test User",
             "bio": "This is a test bio for profile update testing",
             "phone_number": "+1-555-123-4567",
-            "time_zone": "America/New_York",
-            "preferences": {
-                "theme": "dark",
-                "language": "en",
-                "notifications": True
-            }
+            "time_zone": "America/New_York"
         }
         
         response = requests.patch(f"{API_BASE}/profiles/me", json=update_data, headers=headers)
