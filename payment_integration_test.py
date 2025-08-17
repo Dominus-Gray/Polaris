@@ -110,14 +110,14 @@ class PaymentIntegrationTester:
                 data = response.json()
                 print(f"Payment session response: {json.dumps(data, indent=2)}")
                 
-                # Verify required fields
-                required_fields = ['session_id', 'checkout_url']
+                # Verify required fields (updated for actual API response)
+                required_fields = ['session_id', 'url']  # API returns 'url' not 'checkout_url'
                 missing_fields = [field for field in required_fields if field not in data]
                 
                 if not missing_fields:
                     print("✅ PASS: Stripe payment session created successfully")
                     print(f"Session ID: {data.get('session_id')}")
-                    print(f"Checkout URL: {data.get('checkout_url')}")
+                    print(f"Checkout URL: {data.get('url')}")
                     return data.get('session_id')
                 else:
                     print(f"❌ FAIL: Missing required fields: {missing_fields}")
