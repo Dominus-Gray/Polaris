@@ -240,7 +240,7 @@ def test_license_management_system(test_results):
         
         # Test 4: License uniqueness verification
         print("\n--- Testing license uniqueness ---")
-        response = requests.post(f"{API_BASE}/agency/licenses/generate", json={"count": 3}, headers=headers)
+        response = requests.post(f"{API_BASE}/agency/licenses/generate", json={"quantity": 3}, headers=headers)  # Changed from "count" to "quantity"
         
         if response.status_code == 200:
             new_licenses = response.json().get('licenses', [])
