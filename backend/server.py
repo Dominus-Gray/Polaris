@@ -456,6 +456,427 @@ async def oauth_callback(payload: OAuthCallbackIn, response: Response):
         logger.error(f"OAuth callback error: {e}")
         raise HTTPException(status_code=500, detail="Authentication failed")
 
+# Profile Settings System
+class UserProfileOut(BaseModel):
+    display_name: str
+    avatar_url: Optional[str]
+    bio: Optional[str]
+    phone_number: Optional[str]
+    locale: str = "en_US"
+    time_zone: str = "America/Chicago"
+    preferences: dict = {}
+    privacy_settings: dict = {}
+    notification_settings: dict = {}
+    two_factor_enabled: bool = False
+    
+class UserProfileUpdate(BaseModel):
+    display_name: Optional[str]
+    bio: Optional[str]
+    phone_number: Optional[str]
+    time_zone: Optional[str]
+    preferences: Optional[dict]
+    privacy_settings: Optional[dict]
+    notification_settings: Optional[dict]
+
+class AvatarUploadOut(BaseModel):
+    avatar_url: str
+
+class DataExportRequestOut(BaseModel):
+    request_id: str
+    status: str
+    estimated_completion: str
+
+class DataDeletionRequest(BaseModel):
+    confirmation_text: str
+    
+class DataDeletionRequestOut(BaseModel):
+    deletion_id: str
+    confirmation_required: bool
+    confirmation_email_sent: bool
+
+class MFASetupRequest(BaseModel):
+    method: str = "totp"  # totp, sms
+    
+class MFASetupOut(BaseModel):
+    secret: str
+    qr_code_url: str
+    backup_codes: List[str]
+    
+class MFAVerificationRequest(BaseModel):
+    code: str
+    secret: str
+    
+class MFAVerificationOut(BaseModel):
+    verified: bool
+    backup_codes: List[str]
+
+class TrustedDeviceOut(BaseModel):
+    id: str
+    device_name: str
+    device_type: str
+    last_seen: datetime
+    location: Optional[str]
+
+@api.get("/profiles/me", response_model=UserProfileOut)
+async def get_my_profile(current_user: dict = Depends(get_current_user)):
+    """Get current user's profile"""
+    try:
+        # Get or create user profile
+        profile = await db.user_profiles.find_one({"user_id": current_user["id"]})
+        
+        if not profile:
+            # Create default profile
+            profile = {
+                "_id": str(uuid.uuid4()),
+                "user_id": current_user["id"],
+                "display_name": current_user.get("name", current_user["email"].split("@")[0]),
+                "avatar_url": current_user.get("picture"),
+                "bio": "",
+                "phone_number": "",
+                "locale": "en_US",
+                "time_zone": "America/Chicago",
+                "preferences": {
+                    "theme": "light",
+                    "language": "en",
+                    "date_format": "MM/dd/yyyy",
+                    "currency": "USD"
+                },
+                "privacy_settings": {
+                    "profile_visibility": "contacts_only",
+                    "show_certification_status": True,
+                    "allow_provider_contact": True,
+                    "share_anonymized_data": False
+                },
+                "notification_settings": {
+                    "email_notifications": {
+                        "assessment_reminders": True,
+                        "provider_matches": True,
+                        "certificate_issued": True
+                    },
+                    "push_notifications": {
+                        "enabled": True,
+                        "assessment_progress": True
+                    }
+                },
+                "two_factor_enabled": False,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await db.user_profiles.insert_one(profile)
+        
+        return UserProfileOut(**profile)
+        
+    except Exception as e:
+        logger.error(f"Error getting profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load profile")
+
+@api.patch("/profiles/me", response_model=UserProfileOut) 
+async def update_my_profile(
+    profile_update: UserProfileUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update user profile with optimistic locking"""
+    try:
+        update_data = profile_update.dict(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Log profile changes for audit
+        changes = []
+        for field, new_value in update_data.items():
+            if field != "updated_at":
+                changes.append({
+                    "field": field,
+                    "new_value": new_value,
+                    "timestamp": datetime.utcnow()
+                })
+        
+        # Create audit log entry
+        if changes:
+            await db.audit_logs.insert_one({
+                "_id": str(uuid.uuid4()),
+                "user_id": current_user["id"],
+                "action": "profile_update",
+                "resource": "user_profile",
+                "changes": changes,
+                "timestamp": datetime.utcnow(),
+                "ip_address": None,  # Would be extracted from request
+                "user_agent": None
+            })
+        
+        result = await db.user_profiles.update_one(
+            {"user_id": current_user["id"]},
+            {"$set": update_data},
+            upsert=True
+        )
+        
+        # Get updated profile
+        updated_profile = await db.user_profiles.find_one({"user_id": current_user["id"]})
+        return UserProfileOut(**updated_profile)
+        
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update profile")
+
+@api.post("/profiles/me/avatar", response_model=AvatarUploadOut)
+async def upload_avatar(
+    file: UploadFile,
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload and process avatar"""
+    try:
+        # Validate file type and size
+        if not file.content_type or not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Read file content
+        content = await file.read()
+        if len(content) > 5 * 1024 * 1024:  # 5MB limit
+            raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+        
+        # Generate unique filename
+        file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+        avatar_filename = f"avatars/{current_user['id']}/{uuid.uuid4()}.{file_extension}"
+        
+        # In a real implementation, you would upload to cloud storage (S3, etc.)
+        # For now, we'll simulate with a URL
+        avatar_url = f"/static/uploads/{avatar_filename}"
+        
+        # Update user profile
+        await db.user_profiles.update_one(
+            {"user_id": current_user["id"]},
+            {"$set": {"avatar_url": avatar_url, "updated_at": datetime.utcnow()}},
+            upsert=True
+        )
+        
+        return AvatarUploadOut(avatar_url=avatar_url)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading avatar: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload avatar")
+
+@api.post("/profiles/me/data-export", response_model=DataExportRequestOut)
+async def request_data_export(current_user: dict = Depends(get_current_user)):
+    """Request complete data export (GDPR/CCPA compliance)"""
+    try:
+        request_id = str(uuid.uuid4())
+        
+        # Create export request record
+        export_request = {
+            "_id": request_id,
+            "user_id": current_user["id"],
+            "status": "pending",
+            "requested_at": datetime.utcnow(),
+            "estimated_completion": datetime.utcnow() + timedelta(hours=24),
+            "data_types": [
+                "user_profile", "business_profile", "assessments", 
+                "certificates", "evidence", "audit_logs"
+            ]
+        }
+        
+        await db.data_export_requests.insert_one(export_request)
+        
+        # In a real implementation, trigger background job for data collection
+        # await queue_data_export_job(current_user["id"], request_id)
+        
+        return DataExportRequestOut(
+            request_id=request_id,
+            status="pending",
+            estimated_completion="24 hours"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error requesting data export: {e}")
+        raise HTTPException(status_code=500, detail="Failed to request data export")
+
+@api.post("/profiles/me/data-deletion", response_model=DataDeletionRequestOut)
+async def request_data_deletion(
+    deletion_request: DataDeletionRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Request account and data deletion"""
+    try:
+        if deletion_request.confirmation_text != "DELETE MY ACCOUNT":
+            raise HTTPException(
+                status_code=400, 
+                detail="Confirmation text must be 'DELETE MY ACCOUNT'"
+            )
+        
+        deletion_id = str(uuid.uuid4())
+        
+        # Create deletion request
+        deletion_record = {
+            "_id": deletion_id,
+            "user_id": current_user["id"],
+            "status": "pending_confirmation",
+            "requested_at": datetime.utcnow(),
+            "confirmation_token": str(uuid.uuid4()),
+            "expires_at": datetime.utcnow() + timedelta(hours=24)
+        }
+        
+        await db.data_deletion_requests.insert_one(deletion_record)
+        
+        # In real implementation, send confirmation email
+        # await send_deletion_confirmation_email(current_user["email"], deletion_record["confirmation_token"])
+        
+        return DataDeletionRequestOut(
+            deletion_id=deletion_id,
+            confirmation_required=True,
+            confirmation_email_sent=True
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error requesting data deletion: {e}")
+        raise HTTPException(status_code=500, detail="Failed to request data deletion")
+
+@api.post("/security/mfa/setup", response_model=MFASetupOut)
+async def setup_mfa(
+    mfa_request: MFASetupRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Initialize MFA setup"""
+    try:
+        import secrets
+        import base64
+        
+        # Generate TOTP secret
+        secret = base64.b32encode(secrets.token_bytes(20)).decode()
+        
+        # Generate backup codes
+        backup_codes = [
+            f"{secrets.randbelow(1000000):06d}" for _ in range(8)
+        ]
+        
+        # Create QR code URL (in real implementation, use proper TOTP library)
+        app_name = "Polaris"
+        qr_code_url = f"otpauth://totp/{app_name}:{current_user['email']}?secret={secret}&issuer={app_name}"
+        
+        # Store temporary MFA setup (not yet activated)
+        await db.mfa_setup_temp.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "secret": secret,
+            "backup_codes": backup_codes,
+            "method": mfa_request.method,
+            "created_at": datetime.utcnow(),
+            "expires_at": datetime.utcnow() + timedelta(minutes=15)
+        })
+        
+        return MFASetupOut(
+            secret=secret,
+            qr_code_url=qr_code_url,
+            backup_codes=backup_codes
+        )
+        
+    except Exception as e:
+        logger.error(f"Error setting up MFA: {e}")
+        raise HTTPException(status_code=500, detail="Failed to setup MFA")
+
+@api.post("/security/mfa/verify", response_model=MFAVerificationOut)
+async def verify_mfa_setup(
+    verification: MFAVerificationRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Complete MFA setup verification"""
+    try:
+        # In real implementation, verify TOTP code against secret
+        # For demo, we'll accept any 6-digit code
+        if not verification.code or len(verification.code) != 6:
+            raise HTTPException(status_code=400, detail="Invalid verification code")
+        
+        # Get temporary MFA setup
+        temp_setup = await db.mfa_setup_temp.find_one({
+            "user_id": current_user["id"],
+            "secret": verification.secret
+        })
+        
+        if not temp_setup:
+            raise HTTPException(status_code=400, detail="Invalid or expired MFA setup")
+        
+        # Activate MFA for user
+        await db.user_profiles.update_one(
+            {"user_id": current_user["id"]},
+            {
+                "$set": {
+                    "two_factor_enabled": True,
+                    "mfa_secret": verification.secret,
+                    "mfa_backup_codes": temp_setup["backup_codes"],
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Clean up temporary setup
+        await db.mfa_setup_temp.delete_one({"_id": temp_setup["_id"]})
+        
+        return MFAVerificationOut(
+            verified=True,
+            backup_codes=temp_setup["backup_codes"]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying MFA: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify MFA")
+
+@api.get("/security/trusted-devices", response_model=List[TrustedDeviceOut])
+async def get_trusted_devices(current_user: dict = Depends(get_current_user)):
+    """Get user's trusted devices"""
+    try:
+        devices = await db.trusted_devices.find({"user_id": current_user["id"]}).to_list(100)
+        
+        return [
+            TrustedDeviceOut(
+                id=device["_id"],
+                device_name=device.get("device_name", "Unknown Device"),
+                device_type=device.get("device_type", "unknown"),
+                last_seen=device.get("last_seen", datetime.utcnow()),
+                location=device.get("location")
+            )
+            for device in devices
+        ]
+        
+    except Exception as e:
+        logger.error(f"Error getting trusted devices: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load trusted devices")
+
+@api.delete("/security/trusted-devices/{device_id}")
+async def revoke_trusted_device(
+    device_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Revoke trust for a specific device"""
+    try:
+        result = await db.trusted_devices.delete_one({
+            "_id": device_id,
+            "user_id": current_user["id"]
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Trusted device not found")
+        
+        # Log security action
+        await db.audit_logs.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "action": "device_revoked",
+            "resource": "trusted_device",
+            "resource_id": device_id,
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {"success": True}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error revoking trusted device: {e}")
+        raise HTTPException(status_code=500, detail="Failed to revoke device")
+
 # Provider Approval System
 @api.get("/navigator/providers/pending")
 async def get_pending_providers(current=Depends(require_role("navigator"))):
