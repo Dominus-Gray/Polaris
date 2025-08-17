@@ -3479,9 +3479,9 @@ function Landing(){
         </section>
       )}
 
-      {/* Login/Register Form Section */}
-      {step !== 'role-selection' && (
-        <section className="container section" id="auth">
+      {/* Login/Register Form Section - Only show when not in role selection */}
+      {step !== 'role-selection' && step !== 'login' && (
+        <section className="container section" id="auth-form">
           <div className="max-w-md mx-auto">
             <AuthWidget selectedRole={selectedRole} onBackToRoleSelection={() => setStep('role-selection')} />
           </div>
