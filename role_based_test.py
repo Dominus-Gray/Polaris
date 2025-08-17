@@ -414,12 +414,13 @@ def test_agency_login_and_generate_licenses(agency_email, agency_password):
             
             if generate_response.status_code == 200:
                 data = generate_response.json()
-                codes = data.get('license_codes', [])
-                if codes:
-                    license_codes.extend(codes)
-                    print(f"✅ Generated license code: {codes[0]}")
+                licenses = data.get('licenses', [])
+                if licenses:
+                    for license_info in licenses:
+                        license_codes.append(license_info['license_code'])
+                    print(f"✅ Generated license code: {licenses[0]['license_code']}")
                 else:
-                    print(f"⚠️  No license codes in response: {data}")
+                    print(f"⚠️  No licenses in response: {data}")
             else:
                 print(f"❌ License generation failed: {generate_response.text}")
         
