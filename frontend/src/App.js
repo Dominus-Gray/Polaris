@@ -2057,8 +2057,8 @@ function ClientHome(){
                       <div className="text-sm font-medium text-slate-800 mb-1">Compliance Status</div>
                       <p className="text-sm text-slate-600">
                         {data.readiness >= 75 
-                          ? '✅ Meeting federal contracting requirements' 
-                          : '⚠️ Additional documentation needed for federal compliance'
+                          ? '✅ Meeting Small Business Maturity Attestation requirements' 
+                          : '⚠️ Additional documentation needed for Small Business Maturity Attestation'
                         }
                       </p>
                     </div>
