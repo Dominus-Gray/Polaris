@@ -40,8 +40,12 @@ def test_create_navigator():
     print("🧭 STEP 1: CREATE DIGITAL NAVIGATOR (AUTO-APPROVED)")
     print("="*60)
     
+    # Use timestamp to ensure unique email
+    import time
+    timestamp = int(time.time())
+    
     credentials = {
-        "email": "navigator@polaris.example.com",
+        "email": f"navigator.{timestamp}@polaris.example.com",
         "password": "Navigator123!",
         "role": "navigator",
         "terms_accepted": True
