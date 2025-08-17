@@ -41,7 +41,7 @@ def test_create_navigator():
     print("="*60)
     
     credentials = {
-        "email": "navigator@polaris.test",
+        "email": "navigator@polaris.example.com",
         "password": "Navigator123!",
         "role": "navigator",
         "terms_accepted": True
