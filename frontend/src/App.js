@@ -1227,17 +1227,6 @@ function BusinessProfileForm(){
           {errors.registered_address && <div className="error-message">{errors.registered_address}</div>}
         </div>
 
-        {/* Mailing Address */}
-        <div className="md:col-span-2">
-          <input 
-            className={`input ${errors.mailing_address ? 'border-red-500' : ''}`} 
-            placeholder="Mailing Address *" 
-            value={form.mailing_address} 
-            onChange={e=>handleFieldChange('mailing_address', e.target.value)} 
-          />
-          {errors.mailing_address && <div className="error-message">{errors.mailing_address}</div>}
-        </div>
-
         {/* Website URL */}
         <div>
           <input 
@@ -1249,15 +1238,49 @@ function BusinessProfileForm(){
           {errors.website_url && <div className="error-message">{errors.website_url}</div>}
         </div>
 
-        {/* Primary Products/Services */}
+        {/* Business Type Toggle */}
         <div>
-          <input 
-            className={`input ${errors.primary_products_services ? 'border-red-500' : ''}`} 
-            placeholder="Primary Products/Services *" 
-            value={form.primary_products_services} 
-            onChange={e=>handleFieldChange('primary_products_services', e.target.value)} 
+          <label className="block text-sm font-medium text-slate-700 mb-2">Business Type *</label>
+          <div className="flex gap-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="business_type"
+                value="product"
+                checked={form.business_type === 'product'}
+                onChange={e=>handleFieldChange('business_type', e.target.value)}
+                className="mr-2"
+              />
+              Product-Based Business
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="business_type"
+                value="service"
+                checked={form.business_type === 'service'}
+                onChange={e=>handleFieldChange('business_type', e.target.value)}
+                className="mr-2"
+              />
+              Service-Based Business
+            </label>
+          </div>
+          {errors.business_type && <div className="error-message">{errors.business_type}</div>}
+        </div>
+
+        {/* Business Description */}
+        <div className="md:col-span-2">
+          <textarea 
+            className={`input ${errors.business_description ? 'border-red-500' : ''}`} 
+            placeholder={`Describe your ${form.business_type === 'product' ? 'products' : 'services'} in detail *`}
+            value={form.business_description} 
+            onChange={e=>handleFieldChange('business_description', e.target.value)}
+            rows="3"
           />
-          {errors.primary_products_services && <div className="error-message">{errors.primary_products_services}</div>}
+          {errors.business_description && <div className="error-message">{errors.business_description}</div>}
+          <div className="text-xs text-slate-500 mt-1">
+            Provide a detailed description of what your business offers (10-500 characters)
+          </div>
         </div>
 
         {/* Revenue Range */}
