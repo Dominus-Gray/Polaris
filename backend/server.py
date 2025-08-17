@@ -196,7 +196,7 @@ class Token(BaseModel):
 class UserRegistrationIn(BaseModel):
     email: EmailStr
     password: str
-    role: str = Field(..., regex="^(client|provider|navigator|agency)$")
+    role: str = Field(..., pattern="^(client|provider|navigator|agency)$")
     terms_accepted: bool = True
     license_code: Optional[str] = None  # 10-digit license code for business clients
     payment_info: Optional[Dict[str, str]] = None
