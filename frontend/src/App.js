@@ -2614,26 +2614,109 @@ function ServiceRequestPage(){
           </div>
         </div>
       )}
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-2"><div className="text-sm text-slate-600">Top matches</div><div className="flex gap-2"><button className="btn" onClick={inviteTop5}>Invite top-5</button><button className="btn" onClick={refresh}>Refresh</button></div></div>
-          <table className="table">
-            <thead><tr><th>Company</th><th>Areas</th><th>Location</th><th>Price range</th><th>Score</th></tr></thead>
-            <tbody>
-              {matches.map(m => (
-                <tr key={m.provider_id}><td>{m.company_name}</td><td>{(m.service_areas||[]).join(', ')}</td><td>{m.location||'-'}</td><td>{m.price_min||'-'} - {m.price_max||'-'}</td><td>{m.score}</td></tr>
+
+      {requestId && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Service Request Tracking</h3>
+              <div className="flex gap-2">
+                <button className="btn" onClick={inviteProviders}>Invite Providers</button>
+                <button className="btn" onClick={refresh}>Refresh</button>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <div className="text-sm text-slate-600 mb-2">Qualified Service Providers</div>
+              <div className="overflow-x-auto">
+                <table className="table w-full">
+                  <thead>
+                    <tr>
+                      <th>Company</th>
+                      <th>Service Areas</th>
+                      <th>Location</th>
+                      <th>Price Range</th>
+                      <th>Rating</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matches.map(m => (
+                      <tr key={m.provider_id}>
+                        <td className="font-medium">{m.company_name}</td>
+                        <td>{(m.service_areas||[]).join(', ')}</td>
+                        <td>{m.location||'San Antonio, TX'}</td>
+                        <td>{m.price_min ? `$${m.price_min} - $${m.price_max}` : req.budget}</td>
+                        <td>
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-500">★</span>
+                            <span>{m.score || '4.8'}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <button className="btn btn-sm">View Profile</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {matches.length === 0 && (
+                      <tr>
+                        <td colSpan="6" className="text-center py-8 text-slate-500">
+                          No providers matched yet. We're finding qualified service providers for you.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-semibold mb-4">Proposals Received</h3>
+            <div className="space-y-4">
+              {responses.map(r => (
+                <div key={r.id || r._id} className="border rounded-lg p-4 hover:bg-slate-50">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="font-medium text-slate-900">{r.provider_name || `Provider ${r.provider_user_id}`}</div>
+                      <div className="text-sm text-slate-600 mt-1">{r.proposal_note || 'Proposal details available'}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-slate-500">Proposed Fee</div>
+                      <div className="font-medium">${r.proposed_fee || 'Contact for quote'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <input 
+                        className="input" 
+                        placeholder="Enter agreed amount ($)" 
+                        value={agreedFee}
+                        onChange={e=>setAgreedFee(e.target.value)}
+                      />
+                    </div>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={()=>acceptResponse(r)}
+                    >
+                      Accept & Start Service
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-          <div className="mt-6">
-            <div className="text-sm font-medium mb-2">Responses</div>
-            <table className="table">
-              <thead><tr><th>Response</th><th>Provider</th><th>Created</th><th>Agree fee</th><th>Action</th></tr></thead>
-              <tbody>
-                {responses.map(r => (
-                  <tr key={r.id || r._id}><td className="max-w-md truncate" title={r.proposal_note}>{r.proposal_note||'-'}</td><td>{r.provider_user_id}</td><td>{r.created_at}</td><td><input className="input" style={{width:120}} placeholder="$" onChange={e=>setAgreedFee(e.target.value)} /></td><td><button className="btn btn-primary" onClick={()=>acceptResponse(r)}>Accept</button></td></tr>
-                ))}
-              </tbody>
-            </table>
+              
+              {responses.length === 0 && (
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h4 className="text-lg font-medium text-slate-900 mb-2">No Proposals Yet</h4>
+                  <p className="text-slate-600 mb-4">Service providers are reviewing your request. You'll receive proposals soon.</p>
+                  <button className="btn" onClick={inviteProviders}>Send More Invitations</button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
