@@ -1137,12 +1137,169 @@ def test_analytics_revenue_forecast(agency_token):
         print(f"❌ ERROR: {e}")
         return False
 
+def test_working_credentials_creation():
+    """Create and verify working login credentials for the user as per review request"""
+    print("\n" + "="*60)
+    print("🔐 CREATING AND VERIFYING WORKING LOGIN CREDENTIALS")
+    print("="*60)
+    
+    # Credentials as specified in review request
+    test_email = "polaris.user.001@example.com"
+    test_password = "SecurePass123!"
+    test_role = "client"
+    
+    print(f"Creating user with credentials:")
+    print(f"  Email: {test_email}")
+    print(f"  Password: {test_password}")
+    print(f"  Role: {test_role}")
+    
+    try:
+        # Step 1: Register the user
+        print("\n=== Step 1: User Registration ===")
+        register_payload = {
+            "email": test_email,
+            "password": test_password,
+            "role": test_role,
+            "terms_accepted": True
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=register_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        print(f"Registration Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            print("✅ PASS: User registration successful (200 status)")
+            register_data = response.json()
+            print(f"Registration response: {register_data}")
+        elif response.status_code == 400 and "already registered" in response.text:
+            print("⚠️  User already exists, proceeding with login test")
+        else:
+            print(f"❌ FAIL: Registration failed - {response.text}")
+            return False
+        
+        # Step 2: Login with the credentials
+        print("\n=== Step 2: User Login ===")
+        login_payload = {
+            "email": test_email,
+            "password": test_password
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/auth/login",
+            json=login_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        print(f"Login Status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAIL: Login failed - {response.text}")
+            return False
+        
+        login_data = response.json()
+        access_token = login_data.get('access_token')
+        token_type = login_data.get('token_type')
+        
+        if not access_token or token_type != 'bearer':
+            print(f"❌ FAIL: Invalid login response - {login_data}")
+            return False
+        
+        print("✅ PASS: Login successful with JWT token")
+        print(f"Token type: {token_type}")
+        print(f"Access token (first 50 chars): {access_token[:50]}...")
+        
+        # Step 3: Test JWT token validation with GET /api/auth/me
+        print("\n=== Step 3: JWT Token Validation ===")
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(f"{API_BASE}/auth/me", headers=headers)
+        print(f"Token validation Status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAIL: Token validation failed - {response.text}")
+            return False
+        
+        user_data = response.json()
+        print("✅ PASS: Token validation working with GET /api/auth/me")
+        print(f"User data: {json.dumps(user_data, indent=2, default=str)}")
+        
+        # Verify user details
+        if user_data.get('email') != test_email or user_data.get('role') != test_role:
+            print(f"❌ FAIL: User data mismatch - expected {test_email}/{test_role}, got {user_data.get('email')}/{user_data.get('role')}")
+            return False
+        
+        # Step 4: Test access to protected endpoints
+        print("\n=== Step 4: Protected Endpoints Access ===")
+        
+        # Test business profile endpoint (client-specific)
+        response = requests.get(f"{API_BASE}/business/profile/me", headers=headers)
+        print(f"Business profile access Status: {response.status_code}")
+        
+        if response.status_code not in [200, 404]:  # 404 is OK if no profile exists yet
+            print(f"❌ FAIL: Cannot access protected business profile endpoint - {response.text}")
+            return False
+        
+        print("✅ PASS: Can access protected business profile endpoint")
+        
+        # Test assessment session creation (requires authentication)
+        response = requests.post(f"{API_BASE}/assessment/session", headers=headers)
+        print(f"Assessment session creation Status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAIL: Cannot create assessment session - {response.text}")
+            return False
+        
+        session_data = response.json()
+        session_id = session_data.get('session_id')
+        print("✅ PASS: Can create assessment session")
+        print(f"Created session ID: {session_id}")
+        
+        # Test assessment progress (requires authentication)
+        if session_id:
+            response = requests.get(f"{API_BASE}/assessment/session/{session_id}/progress", headers=headers)
+            print(f"Assessment progress access Status: {response.status_code}")
+            
+            if response.status_code != 200:
+                print(f"❌ FAIL: Cannot access assessment progress - {response.text}")
+                return False
+            
+            print("✅ PASS: Can access assessment progress")
+        
+        # Final success message
+        print("\n" + "="*60)
+        print("🎉 WORKING CREDENTIALS VERIFICATION COMPLETE!")
+        print("="*60)
+        print("✅ Registration successful (200 status)")
+        print("✅ Login successful with JWT token")
+        print("✅ Token validation working with GET /api/auth/me")
+        print("✅ User can access protected endpoints")
+        print("\n📋 VERIFIED WORKING CREDENTIALS FOR USER:")
+        print(f"   Email: {test_email}")
+        print(f"   Password: {test_password}")
+        print(f"   Role: {test_role}")
+        print("\n🚀 User can now login to the platform immediately!")
+        print("="*60)
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ ERROR in credentials verification: {e}")
+        return False
+
 def main():
     """Run all backend tests including Phase 3 agency and financial features"""
     print("🚀 Starting Backend API Tests - Phase 3")
     print(f"Base URL: {API_BASE}")
     
-    results = {}
+    # First, run the working credentials test as requested in review
+    credentials_test_result = test_working_credentials_creation()
+    
+    results = {"working_credentials_verification": credentials_test_result}
     
     # ========== PHASE 1 TESTS (EXISTING) ==========
     print("\n" + "="*60)
