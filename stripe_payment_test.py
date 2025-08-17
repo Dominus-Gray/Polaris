@@ -197,12 +197,12 @@ def test_service_request_payment(client_token):
             print(f"Service request payment response: {json.dumps(data, indent=2)}")
             
             # Check required fields
-            required_fields = ['engagement_id', 'payment_session_id', 'checkout_url']
+            required_fields = ['session_id', 'url']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
                 print("✅ PASS: Service request payment created with all required fields")
-                return data.get('engagement_id'), data.get('payment_session_id')
+                return request_id, data.get('session_id')
             else:
                 print(f"❌ FAIL: Missing required fields: {missing_fields}")
                 return None, None
