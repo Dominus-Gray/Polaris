@@ -573,33 +573,78 @@ function AssessmentPage(){
     return <Navigate to="/home" replace />;
   }
 
-  // Assessment areas and questions
+  // Assessment areas and questions - Updated to match backend schema
   const assessmentAreas = [
     {
       id: 'area1',
       title: 'Business Formation & Registration',
       questions: [
-        { id: 'bf1', text: 'Do you have a current business license?', deliverable: 'Valid business license certificate', alternatives: 'City/county business registration, professional licenses' },
-        { id: 'bf2', text: 'Is your business registered with the Secretary of State?', deliverable: 'Articles of incorporation or LLC formation documents', alternatives: 'Certificate of formation, partnership agreement' },
-        { id: 'bf3', text: 'Do you have a Federal Tax ID (EIN)?', deliverable: 'IRS EIN assignment letter', alternatives: 'SSN for sole proprietorships (temporary)' }
+        { id: 'q1_1', text: 'Do you have a valid business license in your jurisdiction?', deliverable: 'Valid business license certificate', alternatives: 'City/county business registration, professional licenses' },
+        { id: 'q1_2', text: 'Is your business registered with the appropriate state and local authorities?', deliverable: 'Articles of incorporation or LLC formation documents', alternatives: 'Certificate of formation, partnership agreement' },
+        { id: 'q1_3', text: 'Do you have proper business insurance coverage?', deliverable: 'General liability insurance certificate', alternatives: 'Professional liability, errors & omissions insurance' }
       ]
     },
     {
       id: 'area2', 
-      title: 'Financial Operations',
+      title: 'Financial Operations & Management',
       questions: [
-        { id: 'fo1', text: 'Do you maintain separate business banking accounts?', deliverable: 'Business bank account statements', alternatives: 'Separate business checking account, business savings account' },
-        { id: 'fo2', text: 'Do you have current financial statements?', deliverable: 'Balance sheet, income statement, cash flow statement', alternatives: 'Tax returns, profit/loss statements, bookkeeping records' },
-        { id: 'fo3', text: 'Is your accounting system current and organized?', deliverable: 'Organized bookkeeping records, accounting software setup', alternatives: 'QuickBooks, spreadsheet tracking, receipt organization' }
+        { id: 'q2_1', text: 'Do you have a professional accounting system in place?', deliverable: 'Organized bookkeeping records, accounting software setup', alternatives: 'QuickBooks, spreadsheet tracking, CPA-maintained records' },
+        { id: 'q2_2', text: 'Are your financial records current and audit-ready?', deliverable: 'Balance sheet, income statement, cash flow statement', alternatives: 'Tax returns, profit/loss statements, financial summaries' },
+        { id: 'q2_3', text: 'Do you have established credit and banking relationships?', deliverable: 'Business bank account statements, credit references', alternatives: 'Business credit report, banking history documentation' }
       ]
     },
     {
       id: 'area3',
-      title: 'Legal & Contracting', 
+      title: 'Legal & Contracting Compliance', 
       questions: [
-        { id: 'lc1', text: 'Do you have general liability insurance?', deliverable: 'Current insurance certificate', alternatives: 'Professional liability, errors & omissions insurance' },
-        { id: 'lc2', text: 'Can you provide bonding if required?', deliverable: 'Bonding capacity letter from surety company', alternatives: 'Surety bond agreement, financial capacity documentation' },
-        { id: 'lc3', text: 'Do you have standard contract templates?', deliverable: 'Attorney-reviewed contract templates', alternatives: 'Service agreements, terms of service, work order templates' }
+        { id: 'q3_1', text: 'Do you have standard service agreements and contracts?', deliverable: 'Attorney-reviewed contract templates', alternatives: 'Service agreements, terms of service, work order templates' },
+        { id: 'q3_2', text: 'Are you compliant with relevant industry regulations?', deliverable: 'Compliance certificates and documentation', alternatives: 'Industry certifications, regulatory filings, audit reports' },
+        { id: 'q3_3', text: 'Do you have proper intellectual property protections?', deliverable: 'IP documentation and protections', alternatives: 'Trademark registrations, copyright notices, trade secrets policy' }
+      ]
+    },
+    {
+      id: 'area4',
+      title: 'Quality Management & Standards', 
+      questions: [
+        { id: 'q4_1', text: 'Do you have documented quality control processes?', deliverable: 'Quality control procedures and checklists', alternatives: 'Process documentation, quality standards, testing protocols' },
+        { id: 'q4_2', text: 'Are your services certified or accredited where applicable?', deliverable: 'Professional certifications and accreditations', alternatives: 'Industry certifications, training certificates, quality awards' },
+        { id: 'q4_3', text: 'Do you have customer feedback and improvement systems?', deliverable: 'Customer satisfaction tracking system', alternatives: 'Review processes, feedback forms, improvement documentation' }
+      ]
+    },
+    {
+      id: 'area5',
+      title: 'Technology & Security Infrastructure', 
+      questions: [
+        { id: 'q5_1', text: 'Do you have adequate cybersecurity measures in place?', deliverable: 'Cybersecurity policies and implementation proof', alternatives: 'Security software, data protection measures, incident response plan' },
+        { id: 'q5_2', text: 'Are your technology systems scalable for larger contracts?', deliverable: 'Technology capacity and scalability documentation', alternatives: 'System specifications, cloud infrastructure, upgrade plans' },
+        { id: 'q5_3', text: 'Do you have data backup and recovery procedures?', deliverable: 'Data backup and disaster recovery plan', alternatives: 'Backup schedules, recovery testing, cloud storage proof' }
+      ]
+    },
+    {
+      id: 'area6',
+      title: 'Human Resources & Capacity', 
+      questions: [
+        { id: 'q6_1', text: 'Do you have sufficient staffing for project delivery?', deliverable: 'Staffing plan and capacity documentation', alternatives: 'Org chart, staff qualifications, capacity analysis' },
+        { id: 'q6_2', text: 'Are your team members properly trained and certified?', deliverable: 'Staff training records and certifications', alternatives: 'Professional licenses, training certificates, skills documentation' },
+        { id: 'q6_3', text: 'Do you have employee onboarding and development programs?', deliverable: 'HR policies and training programs', alternatives: 'Employee handbook, training schedules, development plans' }
+      ]
+    },
+    {
+      id: 'area7',
+      title: 'Performance Tracking & Reporting', 
+      questions: [
+        { id: 'q7_1', text: 'Do you have KPI tracking and reporting systems?', deliverable: 'Performance metrics and reporting tools', alternatives: 'KPI dashboards, performance reports, tracking systems' },
+        { id: 'q7_2', text: 'Can you provide regular progress reports to clients?', deliverable: 'Client reporting templates and schedules', alternatives: 'Project status reports, communication plans, update protocols' },
+        { id: 'q7_3', text: 'Do you maintain project documentation and deliverables?', deliverable: 'Project management system and documentation', alternatives: 'File organization system, deliverable tracking, archive procedures' }
+      ]
+    },
+    {
+      id: 'area8',
+      title: 'Risk Management & Business Continuity', 
+      questions: [
+        { id: 'q8_1', text: 'Do you have a business continuity plan?', deliverable: 'Business continuity and disaster recovery plan', alternatives: 'Emergency procedures, contingency plans, recovery strategies' },
+        { id: 'q8_2', text: 'Are you prepared for emergency situations and disruptions?', deliverable: 'Emergency response procedures', alternatives: 'Crisis management plan, emergency contacts, backup procedures' },
+        { id: 'q8_3', text: 'Do you have appropriate liability and professional insurance?', deliverable: 'Professional liability insurance certificates', alternatives: 'Comprehensive business insurance, bonding capacity, risk coverage' }
       ]
     }
   ];
