@@ -567,6 +567,7 @@ function AssessmentPage(){
   const [answers, setAnswers] = useState({});
   const [showResources, setShowResources] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [showAreaNavigation, setShowAreaNavigation] = useState(false);
   
   // Redirect non-clients to home
   if (!me || me.role !== 'client') {
