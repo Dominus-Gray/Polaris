@@ -1596,6 +1596,152 @@ function ClientHome(){
             </div>
           )}
 
+          {activeTab === 'assessment' && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Assessment Progress</h3>
+                <p className="text-slate-600">Complete your procurement readiness assessment across 8 key business areas</p>
+              </div>
+              
+              {/* Assessment Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-sm text-blue-600 font-medium">Completed Areas</div>
+                      <div className="text-xl font-bold text-blue-900">3 of 8</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-sm text-green-600 font-medium">Readiness Score</div>
+                      <div className="text-xl font-bold text-green-900">{data?.readiness || 0}%</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-sm text-orange-600 font-medium">Areas Needing Attention</div>
+                      <div className="text-xl font-bold text-orange-900">5</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Areas Progress */}
+              <div className="space-y-4 mb-6">
+                <h4 className="font-medium text-slate-900">Business Areas Progress</h4>
+                {[
+                  { id: 1, title: 'Business Formation & Registration', completion: 100, status: 'complete' },
+                  { id: 2, title: 'Financial Operations & Management', completion: 85, status: 'in-progress' },
+                  { id: 3, title: 'Legal & Contracting Compliance', completion: 100, status: 'complete' },
+                  { id: 4, title: 'Quality Management & Standards', completion: 30, status: 'in-progress' },
+                  { id: 5, title: 'Technology & Security Infrastructure', completion: 0, status: 'not-started' },
+                  { id: 6, title: 'Human Resources & Capacity', completion: 0, status: 'not-started' },
+                  { id: 7, title: 'Performance Tracking & Reporting', completion: 0, status: 'not-started' },
+                  { id: 8, title: 'Risk Management & Business Continuity', completion: 100, status: 'complete' }
+                ].map((area) => (
+                  <div key={area.id} className="border rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                          area.status === 'complete' ? 'bg-green-100 text-green-800' :
+                          area.status === 'in-progress' ? 'bg-orange-100 text-orange-800' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {area.id}
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-900">{area.title}</div>
+                          <div className="text-sm text-slate-600">
+                            {area.status === 'complete' ? 'Complete' :
+                             area.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-slate-900">{area.completion}%</div>
+                        <div className="w-20 bg-slate-200 rounded-full h-2 mt-1">
+                          <div 
+                            className={`h-2 rounded-full transition-all ${
+                              area.completion === 100 ? 'bg-green-500' :
+                              area.completion > 0 ? 'bg-orange-500' : 'bg-slate-300'
+                            }`}
+                            style={{ width: `${area.completion}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* AI Insights for Compliance */}
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-6 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-purple-900 mb-2">AI Compliance Insights</h4>
+                    <div className="space-y-3 text-sm text-purple-800">
+                      <div className="bg-white/60 rounded p-3">
+                        <div className="font-medium mb-1">🎯 Priority Recommendation</div>
+                        <p>Focus on completing "Technology & Security Infrastructure" - this area is critical for government contracting and currently at 0% completion.</p>
+                      </div>
+                      <div className="bg-white/60 rounded p-3">
+                        <div className="font-medium mb-1">📊 Gap Analysis</div>
+                        <p>Your strongest areas are Business Formation (100%) and Legal Compliance (100%). Consider leveraging these strengths while addressing technology gaps.</p>
+                      </div>
+                      <div className="bg-white/60 rounded p-3">
+                        <div className="font-medium mb-1">🚀 Quick Wins</div>
+                        <p>Complete "Financial Operations" (currently 85%) to boost your overall readiness score significantly with minimal effort.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button 
+                  className="btn btn-primary flex-1"
+                  onClick={() => navigate('/assessment')}
+                >
+                  Continue Assessment
+                </button>
+                <button 
+                  className="btn"
+                  onClick={() => navigate('/matching')}
+                >
+                  Get Provider Help
+                </button>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'certificates' && (
             <div>
               <div className="mb-6">
