@@ -3717,7 +3717,7 @@ function AppShell(){
   const showLanding = location.pathname === '/' && !me;
   return (
     <div className="app-shell">
-      <Header />
+      {!showLanding && <Header />}
       {showLanding ? (
         <Landing />
       ) : (
