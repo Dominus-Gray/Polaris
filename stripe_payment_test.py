@@ -621,9 +621,9 @@ def test_error_scenarios(client_token):
         }
         
         payload = {
-            "package_type": "invalid_package",
-            "amount": 99.99,
-            "currency": "usd"
+            "package_id": "invalid_package",
+            "origin_url": "https://procurement-ready.preview.emergentagent.com",
+            "metadata": {}
         }
         
         response = requests.post(
