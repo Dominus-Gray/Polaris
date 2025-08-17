@@ -215,7 +215,7 @@ def test_create_provider():
     print("="*60)
     
     credentials = {
-        "email": "provider@polaris.test",
+        "email": "provider@polaris.example.com",
         "password": "Provider123!",
         "role": "provider",
         "terms_accepted": True
