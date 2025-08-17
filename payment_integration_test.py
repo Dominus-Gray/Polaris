@@ -88,14 +88,14 @@ class PaymentIntegrationTester:
                 "Content-Type": "application/json"
             }
             
-            # Test service request payment
+            # Test service request payment with correct payload structure
             payload = {
-                "package_type": "service_request",
-                "provider_id": str(uuid.uuid4()),
-                "amount": 1500.00,
-                "description": "Business Formation Services",
-                "success_url": f"{BASE_URL}/payment/success",
-                "cancel_url": f"{BASE_URL}/payment/cancel"
+                "package_id": "service_request_medium",  # Use valid package ID
+                "origin_url": BASE_URL,  # Required field
+                "metadata": {
+                    "description": "Business Formation Services",
+                    "service_type": "business_formation"
+                }
             }
             
             response = requests.post(
