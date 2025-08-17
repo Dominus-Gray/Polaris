@@ -2277,6 +2277,163 @@ async def get_my_services(current=Depends(require_user)):
     
     return {"engagements": engagements}
 
+# ---------------- Knowledge Base Payment Unlock ----------------
+@api.post("/payments/knowledge-base")
+async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn, current=Depends(require_user)):
+    """Create payment session for knowledge base unlock"""
+    if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
+        raise HTTPException(status_code=503, detail="Payment service unavailable")
+    
+    # Validate package is knowledge base related
+    if payload.package_id not in ["knowledge_base_single", "knowledge_base_all"]:
+        raise HTTPException(status_code=400, detail="Invalid knowledge base package")
+    
+    try:
+        # Initialize Stripe checkout
+        host_url = str(request.base_url)
+        webhook_url = f"{host_url}api/webhook/stripe"
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Get amount from server-side definition only
+        amount = SERVICE_PACKAGES[payload.package_id]
+        
+        # Build URLs
+        success_url = f"{payload.origin_url}/assessment?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{payload.origin_url}/assessment"
+        
+        # Add metadata
+        metadata = {
+            "user_id": current["id"],
+            "package_id": payload.package_id,
+            "service_type": "knowledge_base",
+            "email": current["email"],
+            **payload.metadata
+        }
+        
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=amount,
+            currency="USD",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata
+        )
+        
+        session = await stripe_client.create_checkout_session(checkout_request)
+        
+        # Create pending transaction record
+        transaction_id = str(uuid.uuid4())
+        transaction_doc = {
+            "_id": transaction_id,
+            "id": transaction_id,
+            "user_id": current["id"],
+            "package_id": payload.package_id,
+            "amount": amount,
+            "currency": "USD",
+            "stripe_session_id": session.session_id,
+            "payment_status": "pending",
+            "status": "initiated",
+            "service_type": "knowledge_base",
+            "metadata": metadata,
+            "created_at": datetime.utcnow()
+        }
+        await db.payment_transactions.insert_one(transaction_doc)
+        
+        return {"url": session.url, "session_id": session.session_id}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Knowledge base payment creation failed: {str(e)}")
+
+@api.get("/knowledge-base/access")
+async def get_knowledge_base_access(current=Depends(require_user)):
+    """Get user's knowledge base access status"""
+    access = await db.user_access.find_one({"user_id": current["id"]})
+    
+    if not access:
+        return {
+            "has_all_access": False,
+            "unlocked_areas": [],
+            "available_packages": {
+                "single_area": {"price": 20.0, "currency": "USD"},
+                "all_areas": {"price": 100.0, "currency": "USD"}
+            }
+        }
+    
+    knowledge_access = access.get("knowledge_base_access", {})
+    has_all_access = knowledge_access.get("all_areas", False)
+    unlocked_areas = []
+    
+    if not has_all_access:
+        # Check individual area access
+        for area_id in ["area1", "area2", "area3", "area4", "area5", "area6", "area7", "area8"]:
+            if knowledge_access.get(area_id, False):
+                unlocked_areas.append(area_id)
+    else:
+        unlocked_areas = ["area1", "area2", "area3", "area4", "area5", "area6", "area7", "area8"]
+    
+    return {
+        "has_all_access": has_all_access,
+        "unlocked_areas": unlocked_areas,
+        "available_packages": {
+            "single_area": {"price": 20.0, "currency": "USD"},
+            "all_areas": {"price": 100.0, "currency": "USD"}
+        }
+    }
+
+@api.get("/knowledge-base/{area_id}/content")
+async def get_knowledge_base_content(area_id: str, current=Depends(require_user)):
+    """Get knowledge base content for an area (if unlocked)"""
+    # Check access
+    access = await db.user_access.find_one({"user_id": current["id"]})
+    
+    if not access:
+        has_access = False
+    else:
+        knowledge_access = access.get("knowledge_base_access", {})
+        has_access = (
+            knowledge_access.get("all_areas", False) or 
+            knowledge_access.get(area_id, False)
+        )
+    
+    if not has_access:
+        return {
+            "has_access": False,
+            "unlock_required": True,
+            "unlock_price": 20.0,
+            "preview": "This premium content is locked. Unlock to access AI-powered templates, guides, and resources."
+        }
+    
+    # Return actual content if user has access
+    area_names = {
+        "area1": "Business Formation & Registration",
+        "area2": "Financial Operations & Management", 
+        "area3": "Legal & Contracting Compliance",
+        "area4": "Quality Management & Standards",
+        "area5": "Technology & Security Infrastructure",
+        "area6": "Human Resources & Capacity",
+        "area7": "Performance Tracking & Reporting",
+        "area8": "Risk Management & Business Continuity"
+    }
+    
+    return {
+        "has_access": True,
+        "area_name": area_names.get(area_id, "Unknown Area"),
+        "content": {
+            "templates": [
+                {"name": f"{area_names.get(area_id)} Template", "url": f"/templates/{area_id}_template.pdf"},
+                {"name": f"{area_names.get(area_id)} Checklist", "url": f"/templates/{area_id}_checklist.pdf"}
+            ],
+            "guides": [
+                {"name": f"Complete Guide to {area_names.get(area_id)}", "url": f"/guides/{area_id}_guide.pdf"},
+                {"name": f"Best Practices for {area_names.get(area_id)}", "url": f"/guides/{area_id}_best_practices.pdf"}
+            ],
+            "resources": [
+                {"name": "Government Requirements", "url": f"/resources/{area_id}_gov_requirements.pdf"},
+                {"name": "Compliance Standards", "url": f"/resources/{area_id}_compliance.pdf"}
+            ]
+        }
+    }
+
 # ---------------- Matching Core Endpoints ----------------
 class MatchRequestIn(BaseModel):
     budget: float
