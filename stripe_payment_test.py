@@ -470,7 +470,7 @@ def test_my_services(client_token):
             print(f"My services response: {json.dumps(data, indent=2)}")
             
             # Check required fields
-            required_fields = ['services']
+            required_fields = ['engagements']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
