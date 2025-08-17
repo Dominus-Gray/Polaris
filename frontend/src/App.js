@@ -1832,44 +1832,153 @@ function ClientHome(){
   
   return (
     <div className="container mt-6">
+      {/* Enhanced Dashboard Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 mb-6">
+        <h1 className="text-2xl font-bold mb-2">Welcome to Your Procurement Readiness Dashboard</h1>
+        <p className="opacity-90">Track your assessment progress, manage gaps, and access professional services</p>
+        
+        {/* Quick Status Indicators */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold">{assessmentData?.completion_percentage || 0}%</div>
+            <div className="text-sm opacity-80">Assessment Complete</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold text-red-200">{gaps.length}</div>
+            <div className="text-sm opacity-80">Critical Gaps</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold text-green-200">{serviceRequests.filter(r => r.status === 'active').length}</div>
+            <div className="text-sm opacity-80">Active Services</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold text-yellow-200">{data.readiness || 0}%</div>
+            <div className="text-sm opacity-80">Readiness Score</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sponsoring Agency Info */}
+      {sponsoringAgency && (
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-3">Your Sponsoring Agency</h3>
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <h4 className="font-medium text-slate-800">{sponsoringAgency.agency_name}</h4>
+              <p className="text-slate-600 text-sm mb-2">{sponsoringAgency.description}</p>
+              <div className="text-sm text-slate-500">
+                <p><strong>Contact:</strong> {sponsoringAgency.contact_name}</p>
+                <p><strong>Email:</strong> {sponsoringAgency.contact_email}</p>
+                <p><strong>Phone:</strong> {sponsoringAgency.contact_phone}</p>
+              </div>
+            </div>
+            <div className="text-sm bg-blue-50 px-3 py-2 rounded-lg">
+              <div className="font-medium text-blue-900">License Status</div>
+              <div className="text-blue-700">Active & Verified</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Critical Gaps Alert */}
+      {gaps.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="font-medium text-amber-900">Action Required: {gaps.length} Critical Gap{gaps.length > 1 ? 's' : ''} Identified</h4>
+              <p className="text-amber-700 text-sm mt-1">
+                Complete your assessment and address these gaps to improve your procurement readiness score.
+              </p>
+              <div className="flex gap-2 mt-3">
+                <button 
+                  className="btn btn-sm bg-amber-600 text-white hover:bg-amber-700"
+                  onClick={() => navigate('/assessment')}
+                >
+                  Continue Assessment
+                </button>
+                <button 
+                  className="btn btn-sm"
+                  onClick={() => setActiveTab('gaps')}
+                >
+                  View Gap Analysis
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Free Services Recommendations */}
+      {freeServices.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <h4 className="font-medium text-green-900 mb-2">🎯 Free Resources Available for Your Gaps</h4>
+          <p className="text-green-700 text-sm mb-3">Based on your assessment, we recommend these free resources:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {freeServices.slice(0, 6).map((service, idx) => (
+              <button
+                key={idx}
+                className="text-left bg-white border border-green-200 rounded-lg p-3 hover:bg-green-50 transition-colors"
+                onClick={() => {
+                  // Log resource access for navigator analytics
+                  axios.post(`${API}/analytics/resource-access`, { resource_id: service.id, gap_area: service.area });
+                  navigate('/free-resources');
+                }}
+              >
+                <div className="font-medium text-green-800 text-sm">{service.title}</div>
+                <div className="text-green-600 text-xs">{service.area_name}</div>
+              </button>
+            ))}
+          </div>
+          {freeServices.length > 6 && (
+            <button 
+              className="mt-3 text-green-700 text-sm hover:text-green-800"
+              onClick={() => navigate('/free-resources')}
+            >
+              View all {freeServices.length} recommended resources →
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="border-b">
-          <nav className="flex">
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'overview' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('overview')}
-            >
-              Overview
-            </button>
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'services' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('services')}
-            >
-              Services
-            </button>
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'assessment' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('assessment')}
-            >
-              Assessment
-            </button>
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'certificates' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('certificates')}
-            >
-              Certificates
-            </button>
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'knowledge' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('knowledge')}
-            >
-              Knowledge Base
-              <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Premium</span>
-            </button>
+        <div className="border-b border-slate-200 px-6 pt-4">
+          <nav className="flex gap-8">
+            {[
+              { id: 'overview', label: 'Overview', icon: '📊' },
+              { id: 'gaps', label: 'Gap Analysis', icon: '🎯' },
+              { id: 'services', label: 'Services', icon: '🔧' },
+              { id: 'assessment', label: 'Assessment', icon: '📝' },
+              { id: 'knowledge', label: 'Knowledge Base', icon: '📚' },
+              { id: 'certificates', label: 'Certificates', icon: '🏆' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id 
+                    ? 'border-blue-500 text-blue-600' 
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.label}
+                {tab.id === 'gaps' && gaps.length > 0 && (
+                  <span className="ml-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">{gaps.length}</span>
+                )}
+                {tab.id === 'services' && serviceRequests.filter(r => r.status === 'active').length > 0 && (
+                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                    {serviceRequests.filter(r => r.status === 'active').length}
+                  </span>
+                )}
+              </button>
+            ))}
           </nav>
         </div>
-
+        
         <div className="p-6">
           {activeTab === 'overview' && (
             <div>
