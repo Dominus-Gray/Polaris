@@ -442,8 +442,12 @@ def test_create_client_with_license(license_code):
     print("👤 STEP 6: CREATE SMALL BUSINESS CLIENT WITH LICENSE CODE")
     print("="*60)
     
+    # Use timestamp to ensure unique email
+    import time
+    timestamp = int(time.time())
+    
     credentials = {
-        "email": "client@polaris.example.com",
+        "email": f"client.{timestamp}@polaris.example.com",
         "password": "Client123!",
         "role": "client",
         "license_code": license_code,
