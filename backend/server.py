@@ -1454,6 +1454,56 @@ async def get_ai_explanation(
         logger.error(f"Error getting AI explanation: {e}")
         raise HTTPException(status_code=500, detail="Failed to get AI explanation")
 
+@api.get("/client/matched-services")
+async def get_client_matched_services(current_user: dict = Depends(get_current_user)):
+    """Get services matched to the client based on their assessment needs"""
+    try:
+        if current_user.get("role") != "client":
+            raise HTTPException(status_code=403, detail="Client access required")
+        
+        # For MVP, return sample matched services
+        # In production, this would query based on assessment results and provider availability
+        sample_services = [
+            {
+                "provider_name": "San Antonio Business Solutions",
+                "service_type": "Business Formation & Legal Compliance",
+                "budget_range": "$500 - $1,500",
+                "areas": ["Business Formation", "Legal Compliance", "Insurance Setup"],
+                "description": "Comprehensive business formation services including license acquisition, legal entity setup, and compliance documentation for small business procurement readiness.",
+                "rating": "4.9",
+                "reviews": "18",
+                "provider_id": str(uuid.uuid4())
+            },
+            {
+                "provider_name": "Alamo City Financial Services",
+                "service_type": "Financial Operations & Accounting",
+                "budget_range": "$750 - $2,000",
+                "areas": ["Financial Operations", "Accounting Systems", "Tax Preparation"],
+                "description": "Professional accounting setup, financial statement preparation, and bookkeeping system implementation for procurement-ready businesses.",
+                "rating": "4.8",
+                "reviews": "24",
+                "provider_id": str(uuid.uuid4())
+            },
+            {
+                "provider_name": "Lone Star Tech Solutions",
+                "service_type": "Technology & Security Infrastructure",
+                "budget_range": "$1,000 - $3,500",
+                "areas": ["Cybersecurity", "Technology Infrastructure", "Data Management"],
+                "description": "Complete technology infrastructure setup including cybersecurity, cloud systems, and data backup solutions for government contracting readiness.",
+                "rating": "4.7",
+                "reviews": "12",
+                "provider_id": str(uuid.uuid4())
+            }
+        ]
+        
+        return {"services": sample_services}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting matched services: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load matched services")
+
 # Provider Approval System
 @api.get("/navigator/providers/pending")
 async def get_pending_providers(current=Depends(require_role("navigator"))):
