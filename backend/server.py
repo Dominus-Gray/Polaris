@@ -470,13 +470,13 @@ class UserProfileOut(BaseModel):
     two_factor_enabled: bool = False
     
 class UserProfileUpdate(BaseModel):
-    display_name: Optional[str]
-    bio: Optional[str]
-    phone_number: Optional[str]
-    time_zone: Optional[str]
-    preferences: Optional[dict]
-    privacy_settings: Optional[dict]
-    notification_settings: Optional[dict]
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    phone_number: Optional[str] = None
+    time_zone: Optional[str] = None
+    preferences: Optional[dict] = None
+    privacy_settings: Optional[dict] = None
+    notification_settings: Optional[dict] = None
 
 class AvatarUploadOut(BaseModel):
     avatar_url: str
