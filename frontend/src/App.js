@@ -2223,6 +2223,8 @@ function AppShell(){
         <Routes>
           <Route path="/verify/cert/:id" element={<VerifyCert />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<ProfileSettings />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/home" element={<HomeRouter />} />
           <Route path="/business/profile" element={<BusinessProfileForm />} />
           <Route path="/matching" element={<MatchingPage />} />
