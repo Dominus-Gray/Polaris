@@ -192,22 +192,18 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-class UserRegister(BaseModel):
+class UserRegistrationIn(BaseModel):
     email: EmailStr
     password: str
-    role: str
-    terms_accepted: bool = False
+    role: str = Field(..., regex="^(client|provider|navigator|agency)$")
+    terms_accepted: bool = True
+    license_code: Optional[str] = None  # 10-digit license code for business clients
+    payment_info: Optional[Dict[str, str]] = None
     
     @validator('password')
     def validate_password(cls, v):
         if not validate_password_strength(v):
             raise ValueError('Password must be at least 8 characters with uppercase, lowercase, digit, and special character')
-        return v
-    
-    @validator('role')
-    def validate_role(cls, v):
-        if v not in ['client', 'provider', 'navigator', 'agency']:
-            raise ValueError('Invalid role')
         return v
 
 class ProviderApprovalIn(BaseModel):
@@ -291,7 +287,7 @@ def require_role(role: str):
 
 @api.post("/auth/register")
 @rate_limit(max_requests=5, window_seconds=300)  # 5 registrations per 5 minutes
-async def register_user(request: Request, user: UserRegister):
+async def register_user(request: Request, user: UserRegistrationIn):
     if not user.terms_accepted:
         log_security_event("REGISTRATION_TERMS_NOT_ACCEPTED", details={"email": user.email})
         raise HTTPException(status_code=400, detail="Terms of Service must be accepted")
