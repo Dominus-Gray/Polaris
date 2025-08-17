@@ -23,6 +23,14 @@ import re
 from functools import wraps
 import time
 
+# Stripe Payment Integration
+try:
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+    STRIPE_AVAILABLE = True
+except ImportError:
+    STRIPE_AVAILABLE = False
+    print("Warning: Stripe integration not available")
+
 # Security Configuration
 SECURITY_CONFIG = {
     "JWT_SECRET_KEY": os.environ.get("JWT_SECRET_KEY", secrets.token_urlsafe(32)),
