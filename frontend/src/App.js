@@ -2047,139 +2047,135 @@ function ClientHome(){
                 </div>
               </div>
 
+              {knowledgeBaseAccess && (
+                <div className="mb-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium text-blue-900">
+                        {knowledgeBaseAccess.has_all_access 
+                          ? 'All Areas Unlocked' 
+                          : `${knowledgeBaseAccess.unlocked_areas.length}/8 Areas Unlocked`}
+                      </span>
+                    </div>
+                    {!knowledgeBaseAccess.has_all_access && (
+                      <p className="text-sm text-blue-700">
+                        You have access to {knowledgeBaseAccess.unlocked_areas.length} business areas. 
+                        Unlock more areas to access additional templates and AI guidance.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Knowledge Base Areas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                  { 
-                    id: 1, 
-                    title: 'Business Formation & Registration', 
-                    price: 20, 
-                    unlocked: true, // Don't lock for test users
-                    templates: ['Business License Application Template', 'Articles of Incorporation Guide', 'EIN Registration Walkthrough'],
-                    guidance: 'Complete step-by-step guidance for legal business formation'
-                  },
-                  { 
-                    id: 2, 
-                    title: 'Financial Operations & Management', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['Chart of Accounts Template', 'Financial Statement Template', 'Cash Flow Projection'],
-                    guidance: 'Professional accounting setup and financial management systems'
-                  },
-                  { 
-                    id: 3, 
-                    title: 'Legal & Contracting Compliance', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['Service Agreement Template', 'Terms & Conditions Template', 'Compliance Checklist'],
-                    guidance: 'Legal templates and compliance frameworks for contractors'
-                  },
-                  { 
-                    id: 4, 
-                    title: 'Quality Management & Standards', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['Quality Control Procedures', 'ISO 9001 Checklist', 'Quality Assurance Plan'],
-                    guidance: 'Quality management systems and certification processes'
-                  },
-                  { 
-                    id: 5, 
-                    title: 'Technology & Security Infrastructure', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['Cybersecurity Policy Template', 'Data Backup Plan', 'IT Security Checklist'],
-                    guidance: 'Complete cybersecurity and technology infrastructure guide'
-                  },
-                  { 
-                    id: 6, 
-                    title: 'Human Resources & Capacity', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['Employee Handbook Template', 'Training Program Guide', 'Capacity Planning Tool'],
-                    guidance: 'HR policies and workforce capacity management'
-                  },
-                  { 
-                    id: 7, 
-                    title: 'Performance Tracking & Reporting', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['KPI Dashboard Template', 'Progress Report Template', 'Performance Metrics Guide'],
-                    guidance: 'Performance measurement and reporting systems'
-                  },
-                  { 
-                    id: 8, 
-                    title: 'Risk Management & Business Continuity', 
-                    price: 20, 
-                    unlocked: true,
-                    templates: ['Risk Assessment Template', 'Business Continuity Plan', 'Emergency Response Guide'],
-                    guidance: 'Comprehensive risk management and continuity planning'
-                  }
-                ].map((area) => (
-                  <div key={area.id} className={`border rounded-lg p-6 ${area.unlocked ? 'bg-white' : 'bg-slate-50 opacity-75'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold text-slate-900">{area.title}</h4>
-                      {area.unlocked ? (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Unlocked</span>
-                      ) : (
-                        <span className="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-full">${area.price}</span>
-                      )}
-                    </div>
-                    
-                    <p className="text-sm text-slate-600 mb-4">{area.guidance}</p>
-                    
-                    {area.unlocked ? (
-                      <div className="space-y-3">
-                        <div>
-                          <div className="text-xs font-medium text-slate-700 mb-2">Available Templates:</div>
-                          <ul className="space-y-1">
-                            {area.templates.map((template, idx) => (
-                              <li key={idx} className="flex items-center gap-2 text-sm">
+                  { id: 'area1', title: 'Business Formation & Registration' },
+                  { id: 'area2', title: 'Financial Operations & Management' },
+                  { id: 'area3', title: 'Legal & Contracting Compliance' },
+                  { id: 'area4', title: 'Quality Management & Standards' },
+                  { id: 'area5', title: 'Technology & Security Infrastructure' },
+                  { id: 'area6', title: 'Human Resources & Capacity' },
+                  { id: 'area7', title: 'Performance Tracking & Reporting' },
+                  { id: 'area8', title: 'Risk Management & Business Continuity' }
+                ].map((area) => {
+                  const isUnlocked = knowledgeBaseAccess?.has_all_access || 
+                                   knowledgeBaseAccess?.unlocked_areas.includes(area.id);
+                  
+                  return (
+                    <div key={area.id} className={`border rounded-lg p-6 ${isUnlocked ? 'bg-white' : 'bg-slate-50 opacity-75'}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-semibold text-slate-900">{area.title}</h4>
+                        {isUnlocked ? (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Unlocked</span>
+                        ) : (
+                          <span className="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-full">$20</span>
+                        )}
+                      </div>
+                      
+                      <p className="text-sm text-slate-600 mb-4">
+                        AI-powered templates, guides, and compliance resources for {area.title.toLowerCase()}
+                      </p>
+                      
+                      {isUnlocked ? (
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-xs font-medium text-slate-700 mb-2">Available Resources:</div>
+                            <ul className="space-y-1">
+                              <li className="flex items-center gap-2 text-sm">
                                 <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
-                                <span className="text-slate-700">{template}</span>
+                                <span className="text-slate-700">Templates & Checklists</span>
                                 <button className="ml-auto text-blue-600 hover:text-blue-700 text-xs">Download</button>
                               </li>
-                            ))}
-                          </ul>
+                              <li className="flex items-center gap-2 text-sm">
+                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-slate-700">Compliance Guides</span>
+                                <button className="ml-auto text-blue-600 hover:text-blue-700 text-xs">Download</button>
+                              </li>
+                              <li className="flex items-center gap-2 text-sm">
+                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-slate-700">Best Practices</span>
+                                <button className="ml-auto text-blue-600 hover:text-blue-700 text-xs">Download</button>
+                              </li>
+                            </ul>
+                          </div>
+                          
+                          <div className="flex gap-2 pt-2">
+                            <button className="btn btn-sm btn-primary flex-1">
+                              AI Guidance
+                            </button>
+                            <button className="btn btn-sm flex-1">
+                              View All Resources
+                            </button>
+                          </div>
                         </div>
-                        
-                        <div className="flex gap-2 pt-2">
-                          <button className="btn btn-sm btn-primary flex-1">
-                            AI Guidance
-                          </button>
-                          <button className="btn btn-sm flex-1">
-                            View Templates
+                      ) : (
+                        <div className="text-center py-4">
+                          <div className="text-sm text-slate-600 mb-3">Unlock AI-powered templates and guidance</div>
+                          <button 
+                            className="btn btn-primary btn-sm"
+                            onClick={() => unlockKnowledgeBase('knowledge_base_single', area.id)}
+                            disabled={paymentLoading}
+                          >
+                            {paymentLoading ? 'Processing...' : 'Unlock for $20'}
                           </button>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-sm text-slate-600 mb-3">Unlock AI-powered templates and guidance</div>
-                        <button className="btn btn-primary btn-sm">
-                          Unlock for ${area.price}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               
               {/* Bulk Purchase Option */}
-              <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
-                <div className="text-center">
-                  <h4 className="font-semibold text-purple-900 mb-2">Unlock All Areas</h4>
-                  <p className="text-purple-700 mb-4">Get complete access to all 8 business areas with AI guidance and templates</p>
-                  <div className="flex items-center justify-center gap-4 mb-4">
-                    <span className="text-sm text-slate-500 line-through">$160 individual</span>
-                    <span className="text-2xl font-bold text-purple-900">$100</span>
-                    <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">38% OFF</span>
+              {knowledgeBaseAccess && !knowledgeBaseAccess.has_all_access && (
+                <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+                  <div className="text-center">
+                    <h4 className="font-semibold text-purple-900 mb-2">Unlock All Areas</h4>
+                    <p className="text-purple-700 mb-4">Get complete access to all 8 business areas with AI guidance and templates</p>
+                    <div className="flex items-center justify-center gap-4 mb-4">
+                      <span className="text-sm text-slate-500 line-through">$160 individual</span>
+                      <span className="text-2xl font-bold text-purple-900">$100</span>
+                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">38% OFF</span>
+                    </div>
+                    <button 
+                      className="btn btn-primary px-8"
+                      onClick={() => unlockKnowledgeBase('knowledge_base_all')}
+                      disabled={paymentLoading}
+                    >
+                      {paymentLoading ? 'Processing...' : 'Unlock All Areas - $100'}
+                    </button>
                   </div>
-                  <button className="btn btn-primary px-8">
-                    Unlock All Areas - $100
-                  </button>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
