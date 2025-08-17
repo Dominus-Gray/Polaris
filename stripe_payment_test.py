@@ -334,12 +334,48 @@ def test_stripe_webhook():
         print(f"❌ ERROR: {e}")
         return False
 
+def create_test_engagement(client_token):
+    """Create a test engagement for testing"""
+    try:
+        headers = {
+            "Authorization": f"Bearer {client_token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Create engagement via the engagements/create endpoint
+        payload = {
+            "service_type": "business_formation",
+            "description": "Test engagement for API testing",
+            "budget": 1500.00,
+            "timeline": "2 weeks"
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/engagements/create",
+            json=payload,
+            headers=headers
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data.get('engagement_id')
+        else:
+            print(f"Could not create test engagement: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f"Error creating test engagement: {e}")
+        return None
+
 def test_engagement_update(client_token, engagement_id):
     """Test POST /api/engagements/{engagement_id}/update"""
     print("\n=== Testing Engagement Update ===")
     if not engagement_id:
-        print("⚠️  SKIP: No engagement ID available")
-        return False
+        # Try to create a test engagement
+        engagement_id = create_test_engagement(client_token)
+        if not engagement_id:
+            print("⚠️  SKIP: No engagement ID available and could not create one")
+            return False
         
     try:
         headers = {
