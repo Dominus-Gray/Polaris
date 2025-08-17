@@ -230,7 +230,7 @@ function AuthWidget(){
           <h3 className="font-semibold text-slate-900 mb-2 text-center text-xl">Choose Your User Type</h3>
           <p className="text-slate-600 text-center mb-6">Select the option that best describes your role</p>
           
-          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
             {roleOptions.map((role) => (
               <div 
                 key={role.id}
