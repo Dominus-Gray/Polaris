@@ -382,8 +382,13 @@ class OAuthCallbackOut(BaseModel):
 @api.post("/auth/oauth/callback", response_model=OAuthCallbackOut)
 async def oauth_callback(payload: OAuthCallbackIn, response: Response):
     try:
+        # Validate session ID format before making request
+        session_id = payload.session_id.strip()
+        if not session_id or session_id != payload.session_id or '\n' in session_id or '\r' in session_id:
+            raise HTTPException(status_code=400, detail="Invalid session ID")
+        
         # Call Emergent auth API to get user data (as per verified playbook)
-        headers = {"X-Session-ID": payload.session_id}
+        headers = {"X-Session-ID": session_id}
         emergent_response = requests.get("https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data", headers=headers)
         
         if emergent_response.status_code != 200:
