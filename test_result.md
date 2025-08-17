@@ -941,7 +941,8 @@
   run_ui: false
 
 ## test_plan:
-  current_focus: []
+  current_focus:
+    - "Assessment core endpoints (schema, session, progress, AI explain)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
