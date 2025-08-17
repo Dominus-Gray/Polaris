@@ -364,7 +364,7 @@ def test_navigator_approval_system(test_results):
             # Get the user ID for rejection
             pending_response = requests.get(f"{API_BASE}/admin/pending-approvals", headers=headers)
             if pending_response.status_code == 200:
-                pending_list = pending_response.json().get('pending_users', [])
+                pending_list = pending_response.json().get('pending_approvals', [])  # Changed from 'pending_users' to 'pending_approvals'
                 reject_user = next((user for user in pending_list if user.get('email') == reject_user_email), None)
                 
                 if reject_user:
