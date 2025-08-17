@@ -292,35 +292,73 @@ async def register_user(request: Request, user: UserRegistrationIn):
         log_security_event("REGISTRATION_TERMS_NOT_ACCEPTED", details={"email": user.email})
         raise HTTPException(status_code=400, detail="Terms of Service must be accepted")
     
-    existing = await db.users.find_one({"email": user.email})
-    if existing:
+    # Check if user exists
+    existing_user = await get_user_by_email(user.email)
+    if existing_user:
         log_security_event("REGISTRATION_EMAIL_EXISTS", details={"email": user.email})
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="User with this email already exists")
     
-    hashed_pw = pbkdf2_sha256.hash(user.password)
+    # Validate license code for business clients
+    if user.role == 'client':
+        if not user.license_code or len(user.license_code) != 10 or not user.license_code.isdigit():
+            raise HTTPException(status_code=400, detail="Business clients require a valid 10-digit license code from a local agency")
+        
+        # Verify license code is valid and not already used
+        license_record = await db.agency_licenses.find_one({"license_code": user.license_code, "status": "available"})
+        if not license_record:
+            raise HTTPException(status_code=400, detail="Invalid or already used license code")
+    
+    # Set approval status based on role
+    approval_status = "approved"  # Default for clients and navigators
+    if user.role == 'agency':
+        approval_status = "pending"  # Agencies need verification by navigators
+    elif user.role == 'provider':
+        approval_status = "pending"  # Providers need vetting by navigators
+    
     user_id = str(uuid.uuid4())
+    hashed_password = pbkdf2_sha256.hash(user.password)
     
-    # Set approval status for providers
-    approval_status = "pending" if user.role == "provider" else "approved"
-    
-    doc = {
-        "_id": user_id, 
-        "id": user_id, 
-        "email": user.email, 
-        "hashed_password": hashed_pw, 
+    user_doc = {
+        "_id": user_id,
+        "id": user_id,
+        "email": user.email.lower(),
+        "hashed_password": hashed_password,
         "role": user.role,
         "approval_status": approval_status,
-        "terms_accepted": user.terms_accepted,
-        "terms_accepted_at": datetime.utcnow(),
-        "failed_login_attempts": 0,
-        "locked_until": None,
+        "is_active": True,
         "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "profile_complete": False,
+        "terms_accepted": user.terms_accepted,
+        "terms_accepted_at": datetime.utcnow()
     }
-    await db.users.insert_one(doc)
     
-    log_security_event("USER_REGISTERED", user_id=user_id, details={"role": user.role, "email": user.email})
-    return {"message": "User registered successfully"}
+    # Store payment info if provided (encrypted)
+    if user.payment_info:
+        user_doc["payment_info"] = user.payment_info  # In production, this should be encrypted
+    
+    # Store license code for clients
+    if user.role == 'client' and user.license_code:
+        user_doc["license_code"] = user.license_code
+        # Mark license as used
+        await db.agency_licenses.update_one(
+            {"license_code": user.license_code},
+            {"$set": {"status": "used", "used_by": user_id, "used_at": datetime.utcnow()}}
+        )
+    
+    await db.users.insert_one(user_doc)
+    
+    log_security_event("USER_REGISTERED", details={
+        "user_id": user_id, 
+        "email": user.email, 
+        "role": user.role,
+        "approval_status": approval_status
+    })
+    
+    # Send different responses based on approval status
+    if approval_status == "pending":
+        return {"message": f"{user.role.title()} registration submitted for approval", "status": "pending"}
+    else:
+        return {"message": "Registration successful", "status": "approved"}
 
 @api.post("/auth/login", response_model=Token)
 @rate_limit(max_requests=10, window_seconds=300)  # 10 login attempts per 5 minutes
