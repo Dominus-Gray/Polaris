@@ -153,12 +153,35 @@ def test_service_request_payment(client_token):
             "Content-Type": "application/json"
         }
         
+        # First create a match request
+        print("Creating match request...")
+        match_payload = {
+            "budget": 1500,
+            "payment_pref": "card",
+            "timeline": "2 weeks",
+            "area_id": "area1",
+            "description": "Need business formation services"
+        }
+        
+        match_response = requests.post(
+            f"{API_BASE}/match/request",
+            json=match_payload,
+            headers=headers
+        )
+        
+        if match_response.status_code != 200:
+            print(f"❌ FAIL: Could not create match request - {match_response.text}")
+            return None, None
+        
+        request_id = match_response.json().get('request_id')
+        print(f"Created match request: {request_id}")
+        
+        # Now create service payment
         payload = {
-            "service_type": "business_formation",
+            "request_id": request_id,
             "provider_id": str(uuid.uuid4()),
-            "amount": 1500.00,
-            "description": "Business formation and legal compliance services",
-            "requirements": ["Business license", "Tax ID setup", "Insurance coverage"]
+            "agreed_fee": 1500.00,
+            "origin_url": "https://procurement-ready.preview.emergentagent.com"
         }
         
         response = requests.post(
