@@ -241,15 +241,7 @@ def test_service_request_payment(client_token):
             return None, None
         
         provider_token = login_response.json().get('access_token')
-        
-        # Get provider user ID
-        provider_response = requests.get(f"{API_BASE}/auth/me", headers={"Authorization": f"Bearer {provider_token}"})
-        if provider_response.status_code != 200:
-            print("❌ FAIL: Could not get provider user ID")
-            return None, None
-        
-        provider_id = provider_response.json().get('id')
-        print(f"Created provider: {provider_id}")
+
         
         # First create a match request
         print("Creating match request...")
