@@ -420,8 +420,11 @@ def test_engagement_tracking(client_token, engagement_id):
     """Test GET /api/engagements/{engagement_id}/tracking"""
     print("\n=== Testing Engagement Tracking ===")
     if not engagement_id:
-        print("⚠️  SKIP: No engagement ID available")
-        return False
+        # Try to create a test engagement
+        engagement_id = create_test_engagement(client_token)
+        if not engagement_id:
+            print("⚠️  SKIP: No engagement ID available and could not create one")
+            return False
         
     try:
         headers = {
