@@ -1919,7 +1919,7 @@ function ClientHome(){
                 </button>
                 <button 
                   className="btn"
-                  onClick={() => navigate('/matching')}
+                  onClick={() => navigate('/service-request')}
                 >
                   Get Provider Help
                 </button>
