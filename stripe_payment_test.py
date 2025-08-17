@@ -299,7 +299,7 @@ def test_stripe_webhook():
             data = response.json()
             print(f"Webhook response: {json.dumps(data, indent=2)}")
             
-            if data.get('received'):
+            if data.get('status') == 'processed':
                 print("✅ PASS: Stripe webhook processed successfully")
                 return True
             else:
