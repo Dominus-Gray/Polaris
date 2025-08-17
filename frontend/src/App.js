@@ -1775,7 +1775,7 @@ function ClientHome(){
                   </svg>
                   <h3 className="text-lg font-medium text-slate-900 mb-2">No Services Matched Yet</h3>
                   <p className="text-slate-600 mb-4">We'll match you with qualified service providers based on your assessment needs.</p>
-                  <button className="btn btn-primary" onClick={()=>navigate('/matching')}>Find Service Providers</button>
+                  <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Find Service Providers</button>
                 </div>
               )}
             </div>
