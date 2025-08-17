@@ -1361,6 +1361,8 @@ function BusinessProfileForm(){
 function ClientHome(){
   const [data, setData] = useState(null);
   const [certificates, setCertificates] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [matchedServices, setMatchedServices] = useState([]);
   const navigate = useNavigate();
   useEffect(()=>{ 
     const load=async()=>{ 
