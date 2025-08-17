@@ -1463,6 +1463,12 @@ function ClientHome(){
               Services
             </button>
             <button
+              className={`px-6 py-3 font-medium ${activeTab === 'assessment' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
+              onClick={() => setActiveTab('assessment')}
+            >
+              Assessment
+            </button>
+            <button
               className={`px-6 py-3 font-medium ${activeTab === 'certificates' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
               onClick={() => setActiveTab('certificates')}
             >
