@@ -1500,9 +1500,78 @@ async def get_approved_providers():
 # ---------------- Minimal Assessment Schema for readiness calc ----------------
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
-        {"id": "area1", "title": "Business Formation & Registration", "questions": [{"id": "q1", "text": "Vendor registration confirmation"}]},
-        {"id": "area2", "title": "Financial Operations", "questions": [{"id": "q1", "text": "Accounting system settings screenshot"}]},
-        {"id": "area3", "title": "Legal & Contracting", "questions": [{"id": "q1", "text": "Services agreement template"}]},
+        {
+            "id": "area1", 
+            "title": "Business Formation & Registration", 
+            "questions": [
+                {"id": "q1_1", "text": "Do you have a valid business license in your jurisdiction?"},
+                {"id": "q1_2", "text": "Is your business registered with the appropriate state and local authorities?"},
+                {"id": "q1_3", "text": "Do you have proper business insurance coverage?"}
+            ]
+        },
+        {
+            "id": "area2", 
+            "title": "Financial Operations & Management", 
+            "questions": [
+                {"id": "q2_1", "text": "Do you have a professional accounting system in place?"},
+                {"id": "q2_2", "text": "Are your financial records current and audit-ready?"},
+                {"id": "q2_3", "text": "Do you have established credit and banking relationships?"}
+            ]
+        },
+        {
+            "id": "area3", 
+            "title": "Legal & Contracting Compliance", 
+            "questions": [
+                {"id": "q3_1", "text": "Do you have standard service agreements and contracts?"},
+                {"id": "q3_2", "text": "Are you compliant with relevant industry regulations?"},
+                {"id": "q3_3", "text": "Do you have proper intellectual property protections?"}
+            ]
+        },
+        {
+            "id": "area4", 
+            "title": "Quality Management & Standards", 
+            "questions": [
+                {"id": "q4_1", "text": "Do you have documented quality control processes?"},
+                {"id": "q4_2", "text": "Are your services certified or accredited where applicable?"},
+                {"id": "q4_3", "text": "Do you have customer feedback and improvement systems?"}
+            ]
+        },
+        {
+            "id": "area5", 
+            "title": "Technology & Security Infrastructure", 
+            "questions": [
+                {"id": "q5_1", "text": "Do you have adequate cybersecurity measures in place?"},
+                {"id": "q5_2", "text": "Are your technology systems scalable for larger contracts?"},
+                {"id": "q5_3", "text": "Do you have data backup and recovery procedures?"}
+            ]
+        },
+        {
+            "id": "area6", 
+            "title": "Human Resources & Capacity", 
+            "questions": [
+                {"id": "q6_1", "text": "Do you have sufficient staffing for project delivery?"},
+                {"id": "q6_2", "text": "Are your team members properly trained and certified?"},
+                {"id": "q6_3", "text": "Do you have employee onboarding and development programs?"}
+            ]
+        },
+        {
+            "id": "area7", 
+            "title": "Performance Tracking & Reporting", 
+            "questions": [
+                {"id": "q7_1", "text": "Do you have KPI tracking and reporting systems?"},
+                {"id": "q7_2", "text": "Can you provide regular progress reports to clients?"},
+                {"id": "q7_3", "text": "Do you maintain project documentation and deliverables?"}
+            ]
+        },
+        {
+            "id": "area8", 
+            "title": "Risk Management & Business Continuity", 
+            "questions": [
+                {"id": "q8_1", "text": "Do you have a business continuity plan?"},
+                {"id": "q8_2", "text": "Are you prepared for emergency situations and disruptions?"},
+                {"id": "q8_3", "text": "Do you have appropriate liability and professional insurance?"}
+            ]
+        }
     ]
 }
 
