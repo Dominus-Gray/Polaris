@@ -208,68 +208,6 @@ function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
-  const selectRole = (roleId) => {
-    setSelectedRole(roleId);
-    setMode('register');
-    setStep('register');
-  };
-
-  const goBackToRoleSelection = () => {
-    setStep('role-selection');
-    setSelectedRole(null);
-    setMode('login');
-  };
-
-  // Role Selection Screen
-  if (step === 'role-selection') {
-    return (
-      <div className="auth-widget" id="auth">
-        <div className="bg-white rounded-lg p-6 shadow-lg border max-w-4xl mx-auto">
-          <h3 className="font-semibold text-slate-900 mb-2 text-center text-xl">Choose Your User Type</h3>
-          <p className="text-slate-600 text-center mb-6">Select the option that best describes your role</p>
-          
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
-            {roleOptions.map((role) => (
-              <div 
-                key={role.id}
-                className="border rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition-all"
-                onClick={() => selectRole(role.id)}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">{role.icon}</div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-slate-900 mb-1">{role.title}</h4>
-                    <p className="text-sm text-slate-600 mb-2">{role.description}</p>
-                    <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mb-3">
-                      {role.requirements}
-                    </div>
-                    <ul className="text-xs text-slate-500 space-y-1">
-                      {role.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-1">
-                          <span className="text-green-500">•</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <button 
-              className="text-blue-600 hover:text-blue-700 text-sm"
-              onClick={() => setStep('login')}
-            >
-              Already have an account? Sign in here
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Login/Register Form
   return (
     <div className="auth-widget" id="auth">
@@ -281,12 +219,14 @@ function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
               <span className="font-medium text-blue-900">
                 {roleOptions.find(r => r.id === selectedRole)?.title}
               </span>
-              <button 
-                className="ml-auto text-blue-600 hover:text-blue-700 text-sm"
-                onClick={goBackToRoleSelection}
-              >
-                Change
-              </button>
+              {onBackToRoleSelection && (
+                <button 
+                  className="ml-auto text-blue-600 hover:text-blue-700 text-sm"
+                  onClick={onBackToRoleSelection}
+                >
+                  Change
+                </button>
+              )}
             </div>
           </div>
         )}
