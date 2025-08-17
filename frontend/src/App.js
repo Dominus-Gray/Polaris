@@ -3991,6 +3991,8 @@ function AppShell(){
           <Route path="/verify/cert/:id" element={<VerifyCert />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<ProfileSettings />} />
+          <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+          <Route path="/free-resources" element={<FreeResourcesPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/home" element={<HomeRouter />} />
           <Route path="/business/profile" element={<BusinessProfileForm />} />
