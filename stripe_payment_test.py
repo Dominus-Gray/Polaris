@@ -158,12 +158,89 @@ def test_service_request_payment(client_token):
             "Content-Type": "application/json"
         }
         
-        # First create a provider user
+        # First create a provider user (they start as pending)
         print("Creating provider user...")
-        provider_token, provider_email = create_test_user("provider")
-        if not provider_token:
-            print("❌ FAIL: Could not create provider user")
+        provider_email = f"stripe_test_provider_{uuid.uuid4().hex[:8]}@example.com"
+        provider_password = "ProviderTest123!"
+        
+        # Register provider
+        register_payload = {
+            "email": provider_email,
+            "password": provider_password,
+            "role": "provider",
+            "terms_accepted": True
+        }
+        
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=register_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code != 200:
+            print(f"❌ FAIL: Provider registration failed - {response.text}")
             return None, None
+        
+        # Get provider user ID by creating a navigator and approving the provider
+        print("Creating navigator to approve provider...")
+        navigator_token, navigator_email = create_test_user("navigator")
+        if not navigator_token:
+            print("❌ FAIL: Could not create navigator user")
+            return None, None
+        
+        # Get pending providers
+        nav_headers = {"Authorization": f"Bearer {navigator_token}"}
+        pending_response = requests.get(f"{API_BASE}/navigator/providers/pending", headers=nav_headers)
+        
+        if pending_response.status_code != 200:
+            print(f"❌ FAIL: Could not get pending providers - {pending_response.text}")
+            return None, None
+        
+        providers = pending_response.json().get('providers', [])
+        provider_user = next((p for p in providers if p['email'] == provider_email), None)
+        
+        if not provider_user:
+            print("❌ FAIL: Could not find pending provider")
+            return None, None
+        
+        provider_id = provider_user['id']
+        
+        # Approve the provider
+        approval_payload = {
+            "provider_user_id": provider_id,
+            "approval_status": "approved",
+            "notes": "Approved for testing"
+        }
+        
+        approval_response = requests.post(
+            f"{API_BASE}/navigator/providers/approve",
+            json=approval_payload,
+            headers=nav_headers
+        )
+        
+        if approval_response.status_code != 200:
+            print(f"❌ FAIL: Could not approve provider - {approval_response.text}")
+            return None, None
+        
+        print(f"Provider approved: {provider_id}")
+        
+        # Now try to login the provider
+        login_payload = {
+            "email": provider_email,
+            "password": provider_password
+        }
+        
+        login_response = requests.post(
+            f"{API_BASE}/auth/login",
+            json=login_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if login_response.status_code != 200:
+            print(f"❌ FAIL: Provider login failed - {login_response.text}")
+            return None, None
+        
+        provider_token = login_response.json().get('access_token')
         
         # Get provider user ID
         provider_response = requests.get(f"{API_BASE}/auth/me", headers={"Authorization": f"Bearer {provider_token}"})
