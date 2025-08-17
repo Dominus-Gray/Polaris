@@ -368,11 +368,10 @@ def test_navigator_approval_system(test_results):
                 
                 if reject_user:
                     print("\n--- Testing user rejection ---")
-                    reject_request_payload = {
-                        "user_id": reject_user.get('id'),
-                        "reason": "Insufficient documentation provided"
-                    }
-                    response = requests.post(f"{API_BASE}/admin/reject-user", json=reject_request_payload, headers=headers)
+                    response = requests.post(
+                        f"{API_BASE}/admin/reject-user?user_id={reject_user.get('id')}&reason=Insufficient documentation provided",
+                        headers=headers
+                    )
                     
                     if response.status_code == 200:
                         data = response.json()
