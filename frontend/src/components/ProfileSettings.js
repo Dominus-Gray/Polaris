@@ -516,8 +516,8 @@ function PasswordChangeForm({ onComplete }) {
 }
 
 function NotificationsTab({ profile, onSave, saving }) {
-  const [notifications, setNotifications] = useState(
-    profile?.notification_settings || {
+  const [notifications, setNotifications] = useState(() => {
+    const defaultSettings = {
       email_notifications: {
         assessment_reminders: true,
         provider_matches: true,
@@ -540,8 +540,20 @@ function NotificationsTab({ profile, onSave, saving }) {
         show_badges: true,
         auto_mark_read: false
       }
+    };
+    
+    // Safely merge with existing settings
+    if (profile?.notification_settings) {
+      return {
+        email_notifications: { ...defaultSettings.email_notifications, ...profile.notification_settings.email_notifications },
+        sms_notifications: { ...defaultSettings.sms_notifications, ...profile.notification_settings.sms_notifications },
+        push_notifications: { ...defaultSettings.push_notifications, ...profile.notification_settings.push_notifications },
+        in_app_notifications: { ...defaultSettings.in_app_notifications, ...profile.notification_settings.in_app_notifications }
+      };
     }
-  );
+    
+    return defaultSettings;
+  });
 
   const handleSave = () => {
     onSave({ notification_settings: notifications });
