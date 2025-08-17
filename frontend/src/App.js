@@ -45,11 +45,12 @@ function useAuthHeader(){
 
 function AuthWidget(){
   const navigate = useNavigate();
+  const [step, setStep] = useState('role-selection'); // 'role-selection', 'register', 'login'
+  const [selectedRole, setSelectedRole] = useState(null);
   const [mode, setMode] = useState('login');
-  const [role, setRole] = useState('client');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
+  const [licenseCode, setLicenseCode] = useState(''); // 10-digit license code for business clients
   const [paymentInfo, setPaymentInfo] = useState({
     card_number: '',
     expiry_month: '',
@@ -60,7 +61,41 @@ function AuthWidget(){
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOAuthModal, setShowOAuthModal] = useState(false);
-  const [showRoleSelection, setShowRoleSelection] = useState(false);
+
+  const roleOptions = [
+    {
+      id: 'client',
+      title: 'Small Business Client',
+      description: 'Get assessed for procurement readiness and access service providers',
+      requirements: 'Requires 10-digit license code from your local agency',
+      features: ['Maturity assessment', 'Readiness certification', 'Service requests', 'Knowledge base access'],
+      icon: '🏢'
+    },
+    {
+      id: 'agency', 
+      title: 'Local Agency',
+      description: 'Invite businesses and distribute assessment licenses',
+      requirements: 'Subject to verification and approval by Digital Navigators',
+      features: ['License distribution', 'Opportunity forecasting', 'Business dashboards', 'Volume pricing'],
+      icon: '🏛️'
+    },
+    {
+      id: 'provider',
+      title: 'Service Provider', 
+      description: 'Offer services to help businesses achieve procurement readiness',
+      requirements: 'Subject to vetting and approval by Digital Navigators',
+      features: ['Service marketplace', 'Client matching', 'Payment processing', 'Performance tracking'],
+      icon: '🔧'
+    },
+    {
+      id: 'navigator',
+      title: 'Digital Navigator',
+      description: 'Platform administrators - review, approve, and guide businesses',
+      requirements: 'Polaris team members only',
+      features: ['Evidence review', 'Provider approval', 'Quality assurance', 'Platform management'],
+      icon: '👥'
+    }
+  ];
   
   const submit = async()=>{
     if (mode === 'register' && !termsAccepted) {
@@ -68,14 +103,19 @@ function AuthWidget(){
       return;
     }
     
-    // Validate invitation code for clients
-    if (mode === 'register' && role === 'client' && !inviteCode.trim()) {
-      toast.error('Invitation code is required for small business client registration');
+    // Validate license code for business clients
+    if (mode === 'register' && selectedRole === 'client' && !licenseCode.trim()) {
+      toast.error('10-digit license code is required for business client registration');
       return;
     }
     
-    // Validate payment information for non-navigator registrations
-    if (mode === 'register' && role !== 'navigator') {
+    if (mode === 'register' && selectedRole === 'client' && licenseCode.length !== 10) {
+      toast.error('License code must be exactly 10 digits');
+      return;
+    }
+    
+    // Validate payment information for clients and providers (not agencies or navigators)
+    if (mode === 'register' && ['client', 'provider'].includes(selectedRole)) {
       if (!paymentInfo.card_number || !paymentInfo.expiry_month || !paymentInfo.expiry_year || 
           !paymentInfo.cvv || !paymentInfo.cardholder_name) {
         toast.error('Payment information is required for registration');
@@ -90,18 +130,29 @@ function AuthWidget(){
         const registrationData = { 
           email, 
           password, 
-          role, 
+          role: selectedRole, 
           terms_accepted: termsAccepted,
-          ...(role === 'client' && { invite_code: inviteCode }),
-          ...(role !== 'navigator' && { payment_info: paymentInfo })
+          ...(selectedRole === 'client' && { license_code: licenseCode }),
+          ...((['client', 'provider'].includes(selectedRole)) && { payment_info: paymentInfo })
         };
         
         await axios.post(`${API}/auth/register`, registrationData);
-        toast.success('Registration successful', { 
-          description: role === 'client' 
-            ? 'Welcome! Please sign in to begin your assessment'
-            : 'Please sign in with your credentials'
-        });
+        
+        // Show appropriate success message based on role
+        let successMessage = 'Registration successful';
+        let description = 'Please sign in with your credentials';
+        
+        if (selectedRole === 'client') {
+          description = 'Welcome! Please sign in to begin your assessment';
+        } else if (selectedRole === 'agency') {
+          description = 'Your application has been submitted for review by Digital Navigators. You will be notified once approved.';
+        } else if (selectedRole === 'provider') {
+          description = 'Your application has been submitted for vetting by Digital Navigators. You will be notified once approved.';
+        } else if (selectedRole === 'navigator') {
+          description = 'Navigator registration complete. Please sign in to access platform administration.';
+        }
+        
+        toast.success(successMessage, { description });
         setMode('login');
       } else {
         const { data } = await axios.post(`${API}/auth/login`, { email, password });
@@ -109,6 +160,21 @@ function AuthWidget(){
         axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
         const me = await axios.get(`${API}/auth/me`);
         localStorage.setItem('polaris_me', JSON.stringify(me.data));
+        
+        // Handle pending approval states
+        if (me.data.approval_status === 'pending') {
+          toast.info('Account Pending Approval', { 
+            description: `Your ${me.data.role} application is under review by Digital Navigators. You will be notified once approved.` 
+          });
+          // Don't navigate, show pending state
+          return;
+        } else if (me.data.approval_status === 'rejected') {
+          toast.error('Application Rejected', { 
+            description: 'Your application was not approved. Please contact support for more information.' 
+          });
+          return;
+        }
+        
         toast.success('Welcome', { description: me.data.email });
         navigate('/home');
       }
@@ -144,10 +210,92 @@ function AuthWidget(){
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
+  const selectRole = (roleId) => {
+    setSelectedRole(roleId);
+    setMode('register');
+    setStep('register');
+  };
+
+  const goBackToRoleSelection = () => {
+    setStep('role-selection');
+    setSelectedRole(null);
+    setMode('login');
+  };
+
+  // Role Selection Screen
+  if (step === 'role-selection') {
+    return (
+      <div className="auth-widget" id="auth">
+        <div className="bg-white rounded-lg p-6 shadow-lg border max-w-4xl mx-auto">
+          <h3 className="font-semibold text-slate-900 mb-2 text-center text-xl">Choose Your User Type</h3>
+          <p className="text-slate-600 text-center mb-6">Select the option that best describes your role</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {roleOptions.map((role) => (
+              <div 
+                key={role.id}
+                className="border rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition-all"
+                onClick={() => selectRole(role.id)}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">{role.icon}</div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-slate-900 mb-1">{role.title}</h4>
+                    <p className="text-sm text-slate-600 mb-2">{role.description}</p>
+                    <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mb-3">
+                      {role.requirements}
+                    </div>
+                    <ul className="text-xs text-slate-500 space-y-1">
+                      {role.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center gap-1">
+                          <span className="text-green-500">•</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center">
+            <button 
+              className="text-blue-600 hover:text-blue-700 text-sm"
+              onClick={() => setStep('login')}
+            >
+              Already have an account? Sign in here
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Login/Register Form
   return (
     <div className="auth-widget" id="auth">
       <div className="bg-white rounded-lg p-6 shadow-lg border">
-        <h3 className="font-semibold text-slate-900 mb-4 text-center">Get Started Today</h3>
+        {selectedRole && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{roleOptions.find(r => r.id === selectedRole)?.icon}</span>
+              <span className="font-medium text-blue-900">
+                {roleOptions.find(r => r.id === selectedRole)?.title}
+              </span>
+              <button 
+                className="ml-auto text-blue-600 hover:text-blue-700 text-sm"
+                onClick={goBackToRoleSelection}
+              >
+                Change
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <h3 className="font-semibold text-slate-900 mb-4 text-center">
+          {mode === 'register' ? 'Create Account' : 'Sign In'}
+        </h3>
         
         {/* Google OAuth Button */}
         <button 
@@ -177,18 +325,20 @@ function AuthWidget(){
         <div className="space-y-3">
           <div className="flex gap-2">
             <select className="input flex-1" value={mode} onChange={e=>setMode(e.target.value)} disabled={isSubmitting}>
-              <option value="login">Login</option>
-              <option value="register">Register</option>
+              <option value="login">Sign In</option>
+              {selectedRole && <option value="register">Register</option>}
             </select>
-            {mode==='register' && (
-              <select className="input flex-1" value={role} onChange={e=>setRole(e.target.value)} disabled={isSubmitting}>
-                <option value="client">Client</option>
-                <option value="provider">Provider</option>
-                <option value="navigator">Navigator</option>
-                <option value="agency">Agency</option>
-              </select>
+            {!selectedRole && mode === 'login' && (
+              <button 
+                className="btn"
+                onClick={goBackToRoleSelection}
+                disabled={isSubmitting}
+              >
+                Register
+              </button>
             )}
           </div>
+          
           <input 
             className="input w-full" 
             placeholder="Email address" 
@@ -206,19 +356,25 @@ function AuthWidget(){
             disabled={isSubmitting}
           />
           
-          {/* Invitation Code for Clients */}
-          {mode === 'register' && role === 'client' && (
-            <input 
-              className="input w-full" 
-              placeholder="Agency Invitation Code *" 
-              value={inviteCode} 
-              onChange={e=>setInviteCode(e.target.value)}
-              disabled={isSubmitting}
-            />
+          {/* License Code for Business Clients */}
+          {mode === 'register' && selectedRole === 'client' && (
+            <div>
+              <input 
+                className="input w-full" 
+                placeholder="10-Digit License Code from Local Agency *" 
+                value={licenseCode} 
+                onChange={e=>setLicenseCode(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                disabled={isSubmitting}
+                maxLength={10}
+              />
+              <div className="text-xs text-slate-500 mt-1">
+                Contact your local agency to obtain a license code for business client registration
+              </div>
+            </div>
           )}
           
-          {/* Payment Information for Non-Navigators */}
-          {mode === 'register' && role !== 'navigator' && (
+          {/* Payment Information for Clients and Providers */}
+          {mode === 'register' && ['client', 'provider'].includes(selectedRole) && (
             <div className="space-y-3 p-4 bg-slate-50 rounded border">
               <div className="text-sm font-medium text-slate-900">Payment Information</div>
               <input 
@@ -270,9 +426,23 @@ function AuthWidget(){
                 />
               </div>
               <div className="text-xs text-slate-500">
-                {role === 'client' ? 'Payment will be processed only when you select service providers' :
-                 role === 'provider' ? 'Card will be charged only when you receive service requests' :
-                 'Platform registration fee applies'}
+                {selectedRole === 'client' ? 'Payment will be processed only when you select service providers' :
+                 'Card will be charged only when you receive approved service requests'}
+              </div>
+            </div>
+          )}
+          
+          {/* Special Notice for Agencies and Providers */}
+          {mode === 'register' && ['agency', 'provider'].includes(selectedRole) && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded">
+              <div className="text-sm font-medium text-amber-800 mb-1">
+                {selectedRole === 'agency' ? 'Agency Verification Required' : 'Provider Vetting Required'}
+              </div>
+              <div className="text-xs text-amber-700">
+                {selectedRole === 'agency' 
+                  ? 'Your registration will be reviewed by Digital Navigators. You will be notified once your agency is verified and approved.'
+                  : 'Your application will be vetted by Digital Navigators to ensure service quality. You will be notified once approved to join the marketplace.'
+                }
               </div>
             </div>
           )}
@@ -288,7 +458,12 @@ function AuthWidget(){
                 disabled={isSubmitting}
               />
               <label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed">
-                I agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>. I understand that service providers must be approved by Digital Navigators before joining the marketplace, and that my data will be protected according to NIST cybersecurity standards.
+                I agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>. I understand that {
+                  selectedRole === 'agency' ? 'agencies must be verified by Digital Navigators before distribution of licenses' :
+                  selectedRole === 'provider' ? 'service providers must be approved by Digital Navigators before joining the marketplace' :
+                  selectedRole === 'client' ? 'business clients require valid license codes from local agencies' :
+                  'digital navigators are platform administrators'
+                }.
               </label>
             </div>
           )}
@@ -298,92 +473,43 @@ function AuthWidget(){
             onClick={submit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Processing...' : (mode==='login' ? 'Sign In' : 'Create Account')}
+            {isSubmitting ? 'Processing...' : (mode === 'register' ? 'Create Account' : 'Sign In')}
           </button>
+          
+          {!selectedRole && mode === 'login' && (
+            <div className="text-center mt-3">
+              <button 
+                className="text-blue-600 hover:text-blue-700 text-sm"
+                onClick={goBackToRoleSelection}
+              >
+                New user? Select your role to register
+              </button>
+            </div>
+          )}
         </div>
-
-        <p className="text-xs text-slate-500 text-center mt-4">
-          Secure platform with enterprise-grade data protection and compliance standards.
-        </p>
       </div>
-
-      {/* Branded OAuth Modal */}
+      
+      {/* Google OAuth Modal */}
       {showOAuthModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="polaris-oauth-modal">
-            <div className="modal-content">
-              {/* Custom Polaris Branding Header */}
-              <div className="oauth-header">
-                <div className="polaris-brand-showcase">
-                  <PolarisLogo size={48} />
-                  <div className="brand-elements">
-                    <div className="constellation-bg">
-                      <div className="star star-1"></div>
-                      <div className="star star-2"></div>
-                      <div className="star star-3"></div>
-                      <div className="star star-4"></div>
-                      <div className="star star-5"></div>
-                    </div>
-                  </div>
-                </div>
-                <h2 className="oauth-title">Welcome to Polaris</h2>
-                <p className="oauth-subtitle">Your North Star for Procurement Readiness</p>
-              </div>
-
-              {/* Professional Graphic Elements */}
-              <div className="oauth-visual-elements">
-                <div className="procurement-icons">
-                  <div className="icon-group">
-                    <div className="proc-icon proc-icon-1">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                    </div>
-                    <div className="proc-icon proc-icon-2">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <div className="proc-icon proc-icon-3">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* OAuth Action Section */}
-              <div className="oauth-actions">
-                <p className="oauth-description">
-                  Continue with Google to access your secure, government-grade procurement readiness platform
-                </p>
-                <div className="oauth-security-badges">
-                  <span className="security-badge">🔒 NIST Compliant</span>
-                  <span className="security-badge">🛡️ Enterprise Security</span>
-                  <span className="security-badge">⚡ Fast & Secure</span>
-                </div>
-                <div className="oauth-buttons">
-                  <button 
-                    className="btn-oauth-primary" 
-                    onClick={proceedWithGoogleAuth}
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Continue with Google
-                  </button>
-                  <button 
-                    className="btn-oauth-secondary" 
-                    onClick={() => setShowOAuthModal(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h4 className="font-semibold text-slate-900 mb-3">Continue with Google</h4>
+            <p className="text-sm text-slate-600 mb-4">
+              You will be redirected to Google to sign in securely. After authentication, you'll return to complete your profile setup.
+            </p>
+            <div className="flex gap-3">
+              <button
+                className="btn flex-1"
+                onClick={() => setShowOAuthModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary flex-1"
+                onClick={proceedWithGoogleAuth}
+              >
+                Proceed
+              </button>
             </div>
           </div>
         </div>
