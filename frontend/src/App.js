@@ -1643,13 +1643,20 @@ function ClientHome(){
   const [matchedServices, setMatchedServices] = useState([]);
   const [knowledgeBaseAccess, setKnowledgeBaseAccess] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [assessmentData, setAssessmentData] = useState(null);
+  const [serviceRequests, setServiceRequests] = useState([]);
+  const [sponsoringAgency, setSponsoringAgency] = useState(null);
+  const [gaps, setGaps] = useState([]);
+  const [freeServices, setFreeServices] = useState([]);
   const navigate = useNavigate();
   
   useEffect(()=>{ 
     const load=async()=>{ 
-      const {data} = await axios.get(`${API}/home/client`); 
-      setData(data); 
-      try{
+      try {
+        const {data} = await axios.get(`${API}/home/client`); 
+        setData(data); 
+        
+        // Load certificates
         const certs = await axios.get(`${API}/client/certificates`);
         setCertificates(certs.data.certificates || []);
         
@@ -1660,10 +1667,77 @@ function ClientHome(){
         // Load knowledge base access status
         const access = await axios.get(`${API}/knowledge-base/access`);
         setKnowledgeBaseAccess(access.data);
-      }catch{}
+
+        // Load assessment data and gaps
+        const assessment = await axios.get(`${API}/assessment/progress/${data.user_id}`);
+        setAssessmentData(assessment.data);
+
+        // Load active service requests
+        const requests = await axios.get(`${API}/engagements/my-services`);
+        setServiceRequests(requests.data.engagements || []);
+
+        // Load sponsoring agency info (from license code)
+        if (data.sponsoring_agency_id) {
+          const agency = await axios.get(`${API}/agency/info/${data.sponsoring_agency_id}`);
+          setSponsoringAgency(agency.data);
+        }
+
+        // Calculate gaps from assessment
+        if (assessment.data && assessment.data.answers) {
+          const calculatedGaps = calculateGaps(assessment.data.answers);
+          setGaps(calculatedGaps);
+          
+          // Load dynamic free services based on gaps
+          const freeServicesRes = await axios.get(`${API}/free-resources/recommendations`, {
+            params: { gaps: calculatedGaps.map(g => g.area_id).join(',') }
+          });
+          setFreeServices(freeServicesRes.data.resources || []);
+        }
+      } catch(e) {
+        console.error('Error loading client home data:', e);
+      }
     }; 
     load(); 
   },[]);
+
+  // Calculate gaps from assessment answers
+  const calculateGaps = (answers) => {
+    const gaps = [];
+    const areaNames = {
+      'area1': 'Business Formation & Registration',
+      'area2': 'Financial Operations & Management', 
+      'area3': 'Legal & Contracting Compliance',
+      'area4': 'Quality Management & Standards',
+      'area5': 'Technology & Security Infrastructure',
+      'area6': 'Human Resources & Capacity',
+      'area7': 'Performance Tracking & Reporting',
+      'area8': 'Risk Management & Business Continuity'
+    };
+
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      const areaId = questionId.split('_')[0]; // Extract area from q1_1 format
+      
+      // Gap if no answer OR "No, I need help"
+      if (!answer || answer === 'no_help') {
+        const existingGap = gaps.find(g => g.area_id === areaId);
+        if (!existingGap) {
+          gaps.push({
+            area_id: areaId,
+            area_name: areaNames[areaId],
+            question_ids: [questionId],
+            severity: answer === 'no_help' ? 'high' : 'medium'
+          });
+        } else {
+          existingGap.question_ids.push(questionId);
+          if (answer === 'no_help' && existingGap.severity === 'medium') {
+            existingGap.severity = 'high';
+          }
+        }
+      }
+    });
+
+    return gaps;
+  };
 
   // Check for payment completion from URL
   useEffect(() => {
