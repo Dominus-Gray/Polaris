@@ -515,7 +515,7 @@ class PaymentIntegrationTester:
             ("/payments/knowledge-base", "POST"),
             ("/knowledge-base/access", "GET"),
             ("/engagements/my-services", "GET"),
-            ("/service-requests", "POST"),
+            ("/match/request", "POST"),  # Correct endpoint
         ]
         
         passed = 0
