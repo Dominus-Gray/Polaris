@@ -1401,39 +1401,7 @@ function ClientHome(){
     try{
       const link = `${window.location.origin}/verify/cert/${certId}`;
       await navigator.clipboard.writeText(link);
-  if(!data.profile_complete) return <BusinessProfileForm/>;
-  
-  return (
-    <div className="container mt-6">
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="border-b">
-          <nav className="flex">
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'overview' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('overview')}
-            >
-              Overview
-            </button>
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'services' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('services')}
-            >
-              Services
-            </button>
-            <button
-              className={`px-6 py-3 font-medium ${activeTab === 'certificates' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
-              onClick={() => setActiveTab('certificates')}
-            >
-              Certificates
-            </button>
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {activeTab === 'overview' && (
-            <div>
-              <div className="dashboard-grid">
+      toast.success('Verification link copied to clipboard');
     }catch(e){ toast.error('Failed to copy link', { description: e.message }); }
   };
 
