@@ -3432,13 +3432,72 @@ function Landing(){
             <h1 className="hero-title mt-4">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
             <div className="hero-ctas">
-              <a className="btn btn-primary" href="#auth">Start Your Journey</a>
+              <a className="btn btn-primary" href="#role-selection">Start Your Journey</a>
               <a className="btn bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20" href="#auth">Sign In</a>
             </div>
           </div>
-          <div className="w-[420px] max-w-full"><AuthWidget /></div>
+          <div className="w-[420px] max-w-full">
+            {/* Show AuthWidget only for login or after role selection */}
+            {step !== 'role-selection' && <AuthWidget />}
+          </div>
         </div>
       </section>
+
+      {/* Role Selection Section */}
+      {step === 'role-selection' && (
+        <section className="container section" id="role-selection">
+          <div className="bg-white rounded-lg p-8 shadow-lg border max-w-6xl mx-auto">
+            <h3 className="font-semibold text-slate-900 mb-2 text-center text-2xl">Choose Your User Type</h3>
+            <p className="text-slate-600 text-center mb-8">Select the option that best describes your role</p>
+            
+            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+              {roleOptions.map((role) => (
+                <div 
+                  key={role.id}
+                  className="border rounded-lg p-6 hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition-all flex-1"
+                  onClick={() => selectRole(role.id)}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl mb-3">{role.icon}</div>
+                    <h4 className="font-semibold text-slate-900 mb-2">{role.title}</h4>
+                    <p className="text-sm text-slate-600 mb-3">{role.description}</p>
+                    <div className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded mb-4">
+                      {role.requirements}
+                    </div>
+                    <ul className="text-xs text-slate-500 space-y-1">
+                      {role.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center justify-center gap-2">
+                          <span className="text-green-500">•</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="text-center">
+              <a 
+                className="text-blue-600 hover:text-blue-700 text-sm"
+                href="#auth"
+                onClick={() => setStep('login')}
+              >
+                Already have an account? Sign in here
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Login/Register Form Section */}
+      {step !== 'role-selection' && (
+        <section className="container section" id="auth">
+          <div className="max-w-md mx-auto">
+            <AuthWidget />
+          </div>
+        </section>
+      )}
 
       {/* Value Proposition for Each User Type */}
       <section className="container section">
