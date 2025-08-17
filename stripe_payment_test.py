@@ -508,7 +508,7 @@ def test_knowledge_base_access(client_token):
             print(f"Knowledge base access response: {json.dumps(data, indent=2)}")
             
             # Check required fields
-            required_fields = ['has_access', 'access_type']
+            required_fields = ['has_all_access', 'unlocked_areas', 'available_packages']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
