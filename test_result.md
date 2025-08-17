@@ -234,6 +234,17 @@
       - working: NA
         agent: "main"
         comment: "Integrated knowledge base payment system with real-time access checking, payment status polling, and unlock functionality. Enhanced client dashboard with AI compliance insights, gap analysis, and knowledge base access status. Connected frontend to backend payment endpoints with proper error handling and user feedback."
+  - task: "Complete role-based registration system with approval workflows"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: NA
+        agent: "main"
+        comment: "Implemented comprehensive role-based registration system with role selection screen, license code validation for clients, approval workflows for agencies/providers, and navigator admin tools. Added license management system for agencies and complete approval/rejection system for navigators. Updated AuthWidget with step-based flow and role-specific validation."
   - task: "Profile Settings System endpoints"
     implemented: true
     working: true
