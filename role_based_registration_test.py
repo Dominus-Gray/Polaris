@@ -334,11 +334,10 @@ def test_navigator_approval_system(test_results):
         # Test 2: POST /api/admin/approve-user
         if hasattr(test_results, 'pending_user_id'):
             print("\n--- Testing user approval ---")
-            approve_payload = {
-                "user_id": test_results.pending_user_id,
-                "notes": "User meets all requirements for approval"
-            }
-            response = requests.post(f"{API_BASE}/admin/approve-user", json=approve_payload, headers=headers)
+            response = requests.post(
+                f"{API_BASE}/admin/approve-user?user_id={test_results.pending_user_id}&notes=User meets all requirements for approval",
+                headers=headers
+            )
             
             if response.status_code == 200:
                 data = response.json()
