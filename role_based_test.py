@@ -293,7 +293,7 @@ def test_navigator_approve_users(navigator_token, agency_email, provider_email):
         
         if response.status_code == 200:
             data = response.json()
-            pending_users = data.get('users', [])
+            pending_users = data.get('pending_approvals', [])
             print(f"Found {len(pending_users)} pending users")
             
             # Find agency and provider users
