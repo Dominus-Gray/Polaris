@@ -1709,7 +1709,7 @@ function ClientHome(){
               </div>
               
               <div className="mt-6 flex gap-3">
-                <button className="btn btn-primary" onClick={()=>navigate('/matching')}>Request Service Provider</button>
+                  <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
                 <button className="btn" onClick={()=>navigate('/assessment')}>Continue Assessment</button>
               </div>
             </div>
