@@ -547,12 +547,12 @@ def test_knowledge_base_content(client_token):
             data = response.json()
             print(f"Knowledge base content response: {json.dumps(data, indent=2)}")
             
-            # Check required fields
-            required_fields = ['area_id', 'content']
+            # Check required fields - content is gated, so we expect has_access and unlock_required
+            required_fields = ['has_access', 'unlock_required']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
-                print("✅ PASS: Knowledge base content retrieved with all required fields")
+                print("✅ PASS: Knowledge base content properly gated with access control")
                 return True
             else:
                 print(f"❌ FAIL: Missing required fields: {missing_fields}")
