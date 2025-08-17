@@ -222,8 +222,12 @@ def test_create_provider():
     print("🔧 STEP 3: CREATE SERVICE PROVIDER (PENDING STATUS)")
     print("="*60)
     
+    # Use timestamp to ensure unique email
+    import time
+    timestamp = int(time.time())
+    
     credentials = {
-        "email": "provider@polaris.example.com",
+        "email": f"provider.{timestamp}@polaris.example.com",
         "password": "Provider123!",
         "role": "provider",
         "terms_accepted": True
