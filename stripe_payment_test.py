@@ -115,11 +115,16 @@ def test_checkout_session_creation(client_token):
         print(f"❌ ERROR: {e}")
         return None, None
 
-def test_checkout_status(stripe_session_id):
+def test_checkout_status(stripe_session_id, client_token):
     """Test GET /api/payments/v1/checkout/status/{session_id}"""
     print("\n=== Testing Checkout Status ===")
     try:
-        response = requests.get(f"{API_BASE}/payments/v1/checkout/status/{stripe_session_id}")
+        headers = {
+            "Authorization": f"Bearer {client_token}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(f"{API_BASE}/payments/v1/checkout/status/{stripe_session_id}", headers=headers)
         print(f"Status: {response.status_code}")
         
         if response.status_code == 200:
