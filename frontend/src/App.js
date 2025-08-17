@@ -3421,6 +3421,50 @@ function Header(){
 }
 
 function Landing(){
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [step, setStep] = useState('role-selection'); // 'role-selection', 'register', 'login'
+  const [selectedRole, setSelectedRole] = useState(null);
+
+  const roleOptions = [
+    {
+      id: 'client',
+      title: 'Small Business Client',
+      description: 'Get assessed for procurement readiness and access service providers',
+      requirements: 'Requires 10-digit license code from your local agency',
+      features: ['Maturity assessment', 'Readiness certification', 'Service requests', 'Knowledge base access'],
+      icon: '🏢'
+    },
+    {
+      id: 'agency', 
+      title: 'Local Agency',
+      description: 'Invite businesses and distribute assessment licenses',
+      requirements: 'Subject to verification and approval by Digital Navigators',
+      features: ['License distribution', 'Opportunity forecasting', 'Business dashboards', 'Volume pricing'],
+      icon: '🏛️'
+    },
+    {
+      id: 'provider',
+      title: 'Service Provider', 
+      description: 'Offer services to help businesses achieve procurement readiness',
+      requirements: 'Subject to vetting and approval by Digital Navigators',
+      features: ['Service marketplace', 'Client matching', 'Payment processing', 'Performance tracking'],
+      icon: '🔧'
+    },
+    {
+      id: 'navigator',
+      title: 'Digital Navigator',
+      description: 'Platform administrators - review, approve, and guide businesses',
+      requirements: 'Polaris team members only',
+      features: ['Evidence review', 'Provider approval', 'Quality assurance', 'Platform management'],
+      icon: '👥'
+    }
+  ];
+
+  const selectRole = (roleId) => {
+    setSelectedRole(roleId);
+    setStep('register');
+  };
+
   return (
     <div>
       {/* Enhanced Hero Section */}
