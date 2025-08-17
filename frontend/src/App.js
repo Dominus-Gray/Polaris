@@ -266,10 +266,10 @@ function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
               <option value="login">Sign In</option>
               {selectedRole && <option value="register">Register</option>}
             </select>
-            {!selectedRole && mode === 'login' && (
+            {!selectedRole && mode === 'login' && onBackToRoleSelection && (
               <button 
                 className="btn"
-                onClick={goBackToRoleSelection}
+                onClick={onBackToRoleSelection}
                 disabled={isSubmitting}
               >
                 Register
