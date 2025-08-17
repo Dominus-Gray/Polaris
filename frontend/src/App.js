@@ -1610,6 +1610,13 @@ function ClientHome(){
             >
               Certificates
             </button>
+            <button
+              className={`px-6 py-3 font-medium ${activeTab === 'knowledge' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
+              onClick={() => setActiveTab('knowledge')}
+            >
+              Knowledge Base
+              <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Premium</span>
+            </button>
           </nav>
         </div>
 
