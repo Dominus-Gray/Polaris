@@ -936,10 +936,10 @@ function BusinessProfileForm(){
     legal_entity_type:'LLC', 
     tax_id:'', 
     registered_address:'', 
-    mailing_address:'', 
     website_url:'', 
     industry:'', 
-    primary_products_services:'', 
+    business_type: 'service', // Changed from primary_products_services to toggle
+    business_description: '', // Detailed description of products/services
     revenue_range:'', 
     revenue_currency:'USD', 
     employees_count:'', 
