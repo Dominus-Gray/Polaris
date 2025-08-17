@@ -3420,7 +3420,7 @@ function Landing(){
           </div>
           <div className="w-[420px] max-w-full">
             {/* Show AuthWidget only for login or after role selection */}
-            {step !== 'role-selection' && <AuthWidget />}
+            {step !== 'role-selection' && <AuthWidget selectedRole={selectedRole} onBackToRoleSelection={() => setStep('role-selection')} />}
           </div>
         </div>
       </section>
@@ -3476,7 +3476,7 @@ function Landing(){
       {step !== 'role-selection' && (
         <section className="container section" id="auth">
           <div className="max-w-md mx-auto">
-            <AuthWidget />
+            <AuthWidget selectedRole={selectedRole} onBackToRoleSelection={() => setStep('role-selection')} />
           </div>
         </section>
       )}
