@@ -877,7 +877,370 @@ async def revoke_trusted_device(
         logger.error(f"Error revoking trusted device: {e}")
         raise HTTPException(status_code=500, detail="Failed to revoke device")
 
-# Provider Approval System
+# Administrative System
+class SystemStatsOut(BaseModel):
+    total_users: int
+    active_businesses: int
+    certificates_issued: int
+    recent_users: List[dict]
+    platform_health: dict
+
+class UserListOut(BaseModel):
+    users: List[dict]
+    total: int
+    page: int
+    per_page: int
+
+class BulkActionRequest(BaseModel):
+    action: str  # activate, deactivate, suspend, delete
+    user_ids: List[str]
+
+class UserActionRequest(BaseModel):
+    action: str
+
+class AuditLogOut(BaseModel):
+    id: str
+    timestamp: datetime
+    user_id: str
+    user_email: Optional[str]
+    user_role: Optional[str]
+    action: str
+    resource: str
+    resource_id: Optional[str]
+    details: Optional[dict]
+    ip_address: Optional[str]
+    user_agent: Optional[str]
+
+class AuditLogsListOut(BaseModel):
+    logs: List[AuditLogOut]
+    total: int
+    page: int
+
+# Admin-only decorator
+def require_admin(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+@api.get("/admin/system/stats", response_model=SystemStatsOut)
+async def get_system_stats(admin_user: dict = Depends(require_admin)):
+    """Get comprehensive system statistics for admin dashboard"""
+    try:
+        # Get user statistics
+        total_users = await db.users.count_documents({})
+        
+        # Get active businesses (users with business profiles)
+        active_businesses = await db.business_profiles.count_documents({"status": {"$ne": "deleted"}})
+        
+        # Get certificate count
+        certificates_issued = await db.certificates.count_documents({})
+        
+        # Get recent users (last 10)
+        recent_users_cursor = db.users.find({}).sort("created_at", -1).limit(10)
+        recent_users = await recent_users_cursor.to_list(10)
+        
+        # Clean up recent users data
+        recent_users_clean = []
+        for user in recent_users:
+            recent_users_clean.append({
+                "id": user["_id"],
+                "name": user.get("name", ""),
+                "email": user["email"],
+                "role": user["role"],
+                "created_at": user["created_at"]
+            })
+        
+        # Platform health metrics (mock data for MVP)
+        platform_health = {
+            "api_response_time": "145ms",
+            "database_connections": "23/100",
+            "storage_usage": "67%",
+            "uptime": "99.9%"
+        }
+        
+        return SystemStatsOut(
+            total_users=total_users,
+            active_businesses=active_businesses,
+            certificates_issued=certificates_issued,
+            recent_users=recent_users_clean,
+            platform_health=platform_health
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting system stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load system statistics")
+
+@api.get("/admin/users", response_model=UserListOut)
+async def get_users_admin(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    role: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    admin_user: dict = Depends(require_admin)
+):
+    """Get paginated list of users with filtering"""
+    try:
+        # Build query filters
+        query = {}
+        
+        if role:
+            query["role"] = role
+        
+        if status:
+            query["status"] = status
+            
+        if search:
+            query["$or"] = [
+                {"email": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}}
+            ]
+        
+        # Get total count
+        total = await db.users.count_documents(query)
+        
+        # Get paginated results
+        skip = (page - 1) * per_page
+        cursor = db.users.find(query).sort("created_at", -1).skip(skip).limit(per_page)
+        users = await cursor.to_list(per_page)
+        
+        # Clean up user data
+        users_clean = []
+        for user in users:
+            users_clean.append({
+                "id": user["_id"],
+                "name": user.get("name", ""),
+                "email": user["email"],
+                "role": user["role"],
+                "status": user.get("status", "active"),
+                "created_at": user["created_at"],
+                "updated_at": user.get("updated_at", user["created_at"]),
+                "last_sign_in": user.get("last_sign_in")
+            })
+        
+        return UserListOut(
+            users=users_clean,
+            total=total,
+            page=page,
+            per_page=per_page
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting users: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load users")
+
+@api.post("/admin/users/bulk-action")
+async def bulk_user_action(
+    request: BulkActionRequest,
+    admin_user: dict = Depends(require_admin)
+):
+    """Perform bulk actions on multiple users"""
+    try:
+        if not request.user_ids:
+            raise HTTPException(status_code=400, detail="No users selected")
+        
+        # Define allowed actions
+        allowed_actions = ["activate", "deactivate", "suspend"]
+        if request.action not in allowed_actions:
+            raise HTTPException(status_code=400, detail=f"Invalid action. Allowed: {allowed_actions}")
+        
+        # Map actions to status updates
+        status_mapping = {
+            "activate": "active",
+            "deactivate": "inactive", 
+            "suspend": "suspended"
+        }
+        
+        new_status = status_mapping[request.action]
+        
+        # Update users
+        result = await db.users.update_many(
+            {"_id": {"$in": request.user_ids}},
+            {
+                "$set": {
+                    "status": new_status,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Log bulk action
+        await db.audit_logs.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": admin_user["id"],
+            "action": f"bulk_{request.action}",
+            "resource": "users",
+            "details": {
+                "affected_users": request.user_ids,
+                "new_status": new_status
+            },
+            "timestamp": datetime.utcnow(),
+            "ip_address": None,
+            "user_agent": None
+        })
+        
+        return {
+            "success": True,
+            "modified_count": result.modified_count,
+            "action": request.action
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in bulk user action: {e}")
+        raise HTTPException(status_code=500, detail="Failed to perform bulk action")
+
+@api.post("/admin/users/{user_id}/action")
+async def user_action(
+    user_id: str,
+    request: UserActionRequest,
+    admin_user: dict = Depends(require_admin)
+):
+    """Perform action on individual user"""
+    try:
+        # Get user first
+        user = await db.users.find_one({"_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Handle different actions
+        if request.action == "activate":
+            await db.users.update_one(
+                {"_id": user_id},
+                {"$set": {"status": "active", "updated_at": datetime.utcnow()}}
+            )
+        elif request.action == "suspend":
+            await db.users.update_one(
+                {"_id": user_id},
+                {"$set": {"status": "suspended", "updated_at": datetime.utcnow()}}
+            )
+        elif request.action == "edit":
+            # For edit, we would typically return user data for a modal
+            return {"action": "edit", "user_id": user_id}
+        else:
+            raise HTTPException(status_code=400, detail="Invalid action")
+        
+        # Log action
+        await db.audit_logs.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": admin_user["id"],
+            "action": f"user_{request.action}",
+            "resource": "user",
+            "resource_id": user_id,
+            "details": {"target_user_email": user["email"]},
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {"success": True, "action": request.action}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in user action: {e}")
+        raise HTTPException(status_code=500, detail="Failed to perform user action")
+
+@api.get("/admin/audit-logs", response_model=AuditLogsListOut)
+async def get_audit_logs(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    user_id: Optional[str] = Query(None),
+    action: Optional[str] = Query(None),
+    resource: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    admin_user: dict = Depends(require_admin)
+):
+    """Get paginated audit logs with filtering"""
+    try:
+        # Build query filters
+        query = {}
+        
+        if user_id:
+            query["user_id"] = user_id
+            
+        if action:
+            query["action"] = action
+            
+        if resource:
+            query["resource"] = resource
+            
+        if date_from or date_to:
+            date_query = {}
+            if date_from:
+                date_query["$gte"] = datetime.fromisoformat(date_from)
+            if date_to:
+                date_query["$lte"] = datetime.fromisoformat(date_to)
+            query["timestamp"] = date_query
+        
+        # Get total count
+        total = await db.audit_logs.count_documents(query)
+        
+        # Get paginated results
+        skip = (page - 1) * per_page
+        cursor = db.audit_logs.find(query).sort("timestamp", -1).skip(skip).limit(per_page)
+        logs = await cursor.to_list(per_page)
+        
+        # Enrich logs with user information
+        logs_enriched = []
+        for log in logs:
+            # Get user info if available
+            user_info = await db.users.find_one({"_id": log["user_id"]})
+            
+            log_data = {
+                "id": log["_id"],
+                "timestamp": log["timestamp"],
+                "user_id": log["user_id"],
+                "user_email": user_info.get("email") if user_info else None,
+                "user_role": user_info.get("role") if user_info else None,
+                "action": log["action"],
+                "resource": log["resource"],
+                "resource_id": log.get("resource_id"),
+                "details": log.get("details"),
+                "ip_address": log.get("ip_address"),
+                "user_agent": log.get("user_agent")
+            }
+            logs_enriched.append(AuditLogOut(**log_data))
+        
+        return AuditLogsListOut(
+            logs=logs_enriched,
+            total=total,
+            page=page
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting audit logs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load audit logs")
+
+# Enhanced audit logging helper
+async def create_audit_log(
+    user_id: str,
+    action: str,
+    resource: str,
+    resource_id: Optional[str] = None,
+    details: Optional[dict] = None,
+    ip_address: Optional[str] = None,
+    user_agent: Optional[str] = None
+):
+    """Create standardized audit log entry"""
+    try:
+        audit_entry = {
+            "_id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "action": action,
+            "resource": resource,
+            "resource_id": resource_id,
+            "details": details,
+            "timestamp": datetime.utcnow(),
+            "ip_address": ip_address,
+            "user_agent": user_agent
+        }
+        
+        await db.audit_logs.insert_one(audit_entry)
+        
+    except Exception as e:
+        logger.error(f"Error creating audit log: {e}")
+        # Don't raise exception for audit logging failures
 @api.get("/navigator/providers/pending")
 async def get_pending_providers(current=Depends(require_role("navigator"))):
     """Get all providers pending approval"""
