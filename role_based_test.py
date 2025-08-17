@@ -311,15 +311,9 @@ def test_navigator_approve_users(navigator_token, agency_email, provider_email):
             # Approve agency
             if agency_user:
                 print(f"\nApproving agency user: {agency_user['email']}")
-                approve_payload = {
-                    "user_id": agency_user['id'],
-                    "action": "approve",
-                    "reason": "Agency verification completed - approved for license generation"
-                }
                 
                 approve_response = requests.post(
-                    f"{API_BASE}/admin/approve-user",
-                    json=approve_payload,
+                    f"{API_BASE}/admin/approve-user?user_id={agency_user['_id']}",
                     headers=headers
                 )
                 print(f"Agency approval Status: {approve_response.status_code}")
@@ -337,15 +331,9 @@ def test_navigator_approve_users(navigator_token, agency_email, provider_email):
             # Approve provider
             if provider_user:
                 print(f"\nApproving provider user: {provider_user['email']}")
-                approve_payload = {
-                    "user_id": provider_user['id'],
-                    "action": "approve",
-                    "reason": "Provider credentials verified - approved for service delivery"
-                }
                 
                 approve_response = requests.post(
-                    f"{API_BASE}/admin/approve-user",
-                    json=approve_payload,
+                    f"{API_BASE}/admin/approve-user?user_id={provider_user['_id']}",
                     headers=headers
                 )
                 print(f"Provider approval Status: {approve_response.status_code}")
