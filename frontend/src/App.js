@@ -3408,8 +3408,8 @@ function Landing(){
       {/* Enhanced Hero Section */}
       <section className="hero">
         <div className="hero-bg" />
-        <div className="hero-inner">
-          <div className="flex-1 text-white text-center">
+        <div className="hero-inner justify-center items-center">
+          <div className="text-white text-center max-w-3xl mx-auto">
             <div className="flex justify-center mb-4">
               <PolarisLogo size={32} />
             </div>
@@ -3420,12 +3420,17 @@ function Landing(){
               <a className="btn bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20" href="#auth">Sign In</a>
             </div>
           </div>
-          <div className="w-[420px] max-w-full">
-            {/* Show AuthWidget only for login or after role selection */}
-            {step !== 'role-selection' && <AuthWidget selectedRole={selectedRole} onBackToRoleSelection={() => setStep('role-selection')} />}
-          </div>
         </div>
       </section>
+
+      {/* Auth Section - Only show when needed */}
+      {step !== 'role-selection' && (
+        <section className="container section" id="auth">
+          <div className="max-w-md mx-auto">
+            <AuthWidget selectedRole={selectedRole} onBackToRoleSelection={() => setStep('role-selection')} />
+          </div>
+        </section>
+      )}
 
       {/* Role Selection Section */}
       {step === 'role-selection' && (
