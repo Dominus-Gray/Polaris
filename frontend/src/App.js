@@ -825,13 +825,23 @@ function AssessmentPage(){
   const currentAreaData = assessmentAreas[currentArea];
   const isLastArea = currentArea === assessmentAreas.length - 1;
 
-  const handleAnswer = (questionId, answer) => {
+  const handleAnswer = async (questionId, answer) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: answer
     }));
 
-    if (answer === 'no') {
+    // Save answer to backend immediately
+    try {
+      await axios.post(`${API}/assessment/answer`, {
+        question_id: questionId,
+        answer: answer
+      });
+    } catch (e) {
+      console.error('Failed to save answer:', e);
+    }
+
+    if (answer === 'no_help') {
       setSelectedQuestion(questionId);
       setShowResources(true);
     }
