@@ -1366,7 +1366,7 @@ async def submit_assessment_response(
         
         # Get updated session for progress calculation
         updated_session = await db.assessment_sessions.find_one({"_id": session_id})
-        total_questions = sum(len(area["questions"]) for area in ASSESSMENT_SCHEMA.values())
+        total_questions = sum(len(area["questions"]) for area in ASSESSMENT_SCHEMA["areas"])
         answered_questions = len(updated_session.get("responses", {}))
         progress_percentage = (answered_questions / total_questions) * 100 if total_questions > 0 else 0
         
