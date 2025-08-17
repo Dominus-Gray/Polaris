@@ -443,7 +443,7 @@ def test_create_client_with_license(license_code):
     print("="*60)
     
     credentials = {
-        "email": "client@polaris.test",
+        "email": "client@polaris.example.com",
         "password": "Client123!",
         "role": "client",
         "license_code": license_code,
