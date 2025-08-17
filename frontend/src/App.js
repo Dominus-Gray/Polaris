@@ -68,12 +68,40 @@ function AuthWidget(){
       return;
     }
     
+    // Validate invitation code for clients
+    if (mode === 'register' && role === 'client' && !inviteCode.trim()) {
+      toast.error('Invitation code is required for small business client registration');
+      return;
+    }
+    
+    // Validate payment information for non-navigator registrations
+    if (mode === 'register' && role !== 'navigator') {
+      if (!paymentInfo.card_number || !paymentInfo.expiry_month || !paymentInfo.expiry_year || 
+          !paymentInfo.cvv || !paymentInfo.cardholder_name) {
+        toast.error('Payment information is required for registration');
+        return;
+      }
+    }
+    
     setIsSubmitting(true);
     
     try{
       if(mode==='register'){
-        await axios.post(`${API}/auth/register`, { email, password, role, terms_accepted: termsAccepted });
-        toast.success('Registration successful', { description: 'Please sign in with your credentials' });
+        const registrationData = { 
+          email, 
+          password, 
+          role, 
+          terms_accepted: termsAccepted,
+          ...(role === 'client' && { invite_code: inviteCode }),
+          ...(role !== 'navigator' && { payment_info: paymentInfo })
+        };
+        
+        await axios.post(`${API}/auth/register`, registrationData);
+        toast.success('Registration successful', { 
+          description: role === 'client' 
+            ? 'Welcome! Please sign in to begin your assessment'
+            : 'Please sign in with your credentials'
+        });
         setMode('login');
       } else {
         const { data } = await axios.post(`${API}/auth/login`, { email, password });
