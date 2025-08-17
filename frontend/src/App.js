@@ -1754,7 +1754,7 @@ function ClientHome(){
   };
 
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
-  if(!data.profile_complete) return <BusinessProfileForm/>;
+  // Note: Removed profile_complete check - clients should see dashboard even without complete profile
   
   return (
     <div className="container mt-6">
