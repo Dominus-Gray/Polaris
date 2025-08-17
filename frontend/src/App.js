@@ -414,11 +414,11 @@ function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
             {isSubmitting ? 'Processing...' : (mode === 'register' ? 'Create Account' : 'Sign In')}
           </button>
           
-          {!selectedRole && mode === 'login' && (
+          {!selectedRole && mode === 'login' && onBackToRoleSelection && (
             <div className="text-center mt-3">
               <button 
                 className="text-blue-600 hover:text-blue-700 text-sm"
-                onClick={goBackToRoleSelection}
+                onClick={onBackToRoleSelection}
               >
                 New user? Select your role to register
               </button>
