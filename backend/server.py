@@ -2449,6 +2449,147 @@ async def get_my_services(current=Depends(require_user)):
     
     return {"engagements": engagements}
 
+# ---------------- Enhanced Assessment System ----------------
+@api.post("/assessment/answer")
+async def save_assessment_answer(answer_data: dict, current=Depends(require_user)):
+    """Save individual assessment answer"""
+    question_id = answer_data.get("question_id")
+    answer = answer_data.get("answer")
+    
+    if not question_id or not answer:
+        raise HTTPException(status_code=400, detail="Question ID and answer are required")
+    
+    # Upsert answer
+    await db.assessment_answers.update_one(
+        {"user_id": current["id"], "question_id": question_id},
+        {
+            "$set": {
+                "user_id": current["id"],
+                "question_id": question_id,
+                "answer": answer,
+                "updated_at": datetime.utcnow()
+            },
+            "$setOnInsert": {
+                "_id": str(uuid.uuid4()),
+                "created_at": datetime.utcnow()
+            }
+        },
+        upsert=True
+    )
+    
+    return {"message": "Answer saved successfully"}
+
+@api.post("/assessment/evidence")
+async def upload_assessment_evidence(question_id: str = Form(...), files: List[UploadFile] = File(...), current=Depends(require_user)):
+    """Upload evidence files for assessment questions"""
+    if not files:
+        raise HTTPException(status_code=400, detail="No files provided")
+    
+    uploaded_files = []
+    
+    for file in files:
+        if file.size > 10 * 1024 * 1024:  # 10MB limit
+            raise HTTPException(status_code=400, detail=f"File {file.filename} exceeds 10MB limit")
+        
+        # Generate unique filename
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'bin'
+        unique_filename = f"{current['id']}_{question_id}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        
+        # Save file content
+        file_content = await file.read()
+        
+        # Store file metadata in database
+        file_id = str(uuid.uuid4())
+        file_doc = {
+            "_id": file_id,
+            "user_id": current["id"],
+            "question_id": question_id,
+            "original_filename": file.filename,
+            "stored_filename": unique_filename,
+            "file_size": len(file_content),
+            "mime_type": file.content_type,
+            "upload_date": datetime.utcnow()
+        }
+        
+        await db.assessment_evidence.insert_one(file_doc)
+        uploaded_files.append({
+            "file_id": file_id,
+            "original_filename": file.filename,
+            "file_size": len(file_content)
+        })
+    
+    return {
+        "message": f"Successfully uploaded {len(uploaded_files)} evidence files",
+        "files": uploaded_files
+    }
+
+# ---------------- Complete Knowledge Base System ----------------
+@api.get("/knowledge-base/areas")
+async def get_knowledge_base_areas(current=Depends(require_user)):
+    """Get all knowledge base areas with access status"""
+    access = await db.user_access.find_one({"user_id": current["id"]})
+    
+    areas = [
+        {
+            "id": "area1",
+            "title": "Business Formation & Registration",
+            "description": "Legal business setup, licensing, and registration requirements",
+            "resources_count": 15,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area1")))
+        },
+        {
+            "id": "area2", 
+            "title": "Financial Operations & Management",
+            "description": "Accounting, bookkeeping, and financial management systems",
+            "resources_count": 12,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area2")))
+        },
+        {
+            "id": "area3",
+            "title": "Legal & Contracting Compliance", 
+            "description": "Contract management, legal compliance, and risk mitigation",
+            "resources_count": 18,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area3")))
+        },
+        {
+            "id": "area4",
+            "title": "Quality Management & Standards",
+            "description": "Quality systems, standards compliance, and process improvement",
+            "resources_count": 10,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area4")))
+        },
+        {
+            "id": "area5",
+            "title": "Technology & Security Infrastructure",
+            "description": "Cybersecurity, data protection, and technology systems",
+            "resources_count": 14,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area5")))
+        },
+        {
+            "id": "area6",
+            "title": "Human Resources & Capacity",
+            "description": "Staff management, training, and organizational capacity",
+            "resources_count": 11,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area6")))
+        },
+        {
+            "id": "area7",
+            "title": "Performance Tracking & Reporting", 
+            "description": "KPIs, metrics, reporting systems, and performance management",
+            "resources_count": 9,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area7")))
+        },
+        {
+            "id": "area8",
+            "title": "Risk Management & Business Continuity",
+            "description": "Risk assessment, business continuity, and emergency planning",
+            "resources_count": 13,
+            "locked": not (access and (access.get("knowledge_base_access", {}).get("all_areas") or access.get("knowledge_base_access", {}).get("area8")))
+        }
+    ]
+    
+    return {"areas": areas}
+
 # ---------------- Enhanced Client Dashboard APIs ----------------
 @api.get("/assessment/progress/{user_id}")
 async def get_assessment_progress(user_id: str, current=Depends(require_user)):
