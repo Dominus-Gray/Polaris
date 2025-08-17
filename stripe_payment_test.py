@@ -80,10 +80,9 @@ def test_checkout_session_creation(client_token):
         }
         
         payload = {
-            "package_type": "basic_assessment",
-            "amount": 99.99,
-            "currency": "usd",
-            "origin_url": "https://procurement-ready.preview.emergentagent.com"
+            "package_id": "assessment_fee",
+            "origin_url": "https://procurement-ready.preview.emergentagent.com",
+            "metadata": {}
         }
         
         response = requests.post(
