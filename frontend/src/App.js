@@ -576,7 +576,7 @@ function ProfilePage(){
               <ul>
                 <li>Maturity assessment</li>
                 <li>Readiness certification</li>
-                <li>Provider matching</li>
+                <li>Service requests</li>
               </ul>
             </div>
           </label>
