@@ -1309,7 +1309,7 @@ async def get_assessment_progress(
             raise HTTPException(status_code=404, detail="Assessment session not found")
         
         # Calculate progress
-        total_questions = sum(len(area["questions"]) for area in ASSESSMENT_SCHEMA.values())
+        total_questions = sum(len(area["questions"]) for area in ASSESSMENT_SCHEMA["areas"])
         answered_questions = len(session.get("responses", {}))
         progress_percentage = (answered_questions / total_questions) * 100 if total_questions > 0 else 0
         
