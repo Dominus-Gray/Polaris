@@ -224,9 +224,9 @@ def test_knowledge_base_payment(client_token):
         }
         
         payload = {
-            "access_type": "full_access",
-            "duration_months": 12,
-            "amount": 49.99
+            "package_id": "knowledge_base_all",
+            "origin_url": "https://procurement-ready.preview.emergentagent.com",
+            "metadata": {}
         }
         
         response = requests.post(
