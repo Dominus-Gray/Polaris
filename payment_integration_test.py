@@ -376,16 +376,15 @@ class PaymentIntegrationTester:
             }
             
             payload = {
-                "title": "Business Formation Assistance",
-                "description": "Need help with business registration and compliance setup",
-                "budget": 1500.00,
+                "budget": 1500,
+                "payment_pref": "card",
                 "timeline": "2 weeks",
-                "area_id": "business_formation",
-                "requirements": ["Business license", "Tax ID setup", "Insurance guidance"]
+                "area_id": "area1",  # Business Formation
+                "description": "Need help with business registration and compliance setup"
             }
             
             response = requests.post(
-                f"{API_BASE}/service-requests",
+                f"{API_BASE}/match/request",  # Correct endpoint
                 json=payload,
                 headers=headers
             )
