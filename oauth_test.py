@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-OAuth Authentication Flow Testing for Polaris MVP
+OAuth Authentication Flow Testing for Polaris MVP - REVIEW REQUEST FOCUSED
 Tests the OAuth callback endpoint POST /api/auth/oauth/callback
+Focuses on debugging the specific "Authentication failed" errors with Google OAuth
 """
 
 import requests
 import json
 import uuid
 import os
+import time
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -19,6 +21,7 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-sbap-1.previ
 API_BASE = f"{BASE_URL}/api"
 
 print(f"🔐 OAuth Authentication Testing at: {API_BASE}")
+print("🎯 FOCUS: Debugging Google OAuth 'Authentication failed' errors")
 
 def test_oauth_callback_with_valid_session():
     """Test POST /api/auth/oauth/callback with a mock valid session_id"""
