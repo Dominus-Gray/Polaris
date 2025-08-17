@@ -3,6 +3,8 @@ import "./App.css";
 import axios from "axios";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, Navigate, useParams } from "react-router-dom";
 import { Toaster, toast } from "sonner";
+import ProfileSettings from "./components/ProfileSettings";
+import AdminDashboard from "./components/AdminDashboard";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
