@@ -158,6 +158,22 @@ def test_service_request_payment(client_token):
             "Content-Type": "application/json"
         }
         
+        # First create a provider user
+        print("Creating provider user...")
+        provider_token, provider_email = create_test_user("provider")
+        if not provider_token:
+            print("❌ FAIL: Could not create provider user")
+            return None, None
+        
+        # Get provider user ID
+        provider_response = requests.get(f"{API_BASE}/auth/me", headers={"Authorization": f"Bearer {provider_token}"})
+        if provider_response.status_code != 200:
+            print("❌ FAIL: Could not get provider user ID")
+            return None, None
+        
+        provider_id = provider_response.json().get('id')
+        print(f"Created provider: {provider_id}")
+        
         # First create a match request
         print("Creating match request...")
         match_payload = {
@@ -184,7 +200,7 @@ def test_service_request_payment(client_token):
         # Now create service payment
         payload = {
             "request_id": request_id,
-            "provider_id": str(uuid.uuid4()),
+            "provider_id": provider_id,
             "agreed_fee": 1500.00,
             "origin_url": "https://procurement-ready.preview.emergentagent.com"
         }
