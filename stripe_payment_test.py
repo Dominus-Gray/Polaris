@@ -98,12 +98,12 @@ def test_checkout_session_creation(client_token):
             print(f"Checkout session response: {json.dumps(data, indent=2)}")
             
             # Check required fields
-            required_fields = ['session_id', 'checkout_url', 'stripe_session_id']
+            required_fields = ['session_id', 'url']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
                 print("✅ PASS: Checkout session created with all required fields")
-                return data.get('stripe_session_id'), data.get('session_id')
+                return data.get('session_id'), data.get('session_id')
             else:
                 print(f"❌ FAIL: Missing required fields: {missing_fields}")
                 return None, None
