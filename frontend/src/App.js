@@ -206,6 +206,77 @@ function AuthWidget(){
             disabled={isSubmitting}
           />
           
+          {/* Invitation Code for Clients */}
+          {mode === 'register' && role === 'client' && (
+            <input 
+              className="input w-full" 
+              placeholder="Agency Invitation Code *" 
+              value={inviteCode} 
+              onChange={e=>setInviteCode(e.target.value)}
+              disabled={isSubmitting}
+            />
+          )}
+          
+          {/* Payment Information for Non-Navigators */}
+          {mode === 'register' && role !== 'navigator' && (
+            <div className="space-y-3 p-4 bg-slate-50 rounded border">
+              <div className="text-sm font-medium text-slate-900">Payment Information</div>
+              <input 
+                className="input w-full" 
+                placeholder="Cardholder Name *" 
+                value={paymentInfo.cardholder_name} 
+                onChange={e=>setPaymentInfo({...paymentInfo, cardholder_name: e.target.value})}
+                disabled={isSubmitting}
+              />
+              <input 
+                className="input w-full" 
+                placeholder="Card Number *" 
+                value={paymentInfo.card_number} 
+                onChange={e=>setPaymentInfo({...paymentInfo, card_number: e.target.value})}
+                disabled={isSubmitting}
+              />
+              <div className="grid grid-cols-3 gap-2">
+                <select 
+                  className="input"
+                  value={paymentInfo.expiry_month}
+                  onChange={e=>setPaymentInfo({...paymentInfo, expiry_month: e.target.value})}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Month *</option>
+                  {Array.from({length: 12}, (_, i) => i + 1).map(month => (
+                    <option key={month} value={month.toString().padStart(2, '0')}>
+                      {month.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <select 
+                  className="input"
+                  value={paymentInfo.expiry_year}
+                  onChange={e=>setPaymentInfo({...paymentInfo, expiry_year: e.target.value})}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Year *</option>
+                  {Array.from({length: 10}, (_, i) => new Date().getFullYear() + i).map(year => (
+                    <option key={year} value={year.toString()}>{year}</option>
+                  ))}
+                </select>
+                <input 
+                  className="input" 
+                  placeholder="CVV *" 
+                  value={paymentInfo.cvv} 
+                  onChange={e=>setPaymentInfo({...paymentInfo, cvv: e.target.value})}
+                  disabled={isSubmitting}
+                  maxLength={4}
+                />
+              </div>
+              <div className="text-xs text-slate-500">
+                {role === 'client' ? 'Payment will be processed only when you select service providers' :
+                 role === 'provider' ? 'Card will be charged only when you receive service requests' :
+                 'Platform registration fee applies'}
+              </div>
+            </div>
+          )}
+          
           {mode === 'register' && (
             <div className="flex items-start gap-3 p-3 bg-slate-50 rounded border">
               <input 
