@@ -163,11 +163,11 @@ class PaymentIntegrationTester:
                 data = response.json()
                 print(f"Knowledge base payment response: {json.dumps(data, indent=2)}")
                 
-                if 'session_id' in data and 'checkout_url' in data:
+                if 'session_id' in data and 'url' in data:  # API returns 'url' not 'checkout_url'
                     print("✅ PASS: Knowledge base payment session created")
                     return data.get('session_id')
                 else:
-                    print(f"❌ FAIL: Missing session_id or checkout_url: {data}")
+                    print(f"❌ FAIL: Missing session_id or url: {data}")
                     return False
             else:
                 print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
