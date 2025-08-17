@@ -394,10 +394,10 @@ async def login_user(request: Request, user: UserLogin):
         })
         raise HTTPException(status_code=400, detail="Invalid credentials")
     
-    # Check if provider is approved
-    if db_user["role"] == "provider" and db_user.get("approval_status") != "approved":
-        log_security_event("LOGIN_PROVIDER_NOT_APPROVED", user_id=db_user["id"], details={"email": user.email})
-        raise HTTPException(status_code=403, detail="Provider account pending approval")
+    # Check if provider or agency is approved
+    if db_user["role"] in ["provider", "agency"] and db_user.get("approval_status") != "approved":
+        log_security_event("LOGIN_USER_NOT_APPROVED", user_id=db_user["id"], details={"email": user.email, "role": db_user["role"]})
+        raise HTTPException(status_code=403, detail=f"{db_user['role'].title()} account pending approval")
     
     # Reset failed attempts on successful login
     await db.users.update_one(
