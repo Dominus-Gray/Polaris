@@ -1577,7 +1577,10 @@ function ClientHome(){
   const [certificates, setCertificates] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [matchedServices, setMatchedServices] = useState([]);
+  const [knowledgeBaseAccess, setKnowledgeBaseAccess] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const navigate = useNavigate();
+  
   useEffect(()=>{ 
     const load=async()=>{ 
       const {data} = await axios.get(`${API}/home/client`); 
@@ -1589,10 +1592,77 @@ function ClientHome(){
         // Load matched services for the client
         const services = await axios.get(`${API}/client/matched-services`);
         setMatchedServices(services.data.services || []);
+
+        // Load knowledge base access status
+        const access = await axios.get(`${API}/knowledge-base/access`);
+        setKnowledgeBaseAccess(access.data);
       }catch{}
     }; 
     load(); 
   },[]);
+
+  // Check for payment completion from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    
+    if (sessionId) {
+      checkPaymentStatus(sessionId);
+    }
+  }, []);
+
+  const checkPaymentStatus = async (sessionId, attempts = 0) => {
+    const maxAttempts = 5;
+    const pollInterval = 2000;
+
+    if (attempts >= maxAttempts) {
+      toast.error('Payment status check timed out. Please refresh the page.');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API}/payments/v1/checkout/status/${sessionId}`);
+      const data = response.data;
+      
+      if (data.payment_status === 'paid') {
+        toast.success('Payment successful! Knowledge base unlocked.');
+        // Reload access status
+        const access = await axios.get(`${API}/knowledge-base/access`);
+        setKnowledgeBaseAccess(access.data);
+        setActiveTab('knowledge');
+        return;
+      } else if (data.status === 'expired') {
+        toast.error('Payment session expired. Please try again.');
+        return;
+      }
+
+      // Continue polling if still pending
+      setTimeout(() => checkPaymentStatus(sessionId, attempts + 1), pollInterval);
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      if (attempts === 0) {
+        toast.error('Error checking payment status. Please refresh the page.');
+      }
+    }
+  };
+
+  const unlockKnowledgeBase = async (packageId, areaId = null) => {
+    setPaymentLoading(true);
+    try {
+      const metadata = areaId ? { area_id: areaId } : {};
+      const { data } = await axios.post(`${API}/payments/knowledge-base`, {
+        package_id: packageId,
+        origin_url: window.location.origin,
+        metadata
+      });
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (e) {
+      toast.error('Failed to process payment', { description: e.response?.data?.detail || e.message });
+      setPaymentLoading(false);
+    }
+  };
 
   const downloadCertificate = async(certId) => {
     try{
