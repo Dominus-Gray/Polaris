@@ -2449,6 +2449,285 @@ async def get_my_services(current=Depends(require_user)):
     
     return {"engagements": engagements}
 
+# ---------------- Enhanced Client Dashboard APIs ----------------
+@api.get("/assessment/progress/{user_id}")
+async def get_assessment_progress(user_id: str, current=Depends(require_user)):
+    """Get assessment progress and completion data"""
+    # Check if user can access this assessment data
+    if current["id"] != user_id and current["role"] != "navigator":
+        raise HTTPException(status_code=403, detail="Unauthorized to access this assessment data")
+    
+    # Get assessment answers
+    answers = await db.assessment_answers.find({"user_id": user_id}).to_list(100)
+    answers_dict = {answer["question_id"]: answer["answer"] for answer in answers}
+    
+    # Calculate completion percentage
+    total_questions = 24  # 8 areas × 3 questions each
+    completed_questions = len([a for a in answers_dict.values() if a])
+    completion_percentage = int((completed_questions / total_questions) * 100) if total_questions > 0 else 0
+    
+    # Calculate gaps
+    gaps = []
+    area_names = {
+        'area1': 'Business Formation & Registration',
+        'area2': 'Financial Operations & Management', 
+        'area3': 'Legal & Contracting Compliance',
+        'area4': 'Quality Management & Standards',
+        'area5': 'Technology & Security Infrastructure',
+        'area6': 'Human Resources & Capacity',
+        'area7': 'Performance Tracking & Reporting',
+        'area8': 'Risk Management & Business Continuity'
+    }
+    
+    for question_id, answer in answers_dict.items():
+        area_id = question_id.split('_')[0]
+        if not answer or answer == 'no_help':
+            existing_gap = next((g for g in gaps if g['area_id'] == area_id), None)
+            if not existing_gap:
+                gaps.append({
+                    'area_id': area_id,
+                    'area_name': area_names.get(area_id, area_id),
+                    'question_ids': [question_id],
+                    'severity': 'high' if answer == 'no_help' else 'medium'
+                })
+            else:
+                existing_gap['question_ids'].append(question_id)
+                if answer == 'no_help':
+                    existing_gap['severity'] = 'high'
+    
+    return {
+        "user_id": user_id,
+        "answers": answers_dict,
+        "completion_percentage": completion_percentage,
+        "total_questions": total_questions,
+        "completed_questions": completed_questions,
+        "gaps": gaps,
+        "last_updated": max([answer.get("created_at", datetime.utcnow()) for answer in answers], default=datetime.utcnow())
+    }
+
+@api.get("/agency/info/{agency_id}")
+async def get_agency_info(agency_id: str, current=Depends(require_user)):
+    """Get agency information for client dashboard"""
+    agency = await db.users.find_one({"_id": agency_id, "role": "agency"})
+    if not agency:
+        raise HTTPException(status_code=404, detail="Agency not found")
+    
+    # Get agency profile info
+    profile = await db.business_profiles.find_one({"user_id": agency_id})
+    
+    return {
+        "agency_id": agency_id,
+        "agency_name": profile.get("company_name", "Unknown Agency") if profile else "Unknown Agency",
+        "description": profile.get("business_description", "") if profile else "",
+        "contact_name": profile.get("owner_name", "") if profile else "",
+        "contact_email": agency.get("email", ""),
+        "contact_phone": profile.get("phone", "") if profile else "",
+        "created_at": agency.get("created_at", datetime.utcnow())
+    }
+
+@api.get("/free-resources/recommendations")
+async def get_free_resources_recommendations(gaps: str = "", current=Depends(require_user)):
+    """Get free resource recommendations based on gaps"""
+    gap_areas = gaps.split(',') if gaps else []
+    
+    # Define free resources for each area
+    free_resources = {
+        'area1': [
+            {'id': 'bus_reg_guide', 'title': 'Business Registration Guide', 'area': 'area1', 'area_name': 'Business Formation'},
+            {'id': 'ein_walkthrough', 'title': 'EIN Application Walkthrough', 'area': 'area1', 'area_name': 'Business Formation'},
+            {'id': 'license_checklist', 'title': 'Business License Checklist', 'area': 'area1', 'area_name': 'Business Formation'}
+        ],
+        'area2': [
+            {'id': 'accounting_basics', 'title': 'Small Business Accounting Basics', 'area': 'area2', 'area_name': 'Financial Operations'},
+            {'id': 'bookkeeping_guide', 'title': 'Bookkeeping Best Practices', 'area': 'area2', 'area_name': 'Financial Operations'},
+            {'id': 'tax_prep_guide', 'title': 'Tax Preparation Guide', 'area': 'area2', 'area_name': 'Financial Operations'}
+        ],
+        'area3': [
+            {'id': 'contract_templates', 'title': 'Contract Templates Library', 'area': 'area3', 'area_name': 'Legal Compliance'},
+            {'id': 'legal_compliance', 'title': 'Legal Compliance Checklist', 'area': 'area3', 'area_name': 'Legal Compliance'},
+            {'id': 'insurance_guide', 'title': 'Business Insurance Guide', 'area': 'area3', 'area_name': 'Legal Compliance'}
+        ],
+        'area4': [
+            {'id': 'quality_standards', 'title': 'Quality Management Standards', 'area': 'area4', 'area_name': 'Quality Management'},
+            {'id': 'iso_guide', 'title': 'ISO Certification Guide', 'area': 'area4', 'area_name': 'Quality Management'},
+            {'id': 'process_improvement', 'title': 'Process Improvement Tools', 'area': 'area4', 'area_name': 'Quality Management'}
+        ],
+        'area5': [
+            {'id': 'cybersecurity_basics', 'title': 'Cybersecurity for Small Business', 'area': 'area5', 'area_name': 'Technology & Security'},
+            {'id': 'data_backup_guide', 'title': 'Data Backup Best Practices', 'area': 'area5', 'area_name': 'Technology & Security'},
+            {'id': 'remote_work_security', 'title': 'Remote Work Security Guide', 'area': 'area5', 'area_name': 'Technology & Security'}
+        ],
+        'area6': [
+            {'id': 'hr_handbook', 'title': 'Employee Handbook Template', 'area': 'area6', 'area_name': 'Human Resources'},
+            {'id': 'hiring_guide', 'title': 'Hiring Best Practices', 'area': 'area6', 'area_name': 'Human Resources'},
+            {'id': 'training_programs', 'title': 'Employee Training Programs', 'area': 'area6', 'area_name': 'Human Resources'}
+        ],
+        'area7': [
+            {'id': 'kpi_dashboard', 'title': 'KPI Dashboard Templates', 'area': 'area7', 'area_name': 'Performance Tracking'},
+            {'id': 'reporting_guide', 'title': 'Business Reporting Guide', 'area': 'area7', 'area_name': 'Performance Tracking'},
+            {'id': 'metrics_tracking', 'title': 'Metrics Tracking Tools', 'area': 'area7', 'area_name': 'Performance Tracking'}
+        ],
+        'area8': [
+            {'id': 'risk_assessment', 'title': 'Risk Assessment Template', 'area': 'area8', 'area_name': 'Risk Management'},
+            {'id': 'business_continuity', 'title': 'Business Continuity Plan', 'area': 'area8', 'area_name': 'Risk Management'},
+            {'id': 'emergency_response', 'title': 'Emergency Response Guide', 'area': 'area8', 'area_name': 'Risk Management'}
+        ]
+    }
+    
+    # Get resources for gap areas
+    recommended_resources = []
+    for area in gap_areas:
+        if area in free_resources:
+            recommended_resources.extend(free_resources[area])
+    
+    # If no specific gaps, return popular resources
+    if not recommended_resources:
+        for area_resources in free_resources.values():
+            recommended_resources.extend(area_resources[:1])  # One from each area
+    
+    return {"resources": recommended_resources}
+
+@api.post("/analytics/resource-access")
+async def log_resource_access(resource_data: dict, current=Depends(require_user)):
+    """Log resource access for navigator analytics"""
+    access_log = {
+        "_id": str(uuid.uuid4()),
+        "user_id": current["id"],
+        "resource_id": resource_data.get("resource_id"),
+        "gap_area": resource_data.get("gap_area"),
+        "accessed_at": datetime.utcnow(),
+        "user_role": current["role"]
+    }
+    
+    await db.resource_access_logs.insert_one(access_log)
+    
+    return {"message": "Resource access logged successfully"}
+
+# ---------------- Service Provider Matching System ----------------
+@api.post("/service-requests/professional-help")
+async def request_professional_help(request_data: dict, current=Depends(require_role("client"))):
+    """Create service request and notify matching providers"""
+    area_id = request_data.get("area_id")
+    budget_range = request_data.get("budget_range")
+    description = request_data.get("description", "")
+    
+    if not area_id or not budget_range:
+        raise HTTPException(status_code=400, detail="Area ID and budget range are required")
+    
+    # Create service request
+    request_id = str(uuid.uuid4())
+    service_request = {
+        "_id": request_id,
+        "id": request_id,
+        "user_id": current["id"],
+        "area_id": area_id,
+        "budget_range": budget_range,
+        "description": description,
+        "status": "open",
+        "created_at": datetime.utcnow(),
+        "provider_responses": []
+    }
+    
+    await db.service_requests.insert_one(service_request)
+    
+    # Find matching service providers
+    area_names = {
+        'area1': 'Business Formation & Registration',
+        'area2': 'Financial Operations & Management', 
+        'area3': 'Legal & Contracting Compliance',
+        'area4': 'Quality Management & Standards',
+        'area5': 'Technology & Security Infrastructure',
+        'area6': 'Human Resources & Capacity',
+        'area7': 'Performance Tracking & Reporting',
+        'area8': 'Risk Management & Business Continuity'
+    }
+    
+    area_name = area_names.get(area_id, area_id)
+    
+    # Find providers with matching service areas
+    matching_providers = await db.business_profiles.find({
+        "user_id": {"$in": await db.users.distinct("_id", {"role": "provider", "approval_status": "approved"})},
+        "service_areas": {"$regex": area_name, "$options": "i"}
+    }).to_list(10)
+    
+    # Notify first 5 matching providers
+    notification_count = 0
+    for provider_profile in matching_providers[:5]:
+        notification_id = str(uuid.uuid4())
+        notification = {
+            "_id": notification_id,
+            "provider_id": provider_profile["user_id"],
+            "service_request_id": request_id,
+            "client_id": current["id"],
+            "area_name": area_name,
+            "budget_range": budget_range,
+            "description": description,
+            "status": "pending",
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.provider_notifications.insert_one(notification)
+        notification_count += 1
+    
+    return {
+        "request_id": request_id,
+        "message": f"Service request created and sent to {notification_count} matching providers",
+        "notified_providers": notification_count
+    }
+
+@api.get("/provider/notifications")
+async def get_provider_notifications(current=Depends(require_role("provider"))):
+    """Get service request notifications for provider"""
+    notifications = await db.provider_notifications.find({
+        "provider_id": current["id"],
+        "status": "pending"
+    }).sort("created_at", -1).to_list(20)
+    
+    return {"notifications": notifications}
+
+@api.post("/provider/respond-to-request")
+async def respond_to_service_request(response_data: dict, current=Depends(require_role("provider"))):
+    """Provider responds to service request"""
+    request_id = response_data.get("request_id")
+    proposed_fee = response_data.get("proposed_fee")
+    proposal_note = response_data.get("proposal_note", "")
+    estimated_timeline = response_data.get("estimated_timeline", "")
+    
+    if not request_id or not proposed_fee:
+        raise HTTPException(status_code=400, detail="Request ID and proposed fee are required")
+    
+    # Check if provider already responded
+    existing_response = await db.provider_responses.find_one({
+        "request_id": request_id,
+        "provider_id": current["id"]
+    })
+    
+    if existing_response:
+        raise HTTPException(status_code=400, detail="Already responded to this request")
+    
+    # Create response
+    response_id = str(uuid.uuid4())
+    response = {
+        "_id": response_id,
+        "request_id": request_id,
+        "provider_id": current["id"],
+        "proposed_fee": float(proposed_fee),
+        "proposal_note": proposal_note,
+        "estimated_timeline": estimated_timeline,
+        "status": "submitted",
+        "created_at": datetime.utcnow()
+    }
+    
+    await db.provider_responses.insert_one(response)
+    
+    # Update notification status
+    await db.provider_notifications.update_one(
+        {"service_request_id": request_id, "provider_id": current["id"]},
+        {"$set": {"status": "responded", "responded_at": datetime.utcnow()}}
+    )
+    
+    return {"message": "Response submitted successfully", "response_id": response_id}
+
 # ---------------- Knowledge Base Payment Unlock ----------------
 @api.post("/payments/knowledge-base")
 async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn, current=Depends(require_user)):
