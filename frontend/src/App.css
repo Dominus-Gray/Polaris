@@ -21,7 +21,27 @@ body { @apply bg-slate-50 text-slate-900; }
 }
 
 .header-logo {
-  @apply flex items-center;
+  @apply flex items-center gap-2;
+}
+
+.polaris-logo-container {
+  @apply flex items-center gap-2;
+}
+
+.logo-large {
+  @apply flex flex-col items-center gap-1;
+}
+
+.logo-text {
+  @apply text-center;
+}
+
+.logo-brand {
+  @apply block text-lg font-bold text-slate-900 tracking-wider;
+}
+
+.logo-tagline {
+  @apply block text-xs text-slate-600 font-medium;
 }
 
 .main-navigation {
