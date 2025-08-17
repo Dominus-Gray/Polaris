@@ -317,7 +317,7 @@ def test_navigator_approval_system(test_results):
         
         if response.status_code == 200:
             data = response.json()
-            pending_list = data.get('pending_users', [])
+            pending_list = data.get('pending_approvals', [])  # Changed from 'pending_users' to 'pending_approvals'
             test_results.add_result(
                 "pending_approvals_retrieval",
                 len(pending_list) >= len(pending_users),
