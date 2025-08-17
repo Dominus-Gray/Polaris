@@ -981,8 +981,7 @@ function BusinessProfileForm(){
         break;
       
       case 'registered_address':
-      case 'mailing_address':
-        if (!value.trim()) errors.push(`${name.replace('_', ' ')} is required`);
+        if (!value.trim()) errors.push('Registered address is required');
         else if (value.trim().length < 10) errors.push('Address must be at least 10 characters');
         break;
       
@@ -995,9 +994,15 @@ function BusinessProfileForm(){
         else if (value.trim().length < 2) errors.push('Industry must be at least 2 characters');
         break;
       
-      case 'primary_products_services':
-        if (!value.trim()) errors.push('Primary products/services is required');
-        else if (value.trim().length < 5) errors.push('Products/services description must be at least 5 characters');
+      case 'business_type':
+        if (!value) errors.push('Business type is required');
+        else if (!['product', 'service'].includes(value)) errors.push('Business type must be either product or service');
+        break;
+      
+      case 'business_description':
+        if (!value.trim()) errors.push('Business description is required');
+        else if (value.trim().length < 10) errors.push('Business description must be at least 10 characters');
+        else if (value.trim().length > 500) errors.push('Business description must be less than 500 characters');
         break;
       
       case 'revenue_range':
