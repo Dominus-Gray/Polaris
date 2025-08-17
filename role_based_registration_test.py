@@ -80,7 +80,7 @@ def test_role_based_registration(test_results):
                         # Generate license code
                         license_response = requests.post(
                             f"{API_BASE}/agency/licenses/generate",
-                            json={"count": 1},
+                            json={"quantity": 1},  # Changed from "count" to "quantity"
                             headers={"Authorization": f"Bearer {agency_token}"}
                         )
                         if license_response.status_code == 200:
