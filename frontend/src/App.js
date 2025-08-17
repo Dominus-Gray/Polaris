@@ -971,7 +971,7 @@ function AssessmentPage(){
                   </div>
                 </div>
                 
-                <div className="flex gap-3">
+                <div className="flex gap-3 mb-3">
                   <button 
                     className={`btn btn-sm ${answers[question.id] === 'yes' ? 'btn-primary' : 'border'}`}
                     onClick={() => handleAnswer(question.id, 'yes')}
@@ -985,6 +985,48 @@ function AssessmentPage(){
                     No, I need help
                   </button>
                 </div>
+
+                {/* Evidence Upload Section */}
+                {answers[question.id] === 'yes' && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-green-800 mb-2">
+                        Upload Evidence (Optional)
+                      </label>
+                      <p className="text-xs text-green-700 mb-3">
+                        Provide documentation to support your claim and strengthen your assessment score.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-400 transition-colors">
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          className="hidden"
+                          id={`evidence-${question.id}`}
+                        />
+                        <label htmlFor={`evidence-${question.id}`} className="cursor-pointer">
+                          <svg className="w-8 h-8 text-green-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          <div className="text-sm text-green-700 font-medium">Upload Documents</div>
+                          <div className="text-xs text-green-600">PDF, DOC, JPG, PNG (Max 10MB each)</div>
+                        </label>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button className="btn btn-sm text-green-700 border-green-300 hover:bg-green-100 flex-1">
+                          📷 Take Photo
+                        </button>
+                        <button className="btn btn-sm text-green-700 border-green-300 hover:bg-green-100 flex-1">
+                          📝 Add Note
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
