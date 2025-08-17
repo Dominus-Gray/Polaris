@@ -1777,10 +1777,97 @@ function ClientHome(){
                   <div className="tile-sub">Continue</div>
                 </div>
               </div>
+
+              {/* AI Insights & Gap Analysis */}
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-blue-900">AI Compliance Insights</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-white rounded-lg p-4 border border-blue-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Priority Actions</div>
+                      <p className="text-sm text-slate-600">
+                        Complete Financial Operations assessment to improve readiness score by ~15%
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-blue-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Compliance Status</div>
+                      <p className="text-sm text-slate-600">
+                        {data.readiness >= 75 
+                          ? '✅ Meeting federal contracting requirements' 
+                          : '⚠️ Additional documentation needed for federal compliance'
+                        }
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-blue-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Knowledge Base</div>
+                      <p className="text-sm text-slate-600">
+                        {knowledgeBaseAccess?.has_all_access 
+                          ? '✅ Full access to all business area resources'
+                          : `${knowledgeBaseAccess?.unlocked_areas.length || 0}/8 areas unlocked - consider upgrading for complete guidance`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-amber-900">Gap Analysis</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-white rounded-lg p-4 border border-amber-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Critical Gaps</div>
+                      <p className="text-sm text-slate-600">
+                        {data.readiness < 50 
+                          ? 'Business formation and financial documentation need immediate attention'
+                          : data.readiness < 75 
+                          ? 'Technology infrastructure and quality management require improvement'
+                          : 'Minor documentation gaps - nearly procurement ready'
+                        }
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Recommendations</div>
+                      <p className="text-sm text-slate-600">
+                        {data.readiness < 75 
+                          ? 'Consider working with service providers to accelerate compliance'
+                          : 'Continue assessment completion for certification eligibility'
+                        }
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Estimated Timeline</div>
+                      <p className="text-sm text-slate-600">
+                        {data.readiness < 50 
+                          ? '3-6 months to achieve procurement readiness'
+                          : data.readiness < 75 
+                          ? '1-3 months with focused effort'
+                          : '2-4 weeks for final documentation'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <div className="mt-6 flex gap-3">
-                  <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
+                <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
                 <button className="btn" onClick={()=>navigate('/assessment')}>Continue Assessment</button>
+                {knowledgeBaseAccess && !knowledgeBaseAccess.has_all_access && (
+                  <button className="btn" onClick={() => setActiveTab('knowledge')}>View Knowledge Base</button>
+                )}
               </div>
             </div>
           )}
