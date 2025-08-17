@@ -146,7 +146,7 @@ def test_create_agency():
     print("="*60)
     
     credentials = {
-        "email": "agency@polaris.test",
+        "email": "agency@polaris.example.com",
         "password": "Agency123!",
         "role": "agency",
         "terms_accepted": True
