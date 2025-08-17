@@ -716,12 +716,27 @@ function AssessmentPage(){
                   <strong>Acceptable Alternatives:</strong> {question.alternatives}
                 </div>
                 <div className="bg-white rounded p-3 text-sm text-slate-600">
-                  AI-generated guidance and templates for completing this requirement will be available in the resource library.
+                  <div className="space-y-2">
+                    <div className="font-medium">Free Resources Available:</div>
+                    <ul className="list-disc list-inside space-y-1 text-xs">
+                      <li>SBA.gov procurement resources and guides</li>
+                      <li>SCORE business mentoring and templates</li>
+                      <li>Local PTAC (Procurement Technical Assistance Center)</li>
+                      <li>Industry association guidance and checklists</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               <button 
                 className="btn w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => setShowResources(false)}
+                onClick={() => {
+                  // Mark as using free resources and continue
+                  setAnswers(prev => ({
+                    ...prev,
+                    [selectedQuestion]: 'free_resources'
+                  }));
+                  setShowResources(false);
+                }}
               >
                 Use Free Resources
               </button>
