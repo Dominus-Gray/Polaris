@@ -695,7 +695,7 @@ def test_integration_flows(test_results):
             )
             
             if pending_response.status_code == 200:
-                pending_users = pending_response.json().get('pending_users', [])
+                pending_users = pending_response.json().get('pending_approvals', [])  # Changed from 'pending_users' to 'pending_approvals'
                 provider_user = next((user for user in pending_users if user.get('email') == provider_email), None)
                 
                 if provider_user:
