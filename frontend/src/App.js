@@ -1371,6 +1371,10 @@ function ClientHome(){
       try{
         const certs = await axios.get(`${API}/client/certificates`);
         setCertificates(certs.data.certificates || []);
+        
+        // Load matched services for the client
+        const services = await axios.get(`${API}/client/matched-services`);
+        setMatchedServices(services.data.services || []);
       }catch{}
     }; 
     load(); 
