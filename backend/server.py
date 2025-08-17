@@ -380,22 +380,23 @@ class OAuthCallbackOut(BaseModel):
     role: str
 
 @api.post("/auth/oauth/callback", response_model=OAuthCallbackOut)
-async def oauth_callback(payload: OAuthCallbackIn):
+async def oauth_callback(payload: OAuthCallbackIn, response: Response):
     try:
-        # Call Emergent auth API to get user data
+        # Call Emergent auth API to get user data (as per verified playbook)
         headers = {"X-Session-ID": payload.session_id}
-        response = requests.get("https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data", headers=headers)
+        emergent_response = requests.get("https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data", headers=headers)
         
-        if response.status_code != 200:
+        if emergent_response.status_code != 200:
             raise HTTPException(status_code=400, detail="Invalid session ID")
         
-        oauth_data = response.json()
+        oauth_data = emergent_response.json()
+        # Expected response: {"id": "string", "email": "string", "name": "string", "picture": "string", "session_token": "string"}
         
-        # Check if user already exists
+        # Check if user already exists (do not update existing user data as per playbook)
         existing_user = await db.users.find_one({"email": oauth_data["email"]})
         
         if existing_user:
-            # Update existing user with OAuth data but keep original role
+            # Use existing user, don't update data as per playbook
             user_data = existing_user
         else:
             # Create new user
@@ -413,7 +414,29 @@ async def oauth_callback(payload: OAuthCallbackIn):
             }
             await db.users.insert_one(user_data)
         
-        # Create JWT access token
+        # Save session token in sessions table with 7-day expiry (as per verified playbook)
+        session_token = oauth_data.get("session_token")
+        if session_token:
+            session_data = {
+                "_id": session_token,
+                "user_id": user_data["id"],
+                "created_at": datetime.utcnow(),
+                "expires_at": datetime.utcnow() + timedelta(days=7)
+            }
+            await db.sessions.insert_one(session_data)
+            
+            # Set HttpOnly cookie (as per verified playbook)
+            response.set_cookie(
+                key="session_token",
+                value=session_token,
+                max_age=7*24*60*60,  # 7 days in seconds
+                path="/",
+                httponly=True,
+                secure=True,
+                samesite="none"
+            )
+        
+        # Create JWT access token as fallback
         access_token = create_access_token(data={"sub": user_data["id"]})
         
         return OAuthCallbackOut(
