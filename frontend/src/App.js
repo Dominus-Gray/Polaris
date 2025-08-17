@@ -1592,8 +1592,6 @@ function ClientHome(){
       </div>
     </div>
   );
-}    </div>
-  );
 }
 
 function ProviderHome(){
