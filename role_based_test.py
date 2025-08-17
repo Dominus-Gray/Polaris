@@ -149,8 +149,12 @@ def test_create_agency():
     print("🏢 STEP 2: CREATE LOCAL AGENCY (PENDING STATUS)")
     print("="*60)
     
+    # Use timestamp to ensure unique email
+    import time
+    timestamp = int(time.time())
+    
     credentials = {
-        "email": "agency@polaris.example.com",
+        "email": f"agency.{timestamp}@polaris.example.com",
         "password": "Agency123!",
         "role": "agency",
         "terms_accepted": True
