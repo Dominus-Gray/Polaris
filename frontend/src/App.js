@@ -875,6 +875,11 @@ function AssessmentPage(){
     navigate(`/matching?area_id=${area_id}&desc=${encodeURIComponent(question.text)}`);
   };
 
+  const handleProfessionalHelp = (questionId, areaId, budgetRange) => {
+    const question = getQuestion(questionId);
+    navigate(`/matching?area_id=${areaId}&desc=${encodeURIComponent(question.text)}&budget=${encodeURIComponent(budgetRange)}`);
+  };
+
   if (showResources && selectedQuestion) {
     const question = getQuestion(selectedQuestion);
     return (
