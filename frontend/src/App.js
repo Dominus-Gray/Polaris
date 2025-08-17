@@ -14,23 +14,23 @@ function PolarisLogo({ size = 22, variant = 'default' }) {
   const starColor = variant === 'white' ? '#ffffff' : '#4A90C2';
   
   return (
-    <div className={`polaris-logo-container ${variant === 'large' ? 'logo-large' : ''}`} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <div className={`polaris-logo-container ${variant === 'large' ? 'logo-large' : ''}`} style={{ minWidth: size, minHeight: size }}>
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="drop-shadow-sm">
         {/* North Star - Polaris */}
-        <path d="M12 2L13.09 8.26L19 7L14.91 11.09L21 12L14.74 13.09L16 19L11.91 14.91L12 21L10.91 14.74L5 16L9.09 11.91L3 12L9.26 10.91L8 5L12.09 9.09L12 2Z" fill={logoColor} />
-        {/* Constellation dots */}
-        <circle cx="6" cy="6" r="1" fill={starColor} opacity="0.6" />
-        <circle cx="18" cy="6" r="0.8" fill={starColor} opacity="0.4" />
-        <circle cx="6" cy="18" r="0.8" fill={starColor} opacity="0.4" />
-        <circle cx="18" cy="18" r="1" fill={starColor} opacity="0.6" />
-        <circle cx="4" cy="12" r="0.6" fill={starColor} opacity="0.3" />
-        <circle cx="20" cy="12" r="0.6" fill={starColor} opacity="0.3" />
+        <path d="M12 2L13.09 8.26L19 7L14.91 11.09L21 12L14.74 13.09L16 19L11.91 14.91L12 21L10.91 14.74L5 16L9.09 11.91L3 12L9.26 10.91L8 5L12.09 9.09L12 2Z" fill={starColor} />
+        {/* Central glow */}
+        <circle cx="12" cy="12" r="2" fill={logoColor} opacity="0.8" />
+        {/* Outer ring for visibility */}
+        <circle cx="12" cy="12" r="10" fill="none" stroke={logoColor} strokeWidth="0.5" opacity="0.3" />
       </svg>
       {variant === 'large' && (
         <div className="logo-text">
           <span className="logo-brand">POLARIS</span>
           <span className="logo-tagline">Procurement Readiness</span>
         </div>
+      )}
+      {size >= 24 && variant !== 'large' && variant !== 'white' && (
+        <span className="text-sm font-semibold text-slate-700 ml-1">POLARIS</span>
       )}
     </div>
   );
