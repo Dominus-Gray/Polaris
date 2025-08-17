@@ -185,7 +185,7 @@ def test_license_management_system(test_results):
         
         # Test 1: POST /api/agency/licenses/generate
         print("\n--- Testing license generation ---")
-        generate_payload = {"count": 5}
+        generate_payload = {"quantity": 5}  # Changed from "count" to "quantity"
         response = requests.post(f"{API_BASE}/agency/licenses/generate", json=generate_payload, headers=headers)
         
         if response.status_code == 200:
