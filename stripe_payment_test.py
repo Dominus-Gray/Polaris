@@ -132,7 +132,7 @@ def test_checkout_status(stripe_session_id, client_token):
             print(f"Checkout status response: {json.dumps(data, indent=2)}")
             
             # Check required fields
-            required_fields = ['session_id', 'payment_status', 'amount']
+            required_fields = ['status', 'payment_status', 'amount_total']
             missing_fields = [field for field in required_fields if field not in data]
             
             if not missing_fields:
