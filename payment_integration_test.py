@@ -144,9 +144,11 @@ class PaymentIntegrationTester:
             }
             
             payload = {
-                "package_type": "knowledge_base_all",
-                "success_url": f"{BASE_URL}/knowledge-base/success",
-                "cancel_url": f"{BASE_URL}/knowledge-base/cancel"
+                "package_id": "knowledge_base_all",  # Use valid package ID
+                "origin_url": BASE_URL,  # Required field
+                "metadata": {
+                    "unlock_type": "all_areas"
+                }
             }
             
             response = requests.post(
