@@ -1805,6 +1805,66 @@ async def biz_logo_complete(upload_id: str = Form(...), total_chunks: int = Form
     await db.business_profiles.update_one({"user_id": current["id"]}, {"$set": {"logo_upload_id": upload_id, "updated_at": datetime.utcnow()}}, upsert=True)
     return {"ok": True, "upload_id": upload_id, "size": size}
 
+# ---------------- Payment Integration ----------------
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
+
+# Service packages for payment
+SERVICE_PACKAGES = {
+    "knowledge_base_single": 20.0,
+    "knowledge_base_all": 100.0,
+    "service_request_small": 50.0,
+    "service_request_medium": 150.0,
+    "service_request_large": 300.0,
+    "assessment_fee": 100.0
+}
+
+class PaymentTransactionIn(BaseModel):
+    package_id: str
+    origin_url: str
+    metadata: Optional[Dict[str, str]] = {}
+
+class PaymentTransactionOut(BaseModel):
+    id: str
+    user_id: str
+    package_id: str
+    amount: float
+    currency: str = "USD"
+    stripe_session_id: str
+    payment_status: str
+    status: str
+    metadata: Dict[str, str]
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class ServiceRequestPaymentIn(BaseModel):
+    request_id: str
+    provider_id: str
+    agreed_fee: float
+    origin_url: str
+
+class ServiceTrackingUpdate(BaseModel):
+    status: str  # 'active', 'in_progress', 'under_review', 'completed', 'cancelled'
+    progress_percentage: Optional[float] = None
+    notes: Optional[str] = None
+    deliverables: Optional[List[str]] = []
+
+class ServiceRatingIn(BaseModel):
+    engagement_id: str
+    rating: int = Field(..., ge=1, le=5)
+    feedback: Optional[str] = None
+    quality_score: Optional[int] = Field(None, ge=1, le=5)
+    communication_score: Optional[int] = Field(None, ge=1, le=5)
+    timeliness_score: Optional[int] = Field(None, ge=1, le=5)
+
+# Initialize Stripe checkout if available
+stripe_checkout = None
+if STRIPE_AVAILABLE and STRIPE_API_KEY:
+    try:
+        # Initialize will be done in endpoints since we need request object
+        pass
+    except Exception as e:
+        print(f"Stripe initialization error: {e}")
+
 # ---------------- Engagements ----------------
 class EngagementCreateIn(BaseModel):
     request_id: str
