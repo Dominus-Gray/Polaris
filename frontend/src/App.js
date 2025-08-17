@@ -2423,63 +2423,197 @@ function HomeRouter(){
 }
 
 // ---------------- Matching with Accept → Engagement ----------------
-function MatchingPage(){
+function ServiceRequestPage(){
   const location = useLocation();
-  const [req, setReq] = useState({ budget: '', payment_pref: '', timeline: '', area_id: 'area6', description: '' });
+  const [req, setReq] = useState({ budget: '', timeline: '', area_id: 'area1', description: '', urgency: 'standard', deliverables: '' });
   const [requestId, setRequestId] = useState('');
   const [matches, setMatches] = useState([]);
   const [responses, setResponses] = useState([]);
   const [agreedFee, setAgreedFee] = useState('');
+  const [paymentInfo, setPaymentInfo] = useState({
+    card_number: '', expiry_month: '', expiry_year: '', cvv: '', cardholder_name: ''
+  });
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+
   useEffect(()=>{
     const params = new URLSearchParams(location.search);
     const area = params.get('area_id'); const desc = params.get('desc');
     if (area || desc) setReq(prev=>({ ...prev, area_id: area || prev.area_id, description: desc || prev.description }));
   }, [location.search]);
+
   const createReq = async()=>{
+    if (!req.budget || !req.description || !req.timeline) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     try{
-      const payload = { ...req, budget: Number(req.budget) };
-      const {data} = await axios.post(`${API}/match/request`, payload);
+      const payload = { 
+        ...req, 
+        budget: req.budget, // Keep as string for ranges
+        payment_info: showPaymentForm ? paymentInfo : null 
+      };
+      const {data} = await axios.post(`${API}/service-requests`, payload);
       setRequestId(data.request_id);
-      toast.success('Request created');
-      const r2 = await axios.get(`${API}/match/${data.request_id}/matches`); setMatches(r2.data.matches||[]);
-      const r3 = await axios.get(`${API}/match/${data.request_id}/responses`); setResponses(r3.data.responses||[]);
-    }catch(e){ toast.error('Create request failed'); }
+      toast.success('Service request created successfully');
+      const r2 = await axios.get(`${API}/service-requests/${data.request_id}/matches`); 
+      setMatches(r2.data.matches||[]);
+      const r3 = await axios.get(`${API}/service-requests/${data.request_id}/responses`); 
+      setResponses(r3.data.responses||[]);
+    }catch(e){ 
+      toast.error('Failed to create service request', { description: e.response?.data?.detail || e.message }); 
+    }
   };
+
   const refresh = async()=>{
     if(!requestId) return;
-    const r2 = await axios.get(`${API}/match/${requestId}/matches`); setMatches(r2.data.matches||[]);
-    const r3 = await axios.get(`${API}/match/${requestId}/responses`); setResponses(r3.data.responses||[]);
+    const r2 = await axios.get(`${API}/service-requests/${requestId}/matches`); setMatches(r2.data.matches||[]);
+    const r3 = await axios.get(`${API}/service-requests/${requestId}/responses`); setResponses(r3.data.responses||[]);
   };
-  const inviteTop5 = async()=>{ try{ await axios.post(`${API}/match/${requestId}/invite-top5`); toast.success('Invited top 5'); }catch{ toast.error('Invite failed'); } };
+
+  const inviteProviders = async()=>{ 
+    try{ 
+      await axios.post(`${API}/service-requests/${requestId}/invite-providers`); 
+      toast.success('Invitations sent to qualified providers'); 
+    }catch{ 
+      toast.error('Failed to send invitations'); 
+    } 
+  };
+
   const acceptResponse = async(resp)=>{
+    if (!agreedFee) {
+      toast.error('Please enter the agreed fee amount');
+      return;
+    }
+
     try{
-      const { data } = await axios.post(`${API}/engagements/create`, { request_id: requestId, response_id: resp.id || resp._id, agreed_fee: Number(agreedFee||0) });
-      toast.success('Engagement created', { description: data.engagement_id });
+      const { data } = await axios.post(`${API}/engagements/create`, { 
+        request_id: requestId, 
+        response_id: resp.id || resp._id, 
+        agreed_fee: Number(agreedFee||0) 
+      });
+      toast.success('Engagement created! Payment will be processed and service will begin.', { description: data.engagement_id });
       await refresh();
-    }catch(e){ toast.error('Accept failed', { description: e?.response?.data?.detail || e.message }); }
+    }catch(e){ 
+      toast.error('Failed to accept proposal', { description: e?.response?.data?.detail || e.message }); 
+    }
   };
+
+  const budgetRanges = ['Under $500', '$500 - $1,000', '$1,000 - $2,500', '$2,500 - $5,000', '$5,000 - $10,000', 'Over $10,000'];
+  const timelineOptions = ['ASAP (1-3 days)', 'Within 1 week', 'Within 2 weeks', 'Within 1 month', 'Within 3 months', 'Flexible timeline'];
+
   return (
-    <div className="container mt-6">
-      <h2 className="text-lg font-semibold mb-3">Provider Matching</h2>
+    <div className="container mt-6 max-w-6xl">
+      <h2 className="text-2xl font-semibold mb-6">Service Request</h2>
+      
       {!requestId && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input className="input" placeholder="Budget" value={req.budget} onChange={e=>setReq({...req, budget:e.target.value})} />
-          <input className="input" placeholder="Payment preference (optional)" value={req.payment_pref} onChange={e=>setReq({...req, payment_pref:e.target.value})} />
-          <input className="input" placeholder="Timeline" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})} />
-          <select className="input" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
-            <option value="area1">Business Formation & Registration</option>
-            <option value="area2">Financial Operations</option>
-            <option value="area3">Legal & Contracting</option>
-            <option value="area4">Technology & Cybersecurity</option>
-            <option value="area5">People & HR</option>
-            <option value="area6">Marketing & Sales</option>
-            <option value="area7">Procurement & Supply Chain</option>
-            <option value="area8">Quality & Continuous Improvement</option>
-          </select>
-          <input className="input" placeholder="Short description" value={req.description} onChange={e=>setReq({...req, description:e.target.value})} />
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Business Area *</label>
+              <select className="input w-full" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
+                <option value="area1">Business Formation & Registration</option>
+                <option value="area2">Financial Operations & Management</option>
+                <option value="area3">Legal & Contracting Compliance</option>
+                <option value="area4">Quality Management & Standards</option>
+                <option value="area5">Technology & Security Infrastructure</option>
+                <option value="area6">Human Resources & Capacity</option>
+                <option value="area7">Performance Tracking & Reporting</option>
+                <option value="area8">Risk Management & Business Continuity</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Budget Range *</label>
+              <select className="input w-full" value={req.budget} onChange={e=>setReq({...req, budget:e.target.value})}>
+                <option value="">Select budget range</option>
+                {budgetRanges.map(range => (
+                  <option key={range} value={range}>{range}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Timeline *</label>
+              <select className="input w-full" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})}>
+                <option value="">Select timeline</option>
+                {timelineOptions.map(timeline => (
+                  <option key={timeline} value={timeline}>{timeline}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Priority Level</label>
+              <select className="input w-full" value={req.urgency} onChange={e=>setReq({...req, urgency:e.target.value})}>
+                <option value="standard">Standard</option>
+                <option value="high">High Priority (+20% fee)</option>
+                <option value="urgent">Urgent (+50% fee)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Payment Processing</label>
+              <select className="input w-full" onChange={e=>setShowPaymentForm(e.target.value === 'immediate')}>
+                <option value="escrow">Escrow (Pay when service starts)</option>
+                <option value="immediate">Immediate (Secure your request now)</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Project Description *</label>
+              <textarea 
+                className="input w-full" 
+                rows="4" 
+                placeholder="Describe your requirements, current situation, and what you need help with..."
+                value={req.description} 
+                onChange={e=>setReq({...req, description:e.target.value})}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Expected Deliverables</label>
+              <textarea 
+                className="input w-full" 
+                rows="3" 
+                placeholder="What specific outputs do you expect? (documents, certifications, setups, etc.)"
+                value={req.deliverables} 
+                onChange={e=>setReq({...req, deliverables:e.target.value})}
+              />
+            </div>
+          </div>
+
+          {showPaymentForm && (
+            <div className="mt-6 p-6 bg-slate-50 rounded-lg border">
+              <h3 className="font-semibold text-slate-900 mb-4">Payment Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input className="input w-full" placeholder="Cardholder Name *" value={paymentInfo.cardholder_name} onChange={e=>setPaymentInfo({...paymentInfo, cardholder_name: e.target.value})} />
+                <input className="input w-full" placeholder="Card Number *" value={paymentInfo.card_number} onChange={e=>setPaymentInfo({...paymentInfo, card_number: e.target.value})} />
+                <div className="grid grid-cols-3 gap-2">
+                  <select className="input" value={paymentInfo.expiry_month} onChange={e=>setPaymentInfo({...paymentInfo, expiry_month: e.target.value})}>
+                    <option value="">Month</option>
+                    {Array.from({length: 12}, (_, i) => i + 1).map(month => (
+                      <option key={month} value={month.toString().padStart(2, '0')}>{month.toString().padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                  <select className="input" value={paymentInfo.expiry_year} onChange={e=>setPaymentInfo({...paymentInfo, expiry_year: e.target.value})}>
+                    <option value="">Year</option>
+                    {Array.from({length: 10}, (_, i) => new Date().getFullYear() + i).map(year => (
+                      <option key={year} value={year.toString()}>{year}</option>
+                    ))}
+                  </select>
+                  <input className="input" placeholder="CVV" value={paymentInfo.cvv} onChange={e=>setPaymentInfo({...paymentInfo, cvv: e.target.value})} maxLength={4} />
+                </div>
+              </div>
+              <div className="text-xs text-slate-500 mt-3">💳 Secure payment processing. Your card will be charged when you accept a provider's proposal.</div>
+            </div>
+          )}
+
+          <div className="mt-6 flex justify-end">
+            <button className="btn btn-primary px-8" onClick={createReq}>Create Service Request</button>
+          </div>
         </div>
       )}
-      {!requestId ? (<div className="mt-3"><button className="btn btn-primary" onClick={createReq}>Create request</button></div>) : (
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2"><div className="text-sm text-slate-600">Top matches</div><div className="flex gap-2"><button className="btn" onClick={inviteTop5}>Invite top-5</button><button className="btn" onClick={refresh}>Refresh</button></div></div>
           <table className="table">
