@@ -49,9 +49,18 @@ function AuthWidget(){
   const [role, setRole] = useState('client');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [paymentInfo, setPaymentInfo] = useState({
+    card_number: '',
+    expiry_month: '',
+    expiry_year: '',
+    cvv: '',
+    cardholder_name: ''
+  });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOAuthModal, setShowOAuthModal] = useState(false);
+  const [showRoleSelection, setShowRoleSelection] = useState(false);
   
   const submit = async()=>{
     if (mode === 'register' && !termsAccepted) {
