@@ -1245,7 +1245,216 @@ async def create_audit_log(
         
     except Exception as e:
         logger.error(f"Error creating audit log: {e}")
-        # Don't raise exception for audit logging failures
+# Assessment System Implementation
+@api.get("/assessment/schema")
+async def get_assessment_schema():
+    """Get the assessment schema with all business areas and questions"""
+    try:
+        return {"schema": ASSESSMENT_SCHEMA}
+    except Exception as e:
+        logger.error(f"Error getting assessment schema: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load assessment schema")
+
+@api.post("/assessment/session")
+async def create_assessment_session(current_user: dict = Depends(get_current_user)):
+    """Create a new assessment session for the user"""
+    try:
+        session_id = str(uuid.uuid4())
+        
+        # Create assessment session record
+        session_data = {
+            "_id": session_id,
+            "user_id": current_user["id"],
+            "status": "in_progress",
+            "progress": {},
+            "responses": {},
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.assessment_sessions.insert_one(session_data)
+        
+        # Create audit log
+        await create_audit_log(
+            user_id=current_user["id"],
+            action="assessment_session_created",
+            resource="assessment_session",
+            resource_id=session_id
+        )
+        
+        return {
+            "session_id": session_id,
+            "status": "created",
+            "schema": ASSESSMENT_SCHEMA
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating assessment session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create assessment session")
+
+@api.get("/assessment/session/{session_id}/progress")
+async def get_assessment_progress(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get assessment session progress"""
+    try:
+        # Get assessment session
+        session = await db.assessment_sessions.find_one({
+            "_id": session_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        # Calculate progress
+        total_questions = sum(len(area["questions"]) for area in ASSESSMENT_SCHEMA.values())
+        answered_questions = len(session.get("responses", {}))
+        progress_percentage = (answered_questions / total_questions) * 100 if total_questions > 0 else 0
+        
+        return {
+            "session_id": session_id,
+            "status": session["status"],
+            "progress_percentage": progress_percentage,
+            "answered_questions": answered_questions,
+            "total_questions": total_questions,
+            "responses": session.get("responses", {}),
+            "last_updated": session.get("updated_at")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting assessment progress: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get assessment progress")
+
+@api.post("/assessment/session/{session_id}/response")
+async def submit_assessment_response(
+    session_id: str,
+    response_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Submit response to assessment question"""
+    try:
+        # Validate session belongs to user
+        session = await db.assessment_sessions.find_one({
+            "_id": session_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        # Update session with new response
+        question_id = response_data.get("question_id")
+        answer = response_data.get("answer")
+        
+        if not question_id or answer is None:
+            raise HTTPException(status_code=400, detail="Question ID and answer are required")
+        
+        # Update responses
+        await db.assessment_sessions.update_one(
+            {"_id": session_id},
+            {
+                "$set": {
+                    f"responses.{question_id}": answer,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Get updated session for progress calculation
+        updated_session = await db.assessment_sessions.find_one({"_id": session_id})
+        total_questions = sum(len(area["questions"]) for area in ASSESSMENT_SCHEMA.values())
+        answered_questions = len(updated_session.get("responses", {}))
+        progress_percentage = (answered_questions / total_questions) * 100 if total_questions > 0 else 0
+        
+        # Check if assessment is complete
+        if progress_percentage >= 100:
+            await db.assessment_sessions.update_one(
+                {"_id": session_id},
+                {"$set": {"status": "completed", "completed_at": datetime.utcnow()}}
+            )
+        
+        return {
+            "success": True,
+            "progress_percentage": progress_percentage,
+            "answered_questions": answered_questions,
+            "total_questions": total_questions
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting assessment response: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit assessment response")
+
+@api.post("/ai/explain")
+async def get_ai_explanation(
+    request_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get AI explanation for assessment questions"""
+    try:
+        question_id = request_data.get("question_id")
+        context = request_data.get("context", "")
+        
+        if not question_id:
+            raise HTTPException(status_code=400, detail="Question ID is required")
+        
+        # Find the question in the schema
+        question_text = None
+        area_name = None
+        
+        for area, area_data in ASSESSMENT_SCHEMA.items():
+            for question in area_data["questions"]:
+                if question["id"] == question_id:
+                    question_text = question["text"]
+                    area_name = area
+                    break
+            if question_text:
+                break
+        
+        if not question_text:
+            raise HTTPException(status_code=404, detail="Question not found")
+        
+        # Generate AI explanation (simplified for MVP)
+        explanations = {
+            "deliverables": f"For '{question_text}', the key deliverables include documented processes, compliance certificates, and evidence of implementation.",
+            "why_it_matters": f"This requirement is critical for procurement readiness because it demonstrates your business capability and reduces risk for contracting officers.",
+            "acceptable_alternatives": f"Alternative approaches may include third-party certifications, equivalent documentation, or phased implementation plans.",
+            "free_resources": [
+                "SBA.gov procurement resources",
+                "SCORE business mentoring", 
+                "Local PTAC assistance",
+                "Industry association guidance"
+            ]
+        }
+        
+        # Log AI explanation request
+        await create_audit_log(
+            user_id=current_user["id"],
+            action="ai_explanation_requested",
+            resource="assessment_question",
+            resource_id=question_id,
+            details={"area": area_name, "context": context}
+        )
+        
+        return {
+            "question_id": question_id,
+            "question_text": question_text,
+            "area": area_name,
+            **explanations
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting AI explanation: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get AI explanation")
+
+# Provider Approval System
 @api.get("/navigator/providers/pending")
 async def get_pending_providers(current=Depends(require_role("navigator"))):
     """Get all providers pending approval"""
