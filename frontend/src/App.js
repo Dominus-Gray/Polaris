@@ -3409,8 +3409,10 @@ function Landing(){
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-inner">
-          <div className="flex-1 text-white">
-            <PolarisLogo size={32} />
+          <div className="flex-1 text-white text-center">
+            <div className="flex justify-center mb-4">
+              <PolarisLogo size={32} />
+            </div>
             <h1 className="hero-title mt-4">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
             <div className="hero-ctas">
