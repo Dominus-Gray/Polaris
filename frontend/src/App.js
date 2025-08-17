@@ -2422,300 +2422,528 @@ function HomeRouter(){
   return <Navigate to="/" replace />;
 }
 
-// ---------------- Matching with Accept → Engagement ----------------
+// ---------------- Enhanced Service Request with Payment Integration ----------------
 function ServiceRequestPage(){
   const location = useLocation();
   const [req, setReq] = useState({ budget: '', timeline: '', area_id: 'area1', description: '', urgency: 'standard', deliverables: '' });
   const [requestId, setRequestId] = useState('');
   const [matches, setMatches] = useState([]);
   const [responses, setResponses] = useState([]);
+  const [myServices, setMyServices] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState(null);
   const [agreedFee, setAgreedFee] = useState('');
-  const [paymentInfo, setPaymentInfo] = useState({
-    card_number: '', expiry_month: '', expiry_year: '', cvv: '', cardholder_name: ''
-  });
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('create'); // 'create', 'tracking', 'history'
 
-  useEffect(()=>{
-    const params = new URLSearchParams(location.search);
-    const area = params.get('area_id'); const desc = params.get('desc');
-    if (area || desc) setReq(prev=>({ ...prev, area_id: area || prev.area_id, description: desc || prev.description }));
-  }, [location.search]);
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const sessionId = urlParams.get('session_id');
+    const reqId = urlParams.get('request_id');
+    
+    if (sessionId) {
+      checkPaymentStatus(sessionId, reqId);
+    }
+    
+    loadMyServices();
+  }, [location]);
 
-  const createReq = async()=>{
-    if (!req.budget || !req.description || !req.timeline) {
+  const loadMyServices = async () => {
+    try {
+      const { data } = await axios.get(`${API}/engagements/my-services`);
+      setMyServices(data.engagements || []);
+    } catch (e) {
+      console.error('Failed to load services:', e);
+    }
+  };
+
+  const checkPaymentStatus = async (sessionId, requestId = null, attempts = 0) => {
+    const maxAttempts = 5;
+    const pollInterval = 2000; // 2 seconds
+
+    if (attempts >= maxAttempts) {
+      toast.error('Payment status check timed out. Please check your email for confirmation.');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API}/payments/v1/checkout/status/${sessionId}`);
+      const data = response.data;
+      
+      if (data.payment_status === 'paid') {
+        toast.success('Payment successful! Your service request is now active.');
+        if (requestId) {
+          setRequestId(requestId);
+          await loadRequestData(requestId);
+        }
+        await loadMyServices();
+        setActiveTab('tracking');
+        return;
+      } else if (data.status === 'expired') {
+        toast.error('Payment session expired. Please try again.');
+        return;
+      }
+
+      // If payment is still pending, continue polling
+      toast.info('Payment is being processed...');
+      setTimeout(() => checkPaymentStatus(sessionId, requestId, attempts + 1), pollInterval);
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      toast.error('Error checking payment status. Please try again.');
+    }
+  };
+
+  const loadRequestData = async (reqId) => {
+    try {
+      const matchesRes = await axios.get(`${API}/match/${reqId}/matches`);
+      const responsesRes = await axios.get(`${API}/match/${reqId}/responses`);
+      setMatches(matchesRes.data.matches || []);
+      setResponses(responsesRes.data.responses || []);
+    } catch (e) {
+      console.error('Failed to load request data:', e);
+    }
+  };
+
+  const createRequest = async () => {
+    if (!req.budget || !req.timeline || !req.description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    try{
+    try {
       const payload = { 
-        ...req, 
-        budget: req.budget, // Keep as string for ranges
-        payment_info: showPaymentForm ? paymentInfo : null 
+        budget: parseFloat(req.budget.replace(/[^0-9.-]+/g, '')) || 0,
+        payment_pref: 'card',
+        timeline: req.timeline,
+        area_id: req.area_id,
+        description: req.description
       };
-      const {data} = await axios.post(`${API}/service-requests`, payload);
+      
+      const { data } = await axios.post(`${API}/match/request`, payload);
       setRequestId(data.request_id);
       toast.success('Service request created successfully');
-      const r2 = await axios.get(`${API}/service-requests/${data.request_id}/matches`); 
-      setMatches(r2.data.matches||[]);
-      const r3 = await axios.get(`${API}/service-requests/${data.request_id}/responses`); 
-      setResponses(r3.data.responses||[]);
-    }catch(e){ 
+      await loadRequestData(data.request_id);
+    } catch (e) { 
       toast.error('Failed to create service request', { description: e.response?.data?.detail || e.message }); 
     }
   };
 
-  const refresh = async()=>{
-    if(!requestId) return;
-    const r2 = await axios.get(`${API}/service-requests/${requestId}/matches`); setMatches(r2.data.matches||[]);
-    const r3 = await axios.get(`${API}/service-requests/${requestId}/responses`); setResponses(r3.data.responses||[]);
+  const refresh = async () => {
+    if (!requestId) return;
+    await loadRequestData(requestId);
   };
 
-  const inviteProviders = async()=>{ 
-    try{ 
-      await axios.post(`${API}/service-requests/${requestId}/invite-providers`); 
+  const inviteProviders = async () => { 
+    try { 
+      await axios.post(`${API}/match/${requestId}/invite`); 
       toast.success('Invitations sent to qualified providers'); 
-    }catch{ 
+    } catch { 
       toast.error('Failed to send invitations'); 
     } 
   };
 
-  const acceptResponse = async(resp)=>{
-    if (!agreedFee) {
+  const selectProvider = (provider, response) => {
+    setSelectedProvider({ ...provider, response });
+    setAgreedFee(response.proposed_fee || '');
+    setShowPaymentModal(true);
+  };
+
+  const processPayment = async () => {
+    if (!selectedProvider || !agreedFee) {
       toast.error('Please enter the agreed fee amount');
       return;
     }
 
-    try{
-      const { data } = await axios.post(`${API}/engagements/create`, { 
-        request_id: requestId, 
-        response_id: resp.id || resp._id, 
-        agreed_fee: Number(agreedFee||0) 
+    setPaymentLoading(true);
+    try {
+      const { data } = await axios.post(`${API}/payments/service-request`, {
+        request_id: requestId,
+        provider_id: selectedProvider.provider_id || selectedProvider.id,
+        agreed_fee: parseFloat(agreedFee),
+        origin_url: window.location.origin
       });
-      toast.success('Engagement created! Payment will be processed and service will begin.', { description: data.engagement_id });
-      await refresh();
-    }catch(e){ 
-      toast.error('Failed to accept proposal', { description: e?.response?.data?.detail || e.message }); 
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (e) {
+      toast.error('Failed to process payment', { description: e.response?.data?.detail || e.message });
+      setPaymentLoading(false);
     }
   };
 
-  const budgetRanges = ['Under $500', '$500 - $1,000', '$1,000 - $2,500', '$2,500 - $5,000', '$5,000 - $10,000', 'Over $10,000'];
+  const updateServiceStatus = async (engagementId, status, notes = '') => {
+    try {
+      await axios.post(`${API}/engagements/${engagementId}/update`, {
+        status,
+        notes,
+        progress_percentage: status === 'completed' ? 100 : status === 'in_progress' ? 50 : 25
+      });
+      toast.success('Service status updated');
+      await loadMyServices();
+    } catch (e) {
+      toast.error('Failed to update status', { description: e.response?.data?.detail || e.message });
+    }
+  };
+
+  const rateService = async (engagementId, rating, feedback = '') => {
+    try {
+      await axios.post(`${API}/engagements/${engagementId}/rating`, {
+        engagement_id: engagementId,
+        rating,
+        feedback,
+        quality_score: rating,
+        communication_score: rating,
+        timeliness_score: rating
+      });
+      toast.success('Rating submitted successfully');
+      await loadMyServices();
+    } catch (e) {
+      toast.error('Failed to submit rating', { description: e.response?.data?.detail || e.message });
+    }
+  };
+
+  const budgetRanges = ['500', '1000', '2500', '5000', '10000'];
   const timelineOptions = ['ASAP (1-3 days)', 'Within 1 week', 'Within 2 weeks', 'Within 1 month', 'Within 3 months', 'Flexible timeline'];
 
   return (
     <div className="container mt-6 max-w-6xl">
-      <h2 className="text-2xl font-semibold mb-6">Service Request</h2>
-      
-      {!requestId && (
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Business Area *</label>
-              <select className="input w-full" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
-                <option value="area1">Business Formation & Registration</option>
-                <option value="area2">Financial Operations & Management</option>
-                <option value="area3">Legal & Contracting Compliance</option>
-                <option value="area4">Quality Management & Standards</option>
-                <option value="area5">Technology & Security Infrastructure</option>
-                <option value="area6">Human Resources & Capacity</option>
-                <option value="area7">Performance Tracking & Reporting</option>
-                <option value="area8">Risk Management & Business Continuity</option>
-              </select>
-            </div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold">Service Requests</h2>
+        <div className="flex gap-2">
+          <button 
+            className={`btn ${activeTab === 'create' ? 'btn-primary' : ''}`}
+            onClick={() => setActiveTab('create')}
+          >
+            Create Request
+          </button>
+          <button 
+            className={`btn ${activeTab === 'tracking' ? 'btn-primary' : ''}`}
+            onClick={() => setActiveTab('tracking')}
+          >
+            Active Services
+          </button>
+          <button 
+            className={`btn ${activeTab === 'history' ? 'btn-primary' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            Service History
+          </button>
+        </div>
+      </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Budget Range *</label>
-              <select className="input w-full" value={req.budget} onChange={e=>setReq({...req, budget:e.target.value})}>
-                <option value="">Select budget range</option>
-                {budgetRanges.map(range => (
-                  <option key={range} value={range}>{range}</option>
-                ))}
-              </select>
-            </div>
+      {/* Create Request Tab */}
+      {activeTab === 'create' && (
+        <>
+          {!requestId && (
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-4">Create New Service Request</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Business Area *</label>
+                  <select className="input w-full" value={req.area_id} onChange={e=>setReq({...req, area_id:e.target.value})}>
+                    <option value="area1">Business Formation & Registration</option>
+                    <option value="area2">Financial Operations & Management</option>
+                    <option value="area3">Legal & Contracting Compliance</option>
+                    <option value="area4">Quality Management & Standards</option>
+                    <option value="area5">Technology & Security Infrastructure</option>
+                    <option value="area6">Human Resources & Capacity</option>
+                    <option value="area7">Performance Tracking & Reporting</option>
+                    <option value="area8">Risk Management & Business Continuity</option>
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Timeline *</label>
-              <select className="input w-full" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})}>
-                <option value="">Select timeline</option>
-                {timelineOptions.map(timeline => (
-                  <option key={timeline} value={timeline}>{timeline}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Priority Level</label>
-              <select className="input w-full" value={req.urgency} onChange={e=>setReq({...req, urgency:e.target.value})}>
-                <option value="standard">Standard</option>
-                <option value="high">High Priority (+20% fee)</option>
-                <option value="urgent">Urgent (+50% fee)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Payment Processing</label>
-              <select className="input w-full" onChange={e=>setShowPaymentForm(e.target.value === 'immediate')}>
-                <option value="escrow">Escrow (Pay when service starts)</option>
-                <option value="immediate">Immediate (Secure your request now)</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Project Description *</label>
-              <textarea 
-                className="input w-full" 
-                rows="4" 
-                placeholder="Describe your requirements, current situation, and what you need help with..."
-                value={req.description} 
-                onChange={e=>setReq({...req, description:e.target.value})}
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Expected Deliverables</label>
-              <textarea 
-                className="input w-full" 
-                rows="3" 
-                placeholder="What specific outputs do you expect? (documents, certifications, setups, etc.)"
-                value={req.deliverables} 
-                onChange={e=>setReq({...req, deliverables:e.target.value})}
-              />
-            </div>
-          </div>
-
-          {showPaymentForm && (
-            <div className="mt-6 p-6 bg-slate-50 rounded-lg border">
-              <h3 className="font-semibold text-slate-900 mb-4">Payment Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input className="input w-full" placeholder="Cardholder Name *" value={paymentInfo.cardholder_name} onChange={e=>setPaymentInfo({...paymentInfo, cardholder_name: e.target.value})} />
-                <input className="input w-full" placeholder="Card Number *" value={paymentInfo.card_number} onChange={e=>setPaymentInfo({...paymentInfo, card_number: e.target.value})} />
-                <div className="grid grid-cols-3 gap-2">
-                  <select className="input" value={paymentInfo.expiry_month} onChange={e=>setPaymentInfo({...paymentInfo, expiry_month: e.target.value})}>
-                    <option value="">Month</option>
-                    {Array.from({length: 12}, (_, i) => i + 1).map(month => (
-                      <option key={month} value={month.toString().padStart(2, '0')}>{month.toString().padStart(2, '0')}</option>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Budget (USD) *</label>
+                  <select className="input w-full" value={req.budget} onChange={e=>setReq({...req, budget:e.target.value})}>
+                    <option value="">Select budget range</option>
+                    {budgetRanges.map(amount => (
+                      <option key={amount} value={amount}>${amount}</option>
                     ))}
                   </select>
-                  <select className="input" value={paymentInfo.expiry_year} onChange={e=>setPaymentInfo({...paymentInfo, expiry_year: e.target.value})}>
-                    <option value="">Year</option>
-                    {Array.from({length: 10}, (_, i) => new Date().getFullYear() + i).map(year => (
-                      <option key={year} value={year.toString()}>{year}</option>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Timeline *</label>
+                  <select className="input w-full" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})}>
+                    <option value="">Select timeline</option>
+                    {timelineOptions.map(timeline => (
+                      <option key={timeline} value={timeline}>{timeline}</option>
                     ))}
                   </select>
-                  <input className="input" placeholder="CVV" value={paymentInfo.cvv} onChange={e=>setPaymentInfo({...paymentInfo, cvv: e.target.value})} maxLength={4} />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Project Description *</label>
+                  <textarea 
+                    className="input w-full h-32" 
+                    placeholder="Describe your project requirements, goals, and any specific deliverables you need..." 
+                    value={req.description} 
+                    onChange={e=>setReq({...req, description:e.target.value})}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <button className="btn btn-primary" onClick={createRequest}>
+                    Create Service Request
+                  </button>
                 </div>
               </div>
-              <div className="text-xs text-slate-500 mt-3">💳 Secure payment processing. Your card will be charged when you accept a provider's proposal.</div>
             </div>
           )}
 
-          <div className="mt-6 flex justify-end">
-            <button className="btn btn-primary px-8" onClick={createReq}>Create Service Request</button>
-          </div>
+          {requestId && (
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Service Request Tracking</h3>
+                <div className="flex gap-2">
+                  <button className="btn" onClick={inviteProviders}>Invite Providers</button>
+                  <button className="btn" onClick={refresh}>Refresh</button>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <div className="text-sm text-slate-600 mb-2">Qualified Service Providers</div>
+                <div className="overflow-x-auto">
+                  <table className="table w-full">
+                    <thead>
+                      <tr>
+                        <th>Company</th>
+                        <th>Service Areas</th>
+                        <th>Location</th>
+                        <th>Price Range</th>
+                        <th>Rating</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {matches.map(m => (
+                        <tr key={m.provider_id}>
+                          <td className="font-medium">{m.company_name}</td>
+                          <td>{(m.service_areas||[]).join(', ')}</td>
+                          <td>{m.location||'San Antonio, TX'}</td>
+                          <td>{m.price_min ? `$${m.price_min} - $${m.price_max}` : req.budget}</td>
+                          <td>
+                            <div className="flex items-center gap-1">
+                              <span className="text-yellow-500">★</span>
+                              <span>{m.score || '4.8'}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <button className="btn btn-sm">View Profile</button>
+                          </td>
+                        </tr>
+                      ))}
+                      {matches.length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="text-center py-8 text-slate-500">
+                            No providers matched yet. We're finding qualified service providers for you.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4">Proposals Received</h3>
+                <div className="space-y-4">
+                  {responses.map(r => (
+                    <div key={r.id || r._id} className="border rounded-lg p-4 hover:bg-slate-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-slate-900">{r.provider_company || 'Service Provider'}</h4>
+                          <p className="text-sm text-slate-600 mt-1">{r.proposal_note || 'No proposal note provided'}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                            <span>Proposed Fee: ${r.proposed_fee || 'Not specified'}</span>
+                            <span>Timeline: {r.estimated_timeline || 'Not specified'}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            className="btn btn-primary"
+                            onClick={() => selectProvider(r, r)}
+                          >
+                            Accept & Pay
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {responses.length === 0 && (
+                    <div className="text-center py-12">
+                      <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <h4 className="text-lg font-medium text-slate-900 mb-2">No Proposals Yet</h4>
+                      <p className="text-slate-600 mb-4">Service providers are reviewing your request. You'll receive proposals soon.</p>
+                      <button className="btn" onClick={inviteProviders}>Send More Invitations</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Active Services Tab */}
+      {activeTab === 'tracking' && (
+        <div className="space-y-6">
+          {myServices.filter(s => ['payment_completed', 'active', 'in_progress'].includes(s.status)).map(service => (
+            <div key={service._id} className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Service Request #{service.request_id?.slice(-8)}</h3>
+                  <p className="text-slate-600">Provider: {service.provider_company || 'Service Provider'}</p>
+                  <p className="text-sm text-slate-500">Fee: ${service.agreed_fee} | Status: {service.status}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    className="btn btn-sm"
+                    onClick={() => updateServiceStatus(service._id, 'in_progress', 'Client confirmed start')}
+                  >
+                    Mark In Progress
+                  </button>
+                  <button 
+                    className="btn btn-sm"
+                    onClick={() => updateServiceStatus(service._id, 'completed', 'Service completed')}
+                  >
+                    Mark Complete
+                  </button>
+                </div>
+              </div>
+              
+              {service.latest_tracking && (
+                <div className="bg-slate-50 rounded p-3 mb-3">
+                  <p className="text-sm"><strong>Latest Update:</strong> {service.latest_tracking.status}</p>
+                  {service.latest_tracking.notes && (
+                    <p className="text-sm text-slate-600 mt-1">{service.latest_tracking.notes}</p>
+                  )}
+                  <p className="text-xs text-slate-500 mt-1">
+                    {new Date(service.latest_tracking.updated_at).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+              
+              {service.status === 'completed' && !service.rating && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Rate this service:</h4>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map(rating => (
+                      <button
+                        key={rating}
+                        className="text-2xl text-slate-300 hover:text-yellow-500"
+                        onClick={() => rateService(service._id, rating)}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {myServices.filter(s => ['payment_completed', 'active', 'in_progress'].includes(s.status)).length === 0 && (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-slate-900 mb-2">No Active Services</h3>
+              <p className="text-slate-600">You don't have any active services at the moment.</p>
+            </div>
+          )}
         </div>
       )}
 
-      {requestId && (
+      {/* Service History Tab */}
+      {activeTab === 'history' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Service Request Tracking</h3>
-              <div className="flex gap-2">
-                <button className="btn" onClick={inviteProviders}>Invite Providers</button>
-                <button className="btn" onClick={refresh}>Refresh</button>
+          {myServices.filter(s => ['completed', 'cancelled'].includes(s.status)).map(service => (
+            <div key={service._id} className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold">Service Request #{service.request_id?.slice(-8)}</h3>
+                  <p className="text-slate-600">Provider: {service.provider_company || 'Service Provider'}</p>
+                  <p className="text-sm text-slate-500">Fee: ${service.agreed_fee} | Status: {service.status}</p>
+                  <p className="text-xs text-slate-400">
+                    Completed: {new Date(service.updated_at || service.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                {service.rating && (
+                  <div className="text-sm">
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-500">★</span>
+                      <span>{service.rating.rating}/5</span>
+                    </div>
+                    {service.rating.feedback && (
+                      <p className="text-slate-600 mt-1 max-w-xs">{service.rating.feedback}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          
+          {myServices.filter(s => ['completed', 'cancelled'].includes(s.status)).length === 0 && (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-slate-900 mb-2">No Service History</h3>
+              <p className="text-slate-600">You haven't completed any services yet.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirm Service Payment</h3>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <p className="text-sm text-slate-600">Provider</p>
+                <p className="font-medium">{selectedProvider?.provider_company || 'Service Provider'}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-slate-600">Service Description</p>
+                <p className="text-sm">{selectedProvider?.response?.proposal_note || 'Service request'}</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Agreed Fee (USD)</label>
+                <input
+                  type="number"
+                  className="input w-full"
+                  value={agreedFee}
+                  onChange={e => setAgreedFee(e.target.value)}
+                  placeholder="Enter agreed fee amount"
+                />
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded">
+                <p className="text-sm text-blue-800">
+                  <strong>Payment will be processed securely through Stripe.</strong><br/>
+                  A 5% platform fee will be added to cover payment processing and platform services.
+                </p>
               </div>
             </div>
             
-            <div className="mb-6">
-              <div className="text-sm text-slate-600 mb-2">Qualified Service Providers</div>
-              <div className="overflow-x-auto">
-                <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Company</th>
-                      <th>Service Areas</th>
-                      <th>Location</th>
-                      <th>Price Range</th>
-                      <th>Rating</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matches.map(m => (
-                      <tr key={m.provider_id}>
-                        <td className="font-medium">{m.company_name}</td>
-                        <td>{(m.service_areas||[]).join(', ')}</td>
-                        <td>{m.location||'San Antonio, TX'}</td>
-                        <td>{m.price_min ? `$${m.price_min} - $${m.price_max}` : req.budget}</td>
-                        <td>
-                          <div className="flex items-center gap-1">
-                            <span className="text-yellow-500">★</span>
-                            <span>{m.score || '4.8'}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <button className="btn btn-sm">View Profile</button>
-                        </td>
-                      </tr>
-                    ))}
-                    {matches.length === 0 && (
-                      <tr>
-                        <td colSpan="6" className="text-center py-8 text-slate-500">
-                          No providers matched yet. We're finding qualified service providers for you.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold mb-4">Proposals Received</h3>
-            <div className="space-y-4">
-              {responses.map(r => (
-                <div key={r.id || r._id} className="border rounded-lg p-4 hover:bg-slate-50">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <div className="font-medium text-slate-900">{r.provider_name || `Provider ${r.provider_user_id}`}</div>
-                      <div className="text-sm text-slate-600 mt-1">{r.proposal_note || 'Proposal details available'}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-slate-500">Proposed Fee</div>
-                      <div className="font-medium">${r.proposed_fee || 'Contact for quote'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <input 
-                        className="input" 
-                        placeholder="Enter agreed amount ($)" 
-                        value={agreedFee}
-                        onChange={e=>setAgreedFee(e.target.value)}
-                      />
-                    </div>
-                    <button 
-                      className="btn btn-primary"
-                      onClick={()=>acceptResponse(r)}
-                    >
-                      Accept & Start Service
-                    </button>
-                  </div>
-                </div>
-              ))}
-              
-              {responses.length === 0 && (
-                <div className="text-center py-12">
-                  <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <h4 className="text-lg font-medium text-slate-900 mb-2">No Proposals Yet</h4>
-                  <p className="text-slate-600 mb-4">Service providers are reviewing your request. You'll receive proposals soon.</p>
-                  <button className="btn" onClick={inviteProviders}>Send More Invitations</button>
-                </div>
-              )}
+            <div className="flex gap-3">
+              <button
+                className="btn flex-1"
+                onClick={() => setShowPaymentModal(false)}
+                disabled={paymentLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary flex-1"
+                onClick={processPayment}
+                disabled={paymentLoading || !agreedFee}
+              >
+                {paymentLoading ? 'Processing...' : 'Pay & Start Service'}
+              </button>
             </div>
           </div>
         </div>
