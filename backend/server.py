@@ -230,9 +230,12 @@ class UserLogin(BaseModel):
 
 class UserOut(BaseModel):
     id: str
-    email: EmailStr
+    email: str
     role: str
+    approval_status: str = "approved"  # pending, approved, rejected
+    is_active: bool = True
     created_at: datetime
+    profile_complete: bool = False
 
 async def get_user_by_email(email: str) -> Optional[dict]:
     return await db.users.find_one({"email": email.lower()})
