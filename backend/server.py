@@ -424,6 +424,9 @@ async def oauth_callback(payload: OAuthCallbackIn):
             role=user_data["role"]
         )
         
+    except HTTPException:
+        # Re-raise HTTPExceptions (like 400 Invalid session ID) without converting to 500
+        raise
     except requests.RequestException:
         raise HTTPException(status_code=500, detail="Failed to validate OAuth session")
     except Exception as e:
