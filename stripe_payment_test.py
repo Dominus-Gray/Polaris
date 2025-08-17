@@ -730,7 +730,7 @@ def main():
     
     # Test checkout status
     if stripe_session_id:
-        results['checkout_status'] = test_checkout_status(stripe_session_id)
+        results['checkout_status'] = test_checkout_status(stripe_session_id, client_token)
     else:
         results['checkout_status'] = False
     
