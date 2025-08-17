@@ -359,6 +359,20 @@
       - working: true
         agent: "testing"
         comment: "✅ PASS: Certificate system fully implemented and working. POST /api/agency/certificates/issue {client_user_id} correctly validates readiness >= CERT_MIN_READINESS (75%), returns certificate with all required fields (id, title, agency_user_id, client_user_id, session_id, readiness_percent, issued_at). GET /api/agency/certificates lists certificates for agency. GET /api/certificates/{id} properly authorizes access for agency/client/navigator roles. All certificate endpoints implemented at server.py lines 343-372 with proper authentication and business logic."
+  - task: "OAuth authentication flow for Google sign-in"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL OAUTH ISSUE IDENTIFIED: OAuth callback endpoint POST /api/auth/oauth/callback was returning 500 server errors instead of proper 400 errors for invalid session IDs. Root cause: Exception handling was catching HTTPException(400) and converting it to 500 'Authentication failed'. This caused the app to fail after Google sign-in attempts because proper error responses weren't being returned to the frontend."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: OAuth authentication flow FIXED and fully functional! Comprehensive testing completed: 1) POST /api/auth/oauth/callback endpoint working correctly with proper error handling (400 for invalid session IDs, 422 for missing fields), 2) Endpoint successfully calls Emergent OAuth API at https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data, 3) Role validation working for all valid roles (client, provider, navigator, agency), 4) User creation and existing user login logic implemented correctly, 5) JWT access token generation working, 6) Fixed exception handling to properly return 400 errors instead of converting to 500 server errors. The OAuth flow failure was due to improper error handling - now resolved. All 13/13 OAuth verification tests passed."
 
 
 ## frontend:
