@@ -43,10 +43,8 @@ function useAuthHeader(){
   },[]);
 }
 
-function AuthWidget(){
+function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
   const navigate = useNavigate();
-  const [step, setStep] = useState('role-selection'); // 'role-selection', 'register', 'login'
-  const [selectedRole, setSelectedRole] = useState(null);
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
