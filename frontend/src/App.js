@@ -3173,7 +3173,7 @@ function AppShell(){
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/home" element={<HomeRouter />} />
           <Route path="/business/profile" element={<BusinessProfileForm />} />
-          <Route path="/matching" element={<MatchingPage />} />
+          <Route path="/service-request" element={<ServiceRequestPage />} />
           <Route path="/provider/proposals" element={<ProviderProposalsPage />} />
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
