@@ -1,0 +1,532 @@
+{
+  "emergent_results": [
+    {
+      "session_id": "test-session-12345",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "81b1b8094bdb4a1e84c7374ef2751a17",
+        "x-request-id": "localhost/2t1HZvGe4e-2318093",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "invalid-session",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "5dd7c9f2a8f10763b4645d8357cd1b18",
+        "x-request-id": "localhost/jyTkoTmns0-2323880",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "abc123def456",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "5989b9a68384f168b88d517583564430",
+        "x-request-id": "localhost/jyTkoTmns0-2323882",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "session_with_underscores",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "519e8b42c551461a04daafc1749e16f7",
+        "x-request-id": "localhost/0f4yyhqcY3-2322878",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "SESSION-UPPERCASE",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "63bf43c7799bd700fcbc2d9f83853f1c",
+        "x-request-id": "localhost/jyTkoTmns0-2323887",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "mixed-Case_Session123",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "14f83f381bc08275007cb55b9792cf7c",
+        "x-request-id": "localhost/dwR2iJIRXm-2326256",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "very-long-session-id-with-many-characters-12345678901234567890",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "85e4fd762a5922b0189c415aeecd3f9e",
+        "x-request-id": "localhost/jyTkoTmns0-2323891",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:34 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "short",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "79142b58cd152801adbd78eb4bd1243e",
+        "x-request-id": "localhost/0f4yyhqcY3-2322882",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:34 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "",
+      "status_code": 401,
+      "response_text": "{\"detail\":{\"error\":\"missing_session_token\",\"error_description\":\"Session token not found\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "06ea18695d796bc92e1e97a480c7c1ce",
+        "x-request-id": "localhost/dwR2iJIRXm-2326267",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:34 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    },
+    {
+      "session_id": "   whitespace   ",
+      "error": "Invalid leading whitespace, reserved character(s), or return character(s) in header value: '   whitespace   '",
+      "status_code": "ERROR"
+    },
+    {
+      "session_id": "session\nwith\nnewlines",
+      "error": "Invalid leading whitespace, reserved character(s), or return character(s) in header value: 'session\\nwith\\nnewlines'",
+      "status_code": "ERROR"
+    },
+    {
+      "session_id": "session with spaces",
+      "status_code": 404,
+      "response_text": "{\"detail\":{\"error\":\"user_data_not_found\",\"error_description\":\"User data not found or expired\"}}",
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "x-cloud-trace-context": "6e9a52d3b49c5b122cd7245911df61e9",
+        "x-request-id": "localhost/jyTkoTmns0-2323903",
+        "content-encoding": "gzip",
+        "date": "Sun, 17 Aug 2025 01:39:34 GMT",
+        "server": "Google Frontend",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "Transfer-Encoding": "chunked"
+      }
+    }
+  ],
+  "callback_results": [
+    {
+      "test_name": "Valid format test session",
+      "payload": {
+        "session_id": "test-session-12345",
+        "role": "client"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Empty session ID",
+      "payload": {
+        "session_id": "",
+        "role": "client"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Missing session ID",
+      "payload": {
+        "role": "client"
+      },
+      "status_code": 422,
+      "response_json": {
+        "detail": [
+          {
+            "type": "missing",
+            "loc": [
+              "body",
+              "session_id"
+            ],
+            "msg": "Field required",
+            "input": {
+              "role": "client"
+            },
+            "url": "https://errors.pydantic.dev/2.11/v/missing"
+          }
+        ]
+      },
+      "response_text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"session_id\"],\"msg\":\"Field required\",\"input\":{\"role\":\"client\"},\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
+      "headers": {
+        "Content-Length": "159",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Invalid session ID format",
+      "payload": {
+        "session_id": "invalid-session-format",
+        "role": "client"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Long session ID",
+      "payload": {
+        "session_id": "very-long-session-id-with-many-characters-12345678901234567890",
+        "role": "client"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Session with special characters",
+      "payload": {
+        "session_id": "session@#$%^&*()",
+        "role": "client"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Whitespace session ID",
+      "payload": {
+        "session_id": "   whitespace   ",
+        "role": "client"
+      },
+      "status_code": 500,
+      "response_json": {
+        "detail": "Failed to validate OAuth session"
+      },
+      "response_text": "{\"detail\":\"Failed to validate OAuth session\"}",
+      "headers": {
+        "Content-Length": "45",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Session with newlines",
+      "payload": {
+        "session_id": "session\nwith\nnewlines",
+        "role": "client"
+      },
+      "status_code": 500,
+      "response_json": {
+        "detail": "Failed to validate OAuth session"
+      },
+      "response_text": "{\"detail\":\"Failed to validate OAuth session\"}",
+      "headers": {
+        "Content-Length": "45",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Valid role variations",
+      "payload": {
+        "session_id": "test-session-role",
+        "role": "provider"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Invalid role",
+      "payload": {
+        "session_id": "test-session-role",
+        "role": "invalid_role"
+      },
+      "status_code": 400,
+      "response_json": {
+        "detail": "Invalid session ID"
+      },
+      "response_text": "{\"detail\":\"Invalid session ID\"}",
+      "headers": {
+        "Content-Length": "31",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "test_name": "Missing role",
+      "payload": {
+        "session_id": "test-session-no-role"
+      },
+      "status_code": 422,
+      "response_json": {
+        "detail": [
+          {
+            "type": "missing",
+            "loc": [
+              "body",
+              "role"
+            ],
+            "msg": "Field required",
+            "input": {
+              "session_id": "test-session-no-role"
+            },
+            "url": "https://errors.pydantic.dev/2.11/v/missing"
+          }
+        ]
+      },
+      "response_text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"role\"],\"msg\":\"Field required\",\"input\":{\"session_id\":\"test-session-no-role\"},\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
+      "headers": {
+        "Content-Length": "173",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "content-type": "application/json",
+        "date": "Sun, 17 Aug 2025 01:39:33 GMT",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "uvicorn",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-xss-protection": "1; mode=block",
+        "via": "1.1 google",
+        "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    }
+  ],
+  "error_results": [
+    {
+      "test_name": "Invalid JSON",
+      "status_code": 422,
+      "response_text": "{\"detail\":[{\"type\":\"json_invalid\",\"loc\":[\"body\",0],\"msg\":\"JSON decode error\",\"input\":{},\"ctx\":{\"error\":\"Expecting value\"}}]}",
+      "expected": "Should return 422 or 400 for malformed requests"
+    },
+    {
+      "test_name": "Empty body",
+      "status_code": 422,
+      "response_text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
+      "expected": "Should return 422 or 400 for malformed requests"
+    },
+    {
+      "test_name": "Wrong content type",
+      "status_code": 422,
+      "response_text": "{\"detail\":[{\"type\":\"model_attributes_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid dictionary or object to extract fields from\",\"input\":\"{\\\"session_id\\\": \\\"test\\\", \\\"role\\\": \\\"client\\\"}\",\"url\":\"https://errors.pydantic.dev/2.11/v/model_attributes_type\"}]}",
+      "expected": "Should return 422 or 400 for malformed requests"
+    }
+  ],
+  "summary": {
+    "emergent_status_codes": {
+      "404": 9,
+      "401": 1,
+      "ERROR": 2
+    },
+    "callback_status_codes": {
+      "400": 7,
+      "422": 2,
+      "500": 2
+    },
+    "server_errors": 2,
+    "bad_request_errors": 7,
+    "validation_errors": 2,
+    "network_errors": 2
+  }
+}
