@@ -1101,6 +1101,50 @@ function AssessmentPage(){
                     </div>
                   </div>
                 )}
+                
+                {/* Professional Help Option */}
+                {answers[question.id] === 'no_help' && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="text-sm font-medium text-red-900 mb-2">Get Professional Help</div>
+                    <p className="text-sm text-red-700 mb-3">
+                      Need expert assistance with {question.text.toLowerCase()}? Get matched with qualified service providers.
+                    </p>
+                    <div className="flex gap-2">
+                      <select 
+                        className="text-sm border border-red-300 rounded px-2 py-1"
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleProfessionalHelp(question.id, currentAreaData.id, e.target.value);
+                          }
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="">Select Budget Range</option>
+                        <option value="$500-$1,000">$500 - $1,000</option>
+                        <option value="$1,000-$2,500">$1,000 - $2,500</option>
+                        <option value="$2,500-$5,000">$2,500 - $5,000</option>
+                        <option value="$5,000+">$5,000+</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Evidence Upload */}
+                {answers[question.id] === 'yes' && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="text-sm font-medium text-green-900 mb-2">Upload Evidence (Optional)</div>
+                    <p className="text-sm text-green-700 mb-3">
+                      Upload documentation to support your attestation for this requirement.
+                    </p>
+                    <input 
+                      type="file" 
+                      className="text-sm"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.png"
+                      onChange={(e) => handleEvidenceUpload(question.id, e.target.files)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
