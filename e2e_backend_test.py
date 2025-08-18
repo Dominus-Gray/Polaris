@@ -219,17 +219,26 @@ def step_3_generate_licenses() -> bool:
         data = response.json()
         print(f"License generation response: {data}")
         
-        # Try different possible response formats
-        license_codes = data.get('license_codes', []) or data.get('codes', []) or data.get('licenses', [])
+        # Extract license codes from the response
+        license_codes = []
         
-        if not license_codes and 'license_code' in data:
-            license_codes = [data['license_code']]
+        # Handle different response formats
+        if 'licenses' in data and isinstance(data['licenses'], list):
+            for license_obj in data['licenses']:
+                if isinstance(license_obj, dict) and 'license_code' in license_obj:
+                    license_codes.append(license_obj['license_code'])
+                else:
+                    license_codes.append(str(license_obj))
+        elif 'license_codes' in data:
+            license_codes = data['license_codes']
+        elif 'codes' in data:
+            license_codes = data['codes']
         
         test_data['license_codes'] = license_codes
         
         print(f"✅ Generated {len(license_codes)} license codes:")
         for i, code in enumerate(license_codes, 1):
-            masked_code = f"****{code[-4:]}" if len(str(code)) >= 4 else str(code)
+            masked_code = f"****{str(code)[-4:]}" if len(str(code)) >= 4 else str(code)
             print(f"  {i}. {masked_code}")
         
         return len(license_codes) > 0
