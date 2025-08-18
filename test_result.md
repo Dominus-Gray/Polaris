@@ -136,7 +136,8 @@ The user has identified multiple critical issues and requirements that need to b
     - "Implement agency approval workflow for navigator role"
     - "Fix license generation flow - requires approved agency status"
   stuck_tasks:
-    - "Navigator Analytics page implementation and UI testing"
+    - "Provider approval workflow - endpoint exists but needs user ID resolution"
+    - "Agency approval workflow - missing navigator approval endpoint"
   test_all: false
 
 # E2E Test Results Summary
