@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="720" height="160" viewBox="0 0 720 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="POLARIS logo (white)">
+  <rect width="720" height="160" fill="transparent"/>
+  <g fill="#FFFFFF">
+    <g transform="translate(48,16)">
+      <rect x="56" y="0" width="8" height="48"/>
+      <rect x="56" y="80" width="8" height="48"/>
+      <rect x="0" y="56" width="48" height="8"/>
+      <rect x="80" y="56" width="48" height="8"/>
+      <polygon points="60,20 66,44 84,38 66,32"/>
+      <polygon points="100,60 76,66 82,84 88,66"/>
+      <polygon points="60,100 54,76 36,82 54,88"/>
+      <polygon points="20,60 44,54 38,36 32,54"/>
+      <circle cx="60" cy="60" r="3.5"/>
+    </g>
+    <path d="M220 122V38h34c24 0 38 12 38 30s-14 30-38 30h-18v24h-16Zm16-68h18c14 0 22 6 22 14s-8 14-22 14h-18V54Z"/>
+    <path d="M320 126c-28 0-50-22-50-48s22-48 50-48 50 22 50 48-22 48-50 48Zm0-16c18 0 34-14 34-32s-16-32-34-32-34 14-34 32 16 32 34 32Z"/>
+    <path d="M408 122V38h16v68h48v16h-64Z"/>
+    <path d="M556 122h-18l-12-28h-46l-12 28h-18l42-84h22l42 84Zm-36-44-15-34-15 34h30Z"/>
+    <path d="M584 122V38h36c24 0 40 12 40 30 0 12-7 22-20 28l24 26h-20l-22-24h-22v24h-16Zm16-64h18c15 0 22 7 22 16s-7 16-22 16h-18V58Z"/>
+    <rect x="678" y="62" width="16" height="60"/>
+    <path d="M740 118c-10 6-22 10-38 10-24 0-42-12-42-28 0-34 66-22 66-40 0-8-10-14-26-14-14 0-28 4-40 12l-10-12c14-10 32-16 52-16 26 0 44 12 44 30 0 36-66 22-66 40 0 8 10 14 26 14 12 0 24-4 34-10l10 14Z"/>
+  </g>
+</svg>
