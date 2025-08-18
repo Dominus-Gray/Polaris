@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, Navigate,
 import { Toaster, toast } from "sonner";
 import ProfileSettings from "./components/ProfileSettings";
 import AdminDashboard from "./components/AdminDashboard";
+import 'uplot/dist/uPlot.min.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
