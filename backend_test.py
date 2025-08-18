@@ -303,7 +303,9 @@ class QAWorkflowTester:
         if self.register_user("provider", provider_creds["email"], provider_creds["password"]):
             # Get pending providers and approve
             provider_id = self.get_pending_providers()
-            if provider_id:
+            if provider_id == "already_approved":
+                self.log_result("✅ Provider already approved, proceeding to login")
+            elif provider_id:
                 if not self.approve_provider(provider_id):
                     return False
             else:
