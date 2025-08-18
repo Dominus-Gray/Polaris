@@ -1,0 +1,6 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Transparent center with bright ring and white north star for dark hero background -->
+  <circle cx="80" cy="80" r="70" fill="none" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="6" />
+  <circle cx="80" cy="80" r="62" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2" />
+  <path d="M80 20l6.5 36.5L140 40 99 67 140 80 99 86 140 120 96 100 80 140 73.5 99.5 40 120 67 86 20 80l47-15L40 40l41.5 13.5L80 20z" fill="#FFFFFF"/>
+</svg>

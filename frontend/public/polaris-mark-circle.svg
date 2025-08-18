@@ -1,0 +1,12 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="navyGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1B365D" />
+      <stop offset="100%" stop-color="#0F2A4A" />
+    </linearGradient>
+  </defs>
+  <!-- Circle background (light) for light-on-light contrast -->
+  <circle cx="64" cy="64" r="58" fill="#FFFFFF" stroke="url(#navyGrad)" stroke-width="6" />
+  <!-- North Star -->
+  <path d="M64 14l5.2 29.6L114 32 84.4 53.6 114 64 84.4 70.4 114 96 76.8 79.6 64 114 58.8 84.4 32 96 53.6 70.4 14 64l31.6-10.4L32 32l35.6 11.6L64 14z" fill="#1B365D" />
+</svg>
