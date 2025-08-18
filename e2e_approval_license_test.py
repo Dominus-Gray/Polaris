@@ -519,11 +519,20 @@ def step6_service_request_flow(creds):
         responses_data = response.json()
         print(f"✅ Fetched responses: {json.dumps(responses_data, indent=2, default=str)}")
         
+        # Get provider ID from the response
+        provider_id = None
+        if responses_data.get('responses'):
+            provider_id = responses_data['responses'][0].get('provider_id')
+        
+        if not provider_id:
+            print("❌ FAIL: Could not get provider ID from responses")
+            return False
+        
         # Step 6d: Attempt payment (expect 503 or success)
         print("6d: Attempting payment...")
         payment_payload = {
             "request_id": service_request_id,
-            "provider_id": creds.provider_email,  # Using email as identifier
+            "provider_id": provider_id,
             "agreed_fee": 1500.0,
             "origin_url": "https://polaris-sbap-2.preview.emergentagent.com"
         }
