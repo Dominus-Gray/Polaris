@@ -847,6 +847,47 @@ function AssessmentPage(){
     }
   };
 
+  const handleEvidenceUpload = async (questionId, files) => {
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append('question_id', questionId);
+    
+    for (let file of files) {
+      formData.append('files', file);
+    }
+
+    try {
+      const response = await axios.post(`${API}/assessment/evidence`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      toast.success(`Successfully uploaded ${response.data.files.length} evidence files`);
+    } catch (e) {
+      toast.error('Failed to upload evidence', { description: e.response?.data?.detail || e.message });
+    }
+  };
+
+  const handleProfessionalHelp = async (questionId, areaId, budgetRange) => {
+    try {
+      const response = await axios.post(`${API}/service-requests/professional-help`, {
+        area_id: areaId,
+        budget_range: budgetRange,
+        description: `Professional help needed for: ${questions.find(q => q.id === questionId)?.text}`
+      });
+      
+      toast.success('Service request created!', { 
+        description: `Notified ${response.data.notified_providers} matching providers` 
+      });
+      
+      // Navigate to services page
+      navigate('/service-request');
+    } catch (e) {
+      toast.error('Failed to create service request', { description: e.response?.data?.detail || e.message });
+    }
+  };
+
   const getQuestion = (questionId) => {
     for (const area of assessmentAreas) {
       const question = area.questions.find(q => q.id === questionId);
