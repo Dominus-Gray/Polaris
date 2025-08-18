@@ -2430,22 +2430,62 @@ async def rate_service(engagement_id: str, rating: ServiceRatingIn, current=Depe
 
 @api.get("/engagements/my-services")
 async def get_my_services(current=Depends(require_user)):
-    """Get user's service engagements"""
-    if current["role"] == "client":
-        engagements = await db.engagements.find({"client_user_id": current["id"]}).to_list(100)
-    elif current["role"] == "provider":
-        engagements = await db.engagements.find({"provider_user_id": current["id"]}).to_list(100)
-    else:
-        raise HTTPException(status_code=403, detail="Not applicable")
+    """Get user's service engagements - works for all user types"""
+    engagements = []
     
-    # Enrich with tracking data
-    for eng in engagements:
-        tracking = await db.service_tracking.find({"engagement_id": eng["_id"]}).sort("updated_at", -1).limit(1).to_list(1)
-        eng["latest_tracking"] = tracking[0] if tracking else None
-        
-        # Get rating if exists
-        rating = await db.service_ratings.find_one({"engagement_id": eng["_id"]})
-        eng["rating"] = rating
+    if current["role"] == "client":
+        # Get service requests created by this client
+        service_requests = await db.service_requests.find({"user_id": current["id"]}).to_list(100)
+        for request in service_requests:
+            # Get provider responses for this request
+            responses = await db.provider_responses.find({"request_id": request["_id"]}).to_list(50)
+            request["provider_responses"] = responses
+            engagements.append({
+                "_id": request["_id"],
+                "id": request["_id"],
+                "request_id": request["_id"],
+                "client_user_id": current["id"],
+                "area_id": request.get("area_id"),
+                "budget_range": request.get("budget_range"),
+                "description": request.get("description"),
+                "status": request.get("status", "open"),
+                "created_at": request.get("created_at"),
+                "provider_responses": responses,
+                "type": "service_request"
+            })
+    
+    elif current["role"] == "provider":
+        # Get notifications and responses for this provider
+        notifications = await db.provider_notifications.find({"provider_id": current["id"]}).to_list(100)
+        for notification in notifications:
+            # Get the original service request
+            service_request = await db.service_requests.find_one({"_id": notification["service_request_id"]})
+            if service_request:
+                # Check if provider has responded
+                response = await db.provider_responses.find_one({
+                    "request_id": notification["service_request_id"],
+                    "provider_id": current["id"]
+                })
+                
+                engagements.append({
+                    "_id": notification["_id"],
+                    "id": notification["_id"],
+                    "request_id": notification["service_request_id"],
+                    "client_user_id": service_request.get("user_id"),
+                    "provider_user_id": current["id"],
+                    "area_name": notification.get("area_name"),
+                    "budget_range": notification.get("budget_range"),
+                    "description": notification.get("description"),
+                    "status": notification.get("status", "pending"),
+                    "created_at": notification.get("created_at"),
+                    "has_responded": response is not None,
+                    "response": response,
+                    "type": "provider_notification"
+                })
+    
+    else:
+        # For navigators and agencies, return empty list
+        pass
     
     return {"engagements": engagements}
 
