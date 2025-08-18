@@ -23,11 +23,13 @@ print(f"Testing E2E Approval and License Flow at: {API_BASE}")
 class TestCredentials:
     """Store test credentials for reuse"""
     def __init__(self):
-        self.navigator_email = "navigator.qa@example.com"
+        # Generate unique emails for this test run
+        unique_id = uuid.uuid4().hex[:8]
+        self.navigator_email = f"navigator_qa_{unique_id}@example.com"
         self.navigator_password = "NavigatorPass123!"
         self.navigator_token = None
         
-        self.agency_email = "agency.qa@example.com"
+        self.agency_email = f"agency_qa_{unique_id}@example.com"
         self.agency_password = "AgencyPass123!"
         self.agency_token = None
         
