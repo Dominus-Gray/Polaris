@@ -2829,7 +2829,7 @@ async def request_professional_help(request_data: dict, current=Depends(require_
     approved_providers = await db.users.find({
         "role": "provider", 
         "approval_status": "approved"
-    }).to_list(20)
+    }).to_list(200)
     
     # Get their business profiles and match by service areas
     matching_providers = []
@@ -2837,13 +2837,14 @@ async def request_professional_help(request_data: dict, current=Depends(require_
         profile = await db.business_profiles.find_one({"user_id": provider["_id"]})
         if profile and profile.get("service_areas"):
             # Check if any service area matches the requested area
-            if any(area_name.lower() in service_area.lower() or service_area.lower() in area_name.lower() 
-                   for service_area in profile["service_areas"]):
-                matching_providers.append(profile)
+            if any(area_name.lower() in (service_area or "").lower() or (service_area or "").lower() in area_name.lower() 
+                   for service_area in profile.get("service_areas", [])):
+                matching_providers.append({"profile": profile, "user": provider})
     
     # Notify first 5 matching providers
     notification_count = 0
-    for provider_profile in matching_providers[:5]:
+    for item in matching_providers[:5]:
+        provider_profile = item["profile"]
         notification_id = str(uuid.uuid4())
         notification = {
             "_id": notification_id,
@@ -2856,7 +2857,6 @@ async def request_professional_help(request_data: dict, current=Depends(require_
             "status": "pending",
             "created_at": datetime.utcnow()
         }
-        
         await db.provider_notifications.insert_one(notification)
         notification_count += 1
     
@@ -2865,6 +2865,62 @@ async def request_professional_help(request_data: dict, current=Depends(require_
         "message": f"Service request created and sent to {notification_count} matching providers",
         "notified_providers": notification_count
     }
+
+@api.get("/service-requests/my")
+async def list_my_service_requests(current=Depends(require_role("client"))):
+    """List current client's service requests with basic info"""
+    requests = await db.service_requests.find({"user_id": current["id"]}).sort("created_at", -1).to_list(100)
+    return {"service_requests": requests}
+
+@api.get("/service-requests/{request_id}")
+async def get_service_request(request_id: str, current=Depends(require_role("client"))):
+    """Get a service request with provider responses (client must own it)"""
+    req = await db.service_requests.find_one({"_id": request_id, "user_id": current["id"]})
+    if not req:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    # Get provider responses
+    responses = await db.provider_responses.find({"request_id": request_id}).sort("created_at", -1).to_list(100)
+    enriched = []
+    for r in responses:
+        provider_user = await db.users.find_one({"_id": r["provider_id"]})
+        business_profile = await db.business_profiles.find_one({"user_id": r["provider_id"]})
+        enriched.append({
+            "id": r["_id"],
+            "provider_id": r["provider_id"],
+            "provider_email": provider_user.get("email") if provider_user else None,
+            "provider_company": business_profile.get("company_name") if business_profile else "Unknown Company",
+            "proposed_fee": r.get("proposed_fee"),
+            "proposal_note": r.get("proposal_note"),
+            "estimated_timeline": r.get("estimated_timeline"),
+            "status": r.get("status"),
+            "created_at": r.get("created_at")
+        })
+    req["provider_responses"] = enriched
+    return req
+
+@api.get("/service-requests/{request_id}/responses")
+async def get_service_request_responses(request_id: str, current=Depends(require_role("client"))):
+    """List provider responses for a service request (client must own it)"""
+    req = await db.service_requests.find_one({"_id": request_id, "user_id": current["id"]})
+    if not req:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    responses = await db.provider_responses.find({"request_id": request_id}).sort("created_at", -1).to_list(100)
+    enriched = []
+    for r in responses:
+        provider_user = await db.users.find_one({"_id": r["provider_id"]})
+        business_profile = await db.business_profiles.find_one({"user_id": r["provider_id"]})
+        enriched.append({
+            "id": r["_id"],
+            "provider_id": r["provider_id"],
+            "provider_email": provider_user.get("email") if provider_user else None,
+            "provider_company": business_profile.get("company_name") if business_profile else "Unknown Company",
+            "proposed_fee": r.get("proposed_fee"),
+            "proposal_note": r.get("proposal_note"),
+            "estimated_timeline": r.get("estimated_timeline"),
+            "status": r.get("status"),
+            "created_at": r.get("created_at")
+        })
+    return {"responses": enriched}
 
 @api.get("/provider/notifications")
 async def get_provider_notifications(current=Depends(require_role("provider"))):
