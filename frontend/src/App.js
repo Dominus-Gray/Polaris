@@ -3103,6 +3103,8 @@ function ProviderHome(){
 function NavigatorHome(){
   const [data, setData] = useState(null);
   const [pendingProviders, setPendingProviders] = useState([]);
+  const [resourceStats, setResourceStats] = useState(null);
+  const [sinceDays, setSinceDays] = useState(30);
   const navigate = useNavigate();
   
   useEffect(()=>{ 
@@ -3114,12 +3116,16 @@ function NavigatorHome(){
         // Load pending providers for approval
         const providersRes = await axios.get(`${API}/navigator/providers/pending`);
         setPendingProviders(providersRes.data.providers || []);
+        
+        // Load resource analytics
+        const statsRes = await axios.get(`${API}/navigator/analytics/resources`, { params: { since_days: sinceDays }});
+        setResourceStats(statsRes.data);
       }catch(e){
         console.error('Navigator home load error:', e);
       }
     }; 
     load(); 
-  },[]);
+  },[sinceDays]);
 
   const approveProvider = async(providerId, status, notes = '') => {
     try{
