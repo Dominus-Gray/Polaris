@@ -124,18 +124,39 @@ def step1_create_users(creds):
         print("❌ FAIL: Could not create/login navigator")
         return False
     
-    # Create agency (will be pending approval)
-    creds.agency_token = create_or_login_user(
-        creds.agency_email, 
-        creds.agency_password, 
-        "agency"
-    )
+    # Create agency (will be pending approval, so login will fail initially)
+    print(f"\n=== Creating Agency User: {creds.agency_email} ===")
+    register_payload = {
+        "email": creds.agency_email,
+        "password": creds.agency_password,
+        "role": "agency",
+        "terms_accepted": True
+    }
     
-    if not creds.agency_token:
-        print("❌ FAIL: Could not create/login agency")
+    try:
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=register_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 200:
+            print(f"✅ Agency {creds.agency_email} registered successfully")
+            register_data = response.json()
+            print(f"Registration response: {register_data}")
+            if register_data.get('status') == 'pending':
+                print("✅ Agency is pending approval as expected")
+        elif response.status_code == 400 and ("already registered" in response.text or "already exists" in response.text):
+            print(f"⚠️  Agency {creds.agency_email} already exists")
+        else:
+            print(f"❌ FAIL: Agency registration failed - {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
         return False
     
-    print("✅ PASS: Step 1 completed - Navigator and Agency users created/verified")
+    print("✅ PASS: Step 1 completed - Navigator created and Agency registered (pending)")
     return True
 
 def step2_navigator_search_agency(creds):
