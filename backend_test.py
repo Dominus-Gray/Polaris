@@ -12,10 +12,10 @@ from datetime import datetime
 # Configuration
 BASE_URL = "https://polaris-sbap-2.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
-    "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"}
+    "navigator": {"email": "navigator.qa@polaris.test", "password": "Polaris#2025!"},
+    "agency": {"email": "agency.qa@polaris.test", "password": "Polaris#2025!"},
+    "client": {"email": "client.qa@polaris.test", "password": "Polaris#2025!"},
+    "provider": {"email": "provider.qa@polaris.test", "password": "Polaris#2025!"}
 }
 
 class QAWorkflowTester:
