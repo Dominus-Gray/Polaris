@@ -11,18 +11,20 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function PolarisLogo({ size = 22, variant = 'default' }) {
-  const logoColor = variant === 'white' ? '#ffffff' : '#1B365D';
-  const starColor = variant === 'white' ? '#ffffff' : '#4A90C2';
-  
+  const logoColor = variant === 'white' ? '#ffffff' : '#0F172A';
+  const starColor = variant === 'white' ? '#ffffff' : '#2563EB';
   return (
     <div className={`polaris-logo-container ${variant === 'large' ? 'logo-large' : ''}`} style={{ minWidth: size, minHeight: size }}>
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="drop-shadow-sm">
-        {/* North Star - Polaris */}
-        <path d="M12 2L13.09 8.26L19 7L14.91 11.09L21 12L14.74 13.09L16 19L11.91 14.91L12 21L10.91 14.74L5 16L9.09 11.91L3 12L9.26 10.91L8 5L12.09 9.09L12 2Z" fill={starColor} />
-        {/* Central glow */}
-        <circle cx="12" cy="12" r="2" fill={logoColor} opacity="0.8" />
-        {/* Outer ring for visibility */}
-        <circle cx="12" cy="12" r="10" fill="none" stroke={logoColor} strokeWidth="0.5" opacity="0.3" />
+      <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className="drop-shadow-sm">
+        {/* Crisp North Star */}
+        <g filter="url(#glow)">
+          <path d="M24 4l2.18 12.52L39 13l-11.3 8.3L44 24l-16.3 2.7L35 35l-8.48-11.3L24 44l-2.7-16.3L13 35l8.3-11.3L4 24l16.7-2.7L13 13l12.52 3.7L24 4z" fill={starColor} />
+        </g>
+        <defs>
+          <filter id="glow" x="0" y="0" width="48" height="48" filterUnits="userSpaceOnUse">
+            <feGaussianBlur stdDeviation="0.5" />
+          </filter>
+        </defs>
       </svg>
       {variant === 'large' && (
         <div className="logo-text">
@@ -33,6 +35,28 @@ function PolarisLogo({ size = 22, variant = 'default' }) {
       {size >= 24 && variant !== 'large' && variant !== 'white' && (
         <span className="text-sm font-semibold text-slate-700 ml-1">POLARIS</span>
       )}
+    </div>
+  );
+}
+
+function EnhancedPolarisBrand() {
+  const [fallback, setFallback] = useState(false);
+  return (
+    <div className="enhanced-brand flex items-center justify-center gap-3">
+      {!fallback ? (
+        <img
+          src="/polaris-logo.svg"
+          alt="Polaris Logo"
+          className="h-10 w-auto drop-shadow-sm"
+          onError={() => setFallback(true)}
+        />
+      ) : (
+        <PolarisLogo size={40} variant="white" />
+      )}
+      <div className="brand-wordmark">
+        <div className="brand-name">POLARIS</div>
+        <div className="brand-sub">Procurement Readiness</div>
+      </div>
     </div>
   );
 }
