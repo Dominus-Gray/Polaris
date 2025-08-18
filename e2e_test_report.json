@@ -5,39 +5,39 @@
     "failed_steps": 0
   },
   "created_license_codes": [
-    "****7602",
-    "****5983",
-    "****1220",
-    "****3158",
-    "****6085"
+    "****1054",
+    "****7680",
+    "****6713",
+    "****0235",
+    "****2587"
   ],
   "created_users": {
     "navigator": {
-      "id": "38bb1f26-f0eb-4fee-9c00-47f99e410ee1",
-      "email": "navigator.qa.4684@polaris.example.com"
+      "id": "e488f229-6885-4e68-b6c4-55268295bcab",
+      "email": "navigator.qa.8762@polaris.example.com"
     },
     "agency": {
-      "id": "52664404-f484-4c58-aa8a-24ac4318f619",
-      "email": "agency.qa.4684@polaris.example.com"
+      "id": "3e33ce75-d3ab-4fad-8101-f6a40b98b03d",
+      "email": "agency.qa.8762@polaris.example.com"
     },
     "client": {
-      "id": "c1594dbf-e426-4c1b-8645-c6e0d78cca08",
-      "email": "client.qa.4684@polaris.example.com"
+      "id": "7b425866-1819-49ce-9647-b10d47eab5bf",
+      "email": "client.qa.8762@polaris.example.com"
     },
     "provider": {
-      "id": "390a2dce-d3a3-4536-b0d2-3da325742cf3",
-      "email": "provider.qa.4684@polaris.example.com"
+      "id": "66040b94-1323-45bb-867e-95c92785707a",
+      "email": "provider.qa.8762@polaris.example.com"
     }
   },
-  "service_request_id": "44e22c0d-f52c-4375-895a-2ea96554bfad",
-  "provider_response_id": "bb35849c-33d5-4d80-8e97-d466266cf9b2",
+  "service_request_id": "a368d3d7-aa4b-420b-a2e1-1c617eb9a29b",
+  "provider_response_id": "e76d113d-1a04-4f13-bee2-310e1748dbbb",
   "payment_endpoints_status": {
     "service_request_payment": "validation_passed",
     "knowledge_base_payment": "tested"
   },
   "navigator_analytics_snapshot": {
-    "since": "2025-07-19T02:36:33.979164",
-    "total": 31,
+    "since": "2025-07-19T02:36:51.221080",
+    "total": 33,
     "by_area": [
       {
         "area_id": "unknown",
@@ -47,7 +47,7 @@
       {
         "area_id": "area5",
         "area_name": "Technology & Security Infrastructure",
-        "count": 4
+        "count": 6
       },
       {
         "area_id": "area1",
@@ -63,7 +63,7 @@
     "last7": [
       {
         "date": "2025-08-18",
-        "count": 31
+        "count": 33
       }
     ]
   }
