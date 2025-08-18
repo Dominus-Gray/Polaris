@@ -219,7 +219,7 @@ class ProviderApprovalOut(BaseModel):
     approval_status: str
     notes: Optional[str] = None
     created_at: datetime
-    updated_at: datetime = Field(..., pattern=r"^(client|navigator|provider|agency)$")
+    updated_at: datetime
 
 class UserLogin(BaseModel):
     email: EmailStr
