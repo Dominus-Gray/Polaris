@@ -327,7 +327,20 @@ def step_6_create_business_profile() -> bool:
         'years_in_business': 5,
         'certifications': ['CompTIA Security+', 'CISSP'],
         'insurance_coverage': True,
-        'bonding_capacity': '$100,000'
+        'bonding_capacity': '$100,000',
+        # Required fields based on error
+        'legal_entity_type': 'LLC',
+        'tax_id': '12-3456789',
+        'registered_address': '123 Business St, San Antonio, TX 78201',
+        'mailing_address': '123 Business St, San Antonio, TX 78201',
+        'industry': 'Technology Services',
+        'primary_products_services': 'Cybersecurity consulting and IT infrastructure services',
+        'revenue_range': '$100,000 - $500,000',
+        'employees_count': 5,
+        'ownership_structure': 'Private',
+        'contact_name': 'John Doe',
+        'contact_title': 'CEO',
+        'contact_email': CREDENTIALS['provider']['email']
     }
     
     response = make_request('POST', '/business/profile', profile_payload, headers=get_auth_headers('provider'))
