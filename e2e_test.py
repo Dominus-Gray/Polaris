@@ -354,36 +354,47 @@ def step6_create_and_approve_provider():
             "Content-Type": "application/json"
         }
         
+        # Try provider approval endpoint - fix URL construction
+        print("6b. Navigator approving provider...")
+        headers = {
+            "Authorization": f"Bearer {navigator_token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Get provider user ID first
+        users_response = requests.get(f"{API_BASE}/admin/users?search={PROVIDER_EMAIL}", headers=headers)
+        provider_user_id = None
+        
+        if users_response.status_code == 200:
+            users_data = users_response.json()
+            users = users_data.get('users', [])
+            
+            if users:
+                provider_user_id = users[0].get('id')
+                print(f"Found provider user ID: {provider_user_id}")
+        
+        if not provider_user_id:
+            return print_result(False, "Could not find provider user ID")
+        
         # Try provider approval endpoint
         approve_payload = {
-            "provider_user_id": PROVIDER_EMAIL,  # May need user ID instead
+            "provider_user_id": provider_user_id,
             "approval_status": "approved",
             "notes": "Approved for E2E testing"
         }
         
-        # Try different provider approval endpoints
-        approval_endpoints = [
-            "/api/navigator/providers/approve",
-            "/api/navigator/provider/approve",
-            "/api/admin/users/approve"
-        ]
+        response = requests.post(
+            f"{API_BASE}/navigator/providers/approve",
+            json=approve_payload,
+            headers=headers
+        )
+        print(f"Provider approval status: {response.status_code}")
+        print(f"Provider approval response: {response.text}")
         
-        provider_approved = False
-        for endpoint in approval_endpoints:
-            print(f"Trying provider approval endpoint: {endpoint}")
-            
-            response = requests.post(endpoint, json=approve_payload, headers=headers)
-            print(f"Approval status: {response.status_code}")
-            
-            if response.status_code == 200:
-                provider_approved = True
-                print(f"Provider approved via {endpoint}")
-                break
-        
-        if provider_approved:
+        if response.status_code == 200:
             return print_result(True, "Provider successfully approved by navigator")
         else:
-            return print_result(False, "Provider approval endpoint not found or failed")
+            return print_result(False, f"Provider approval failed: {response.text}")
             
     except Exception as e:
         return print_result(False, f"ERROR: {e}")
