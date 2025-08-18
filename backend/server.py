@@ -2746,8 +2746,8 @@ async def log_resource_access(resource_data: dict, current=Depends(require_user)
 
 # ---------------- Service Provider Matching System ----------------
 @api.post("/service-requests/professional-help")
-async def request_professional_help(request_data: dict, current=Depends(require_role("client"))):
-    """Create service request and notify matching providers"""
+async def request_professional_help(request_data: dict, current=Depends(require_user)):
+    """Create service request and notify matching providers - Available to all authenticated users"""
     area_id = request_data.get("area_id")
     budget_range = request_data.get("budget_range")
     description = request_data.get("description", "")
@@ -2785,11 +2785,21 @@ async def request_professional_help(request_data: dict, current=Depends(require_
     
     area_name = area_names.get(area_id, area_id)
     
-    # Find providers with matching service areas
-    matching_providers = await db.business_profiles.find({
-        "user_id": {"$in": await db.users.distinct("_id", {"role": "provider", "approval_status": "approved"})},
-        "service_areas": {"$regex": area_name, "$options": "i"}
-    }).to_list(10)
+    # Find providers with matching service areas (approved providers only)
+    approved_providers = await db.users.find({
+        "role": "provider", 
+        "approval_status": "approved"
+    }).to_list(20)
+    
+    # Get their business profiles and match by service areas
+    matching_providers = []
+    for provider in approved_providers:
+        profile = await db.business_profiles.find_one({"user_id": provider["_id"]})
+        if profile and profile.get("service_areas"):
+            # Check if any service area matches the requested area
+            if any(area_name.lower() in service_area.lower() or service_area.lower() in area_name.lower() 
+                   for service_area in profile["service_areas"]):
+                matching_providers.append(profile)
     
     # Notify first 5 matching providers
     notification_count = 0
