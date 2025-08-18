@@ -595,7 +595,7 @@ def step_12_knowledge_base_payment() -> bool:
     print("="*60)
     
     payload = {
-        'product': 'knowledge_base_all',
+        'package_id': 'knowledge_base_all',
         'origin_url': 'https://polaris-sbap-2.preview.emergentagent.com'
     }
     
