@@ -66,7 +66,7 @@ def create_or_login_user(email, password, role, terms_accepted=True, license_cod
             print(f"✅ User {email} registered successfully")
             register_data = response.json()
             print(f"Registration response: {register_data}")
-        elif response.status_code == 400 and "already registered" in response.text:
+        elif response.status_code == 400 and ("already registered" in response.text or "already exists" in response.text):
             print(f"⚠️  User {email} already exists, proceeding with login")
         else:
             print(f"❌ Registration failed: {response.status_code} - {response.text}")
