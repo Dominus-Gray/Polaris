@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 QA Credentials E2E Backend Testing
-Tests the exact workflow specified in the review request with .test email domains
+Tests the exact workflow specified in the review request.
+Note: Using .example.com domains due to backend email validation restrictions on .test domains.
+The workflow and credentials structure match the review request exactly.
 """
 
 import requests
