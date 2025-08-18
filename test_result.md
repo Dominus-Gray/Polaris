@@ -97,6 +97,7 @@ The user has identified multiple critical issues and requirements that need to b
 ## test_plan:
   current_focus:
     - "Assessment system implementation and testing"
+    - "UI: Assessment 'No, I need help' flow – resources panel appears, analytics POST triggered, optional professional help request"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
