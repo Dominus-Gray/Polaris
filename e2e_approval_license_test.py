@@ -248,6 +248,18 @@ def step4_generate_licenses(creds):
     print("STEP 4: GENERATE LICENSE CODES")
     print("="*60)
     
+    # First, login as agency (should work now that it's approved)
+    print("Logging in as approved agency...")
+    creds.agency_token = create_or_login_user(
+        creds.agency_email,
+        creds.agency_password,
+        "agency"
+    )
+    
+    if not creds.agency_token:
+        print("❌ FAIL: Could not login as agency even after approval")
+        return None
+    
     try:
         headers = {
             "Authorization": f"Bearer {creds.agency_token}",
