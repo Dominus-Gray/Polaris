@@ -4434,9 +4434,9 @@ function Landing(){
         <div className="hero-inner justify-center items-center">
           <div className="text-white text-center max-w-3xl mx-auto">
             <div className="flex justify-center mb-4">
-              <PolarisLogo size={32} variant="white" />
+              <EnhancedPolarisBrand />
             </div>
-            <h1 className="hero-title mt-4">Your North Star for Procurement Readiness</h1>
+            <h1 className="hero-title mt-3">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
             <div className="hero-ctas justify-center">
               <a className="btn btn-primary" href="#role-selection">Start Your Journey</a>
