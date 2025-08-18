@@ -268,7 +268,9 @@ class QAWorkflowTester:
         if self.register_user("agency", agency_creds["email"], agency_creds["password"]):
             # Get pending agencies and approve
             agency_id = self.get_pending_agencies()
-            if agency_id:
+            if agency_id == "already_approved":
+                self.log_result("✅ Agency already approved, proceeding to login")
+            elif agency_id:
                 if not self.approve_agency(agency_id):
                     return False
             else:
