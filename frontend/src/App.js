@@ -3926,38 +3926,35 @@ function ServiceRequestPage(){
               
               <div className="mb-6">
                 <div className="text-sm text-slate-600 mb-2">Qualified Service Providers</div>
-                <div className="overflow-x-auto">
-                  <table className="table w-full">
-                    <thead>
-                      <tr>
-                        <th>Company</th>
-                        <th>Service Areas</th>
-                        <th>Location</th>
-                        <th>Price Range</th>
-                        <th>Rating</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {matches.map(m => (
-                        <tr key={m.provider_id}>
-                          <td className="font-medium">{m.company_name}</td>
-                          <td>{(m.service_areas||[]).join(', ')}</td>
-                          <td>{m.location||'San Antonio, TX'}</td>
-                          <td>{m.price_min ? `$${m.price_min} - $${m.price_max}` : req.budget}</td>
-                          <td>
-                            <div className="flex items-center gap-1">
-                              <span className="text-yellow-500">★</span>
-                              <span>{m.score || '4.8'}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <button className="btn btn-sm">View Profile</button>
-                          </td>
-                        </tr>
-                      ))}
-                      {matches.length === 0 && (
-                        <tr>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {matches.map(m => (
+                    <div key={m.provider_id} className="p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-semibold text-slate-900">{m.company_name}</div>
+                          <div className="text-xs text-slate-600">{(m.service_areas||[]).join(', ')}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-slate-500">Typical Range</div>
+                          <div className="font-semibold">{m.price_min ? `$${m.price_min} - $${m.price_max}` : (req.budget?`$${req.budget}`:'—')}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-sm text-slate-600">
+                          <span className="text-yellow-500">★</span>
+                          <span>{m.score || '4.8'}</span>
+                          <span className="ml-2">{m.location||'San Antonio, TX'}</span>
+                        </div>
+                        <div>
+                          <button className="btn btn-sm">View Profile</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {matches.length === 0 && (
+                    <div className="text-sm text-slate-500">No suggested matches yet. Invite providers or wait for responses.</div>
+                  )}
+                </div>
                           <td colSpan="6" className="text-center py-8 text-slate-500">
                             No providers matched yet. We're finding qualified service providers for you.
                           </td>
