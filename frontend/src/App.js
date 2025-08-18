@@ -2214,9 +2214,10 @@ function ClientHome(){
 
         // Load assessment data and gaps
         const userId = me?.id;
+        let assessmentRes = null;
         if (userId) {
-          const assessment = await axios.get(`${API}/assessment/progress/${userId}`);
-          setAssessmentData(assessment.data);
+          assessmentRes = await axios.get(`${API}/assessment/progress/${userId}`);
+          setAssessmentData(assessmentRes.data);
         }
 
         // Load active service requests
