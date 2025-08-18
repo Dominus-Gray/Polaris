@@ -93,7 +93,7 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "Payment integration bug fix"
+    - "Frontend integration and UI testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
