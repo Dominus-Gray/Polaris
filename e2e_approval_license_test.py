@@ -94,6 +94,9 @@ def create_or_login_user(email, password, role, terms_accepted=True, license_cod
             token = login_data.get('access_token')
             print(f"✅ Login successful for {email}")
             return token
+        elif response.status_code == 403:
+            print(f"❌ Login failed - Account pending approval: {response.text}")
+            return None
         else:
             print(f"❌ Login failed: {response.status_code} - {response.text}")
             return None
