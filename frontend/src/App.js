@@ -1167,7 +1167,7 @@ function AssessmentPage(){
                   </div>
                 )}
                 
-                {/* Evidence Upload */}
+                {/* Evidence Upload (single, canonical) */}
                 {answers[question.id] === 'yes' && (
                   <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <div className="text-sm font-medium text-green-900 mb-2">Upload Evidence (Optional)</div>
