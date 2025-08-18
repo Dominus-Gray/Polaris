@@ -1,0 +1,38 @@
+<svg width="520" height="120" viewBox="0 0 520 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Designed for dark hero backgrounds -->
+  <defs>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8AB4F8"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+  </defs>
+  <!-- Mark: North Star within circular ring -->
+  <g transform="translate(0,0)">
+    <circle cx="58" cy="60" r="48" stroke="url(#ringGrad)" stroke-width="4" fill="none"/>
+    <circle cx="58" cy="60" r="42" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none"/>
+    <!-- 8-point star -->
+    <path d="M58 18l4.2 24.5L98 34 74.5 52.2 100 60 74.5 65.8 98 86 62.2 72 58 102 53.8 72 18 86 41.5 65.8 16 60l25.5-7.8L18 34l35.8 8.5L58 18z" fill="#FFFFFF"/>
+    <!-- Subtle inner glow -->
+    <circle cx="58" cy="60" r="6" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+
+  <!-- Wordmark: Title case with chic letterspacing and star dot over i -->
+  <g transform="translate(128,22)">
+    <!-- Using vector paths for consistency -->
+    <!-- P -->
+    <path d="M4 72V0h20c14 0 23 8 23 20s-9 20-23 20H18v32H4zm14-46h6c7 0 11-4 11-6s-4-6-11-6h-6v12z" fill="#FFFFFF"/>
+    <!-- o -->
+    <path d="M62 48c0-17 12-30 28-30s28 13 28 30-12 30-28 30-28-13-28-30zm42 0c0-8-6-16-14-16s-14 8-14 16 6 16 14 16 14-8 14-16z" fill="#FFFFFF"/>
+    <!-- l -->
+    <path d="M134 72V2h14v70h-14z" fill="#FFFFFF"/>
+    <!-- a (custom single-storey) -->
+    <path d="M204 54c0 12-9 24-24 24-15 0-26-12-26-26 0-15 11-28 28-28 7 0 13 2 18 7V2h14v70h-14v-8c-4 6-10 10-20 10-15 0-26-12-26-26 0-15 11-26 26-26 11 0 18 5 24 13v12h-28c0 8 6 14 14 14 9 0 14-6 14-14h10zm-10-14c-3-6-10-10-18-10-8 0-16 6-18 14h36z" fill="#FFFFFF"/>
+    <!-- r -->
+    <path d="M236 72V2h14v30c4-8 12-14 22-14v16c-12 0-22 8-22 22v16h-14z" fill="#FFFFFF"/>
+    <!-- i with star dot -->
+    <path d="M296 72V24h14v48h-14z" fill="#FFFFFF"/>
+    <path d="M303 16l2.6 6.2 6.6.6-5 3.8 1.8 6.4-6-3.2-6 3.2 1.8-6.4-5-3.8 6.6-.6L303 16z" fill="#FFFFFF"/>
+    <!-- s -->
+    <path d="M364 66c-6 4-14 8-24 8-16 0-28-8-28-20 0-24 42-14 42-28 0-4-4-8-12-8-8 0-16 3-22 8l-8-10c8-7 20-12 32-12 18 0 28 9 28 20 0 24-42 14-42 28 0 5 4 8 12 8 8 0 15-3 22-8l8 10z" fill="#FFFFFF"/>
+  </g>
+</svg>
