@@ -3955,14 +3955,6 @@ function ServiceRequestPage(){
                     <div className="text-sm text-slate-500">No suggested matches yet. Invite providers or wait for responses.</div>
                   )}
                 </div>
-                          <td colSpan="6" className="text-center py-8 text-slate-500">
-                            No providers matched yet. We're finding qualified service providers for you.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border p-6">
