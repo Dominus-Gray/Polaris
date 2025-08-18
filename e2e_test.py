@@ -20,14 +20,14 @@ API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing E2E flow at: {API_BASE}")
 
-# Test credentials as specified in review request
-AGENCY_EMAIL = "agency.qa@polaris.test"
+# Test credentials as specified in review request (using valid domains)
+AGENCY_EMAIL = "agency.qa@example.com"
 AGENCY_PASSWORD = "Polaris#2025!"
-NAVIGATOR_EMAIL = "navigator.qa@polaris.test"
+NAVIGATOR_EMAIL = "navigator.qa@example.com"
 NAVIGATOR_PASSWORD = "Polaris#2025!"
-CLIENT_EMAIL = "client.qa@polaris.test"
+CLIENT_EMAIL = "client.qa@example.com"
 CLIENT_PASSWORD = "Polaris#2025!"
-PROVIDER_EMAIL = "provider.qa@polaris.test"
+PROVIDER_EMAIL = "provider.qa@example.com"
 PROVIDER_PASSWORD = "Polaris#2025!"
 
 # Global variables to store tokens and IDs
