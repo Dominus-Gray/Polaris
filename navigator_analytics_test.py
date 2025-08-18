@@ -84,8 +84,8 @@ def create_or_login_client():
     """Create client user if needed, then login to get token"""
     print("\n=== Step 2: Client Authentication ===")
     
-    # Try to login with existing client
-    client_email = "client_analytics_test@cybersec.com"
+    # Try to use existing client from test_result.md
+    client_email = "client_5ffe6e03@cybersec.com"
     client_password = "TestPass123!"
     
     login_data = {
@@ -94,43 +94,65 @@ def create_or_login_client():
     }
     
     try:
-        # Try login first
+        # Try login first with existing client
         response = requests.post(f"{API_BASE}/auth/login", json=login_data)
         
         if response.status_code == 200:
             token = response.json()["access_token"]
-            print(f"✅ Client login successful")
+            print(f"✅ Client login successful with existing account")
             return token
-        elif response.status_code == 400:
-            print("Client doesn't exist, creating new one...")
-            
-            # Create client user with license code
-            register_data = {
-                "email": client_email,
-                "password": client_password,
-                "role": "client",
-                "terms_accepted": True,
-                "license_code": "1234567890"  # Using a test license code
+        else:
+            # Try alternative existing client
+            alt_client_email = "client_analytics_test@cybersec.com"
+            alt_login_data = {
+                "email": alt_client_email,
+                "password": client_password
             }
             
-            reg_response = requests.post(f"{API_BASE}/auth/register", json=register_data)
-            print(f"Registration status: {reg_response.status_code}")
+            alt_response = requests.post(f"{API_BASE}/auth/login", json=alt_login_data)
+            if alt_response.status_code == 200:
+                token = alt_response.json()["access_token"]
+                print(f"✅ Client login successful with alternative account")
+                return token
             
-            if reg_response.status_code == 200:
-                # Now login
-                login_response = requests.post(f"{API_BASE}/auth/login", json=login_data)
-                if login_response.status_code == 200:
-                    token = login_response.json()["access_token"]
-                    print(f"✅ Client created and logged in successfully")
-                    return token
+            print("No existing client found, attempting to create new one...")
+            
+            # Generate a unique license code for testing
+            import random
+            license_code = str(random.randint(1000000000, 9999999999))
+            
+            # First, create a license record in the database (simulate agency creating license)
+            # Since we can't directly access DB, we'll try a few different license codes
+            for attempt in range(3):
+                test_license = str(random.randint(1000000000, 9999999999))
+                register_data = {
+                    "email": f"client_test_{attempt}@cybersec.com",
+                    "password": client_password,
+                    "role": "client",
+                    "terms_accepted": True,
+                    "license_code": test_license
+                }
+                
+                reg_response = requests.post(f"{API_BASE}/auth/register", json=register_data)
+                print(f"Registration attempt {attempt + 1} status: {reg_response.status_code}")
+                
+                if reg_response.status_code == 200:
+                    # Now login
+                    login_data = {
+                        "email": f"client_test_{attempt}@cybersec.com",
+                        "password": client_password
+                    }
+                    login_response = requests.post(f"{API_BASE}/auth/login", json=login_data)
+                    if login_response.status_code == 200:
+                        token = login_response.json()["access_token"]
+                        print(f"✅ Client created and logged in successfully")
+                        return token
+                    else:
+                        print(f"❌ Login after registration failed: {login_response.status_code}")
                 else:
-                    print(f"❌ Login after registration failed: {login_response.status_code}")
-                    return None
-            else:
-                print(f"❌ Client registration failed: {reg_response.status_code} - {reg_response.text}")
-                return None
-        else:
-            print(f"❌ Client login failed: {response.status_code} - {response.text}")
+                    print(f"❌ Registration failed: {reg_response.text}")
+            
+            print("❌ Could not create client after multiple attempts")
             return None
             
     except Exception as e:
