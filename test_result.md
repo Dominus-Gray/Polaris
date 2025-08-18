@@ -96,7 +96,7 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "Frontend integration and UI testing"
+    - "Assessment system implementation and testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
