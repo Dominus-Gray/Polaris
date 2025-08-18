@@ -268,8 +268,8 @@ def step5_register_client_and_provider(creds):
     print("="*60)
     
     # Generate unique emails
-    creds.client_email = f"client_{uuid.uuid4().hex[:8]}@polaris.test"
-    creds.provider_email = f"provider_{uuid.uuid4().hex[:8]}@polaris.test"
+    creds.client_email = f"client_{uuid.uuid4().hex[:8]}@example.com"
+    creds.provider_email = f"provider_{uuid.uuid4().hex[:8]}@example.com"
     
     # Register client with license code
     print("Registering client with license code...")
