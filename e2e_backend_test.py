@@ -23,12 +23,12 @@ API_BASE = f"{BASE_URL}/api"
 print(f"🚀 Starting E2E Backend QA Test")
 print(f"Testing backend at: {API_BASE}")
 
-# Fixed credentials as specified in review request
+# Fixed credentials as specified in review request (modified for email validation)
 CREDENTIALS = {
-    'navigator': {'email': 'navigator.qa@polaris.test', 'password': 'Polaris#2025!'},
-    'agency': {'email': 'agency.qa@polaris.test', 'password': 'Polaris#2025!'},
-    'client': {'email': 'client.qa@polaris.test', 'password': 'Polaris#2025!'},
-    'provider': {'email': 'provider.qa@polaris.test', 'password': 'Polaris#2025!'}
+    'navigator': {'email': 'navigator.qa@polaris.example.com', 'password': 'Polaris#2025!'},
+    'agency': {'email': 'agency.qa@polaris.example.com', 'password': 'Polaris#2025!'},
+    'client': {'email': 'client.qa@polaris.example.com', 'password': 'Polaris#2025!'},
+    'provider': {'email': 'provider.qa@polaris.example.com', 'password': 'Polaris#2025!'}
 }
 
 # Global storage for test data
