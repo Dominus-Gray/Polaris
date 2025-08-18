@@ -217,15 +217,22 @@ def step_3_generate_licenses() -> bool:
     
     if response.status_code == 200:
         data = response.json()
-        license_codes = data.get('license_codes', [])
+        print(f"License generation response: {data}")
+        
+        # Try different possible response formats
+        license_codes = data.get('license_codes', []) or data.get('codes', []) or data.get('licenses', [])
+        
+        if not license_codes and 'license_code' in data:
+            license_codes = [data['license_code']]
+        
         test_data['license_codes'] = license_codes
         
         print(f"✅ Generated {len(license_codes)} license codes:")
         for i, code in enumerate(license_codes, 1):
-            masked_code = f"****{code[-4:]}"
+            masked_code = f"****{code[-4:]}" if len(str(code)) >= 4 else str(code)
             print(f"  {i}. {masked_code}")
         
-        return True
+        return len(license_codes) > 0
     else:
         print(f"❌ License generation failed: {response.status_code} - {response.text}")
         return False
