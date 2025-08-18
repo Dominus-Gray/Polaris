@@ -3445,10 +3445,13 @@ function ServiceRequestPage(){
 
   const loadRequestData = async (reqId) => {
     try {
-      const matchesRes = await axios.get(`${API}/match/${reqId}/matches`);
-      const responsesRes = await axios.get(`${API}/match/${reqId}/responses`);
-      setMatches(matchesRes.data.matches || []);
+      // Load provider responses for this service request
+      const responsesRes = await axios.get(`${API}/service-requests/${reqId}/responses`);
       setResponses(responsesRes.data.responses || []);
+      // Optionally, load more detailed request info
+      const reqRes = await axios.get(`${API}/service-requests/${reqId}`);
+      // If your backend returns any suggested matches, you can set them here
+      setMatches(reqRes.data.suggested_matches || []);
     } catch (e) {
       console.error('Failed to load request data:', e);
     }
