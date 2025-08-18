@@ -874,7 +874,7 @@ function AssessmentPage(){
       const response = await axios.post(`${API}/service-requests/professional-help`, {
         area_id: areaId,
         budget_range: budgetRange,
-        description: `Professional help needed for: ${questions.find(q => q.id === questionId)?.text}`
+        description: `Professional help needed for: ${getQuestion(questionId)?.text}`
       });
       
       toast.success('Service request created!', { 
