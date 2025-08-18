@@ -30,10 +30,11 @@ def create_test_user():
     """Create a test user for comprehensive testing"""
     print("\n=== Creating Test User ===")
     try:
+        # Try with navigator role first (doesn't require license code)
         payload = {
             "email": TEST_USER_EMAIL,
             "password": TEST_USER_PASSWORD,
-            "role": "client",
+            "role": "navigator",
             "terms_accepted": True
         }
         
