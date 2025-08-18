@@ -916,35 +916,6 @@ function AssessmentPage(){
     navigate(`/matching?area_id=${area_id}&desc=${encodeURIComponent(question.text)}`);
   };
 
-  const handleProfessionalHelp = (questionId, areaId, budgetRange) => {
-    const question = getQuestion(questionId);
-    navigate(`/matching?area_id=${areaId}&desc=${encodeURIComponent(question.text)}&budget=${encodeURIComponent(budgetRange)}`);
-  };
-
-  const handleEvidenceUpload = async (questionId, files) => {
-    if (!files || files.length === 0) return;
-    
-    try {
-      const formData = new FormData();
-      formData.append('question_id', questionId);
-      
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i]);
-      }
-      
-      await axios.post(`${API}/assessment/evidence`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      toast.success('Evidence uploaded successfully');
-    } catch (error) {
-      console.error('Evidence upload failed:', error);
-      toast.error('Failed to upload evidence');
-    }
-  };
-
   if (showResources && selectedQuestion) {
     const question = getQuestion(selectedQuestion);
     return (
