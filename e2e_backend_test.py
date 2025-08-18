@@ -148,13 +148,7 @@ def step_2_register_and_approve_agency() -> bool:
     if not register_user('agency'):
         return False
     
-    # Login agency to get user ID
-    if not login_user('agency'):
-        return False
-    
-    agency_user_id = test_data['user_ids']['agency']
-    
-    # As navigator, get pending agencies
+    # As navigator, get pending agencies to find the agency user ID
     print("\n🔍 Getting pending agencies...")
     response = make_request('GET', '/navigator/agencies/pending', headers=get_auth_headers('navigator'))
     
@@ -177,6 +171,8 @@ def step_2_register_and_approve_agency() -> bool:
         return False
     
     print(f"✅ Found agency: {agency_found['email']}")
+    agency_user_id = agency_found.get('id') or agency_found.get('_id')
+    test_data['user_ids']['agency'] = agency_user_id
     
     # Approve the agency
     print("\n✅ Approving agency...")
@@ -190,7 +186,8 @@ def step_2_register_and_approve_agency() -> bool:
     
     if response.status_code == 200:
         print("✅ Agency approved successfully")
-        return True
+        # Now try to login as agency
+        return login_user('agency')
     else:
         print(f"❌ Agency approval failed: {response.status_code} - {response.text}")
         return False
