@@ -2232,8 +2232,8 @@ function ClientHome(){
         }
 
         // Calculate gaps from assessment
-        if (assessment.data && assessment.data.answers) {
-          const calculatedGaps = calculateGaps(assessment.data.answers);
+        if (assessmentRes && assessmentRes.data && assessmentRes.data.answers) {
+          const calculatedGaps = calculateGaps(assessmentRes.data.answers);
           setGaps(calculatedGaps);
           
           // Load dynamic free services based on gaps
