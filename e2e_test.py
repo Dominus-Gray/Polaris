@@ -153,65 +153,50 @@ def step3_navigator_login_and_approve_agency():
             "Content-Type": "application/json"
         }
         
-        # Try different possible endpoints for agency approval
-        endpoints_to_try = [
-            "/api/admin/users/approve",
-            "/api/navigator/agencies/approve", 
-            "/api/navigator/users/approve",
-            "/api/navigator/approve-agency"
-        ]
+        # Try the admin approve-user endpoint
+        print("3c. Trying admin approve-user endpoint...")
+        
+        # First get the agency user ID by searching
+        users_response = requests.get(f"{API_BASE}/admin/users?search={AGENCY_EMAIL}", headers=headers)
+        print(f"User search status: {users_response.status_code}")
         
         agency_approved = False
-        for endpoint in endpoints_to_try:
-            print(f"Trying endpoint: {endpoint}")
+        if users_response.status_code == 200:
+            users_data = users_response.json()
+            users = users_data.get('users', [])
             
-            # First try to get pending agencies/users
-            if "agencies" in endpoint:
-                list_response = requests.get(f"{API_BASE}/navigator/agencies/pending", headers=headers)
-            elif "users" in endpoint:
-                list_response = requests.get(f"{API_BASE}/navigator/users/pending", headers=headers)
-            else:
-                list_response = requests.get(f"{API_BASE}/admin/users?role=agency&status=pending", headers=headers)
-            
-            print(f"List endpoint status: {list_response.status_code}")
-            
-            if list_response.status_code == 200:
-                # Try to approve agency
-                approve_payload = {
-                    "email": AGENCY_EMAIL,
-                    "approval_status": "approved",
-                    "notes": "Approved for testing"
-                }
+            if users:
+                agency_user_id = users[0].get('id')
+                print(f"Found agency user ID: {agency_user_id}")
                 
-                approve_response = requests.post(endpoint, json=approve_payload, headers=headers)
-                print(f"Approve endpoint status: {approve_response.status_code}")
+                # Try to approve user via admin endpoint
+                approve_response = requests.post(
+                    f"{API_BASE}/admin/approve-user?user_id={agency_user_id}",
+                    headers=headers
+                )
+                print(f"Admin approve status: {approve_response.status_code}")
+                print(f"Admin approve response: {approve_response.text}")
                 
                 if approve_response.status_code == 200:
                     agency_approved = True
-                    print(f"Agency approved via {endpoint}")
-                    break
+                    print("Agency approved via admin approve-user endpoint")
         
         if not agency_approved:
-            # Try direct database update approach
-            print("3c. Trying direct user update approach...")
-            
-            # Get user ID first
-            users_response = requests.get(f"{API_BASE}/admin/users?search={AGENCY_EMAIL}", headers=headers)
+            print("3d. Trying direct user status update...")
+            # Try to update user status directly
             if users_response.status_code == 200:
                 users_data = users_response.json()
                 users = users_data.get('users', [])
                 
                 if users:
                     agency_user_id = users[0].get('id')
-                    print(f"Found agency user ID: {agency_user_id}")
-                    
-                    # Try to update user status
                     update_payload = {"action": "activate"}
                     update_response = requests.post(
                         f"{API_BASE}/admin/users/{agency_user_id}/action",
                         json=update_payload,
                         headers=headers
                     )
+                    print(f"User action status: {update_response.status_code}")
                     
                     if update_response.status_code == 200:
                         agency_approved = True
