@@ -213,3 +213,13 @@ Current Progress:
 - ✅ BACKEND COMPLETE: Free resources recommendation API with area-based filtering
 - 🔄 Working on: Frontend integration and UI testing
 - ⚠️  Minor: Payment endpoint database query bug (wrong collection lookup)
+
+# New E2E Test Plan (All roles)
+- Create navigator -> approve agency -> agency issues license -> client registers -> provider registers -> navigator approves provider -> client assessment 'No, I need help' logs analytics -> client creates service request area5 -> provider responds -> client views responses -> payment attempt -> knowledge base unlock attempt -> navigator analytics reflects resource selection.
+- Record any missing endpoints or gaps as issues with suggested fixes.
+
+# Target QA Accounts
+- Navigator: navigator.qa@polaris.test / Polaris#2025!
+- Agency: agency.qa@polaris.test / Polaris#2025!
+- Client: client.qa@polaris.test / Polaris#2025!
+- Provider: provider.qa@polaris.test / Polaris#2025!
