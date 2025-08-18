@@ -3217,6 +3217,60 @@ function NavigatorHome(){
                     className="btn btn-sm bg-green-600 hover:bg-green-700 text-white"
                     onClick={()=>approveProvider(provider.id, 'approved')}
                   >
+      {/* Free Resources Analytics */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold">Free Resources Usage</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600">Since</span>
+            <select className="input" value={sinceDays} onChange={e=>setSinceDays(Number(e.target.value))}>
+              <option value={7}>7 days</option>
+              <option value={30}>30 days</option>
+              <option value={90}>90 days</option>
+            </select>
+          </div>
+        </div>
+        {!resourceStats ? (
+          <div className="skel h-24 w-full" />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="tile">
+              <div className="tile-title">Total Selections</div>
+              <div className="tile-num">{String(resourceStats.total || 0)}</div>
+              <div className="tile-sub">in last {sinceDays} days</div>
+            </div>
+            <div className="tile md:col-span-2">
+              <div className="tile-title">By Area (Top)</div>
+              {resourceStats.by_area?.length ? (
+                <ul className="mt-2 space-y-1">
+                  {resourceStats.by_area.slice(0,6).map((item)=> (
+                    <li key={item.area_id} className="flex items-center justify-between text-sm">
+                      <span className="text-slate-700">{item.area_name}</span>
+                      <span className="font-semibold">{item.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-sm text-slate-500 mt-2">No selections yet</div>
+              )}
+            </div>
+          </div>
+        )}
+        {resourceStats?.last7?.length ? (
+          <div className="mt-4 bg-white border rounded-lg p-4">
+            <div className="tile-title mb-2">Last 7 Days</div>
+            <div className="grid grid-cols-7 gap-2 text-center text-xs">
+              {resourceStats.last7.map(d => (
+                <div key={d.date} className="p-2 bg-slate-50 rounded">
+                  <div className="font-semibold">{d.count}</div>
+                  <div className="text-slate-500">{d.date.slice(5)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+
                     Approve
                   </button>
                   <button 
