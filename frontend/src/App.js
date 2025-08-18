@@ -913,7 +913,8 @@ function AssessmentPage(){
 
   const handleGetHelp = (questionId, area_id) => {
     const question = getQuestion(questionId);
-    navigate(`/matching?area_id=${area_id}&desc=${encodeURIComponent(question.text)}`);
+    // Navigate to the new Service Request flow with context params
+    navigate(`/service-request?area_id=${area_id}&from=assessment&question=${encodeURIComponent(question.text)}`);
   };
 
   if (showResources && selectedQuestion) {
