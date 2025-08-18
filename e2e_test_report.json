@@ -7,20 +7,20 @@
   "created_license_codes": [],
   "created_users": {
     "navigator": {
-      "id": null,
-      "email": "navigator.qa@polaris.test"
+      "id": "78e944c7-4d57-4f05-aafa-70b2ad9096ec",
+      "email": "navigator.qa@polaris.example.com"
     },
     "agency": {
       "id": null,
-      "email": "agency.qa@polaris.test"
+      "email": "agency.qa@polaris.example.com"
     },
     "client": {
       "id": null,
-      "email": "client.qa@polaris.test"
+      "email": "client.qa@polaris.example.com"
     },
     "provider": {
       "id": null,
-      "email": "provider.qa@polaris.test"
+      "email": "provider.qa@polaris.example.com"
     }
   },
   "service_request_id": null,
