@@ -2201,6 +2201,7 @@ function ClientHome(){
   useEffect(()=>{ 
     const load=async()=>{ 
       try {
+        const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
         const {data} = await axios.get(`${API}/home/client`); 
         setData(data); 
         
@@ -2217,8 +2218,11 @@ function ClientHome(){
         setKnowledgeBaseAccess(access.data);
 
         // Load assessment data and gaps
-        const assessment = await axios.get(`${API}/assessment/progress/${data.user_id}`);
-        setAssessmentData(assessment.data);
+        const userId = me?.id;
+        if (userId) {
+          const assessment = await axios.get(`${API}/assessment/progress/${userId}`);
+          setAssessmentData(assessment.data);
+        }
 
         // Load active service requests
         const requests = await axios.get(`${API}/engagements/my-services`);
