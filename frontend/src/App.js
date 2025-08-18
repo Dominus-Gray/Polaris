@@ -2199,7 +2199,7 @@ function ClientHome(){
         const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
         const {data} = await axios.get(`${API}/home/client`); 
         setData(data); 
-        const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+        const meLocal = JSON.parse(localStorage.getItem('polaris_me')||'null');
         
         // Load certificates
         const certs = await axios.get(`${API}/client/certificates`);
