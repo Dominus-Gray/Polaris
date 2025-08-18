@@ -97,6 +97,9 @@ def register_user(role: str, license_code: str = None) -> bool:
         data = response.json()
         print(f"✅ {role.title()} registered successfully: {data.get('message', 'Success')}")
         return True
+    elif response.status_code == 400 and "already exists" in response.text:
+        print(f"⚠️  {role.title()} already exists, attempting login...")
+        return login_user(role)
     else:
         print(f"❌ {role.title()} registration failed: {response.status_code} - {response.text}")
         return False
