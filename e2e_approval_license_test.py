@@ -484,6 +484,7 @@ def step6_service_request_flow(creds):
         }
         
         provider_response_payload = {
+            "request_id": service_request_id,
             "proposed_fee": 1500,
             "proposal_note": "Comprehensive cybersecurity assessment and implementation plan"
         }
