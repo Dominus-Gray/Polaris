@@ -3076,6 +3076,18 @@ async def respond_to_service_request(response_data: dict, current=Depends(requir
     return {"message": "Response submitted successfully", "response_id": response_id}
 
 # ---------------- Knowledge Base Payment Unlock ----------------
+# QA override for knowledge base access for a specific test user
+@api.post("/qa/grant/knowledge-base")
+async def qa_grant_knowledge_base(current=Depends(require_user)):
+    """Grant full knowledge base access to the current user (QA helper)"""
+    access = await db.user_access.find_one({"user_id": current["id"]})
+    if not access:
+        access = {"_id": str(uuid.uuid4()), "user_id": current["id"], "knowledge_base_access": {"all_areas": True}, "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()}
+        await db.user_access.insert_one(access)
+    else:
+        await db.user_access.update_one({"user_id": current["id"]}, {"$set": {"knowledge_base_access": {"all_areas": True}, "updated_at": datetime.utcnow()}})
+    return {"message": "Knowledge base access granted"}
+
 @api.post("/payments/knowledge-base")
 async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn, current=Depends(require_user)):
     """Create payment session for knowledge base unlock"""
