@@ -413,7 +413,21 @@ def step5b_approve_provider(creds):
                 data = response.json()
                 print(f"✅ PASS: Provider approved successfully")
                 print(f"Approval response: {json.dumps(data, indent=2, default=str)}")
-                return True
+                
+                # Now login the provider
+                print("Logging in as approved provider...")
+                creds.provider_token = create_or_login_user(
+                    creds.provider_email,
+                    creds.provider_password,
+                    "provider"
+                )
+                
+                if creds.provider_token:
+                    print("✅ Provider login successful after approval")
+                    return True
+                else:
+                    print("❌ FAIL: Provider login failed even after approval")
+                    return False
             else:
                 print(f"❌ FAIL: HTTP {response.status_code} - {response.text}")
                 return False
