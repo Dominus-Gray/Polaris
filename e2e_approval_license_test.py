@@ -522,9 +522,10 @@ def step6_service_request_flow(creds):
         # Step 6d: Attempt payment (expect 503 or success)
         print("6d: Attempting payment...")
         payment_payload = {
-            "service_request_id": service_request_id,
+            "request_id": service_request_id,
             "provider_id": creds.provider_email,  # Using email as identifier
-            "amount": 1500
+            "agreed_fee": 1500.0,
+            "origin_url": "https://polaris-sbap-2.preview.emergentagent.com"
         }
         
         response = requests.post(
