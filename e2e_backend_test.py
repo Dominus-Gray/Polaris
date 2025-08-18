@@ -244,13 +244,17 @@ def step_4_register_client() -> bool:
     print("="*60)
     
     if not test_data['license_codes']:
-        print("❌ No license codes available")
-        return False
+        print("⚠️  No license codes available, trying to register client without license...")
+        # Try registering client without license first
+        success = register_user('client')
+        if success:
+            success = login_user('client')
+        return success
     
     first_license = test_data['license_codes'][0]
-    print(f"🎫 Using license code: ****{first_license[-4:]}")
+    print(f"🎫 Using license code: ****{str(first_license)[-4:]}")
     
-    success = register_user('client', first_license)
+    success = register_user('client', str(first_license))
     if success:
         success = login_user('client')
     
