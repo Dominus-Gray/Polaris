@@ -4723,6 +4723,7 @@ function AppShell(){
           <Route path="/service-request" element={<ServiceRequestPage />} />
           <Route path="/provider/proposals" element={<ProviderProposalsPage />} />
           <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
           <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
         </Routes>
       )}
