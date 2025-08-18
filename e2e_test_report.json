@@ -4,30 +4,67 @@
     "completed_steps": 0,
     "failed_steps": 0
   },
-  "created_license_codes": [],
+  "created_license_codes": [
+    "****7602",
+    "****5983",
+    "****1220",
+    "****3158",
+    "****6085"
+  ],
   "created_users": {
     "navigator": {
-      "id": "4f28d175-d72a-4913-9714-e2f05af5864a",
-      "email": "navigator.qa.2976@polaris.example.com"
+      "id": "38bb1f26-f0eb-4fee-9c00-47f99e410ee1",
+      "email": "navigator.qa.4684@polaris.example.com"
     },
     "agency": {
-      "id": "eccbdcf4-8b60-4349-86e8-c0e526ad8deb",
-      "email": "agency.qa.2976@polaris.example.com"
+      "id": "52664404-f484-4c58-aa8a-24ac4318f619",
+      "email": "agency.qa.4684@polaris.example.com"
     },
     "client": {
-      "id": null,
-      "email": "client.qa.2976@polaris.example.com"
+      "id": "c1594dbf-e426-4c1b-8645-c6e0d78cca08",
+      "email": "client.qa.4684@polaris.example.com"
     },
     "provider": {
-      "id": "71581232-52ad-46fa-a4d4-d314defe435c",
-      "email": "provider.qa.2976@polaris.example.com"
+      "id": "390a2dce-d3a3-4536-b0d2-3da325742cf3",
+      "email": "provider.qa.4684@polaris.example.com"
     }
   },
-  "service_request_id": null,
-  "provider_response_id": null,
+  "service_request_id": "44e22c0d-f52c-4375-895a-2ea96554bfad",
+  "provider_response_id": "bb35849c-33d5-4d80-8e97-d466266cf9b2",
   "payment_endpoints_status": {
-    "service_request_payment": null,
+    "service_request_payment": "validation_passed",
     "knowledge_base_payment": "tested"
   },
-  "navigator_analytics_snapshot": {}
+  "navigator_analytics_snapshot": {
+    "since": "2025-07-19T02:36:33.979164",
+    "total": 31,
+    "by_area": [
+      {
+        "area_id": "unknown",
+        "area_name": "Unknown",
+        "count": 23
+      },
+      {
+        "area_id": "area5",
+        "area_name": "Technology & Security Infrastructure",
+        "count": 4
+      },
+      {
+        "area_id": "area1",
+        "area_name": "Business Formation & Registration",
+        "count": 3
+      },
+      {
+        "area_id": "area2",
+        "area_name": "Financial Operations & Management",
+        "count": 1
+      }
+    ],
+    "last7": [
+      {
+        "date": "2025-08-18",
+        "count": 31
+      }
+    ]
+  }
 }
