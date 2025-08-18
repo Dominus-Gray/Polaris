@@ -252,13 +252,7 @@ def step_5_register_and_approve_provider() -> bool:
     if not register_user('provider'):
         return False
     
-    # Login provider to get user ID
-    if not login_user('provider'):
-        return False
-    
-    provider_user_id = test_data['user_ids']['provider']
-    
-    # As navigator, get pending providers
+    # As navigator, get pending providers to find the provider user ID
     print("\n🔍 Getting pending providers...")
     response = make_request('GET', '/navigator/providers/pending', headers=get_auth_headers('navigator'))
     
@@ -281,6 +275,8 @@ def step_5_register_and_approve_provider() -> bool:
         return False
     
     print(f"✅ Found provider: {provider_found['email']}")
+    provider_user_id = provider_found.get('id') or provider_found.get('_id')
+    test_data['user_ids']['provider'] = provider_user_id
     
     # Approve the provider
     print("\n✅ Approving provider...")
@@ -294,7 +290,7 @@ def step_5_register_and_approve_provider() -> bool:
     
     if response.status_code == 200:
         print("✅ Provider approved successfully")
-        # Login again as provider to ensure access
+        # Login as provider to ensure access
         return login_user('provider')
     else:
         print(f"❌ Provider approval failed: {response.status_code} - {response.text}")
