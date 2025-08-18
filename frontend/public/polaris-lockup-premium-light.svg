@@ -1,0 +1,30 @@
+<svg width="640" height="140" viewBox="0 0 640 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringG3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B1F3A"/>
+      <stop offset="100%" stop-color="#2F6FFF"/>
+    </linearGradient>
+    <radialGradient id="starGlow3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(60 70) rotate(90) scale(36)">
+      <stop offset="0%" stop-color="#1B365D"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </radialGradient>
+  </defs>
+  <!-- Mark for light backgrounds -->
+  <g transform="translate(0,0)">
+    <circle cx="60" cy="70" r="52" stroke="url(#ringG3)" stroke-width="4" fill="none"/>
+    <circle cx="60" cy="70" r="46" stroke="#94A3B8" stroke-opacity="0.35" stroke-width="1.5" fill="none"/>
+    <path d="M60 26 L63.6 52 L92 40 L74 58 L114 70 L74 82 L92 100 L63.6 88 L60 114 L56.4 88 L28 100 L46 82 L6 70 L46 58 L28 40 L56.4 52 Z" fill="url(#starGlow3)"/>
+    <circle cx="60" cy="70" r="4" fill="#1B365D"/>
+  </g>
+  <!-- Wordmark in navy -->
+  <g transform="translate(140,28)" fill="#0F1E34">
+    <path d="M0 84V0h24c17 0 28 9 28 22s-11 22-28 22H16v40H0Zm16-54h8c9 0 14-5 14-8s-5-8-14-8h-8v16Z"/>
+    <path d="M74 56c0-20 14-36 34-36s34 16 34 36-14 36-34 36S74 76 74 56Zm52 0c0-10-8-20-18-20s-18 10-18 20 8 20 18 20 18-10 18-20Z"/>
+    <path d="M158 84V0h16v68h40v16h-56Z"/>
+    <path d="M270 84h-18l-8-20h-30l-8 20h-18L224 0h16l46 84Zm-48-36h22l-11-26-11 26Z"/>
+    <path d="M322 84h-16V0h28c18 0 30 10 30 24 0 10-6 18-16 22l22 38h-19l-20-34h-9v34Zm12-50h10c9 0 14-5 14-10s-5-10-14-10h-10v20Z"/>
+    <path d="M388 84V28h16v56h-16Z"/>
+    <path d="M396 14l2.6 6.2 6.6.6-5 3.8 1.8 6.4-6-3.2-6 3.2 1.8-6.4-5-3.8 6.6-.6L396 14z"/>
+    <path d="M468 78c-7 5-16 8-28 8-18 0-32-9-32-22 0-26 48-15 48-30 0-6-6-10-16-10-10 0-20 4-28 10l-10-12c10-8 24-14 38-14 20 0 34 10 34 24 0 26-48 16-48 30 0 6 6 10 16 10 10 0 19-3 28-9l8 12Z"/>
+  </g>
+</svg>

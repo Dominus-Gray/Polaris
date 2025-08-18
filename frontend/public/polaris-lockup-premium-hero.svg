@@ -1,0 +1,38 @@
+<svg width="640" height="140" viewBox="0 0 640 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringG2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8AB4F8"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+    <radialGradient id="starGlow2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(60 70) rotate(90) scale(36)">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#D6E6FF"/>
+    </radialGradient>
+  </defs>
+  <!-- Mark -->
+  <g transform="translate(0,0)">
+    <circle cx="60" cy="70" r="52" stroke="url(#ringG2)" stroke-width="4" fill="none"/>
+    <circle cx="60" cy="70" r="46" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/>
+    <path d="M60 26 L63.6 52 L92 40 L74 58 L114 70 L74 82 L92 100 L63.6 88 L60 114 L56.4 88 L28 100 L46 82 L6 70 L46 58 L28 40 L56.4 52 Z" fill="url(#starGlow2)"/>
+    <circle cx="60" cy="70" r="4" fill="#FFFFFF"/>
+  </g>
+  <!-- Wordmark (premium, corporate-chic) -->
+  <g transform="translate(140,28)" fill="#FFFFFF">
+    <!-- Custom vector letters with refined spacing -->
+    <!-- P -->
+    <path d="M0 84V0h24c17 0 28 9 28 22s-11 22-28 22H16v40H0Zm16-54h8c9 0 14-5 14-8s-5-8-14-8h-8v16Z"/>
+    <!-- O -->
+    <path d="M74 56c0-20 14-36 34-36s34 16 34 36-14 36-34 36S74 76 74 56Zm52 0c0-10-8-20-18-20s-18 10-18 20 8 20 18 20 18-10 18-20Z"/>
+    <!-- L (with extended foot for stability) -->
+    <path d="M158 84V0h16v68h40v16h-56Z"/>
+    <!-- A (custom triangular apex echoing star) -->
+    <path d="M270 84h-18l-8-20h-30l-8 20h-18L224 0h16l46 84Zm-48-36h22l-11-26-11 26Z"/>
+    <!-- R -->
+    <path d="M322 84h-16V0h28c18 0 30 10 30 24 0 10-6 18-16 22l22 38h-19l-20-34h-9v34Zm12-50h10c9 0 14-5 14-10s-5-10-14-10h-10v20Z"/>
+    <!-- I (with star dot) -->
+    <path d="M388 84V28h16v56h-16Z"/>
+    <path d="M396 14l2.6 6.2 6.6.6-5 3.8 1.8 6.4-6-3.2-6 3.2 1.8-6.4-5-3.8 6.6-.6L396 14z"/>
+    <!-- S (smooth, geometric) -->
+    <path d="M468 78c-7 5-16 8-28 8-18 0-32-9-32-22 0-26 48-15 48-30 0-6-6-10-16-10-10 0-20 4-28 10l-10-12c10-8 24-14 38-14 20 0 34 10 34 24 0 26-48 16-48 30 0 6 6 10 16 10 10 0 19-3 28-9l8 12Z"/>
+  </g>
+</svg>
