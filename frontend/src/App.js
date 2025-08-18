@@ -954,12 +954,21 @@ function AssessmentPage(){
               </div>
               <button 
                 className="btn w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => {
+                onClick={async () => {
                   // Mark as using free resources and continue
                   setAnswers(prev => ({
                     ...prev,
                     [selectedQuestion]: 'free_resources'
                   }));
+                  // Log resource access for Navigator analytics
+                  try {
+                    await axios.post(`${API}/analytics/resource-access`, {
+                      resource_id: `free_resources_${selectedQuestion}`,
+                      gap_area: currentAreaData.id
+                    });
+                  } catch (e) {
+                    console.warn('Analytics logging failed', e);
+                  }
                   setShowResources(false);
                 }}
               >
