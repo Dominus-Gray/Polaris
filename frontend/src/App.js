@@ -4464,6 +4464,8 @@ function Landing(){
 
       {/* Terms and Privacy Policy Footer */}
       <section className="bg-slate-100 py-8">
+          <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
+
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
