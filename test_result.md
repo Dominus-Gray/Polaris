@@ -134,6 +134,11 @@ The user has identified multiple critical issues and requirements that need to b
   stuck_tasks:
     - "Navigator Analytics page implementation and UI testing"
   test_all: false
+
+# New E2E Test Plan (All roles)
+- Create navigator -> approve agency -> agency issues license -> client registers -> provider registers -> navigator approves provider -> client assessment 'No, I need help' logs analytics -> client creates service request area5 -> provider responds -> client views responses -> payment attempt -> knowledge base unlock attempt -> navigator analytics reflects resource selection.
+- Record any missing endpoints or gaps as issues with suggested fixes.
+
   test_priority: "high_first"
 
 ## agent_communication:
