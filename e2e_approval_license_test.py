@@ -324,19 +324,39 @@ def step5_register_client_and_provider(creds):
         print("❌ FAIL: Could not register client with license")
         return False
     
-    # Register provider
+    # Register provider (will be pending, so we just register without login)
     print("Registering provider...")
-    creds.provider_token = create_or_login_user(
-        creds.provider_email,
-        creds.provider_password,
-        "provider"
-    )
+    register_payload = {
+        "email": creds.provider_email,
+        "password": creds.provider_password,
+        "role": "provider",
+        "terms_accepted": True
+    }
     
-    if not creds.provider_token:
-        print("❌ FAIL: Could not register provider")
+    try:
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=register_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 200:
+            print(f"✅ Provider {creds.provider_email} registered successfully")
+            register_data = response.json()
+            print(f"Registration response: {register_data}")
+            if register_data.get('status') == 'pending':
+                print("✅ Provider is pending approval as expected")
+        elif response.status_code == 400 and ("already registered" in response.text or "already exists" in response.text):
+            print(f"⚠️  Provider {creds.provider_email} already exists")
+        else:
+            print(f"❌ FAIL: Provider registration failed - {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
         return False
     
-    print("✅ PASS: Client and provider registered successfully")
+    print("✅ PASS: Client registered with license and provider registered (pending)")
     return True
 
 def step5b_approve_provider(creds):
