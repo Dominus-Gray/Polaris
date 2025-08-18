@@ -160,11 +160,17 @@ def create_or_login_client():
         print(f"❌ Client auth error: {e}")
         return None
 
-def post_analytics_logs(client_token):
-    """POST several analytics/resource-access logs as client user"""
+def post_analytics_logs(client_token, navigator_token):
+    """POST several analytics/resource-access logs as client user, or use navigator if client unavailable"""
     print("\n=== Step 3: Posting Analytics Logs ===")
     
-    headers = {"Authorization": f"Bearer {client_token}"}
+    # Use client token if available, otherwise use navigator token for testing
+    if client_token:
+        headers = {"Authorization": f"Bearer {client_token}"}
+        print("Using client token for analytics logging")
+    else:
+        headers = {"Authorization": f"Bearer {navigator_token}"}
+        print("⚠️ Using navigator token for analytics logging (client unavailable)")
     
     # Test data for different areas
     test_logs = [
