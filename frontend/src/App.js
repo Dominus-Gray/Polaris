@@ -45,9 +45,9 @@ function EnhancedPolarisBrand() {
     <div className="enhanced-brand flex items-center justify-center gap-3">
       {!fallback ? (
         <img
-          src="/polaris-mark-circle-hero.svg"
-          alt="Polaris North Star"
-          className="h-12 w-auto drop-shadow-lg"
+          src="/polaris-logo-lockup-hero.svg"
+          alt="Polaris – Procurement Readiness"
+          className="h-12 md:h-14 w-auto drop-shadow-lg"
           onError={() => setFallback(true)}
         />
       ) : (
