@@ -3488,7 +3488,7 @@ function ServiceRequestPage(){
 
   const inviteProviders = async () => { 
     try { 
-      await axios.post(`${API}/match/${requestId}/invite`); 
+      await axios.post(`${API}/match/${requestId}/invite-top5`); 
       toast.success('Invitations sent to qualified providers'); 
     } catch { 
       toast.error('Failed to send invitations'); 
