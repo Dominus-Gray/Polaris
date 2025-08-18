@@ -49,7 +49,7 @@ class QAWorkflowTester:
         try:
             response = requests.post(f"{BASE_URL}/auth/register", json=payload)
             
-            if response.status_code == 400 and "already registered" in response.text.lower():
+            if response.status_code == 400 and ("already registered" in response.text.lower() or "already exists" in response.text.lower()):
                 self.log_result(f"✅ {role.title()} already exists, proceeding to login")
                 self.results[role]["registration"] = "EXISTS"
                 return True
