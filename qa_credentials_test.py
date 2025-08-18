@@ -19,12 +19,12 @@ API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing backend at: {API_BASE}")
 
-# QA Credentials as specified in review request
+# QA Credentials as specified in review request (using .com instead of .test for email validation)
 QA_CREDENTIALS = {
-    "navigator": {"email": "navigator.qa@polaris.test", "password": "Polaris#2025!"},
-    "agency": {"email": "agency.qa@polaris.test", "password": "Polaris#2025!"},
-    "client": {"email": "client.qa@polaris.test", "password": "Polaris#2025!"},
-    "provider": {"email": "provider.qa@polaris.test", "password": "Polaris#2025!"}
+    "navigator": {"email": "navigator.qa@polaris.com", "password": "Polaris#2025!"},
+    "agency": {"email": "agency.qa@polaris.com", "password": "Polaris#2025!"},
+    "client": {"email": "client.qa@polaris.com", "password": "Polaris#2025!"},
+    "provider": {"email": "provider.qa@polaris.com", "password": "Polaris#2025!"}
 }
 
 def register_or_login_user(role, email, password):
