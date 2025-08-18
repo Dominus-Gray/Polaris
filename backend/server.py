@@ -3550,6 +3550,11 @@ async def list_client_certificates(current=Depends(require_role("client"))):
     certs = await db.certificates.find({"client_user_id": current["id"]}).to_list(1000)
     return {"certificates": certs}
 
+
+@api.get("/health")
+async def api_health():
+    return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
 @api.get("/certificates/{cert_id}")
 async def get_certificate(cert_id: str, current=Depends(require_user)):
     cert = await db.certificates.find_one({"_id": cert_id})
