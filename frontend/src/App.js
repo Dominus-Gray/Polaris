@@ -4410,7 +4410,7 @@ function Landing(){
         <div className="hero-inner justify-center items-center">
           <div className="text-white text-center max-w-3xl mx-auto">
             <div className="flex justify-center mb-4">
-              <EnhancedPolarisBrand />
+              <img src="/polaris-lockup-premium-hero.svg" alt="Polaris" className="h-12 md:h-14 w-auto drop-shadow-lg"/>
             </div>
             <h1 className="hero-title mt-3">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
