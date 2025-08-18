@@ -349,7 +349,7 @@ def step_6_create_business_profile() -> bool:
         'industry': 'Technology Services',
         'primary_products_services': 'Cybersecurity consulting and IT infrastructure services',
         'revenue_range': '$100,000 - $500,000',
-        'employees_count': 5,
+        'employees_count': '5',
         'ownership_structure': 'Private',
         'contact_name': 'John Doe',
         'contact_title': 'CEO',
