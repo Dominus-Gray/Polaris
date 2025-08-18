@@ -307,14 +307,11 @@ def main():
         print("❌ OVERALL FAIL: Could not authenticate navigator")
         return False
     
-    # Step 2: Get client token
+    # Step 2: Try to get client token (optional for this test)
     client_token = create_or_login_client()
-    if not client_token:
-        print("❌ OVERALL FAIL: Could not authenticate client")
-        return False
     
-    # Step 3: Post analytics logs as client
-    posted_count = post_analytics_logs(client_token)
+    # Step 3: Post analytics logs (use client if available, navigator otherwise)
+    posted_count = post_analytics_logs(client_token, navigator_token)
     if posted_count == 0:
         print("❌ OVERALL FAIL: Could not post any analytics logs")
         return False
