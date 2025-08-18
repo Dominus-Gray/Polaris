@@ -267,7 +267,8 @@ def step4_generate_licenses(creds):
         }
         
         license_payload = {
-            "quantity": 5
+            "quantity": 5,
+            "expires_days": 30
         }
         
         response = requests.post(
@@ -280,7 +281,8 @@ def step4_generate_licenses(creds):
         
         if response.status_code == 200:
             data = response.json()
-            license_codes = data.get('license_codes', [])
+            licenses = data.get('licenses', [])
+            license_codes = [lic['license_code'] for lic in licenses]
             print(f"✅ PASS: Generated {len(license_codes)} license codes")
             print(f"License codes: {license_codes}")
             
