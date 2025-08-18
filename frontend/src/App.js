@@ -991,7 +991,8 @@ function AssessmentPage(){
                       resource_id: `free_resources_${selectedQuestion}`,
                       gap_area: currentAreaData.id
                     });
-                    toast.success('Free resources logged to Navigator analytics');
+                    toast.success('Free resources logged');
+                    navigate('/free-resources');
                   } catch (e) {
                     console.warn('Analytics logging failed', e);
                     toast.error('Could not log to analytics');
