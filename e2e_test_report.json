@@ -1,0 +1,33 @@
+{
+  "test_execution_summary": {
+    "total_steps": 12,
+    "completed_steps": 0,
+    "failed_steps": 0
+  },
+  "created_license_codes": [],
+  "created_users": {
+    "navigator": {
+      "id": null,
+      "email": "navigator.qa@polaris.test"
+    },
+    "agency": {
+      "id": null,
+      "email": "agency.qa@polaris.test"
+    },
+    "client": {
+      "id": null,
+      "email": "client.qa@polaris.test"
+    },
+    "provider": {
+      "id": null,
+      "email": "provider.qa@polaris.test"
+    }
+  },
+  "service_request_id": null,
+  "provider_response_id": null,
+  "payment_endpoints_status": {
+    "service_request_payment": null,
+    "knowledge_base_payment": "tested"
+  },
+  "navigator_analytics_snapshot": {}
+}
