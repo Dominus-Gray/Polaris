@@ -3294,6 +3294,179 @@ function NavigatorHome(){
   );
 }
 
+function NavigatorAnalyticsPage(){
+  const [resourceStats, setResourceStats] = useState(null);
+  const [sinceDays, setSinceDays] = useState(7);
+  const [loading, setLoading] = useState(true);
+  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  
+  // Redirect non-navigators to home
+  if (!me || me.role !== 'navigator') {
+    return <Navigate to="/home" replace />;
+  }
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [sinceDays]);
+
+  const loadAnalytics = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/navigator/analytics/resources`, { 
+        params: { since_days: sinceDays }
+      });
+      setResourceStats(response.data);
+    } catch (e) {
+      console.error('Failed to load analytics:', e);
+      toast.error('Failed to load analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTimeframeChange = (newSinceDays) => {
+    setSinceDays(newSinceDays);
+  };
+
+  if (loading && !resourceStats) {
+    return (
+      <div className="container mt-6 max-w-6xl">
+        <h1 className="text-2xl font-bold mb-6">Navigator Analytics</h1>
+        <div className="skel h-32 w-full mb-4" />
+        <div className="skel h-64 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-6 max-w-6xl">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Navigator Analytics</h1>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-slate-600">Timeframe:</span>
+          <select 
+            className="input"
+            value={sinceDays} 
+            onChange={e => handleTimeframeChange(Number(e.target.value))}
+          >
+            <option value={7}>7 days</option>
+            <option value={30}>30 days</option>
+            <option value={90}>90 days</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Analytics Dashboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Total Selections Tile */}
+        <div className="tile">
+          <div className="tile-title">
+            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Total Selections
+          </div>
+          <div className="tile-num">{String(resourceStats?.total || 0)}</div>
+          <div className="tile-sub">in last {sinceDays} days</div>
+        </div>
+
+        {/* By Area Summary */}
+        <div className="tile lg:col-span-2">
+          <div className="tile-title">By Area</div>
+          {resourceStats?.by_area?.length ? (
+            <div className="mt-3 space-y-2">
+              {resourceStats.by_area.slice(0, 6).map((item) => (
+                <div key={item.area_id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm text-slate-700">{item.area_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 rounded-full transition-all"
+                        style={{ 
+                          width: `${Math.max(10, (item.count / (resourceStats.total || 1)) * 100)}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-semibold w-8 text-right">{item.count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500 mt-3">No resource selections yet</div>
+          )}
+        </div>
+      </div>
+
+      {/* Last 7 Days Chart */}
+      {resourceStats?.last7?.length ? (
+        <div className="bg-white border rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Last 7 Days Trend</h3>
+          <div className="uplot-container">
+            <div className="grid grid-cols-7 gap-2 text-center">
+              {resourceStats.last7.map((d, index) => (
+                <div key={d.date} className="flex flex-col items-center">
+                  <div className="w-full flex items-end justify-center h-32 mb-2">
+                    <div 
+                      className="bg-blue-500 rounded-t w-8 transition-all hover:bg-blue-600"
+                      style={{ 
+                        height: `${Math.max(8, (d.count / Math.max(...resourceStats.last7.map(x => x.count), 1)) * 120)}px` 
+                      }}
+                    ></div>
+                  </div>
+                  <div className="text-xs font-semibold">{d.count}</div>
+                  <div className="text-xs text-slate-500">{d.date.slice(5)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white border rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Last 7 Days Trend</h3>
+          <div className="skel h-32 w-full"></div>
+        </div>
+      )}
+
+      {/* Detailed By Area List */}
+      <div className="bg-white border rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4">Resource Usage by Business Area</h3>
+        {resourceStats?.by_area?.length ? (
+          <div className="space-y-3">
+            {resourceStats.by_area.map((item, index) => (
+              <div key={item.area_id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-sm font-semibold text-blue-700">{index + 1}</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-slate-900">{item.area_name}</div>
+                    <div className="text-sm text-slate-600">Area ID: {item.area_id}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-slate-900">{item.count}</div>
+                  <div className="text-sm text-slate-600">selections</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-500">
+            <svg className="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p>No resource usage data available for the selected timeframe</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AgencyHome(){
   const [impact, setImpact] = useState(null);
   const [certificates, setCertificates] = useState([]);
