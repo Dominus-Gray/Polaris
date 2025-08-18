@@ -4012,7 +4012,7 @@ function ServiceRequestPage(){
                       {/* Status timeline bar */}
                       <div className="mt-3">
                         <div className="w-full bg-slate-200 rounded h-2 overflow-hidden">
-                          <div className="h-2 bg-blue-500" style={{ width: `${r.status === 'submitted' ? 25 : r.status === 'shortlisted' ? 50 : r.status === 'accepted' ? 75 : r.status === 'paid' ? 100 : 10}%` }} />
+                          <div className="h-2 bg-blue-500" style={{ width: (r.status === 'submitted' ? 25 : r.status === 'shortlisted' ? 50 : r.status === 'accepted' ? 75 : r.status === 'paid' ? 100 : 10) + '%' }} />
                         </div>
                         <div className="flex justify-between text-xs text-slate-500 mt-1">
                           <span>Submitted</span>
