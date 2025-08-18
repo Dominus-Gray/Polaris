@@ -3156,7 +3156,26 @@ async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn,
 
 @api.get("/knowledge-base/access")
 async def get_knowledge_base_access(current=Depends(require_user)):
-    """Get user's knowledge base access status"""
+    """Get user's knowledge base access status (QA: auto-unlock for polaris.example.com)"""
+    # QA auto-unlock: grant full access for users on polaris.example.com domain
+    email = current.get("email", "")
+    if email.endswith("@polaris.example.com"):
+        # Upsert full access
+        existing = await db.user_access.find_one({"user_id": current["id"]})
+        if not existing:
+            await db.user_access.insert_one({
+                "_id": str(uuid.uuid4()),
+                "user_id": current["id"],
+                "knowledge_base_access": {"all_areas": True},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            })
+        else:
+            await db.user_access.update_one(
+                {"user_id": current["id"]},
+                {"$set": {"knowledge_base_access": {"all_areas": True}, "updated_at": datetime.utcnow()}}
+            )
+    
     access = await db.user_access.find_one({"user_id": current["id"]})
     
     if not access:
