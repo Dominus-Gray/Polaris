@@ -1593,6 +1593,58 @@ async def get_approved_providers():
     providers = await db.users.find({"role": "provider", "approval_status": "approved"}).to_list(1000)
     return {"providers": providers}
 
+
+# ---------------- Agency Approval System ----------------
+class AgencyApprovalIn(BaseModel):
+    agency_user_id: str
+    approval_status: str = Field(..., pattern="^(approved|rejected)$")
+    notes: Optional[str] = None
+
+class AgencyApprovalOut(BaseModel):
+    id: str
+    agency_user_id: str
+    navigator_user_id: str
+    approval_status: str
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+@api.get("/navigator/agencies/pending")
+async def get_pending_agencies(current=Depends(require_role("navigator"))):
+    """Get all agencies pending approval"""
+    agencies = await db.users.find({"role": "agency", "approval_status": {"$ne": "approved"}}).to_list(1000)
+    return {"agencies": agencies}
+
+@api.post("/navigator/agencies/approve", response_model=AgencyApprovalOut)
+async def approve_agency(payload: AgencyApprovalIn, current=Depends(require_role("navigator"))):
+    """Approve or reject an agency"""
+    # Check if agency exists
+    agency = await db.users.find_one({"id": payload.agency_user_id, "role": "agency"})
+    if not agency:
+        raise HTTPException(status_code=404, detail="Agency not found")
+
+    # Update agency approval status
+    await db.users.update_one(
+        {"id": payload.agency_user_id},
+        {"$set": {"approval_status": payload.approval_status, "updated_at": datetime.utcnow()}}
+    )
+
+    # Create approval record
+    approval_id = str(uuid.uuid4())
+    approval_doc = {
+        "_id": approval_id,
+        "id": approval_id,
+        "agency_user_id": payload.agency_user_id,
+        "navigator_user_id": current["id"],
+        "approval_status": payload.approval_status,
+        "notes": payload.notes,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    await db.agency_approvals.insert_one(approval_doc)
+
+    return AgencyApprovalOut(**approval_doc)
+
 # ---------------- Minimal Assessment Schema for readiness calc ----------------
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
