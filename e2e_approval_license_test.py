@@ -636,6 +636,8 @@ def main():
         print("❌ CRITICAL FAIL: Cannot proceed without users")
         return False
     
+    time.sleep(2)  # Avoid rate limiting
+    
     # Step 2: Navigator search for agency
     agency_user_id = step2_navigator_search_agency(creds)
     results['step2_search_agency'] = agency_user_id is not None
@@ -643,11 +645,15 @@ def main():
         print("❌ CRITICAL FAIL: Cannot proceed without agency ID")
         return False
     
+    time.sleep(1)
+    
     # Step 3: Approve agency
     results['step3_approve_agency'] = step3_approve_agency(creds, agency_user_id)
     if not results['step3_approve_agency']:
         print("❌ CRITICAL FAIL: Cannot proceed without agency approval")
         return False
+    
+    time.sleep(1)
     
     # Step 4: Generate license codes
     license_codes = step4_generate_licenses(creds)
@@ -656,16 +662,22 @@ def main():
         print("❌ CRITICAL FAIL: Cannot proceed without license codes")
         return False
     
+    time.sleep(2)
+    
     # Step 5: Register client and provider
     results['step5_register_users'] = step5_register_client_and_provider(creds)
     if not results['step5_register_users']:
         print("❌ CRITICAL FAIL: Cannot proceed without client/provider")
         return False
     
+    time.sleep(1)
+    
     # Step 5b: Approve provider
     results['step5b_approve_provider'] = step5b_approve_provider(creds)
     if not results['step5b_approve_provider']:
         print("⚠️  Provider approval failed, but continuing...")
+    
+    time.sleep(1)
     
     # Step 6: Service request and payment flow
     results['step6_service_payment'] = step6_service_request_flow(creds)
