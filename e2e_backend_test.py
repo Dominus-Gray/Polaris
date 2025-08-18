@@ -24,12 +24,15 @@ API_BASE = f"{BASE_URL}/api"
 print(f"🚀 Starting E2E Backend QA Test")
 print(f"Testing backend at: {API_BASE}")
 
+# Generate unique suffix for this test run
+test_suffix = str(random.randint(1000, 9999))
+
 # Fixed credentials as specified in review request (modified for email validation)
 CREDENTIALS = {
-    'navigator': {'email': 'navigator.qa@polaris.example.com', 'password': 'Polaris#2025!'},
-    'agency': {'email': 'agency.qa@polaris.example.com', 'password': 'Polaris#2025!'},
-    'client': {'email': 'client.qa@polaris.example.com', 'password': 'Polaris#2025!'},
-    'provider': {'email': 'provider.qa@polaris.example.com', 'password': 'Polaris#2025!'}
+    'navigator': {'email': f'navigator.qa.{test_suffix}@polaris.example.com', 'password': 'Polaris#2025!'},
+    'agency': {'email': f'agency.qa.{test_suffix}@polaris.example.com', 'password': 'Polaris#2025!'},
+    'client': {'email': f'client.qa.{test_suffix}@polaris.example.com', 'password': 'Polaris#2025!'},
+    'provider': {'email': f'provider.qa.{test_suffix}@polaris.example.com', 'password': 'Polaris#2025!'}
 }
 
 # Global storage for test data
