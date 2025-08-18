@@ -2214,7 +2214,7 @@ function ClientHome(){
         setKnowledgeBaseAccess(access.data);
 
         // Load assessment data and gaps
-        const userId = me?.id;
+        const userId = meLocal?.id;
         let assessmentRes = null;
         if (userId) {
           assessmentRes = await axios.get(`${API}/assessment/progress/${userId}`);
