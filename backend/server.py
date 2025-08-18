@@ -2784,6 +2784,54 @@ async def log_resource_access(resource_data: dict, current=Depends(require_user)
     
     return {"message": "Resource access logged successfully"}
 
+@api.get("/navigator/analytics/resources")
+async def navigator_resource_analytics(since_days: int = 30, current=Depends(require_role("navigator"))):
+    """Aggregate free resource selection analytics for navigators.
+    Returns totals and breakdown by area over the last N days (default 30)."""
+    try:
+        since = datetime.utcnow() - timedelta(days=max(1, min(since_days, 365)))
+        match_stage = {"$match": {"accessed_at": {"$gte": since}}}
+        group_stage = {"$group": {"_id": "$gap_area", "count": {"$sum": 1}}}
+        pipeline = [match_stage, group_stage]
+        by_area = await db.resource_access_logs.aggregate(pipeline).to_list(100)
+        total = sum(item.get("count", 0) for item in by_area)
+        # Map area ids to names
+        area_names = {
+            'area1': 'Business Formation & Registration',
+            'area2': 'Financial Operations & Management', 
+            'area3': 'Legal & Contracting Compliance',
+            'area4': 'Quality Management & Standards',
+            'area5': 'Technology & Security Infrastructure',
+            'area6': 'Human Resources & Capacity',
+            'area7': 'Performance Tracking & Reporting',
+            'area8': 'Risk Management & Business Continuity'
+        }
+        breakdown = [{
+            "area_id": (item.get("_id") or "unknown"),
+            "area_name": area_names.get(item.get("_id"), item.get("_id") or "Unknown"),
+            "count": item.get("count", 0)
+        } for item in by_area]
+        breakdown.sort(key=lambda x: x["count"], reverse=True)
+        # Optional trend: last 7 days by day
+        trend_pipeline = [
+            {"$match": {"accessed_at": {"$gte": datetime.utcnow() - timedelta(days=7)}}},
+            {"$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$accessed_at"}},
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+        trend = await db.resource_access_logs.aggregate(trend_pipeline).to_list(100)
+        return {
+            "since": since,
+            "total": total,
+            "by_area": breakdown,
+            "last7": [{"date": t["_id"], "count": t["count"]} for t in trend]
+        }
+    except Exception as e:
+        logger.error(f"Navigator analytics error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load analytics")
+
 # ---------------- Service Provider Matching System ----------------
 @api.post("/service-requests/professional-help")
 async def request_professional_help(request_data: dict, current=Depends(require_user)):
