@@ -631,7 +631,7 @@ function ProfilePage(){
         {/* Enhanced Header with Polaris Branding */}
         <div className="selection-header">
           <div className="polaris-brand-showcase-large">
-            <PolarisLogo size={56} />
+            <img src="/polaris-lockup-premium-light.svg" alt="Polaris" className="h-10 w-auto"/>
             <div className="brand-elements-large">
               <div className="procurement-visual">
                 <div className="proc-element proc-1"></div>
