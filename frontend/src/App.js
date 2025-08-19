@@ -4218,7 +4218,7 @@ function Header(){
         {/* Logo */}
         <div className="header-logo">
           <Link to={me ? '/home' : '/'}>
-            <PolarisLogo size={24} />
+            <img src="/polaris_lockup_horizontal_light.svg" alt="POLARIS" className="h-8 w-auto"/>
           </Link>
         </div>
 
