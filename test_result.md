@@ -244,6 +244,14 @@ Current Progress:
 - ⚠️  Minor: Payment endpoint database query bug (wrong collection lookup)
 
 # New E2E Test Plan (All roles)
+
+# Added Opportunities & Matching tests (Phase: Bigger Bets)
+- Agency creates opportunity (POST /api/opportunities)
+- Public/Client lists opportunities (GET /api/opportunities)
+- Agency lists own (GET /api/opportunities/mine)
+- Client applies (POST /api/opportunities/{id}/apply)
+- Matching scores available (GET /api/opportunities/{id}/matches) using assessment answers
+
 - Create navigator -> approve agency -> agency issues license -> client registers -> provider registers -> navigator approves provider -> client assessment 'No, I need help' logs analytics -> client creates service request area5 -> provider responds -> client views responses -> payment attempt -> knowledge base unlock attempt -> navigator analytics reflects resource selection.
 - Record any missing endpoints or gaps as issues with suggested fixes.
 
