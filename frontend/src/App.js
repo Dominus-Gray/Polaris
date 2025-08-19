@@ -4377,6 +4377,15 @@ function Landing(){
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [step, setStep] = useState('role-selection'); // 'role-selection', 'register', 'login'
   const [selectedRole, setSelectedRole] = useState(null);
+  const [kpis, setKpis] = useState(null);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const { data } = await axios.get(`${API}/metrics/landing`);
+        setKpis(data);
+      }catch(e){ setKpis({ total_clients:0, engagements:0, certificates:0, opportunities_open:0, gaps_addressed_30d:0, avg_yes_answers:0, clients_started_assessment:0, median_provider_response_hrs:null }); }
+    })();
+  },[]);
 
   const roleOptions = [
     {
