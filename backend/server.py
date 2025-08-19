@@ -2843,6 +2843,73 @@ async def get_opportunity_match(opp_id: str, current=Depends(require_user)):
     return {"opportunity_id": opp_id, "fit_score": score, "rationale": rationale}
 
 # ---------------- Enhanced Client Dashboard APIs ----------------
+
+@api.get("/metrics/landing")
+async def landing_metrics(current=Depends(require_user)):
+    """Public-facing KPIs for landing page (authenticated users will see live metrics)."""
+    try:
+        # Total clients
+        total_clients = await db.users.count_documents({"role": "client"})
+        # Engagements initiated
+        total_engagements = await db.engagements.count_documents({})
+        # Certificates issued
+        total_certs = await db.certificates.count_documents({})
+        # Opportunities open
+        total_opps_open = await db.opportunities.count_documents({"status": "open"}) if hasattr(db, 'opportunities') else 0
+        # Gaps addressed (resource clicks) last 30 days
+        since = datetime.utcnow() - timedelta(days=30)
+        gaps_addr_30d = await db.resource_access_logs.count_documents({"accessed_at": {"$gte": since}})
+        
+        # Readiness progress: avg 'yes' answers per started client
+        pipeline = [
+            {"$match": {"answer": {"$in": ["yes", "y", True, "true", 1]}}},
+            {"$group": {"_id": "$user_id", "yes_count": {"$sum": 1}}},
+            {"$group": {"_id": None, "avg_yes": {"$avg": "$yes_count"}, "started_clients": {"$sum": 1}}}
+        ]
+        prog = await db.assessment_answers.aggregate(pipeline).to_list(1)
+        avg_yes = float(prog[0]["avg_yes"]) if prog else 0.0
+        started_clients = int(prog[0]["started_clients"]) if prog else 0
+        
+        # Provider response time median (hrs) in last 60 days
+        since60 = datetime.utcnow() - timedelta(days=60)
+        responses = await db.provider_responses.find({"created_at": {"$gte": since60}}).limit(500).to_list(500)
+        med_hours = None
+        if responses:
+            deltas = []
+            for r in responses:
+                req = await db.service_requests.find_one({"_id": r.get("request_id")})
+                if req and req.get("created_at") and r.get("created_at"):
+                    dt = (r["created_at"] - req["created_at"]).total_seconds() / 3600.0
+                    if dt >= 0:
+                        deltas.append(dt)
+            if deltas:
+                deltas.sort()
+                m = len(deltas)//2
+                med_hours = deltas[m] if len(deltas)%2==1 else (deltas[m-1]+deltas[m])/2
+        
+        return {
+            "total_clients": total_clients,
+            "engagements": total_engagements,
+            "certificates": total_certs,
+            "opportunities_open": total_opps_open,
+            "gaps_addressed_30d": gaps_addr_30d,
+            "avg_yes_answers": round(avg_yes, 1),
+            "clients_started_assessment": started_clients,
+            "median_provider_response_hrs": round(med_hours, 1) if med_hours is not None else None
+        }
+    except Exception as e:
+        logger.error(f"landing_metrics error: {e}")
+        # return safe zeros to avoid breaking landing
+        return {
+            "total_clients": 0,
+            "engagements": 0,
+            "certificates": 0,
+            "opportunities_open": 0,
+            "gaps_addressed_30d": 0,
+            "avg_yes_answers": 0.0,
+            "clients_started_assessment": 0,
+            "median_provider_response_hrs": None
+        }
 @api.get("/assessment/progress/{user_id}")
 async def get_assessment_progress(user_id: str, current=Depends(require_user)):
     """Get assessment progress and completion data"""
