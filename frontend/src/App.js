@@ -4425,8 +4425,8 @@ function Landing(){
         <div className="hero-bg" />
         <div className="hero-inner justify-center items-center">
           <div className="text-white text-center max-w-3xl mx-auto">
-            <div className="mt-2 flex items-center justify-center gap-3">
-              <img src="/polaris_mark_corporate_white.svg" alt="Polaris mark" className="h-8 md:h-10 w-auto"/>
+            <div className="mt-2 flex flex-col items-center justify-center gap-2">
+              <img src="/polaris_mark_corporate_white.svg" alt="Polaris mark" className="h-10 md:h-12 w-auto"/>
               <div className="text-white font-extrabold text-3xl lg:text-5xl" style={{ letterSpacing: '0.35em' }}>POLARIS</div>
             </div>
             <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Procurement Readiness</h1>
