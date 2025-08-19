@@ -4438,37 +4438,6 @@ function Landing(){
               <img src="/polaris_mark_corporate_white.svg" alt="Polaris mark" className="h-10 md:h-12 w-auto"/>
               <div className="text-white font-extrabold text-3xl lg:text-5xl" style={{ letterSpacing: '0.35em' }}>POLARIS</div>
             </div>
-      {kpis && (
-        <section className="container section">
-          <h3 className="text-center text-white text-xl font-semibold mb-4">Driving Procurement Readiness</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="tile bg-white/10 border border-white/20 text-white">
-              <div className="tile-title">Small Businesses Engaged</div>
-              <div className="tile-num">{kpis.total_clients}</div>
-            </div>
-            <div className="tile bg-white/10 border border-white/20 text-white">
-              <div className="tile-title">Active Engagements</div>
-              <div className="tile-num">{kpis.engagements}</div>
-            </div>
-            <div className="tile bg-white/10 border border-white/20 text-white">
-              <div className="tile-title">Certificates Issued</div>
-              <div className="tile-num">{kpis.certificates}</div>
-            </div>
-            <div className="tile bg-white/10 border border-white/20 text-white">
-              <div className="tile-title">Open Opportunities</div>
-              <div className="tile-num">{kpis.opportunities_open}</div>
-            </div>
-            <div className="tile bg-white/10 border border-white/20 text-white">
-              <div className="tile-title">Gaps Addressed (30d)</div>
-              <div className="tile-num">{kpis.gaps_addressed_30d}</div>
-            </div>
-            <div className="tile bg-white/10 border border-white/20 text-white">
-              <div className="tile-title">Median Provider Response (hrs)</div>
-              <div className="tile-num">{kpis.median_provider_response_hrs ?? '—'}</div>
-            </div>
-          </div>
-        </section>
-      )}
 
             <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
