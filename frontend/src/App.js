@@ -4818,7 +4818,7 @@ function AppShell(){
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/agency" element={<AgencyHome />} />
           <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
-          <Route path="/brand-preview" element={<BrandPreview />} />
+          {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
           <Route path="/opportunities" element={<OpportunitiesPage />} />
           <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
         </Routes>
