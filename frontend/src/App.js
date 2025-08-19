@@ -4409,9 +4409,8 @@ function Landing(){
         <div className="hero-bg" />
         <div className="hero-inner justify-center items-center">
           <div className="text-white text-center max-w-3xl mx-auto">
-            <div className="mt-2 flex items-center justify-center gap-3">
-              <img src="/polaris-star-white.svg" alt="Polaris star" className="h-10 md:h-12 w-auto"/>
-              <div className="text-white font-extrabold text-4xl md:text-5xl" style={{ letterSpacing: '0.35em' }}>POLARIS</div>
+            <div className="mt-2 flex items-center justify-center">
+              <img src="/polaris_lockup_horizontal_knockout.svg" alt="POLARIS" className="h-14 md:h-16 w-auto"/>
             </div>
             <h1 className="hero-title mt-4">Your North Star for Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
