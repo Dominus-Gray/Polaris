@@ -4258,6 +4258,14 @@ function Header(){
                 <span>Knowledge Base</span>
               </Link>
             )}
+
+            {me.role === 'agency' && (
+              <Link className="nav-item" to="/opportunities">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h12M3 17h18"/></svg>
+                <span>Opportunities</span>
+              </Link>
+            )}
+
             
             {me.role === 'provider' && (
               <Link className="nav-item" to="/provider/proposals">
