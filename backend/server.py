@@ -2097,20 +2097,23 @@ class EngagementCreateIn(BaseModel):
 
 @api.post("/engagements/create")
 async def create_engagement(payload: EngagementCreateIn, current=Depends(require_role("client"))):
-    resp = await db.match_responses.find_one({"_id": payload.response_id, "request_id": payload.request_id})
+    # Look in provider_responses collection (not match_responses)
+    resp = await db.provider_responses.find_one({"_id": payload.response_id, "request_id": payload.request_id})
     if not resp:
         raise HTTPException(status_code=404, detail="Response not found")
-    req = await db.match_requests.find_one({"_id": payload.request_id, "user_id": current["id"]})
+    # Look in service_requests collection (not match_requests)
+    req = await db.service_requests.find_one({"_id": payload.request_id, "user_id": current["id"]})
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
     eid = str(uuid.uuid4())
-    doc = {"_id": eid, "id": eid, "request_id": req["_id"], "response_id": resp["_id"], "client_user_id": current["id"], "provider_user_id": resp.get("provider_user_id"), "status": "active", "agreed_fee": payload.agreed_fee, "created_at": datetime.utcnow()}
+    doc = {"_id": eid, "id": eid, "request_id": req["_id"], "response_id": resp["_id"], "client_user_id": current["id"], "provider_user_id": resp.get("provider_id"), "status": "active", "agreed_fee": payload.agreed_fee, "created_at": datetime.utcnow()}
     await db.engagements.insert_one(doc)
     fee = round(payload.agreed_fee * 0.05, 2)
     rid = str(uuid.uuid4())
     tx = {"_id": rid, "id": rid, "transaction_type": "marketplace_fee", "amount": fee, "currency": "USD", "status": "pending", "created_at": datetime.utcnow(), "metadata": {"engagement_id": eid, "request_id": req["_id"], "response_id": resp["_id"], "agreed_fee": payload.agreed_fee, "pct": 0.05}}
     await db.revenue_transactions.insert_one(tx)
-    await db.match_requests.update_one({"_id": req["_id"]}, {"$set": {"status": "engaged", "engagement_id": eid}})
+    # Update service_requests collection (not match_requests)
+    await db.service_requests.update_one({"_id": req["_id"]}, {"$set": {"status": "engaged", "engagement_id": eid}})
     return {"ok": True, "engagement_id": eid, "fee": fee}
 
 @api.get("/navigator/engagements")
