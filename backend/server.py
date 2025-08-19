@@ -2845,7 +2845,7 @@ async def get_opportunity_match(opp_id: str, current=Depends(require_user)):
 # ---------------- Enhanced Client Dashboard APIs ----------------
 
 @api.get("/metrics/landing")
-async def landing_metrics(current=Depends(require_user)):
+async def landing_metrics():
     """Public-facing KPIs for landing page (authenticated users will see live metrics)."""
     try:
         # Total clients
