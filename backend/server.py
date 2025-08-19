@@ -2682,6 +2682,166 @@ async def get_knowledge_base_areas(current=Depends(require_user)):
     
     return {"areas": areas}
 
+
+# ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
+class OpportunityIn(BaseModel):
+    title: str
+    description: str
+    area_ids: List[str] = []  # e.g., ['area1','area5']
+    tags: List[str] = []
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+    deadline: Optional[str] = None  # ISO date string
+    status: Optional[str] = "open"
+
+class OpportunityPatch(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    area_ids: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+    deadline: Optional[str] = None
+    status: Optional[str] = None
+
+class OpportunityOut(BaseModel):
+    id: str
+    agency_id: str
+    title: str
+    description: str
+    area_ids: List[str] = []
+    tags: List[str] = []
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+    deadline: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+class OpportunityApplicationIn(BaseModel):
+    note: Optional[str] = None
+    evidence_refs: Optional[List[str]] = []
+
+@api.post("/opportunities", response_model=OpportunityOut)
+async def create_opportunity(payload: OpportunityIn, current=Depends(require_role("agency"))):
+    opp_id = str(uuid.uuid4())
+    doc = {
+        "_id": opp_id,
+        "id": opp_id,
+        "agency_id": current["id"],
+        "title": payload.title,
+        "description": payload.description,
+        "area_ids": payload.area_ids or [],
+        "tags": [t.strip() for t in (payload.tags or [])],
+        "budget_min": payload.budget_min,
+        "budget_max": payload.budget_max,
+        "deadline": payload.deadline,
+        "status": payload.status or "open",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+    }
+    await db.opportunities.insert_one(doc)
+    return OpportunityOut(**doc)
+
+@api.get("/opportunities")
+async def list_opportunities(area: Optional[str] = None, q: Optional[str] = None, current=Depends(require_user)):
+    query: Dict[str, Any] = {"status": "open"}
+    if area:
+        query["area_ids"] = {"$in": [area]}
+    if q:
+        query["$or"] = [
+            {"title": {"$regex": q, "$options": "i"}},
+            {"description": {"$regex": q, "$options": "i"}},
+            {"tags": {"$regex": q, "$options": "i"}},
+        ]
+    items = await db.opportunities.find(query).sort("created_at", -1).to_list(100)
+    return {"opportunities": items}
+
+@api.get("/opportunities/mine")
+async def list_my_opportunities(current=Depends(require_role("agency"))):
+    items = await db.opportunities.find({"agency_id": current["id"]}).sort("created_at", -1).to_list(100)
+    return {"opportunities": items}
+
+@api.patch("/opportunities/{opp_id}", response_model=OpportunityOut)
+async def update_opportunity(opp_id: str, payload: OpportunityPatch, current=Depends(require_role("agency"))):
+    opp = await db.opportunities.find_one({"_id": opp_id, "agency_id": current["id"]})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found or not owned by you")
+    updates = {k: v for k, v in payload.dict(exclude_none=True).items()}
+    updates["updated_at"] = datetime.utcnow()
+    await db.opportunities.update_one({"_id": opp_id}, {"$set": updates})
+    new_doc = await db.opportunities.find_one({"_id": opp_id})
+    return OpportunityOut(**new_doc)
+
+@api.post("/opportunities/{opp_id}/apply")
+async def apply_to_opportunity(opp_id: str, payload: OpportunityApplicationIn, current=Depends(require_role("client"))):
+    opp = await db.opportunities.find_one({"_id": opp_id, "status": {"$ne": "closed"}})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    existing = await db.opportunity_applications.find_one({"opportunity_id": opp_id, "client_id": current["id"]})
+    if existing:
+        return {"message": "Already applied", "application_id": existing.get("id")}
+    app_id = str(uuid.uuid4())
+    doc = {
+        "_id": app_id,
+        "id": app_id,
+        "opportunity_id": opp_id,
+        "client_id": current["id"],
+        "note": payload.note,
+        "evidence_refs": payload.evidence_refs or [],
+        "created_at": datetime.utcnow(),
+        "status": "applied",
+    }
+    await db.opportunity_applications.insert_one(doc)
+    return {"message": "Application submitted", "application_id": app_id}
+
+@api.get("/opportunities/{opp_id}/applications")
+async def get_opportunity_applications(opp_id: str, current=Depends(require_role("agency"))):
+    opp = await db.opportunities.find_one({"_id": opp_id, "agency_id": current["id"]})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found or not owned by you")
+    apps = await db.opportunity_applications.find({"opportunity_id": opp_id}).sort("created_at", -1).to_list(200)
+    return {"applications": apps}
+
+# Simple fit score using assessment answers of the current user
+@api.get("/opportunities/{opp_id}/matches")
+async def get_opportunity_match(opp_id: str, current=Depends(require_user)):
+    opp = await db.opportunities.find_one({"_id": opp_id})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    # Load current user's assessment answers
+    answers = await db.assessment_answers.find({"user_id": current["id"]}).to_list(1000)
+    # Compute per-area positive signals (count of 'yes') and negative signals (no_help)
+    per_area: Dict[str, Dict[str, int]] = {}
+    for a in answers:
+        qid = a.get("question_id", "")
+        # infer area from prefix like 'q1_1' => area1
+        area_key = None
+        if "_" in qid:
+            prefix = qid.split("_")[0]  # e.g., q1
+            if prefix.startswith("q") and prefix[1:].isdigit():
+                area_key = f"area{int(prefix[1:])}"
+        if area_key:
+            if area_key not in per_area:
+                per_area[area_key] = {"yes": 0, "no_help": 0}
+            val = str(a.get("answer", "")).lower()
+            if val in ("yes", "y", "true", "1"):
+                per_area[area_key]["yes"] += 1
+            elif val in ("no_help", "no", "need_help"):
+                per_area[area_key]["no_help"] += 1
+    # Score
+    base = 50
+    score = base
+    rationale: List[str] = []
+    for area in opp.get("area_ids", []):
+        stats = per_area.get(area, {"yes": 0, "no_help": 0})
+        score += stats["yes"] * 5
+        score -= stats["no_help"] * 7
+        if stats["yes"] or stats["no_help"]:
+            rationale.append(f"{area}: +{stats['yes']*5} / -{stats['no_help']*7}")
+    score = max(0, min(100, score))
+    return {"opportunity_id": opp_id, "fit_score": score, "rationale": rationale}
+
 # ---------------- Enhanced Client Dashboard APIs ----------------
 @api.get("/assessment/progress/{user_id}")
 async def get_assessment_progress(user_id: str, current=Depends(require_user)):
