@@ -64,8 +64,27 @@ function EnhancedPolarisBrand() {
 function useAuthHeader(){
   useEffect(()=>{
     const t = localStorage.getItem('polaris_token');
-    if (t) axios.defaults.headers.common['Authorization'] = `Bearer ${t}`; else delete axios.defaults.headers.common['Authorization'];
+    if (t) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${t}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
   },[]);
+  
+  // Also set up a listener for localStorage changes to update auth header
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const t = localStorage.getItem('polaris_token');
+      if (t) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${t}`;
+      } else {
+        delete axios.defaults.headers.common['Authorization'];
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 }
 
 function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
