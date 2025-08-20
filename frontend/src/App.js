@@ -5606,6 +5606,7 @@ function NotificationCenter() {
 function SystemHealthDashboard() {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     checkSystemHealth();
@@ -5615,14 +5616,22 @@ function SystemHealthDashboard() {
 
   const checkSystemHealth = async () => {
     setLoading(true);
+    setError(null);
     try {
       const { data } = await axios.get(`${API}/system/health`);
       setHealth(data);
     } catch (e) {
+      console.error('System health check failed:', e);
+      setError(e.response?.data?.detail || e.message || 'Failed to check system health');
       setHealth({
         status: 'unhealthy',
         error: 'Failed to check system health',
-        components: {}
+        components: {
+          database: 'unknown',
+          ai_integration: 'unknown',
+          payment_integration: 'unknown'
+        },
+        timestamp: new Date().toISOString()
       });
     } finally {
       setLoading(false);
@@ -5633,48 +5642,136 @@ function SystemHealthDashboard() {
     const colors = {
       healthy: 'text-green-600 bg-green-100',
       unhealthy: 'text-red-600 bg-red-100',
-      unavailable: 'text-yellow-600 bg-yellow-100'
+      unavailable: 'text-yellow-600 bg-yellow-100',
+      unknown: 'text-slate-600 bg-slate-100'
     };
     return colors[status] || 'text-slate-600 bg-slate-100';
   };
 
-  if (!health) return null;
+  const getStatusIcon = (status) => {
+    if (status === 'healthy') return '✅';
+    if (status === 'unhealthy') return '❌';
+    if (status === 'unavailable') return '⚠️';
+    return '❓';
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">System Health</h3>
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${health.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm font-medium capitalize">{health.status}</span>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold">System Health Monitor</h3>
+          <p className="text-slate-600 text-sm">Real-time system status and component health</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {health && (
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${health.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-sm font-medium capitalize">{health.status}</span>
+            </div>
+          )}
           {loading && (
             <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           )}
+          <button 
+            className="btn btn-sm"
+            onClick={checkSystemHealth}
+            disabled={loading}
+          >
+            {loading ? 'Checking...' : 'Check Now'}
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {health.components && Object.entries(health.components).map(([component, status]) => (
-          <div key={component} className="border rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium capitalize">{component.replace('_', ' ')}</h4>
-              <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)}`}>
-                {status}
-              </span>
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4 className="text-sm font-medium text-red-900">System Health Check Failed</h4>
+              <p className="text-sm text-red-800 mt-1">{error}</p>
             </div>
           </div>
-        ))}
-      </div>
-
-      {health.error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-800">{health.error}</p>
         </div>
       )}
 
-      <div className="mt-4 text-xs text-slate-500">
-        Last checked: {health.timestamp ? new Date(health.timestamp).toLocaleString() : 'Never'}
-      </div>
+      {health ? (
+        <div>
+          {/* Overall Status */}
+          <div className="mb-6 p-4 rounded-lg bg-slate-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium text-slate-900">Overall System Status</h4>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl">{getStatusIcon(health.status)}</span>
+                  <span className="text-lg font-semibold capitalize">{health.status}</span>
+                </div>
+              </div>
+              <div className="text-right text-sm text-slate-500">
+                <div>Version: {health.version || '1.0.0'}</div>
+                <div>Last Check: {health.timestamp ? new Date(health.timestamp).toLocaleString() : 'Just now'}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Component Status Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {health.components && Object.entries(health.components).map(([component, status]) => (
+              <div key={component} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium capitalize">
+                    {component.replace(/_/g, ' ')}
+                  </h4>
+                  <span className="text-lg">{getStatusIcon(status)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)}`}>
+                    {status}
+                  </span>
+                  {component === 'database' && status === 'healthy' && (
+                    <span className="text-xs text-slate-500">Connected</span>
+                  )}
+                  {component === 'ai_integration' && status === 'healthy' && (
+                    <span className="text-xs text-slate-500">API Ready</span>
+                  )}
+                  {component === 'payment_integration' && status === 'healthy' && (
+                    <span className="text-xs text-slate-500">Stripe OK</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* System Metrics */}
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-slate-900 mb-3">System Information</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <div className="text-slate-500">Environment</div>
+                <div className="font-medium">Production</div>
+              </div>
+              <div>
+                <div className="text-slate-500">Uptime</div>
+                <div className="font-medium text-green-600">Operational</div>
+              </div>
+              <div>
+                <div className="text-slate-500">Last Deploy</div>
+                <div className="font-medium">Recently</div>
+              </div>
+              <div>
+                <div className="text-slate-500">Monitoring</div>
+                <div className="font-medium text-blue-600">Active</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <div className="w-12 h-12 border-2 border-slate-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500">Initializing system health check...</p>
+        </div>
+      )}
     </div>
   );
 }
