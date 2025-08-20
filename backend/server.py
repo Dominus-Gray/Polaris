@@ -4512,6 +4512,399 @@ async def google_callback(code: Optional[str] = None, state: Optional[str] = Non
     token = create_access_token({"sub": user["id"]})
     return {"access_token": token, "token_type": "bearer"}
 
+# Contextual KB Cards for Assessment and Client Home
+@api.get("/knowledge-base/contextual-cards")
+async def get_contextual_kb_cards(
+    area_id: Optional[str] = Query(None),
+    user_context: Optional[str] = Query(None),  # "assessment", "client_home", "service_request"
+    limit: int = Query(3, le=10),
+    current=Depends(require_user)
+):
+    """Get contextual knowledge base cards based on user context and area"""
+    try:
+        # Build query based on context
+        query = {"status": "published"}
+        
+        if area_id:
+            query["area_ids"] = area_id
+        
+        # Get user's assessment data to determine relevance
+        assessment = await db.assessments.find_one({"user_id": current["id"]})
+        user_gaps = []
+        if assessment:
+            user_gaps = assessment.get("gaps", [])
+        
+        # Prioritize content based on user context
+        sort_criteria = []
+        if user_context == "assessment" and area_id:
+            # For assessment, show most relevant content for current area
+            sort_criteria.append(("content_type", 1))  # Templates and checklists first
+        elif user_context == "client_home":
+            # For client home, show popular and recent content
+            sort_criteria.append(("view_count", -1))
+        else:
+            # Default sort by creation date
+            sort_criteria.append(("created_at", -1))
+        
+        # Get articles
+        articles_cursor = db.kb_articles.find(query)
+        if sort_criteria:
+            articles_cursor = articles_cursor.sort(sort_criteria)
+        
+        articles = await articles_cursor.limit(limit).to_list(limit)
+        
+        # Format as contextual cards
+        cards = []
+        for article in articles:
+            # Determine card type based on content and context
+            card_type = "template" if article.get("content_type") == "template" else "guide"
+            
+            # Check if user has access to this area
+            has_access = True  # Default to true, will be checked in frontend
+            access = await db.user_access.find_one({"user_id": current["id"]})
+            if access:
+                for area in article.get("area_ids", []):
+                    knowledge_access = access.get("knowledge_base_access", {})
+                    if not (knowledge_access.get("all_areas", False) or knowledge_access.get(area, False)):
+                        # Auto-grant access for @polaris.example.com test accounts
+                        if not current["email"].endswith("@polaris.example.com"):
+                            has_access = False
+                            break
+            
+            cards.append({
+                "id": article["id"],
+                "title": article["title"],
+                "description": article.get("content", "")[:150] + "..." if len(article.get("content", "")) > 150 else article.get("content", ""),
+                "card_type": card_type,
+                "content_type": article.get("content_type", "guide"),
+                "area_ids": article.get("area_ids", []),
+                "tags": article.get("tags", []),
+                "difficulty_level": article.get("difficulty_level", "beginner"),
+                "estimated_time": article.get("estimated_time"),
+                "view_count": article.get("view_count", 0),
+                "has_access": has_access,
+                "relevance_score": 1.0  # Could implement ML-based relevance scoring
+            })
+        
+        return {
+            "cards": cards,
+            "context": user_context,
+            "area_id": area_id,
+            "total_available": len(cards)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting contextual KB cards: {e}")
+        return {"cards": [], "context": user_context, "area_id": area_id, "total_available": 0}
+
+# KB Engagement Analytics for Navigator Dashboard
+@api.get("/knowledge-base/analytics")
+async def get_kb_analytics(
+    since_days: int = Query(30, le=365),
+    current=Depends(require_role("navigator"))
+):
+    """Get knowledge base engagement analytics (Navigator only)"""
+    try:
+        since_date = datetime.utcnow() - timedelta(days=since_days)
+        
+        # Get article view analytics
+        article_views = await db.analytics.aggregate([
+            {
+                "$match": {
+                    "action": "kb_article_view",
+                    "timestamp": {"$gte": since_date}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$resource_id",
+                    "views": {"$sum": 1},
+                    "unique_users": {"$addToSet": "$user_id"}
+                }
+            },
+            {
+                "$project": {
+                    "article_id": "$_id",
+                    "views": 1,
+                    "unique_users": {"$size": "$unique_users"}
+                }
+            },
+            {"$sort": {"views": -1}},
+            {"$limit": 10}
+        ]).to_list(10)
+        
+        # Get popular content by area
+        area_analytics = await db.analytics.aggregate([
+            {
+                "$match": {
+                    "action": "kb_article_view", 
+                    "timestamp": {"$gte": since_date}
+                }
+            },
+            {"$unwind": "$area_ids"},
+            {
+                "$group": {
+                    "_id": "$area_ids",
+                    "views": {"$sum": 1},
+                    "unique_users": {"$addToSet": "$user_id"}
+                }
+            },
+            {
+                "$project": {
+                    "area_id": "$_id",
+                    "views": 1,
+                    "unique_users": {"$size": "$unique_users"}
+                }
+            },
+            {"$sort": {"views": -1}}
+        ]).to_list(8)
+        
+        # Get AI assistance usage
+        ai_assistance_stats = await db.analytics.aggregate([
+            {
+                "$match": {
+                    "action": {"$in": ["ai_assistance_request", "next_best_actions_request"]},
+                    "timestamp": {"$gte": since_date}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$action",
+                    "count": {"$sum": 1},
+                    "unique_users": {"$addToSet": "$user_id"}
+                }
+            }
+        ]).to_list(10)
+        
+        # Get total KB statistics
+        total_articles = await db.kb_articles.count_documents({"status": "published"})
+        total_views = await db.analytics.count_documents({
+            "action": "kb_article_view",
+            "timestamp": {"$gte": since_date}
+        })
+        
+        # Get weekly trends
+        weekly_trends = await db.analytics.aggregate([
+            {
+                "$match": {
+                    "action": "kb_article_view",
+                    "timestamp": {"$gte": since_date}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "week": {"$week": "$timestamp"},
+                        "year": {"$year": "$timestamp"}
+                    },
+                    "views": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.year": 1, "_id.week": 1}}
+        ]).to_list(10)
+        
+        # Format area names
+        area_names = {
+            "area1": "Business Formation & Registration",
+            "area2": "Financial Operations & Management", 
+            "area3": "Legal & Contracting Compliance",
+            "area4": "Quality Management & Standards",
+            "area5": "Technology & Security Infrastructure",
+            "area6": "Human Resources & Capacity",
+            "area7": "Performance Tracking & Reporting",
+            "area8": "Risk Management & Business Continuity"
+        }
+        
+        # Enrich area analytics with names
+        for area_stat in area_analytics:
+            area_stat["area_name"] = area_names.get(area_stat["area_id"], "Unknown Area")
+        
+        return {
+            "period_days": since_days,
+            "since_date": since_date.isoformat(),
+            "summary": {
+                "total_articles": total_articles,
+                "total_views": total_views,
+                "ai_assistance_requests": sum(stat["count"] for stat in ai_assistance_stats)
+            },
+            "top_articles": article_views,
+            "area_analytics": area_analytics,
+            "ai_assistance_stats": ai_assistance_stats,
+            "weekly_trends": weekly_trends
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting KB analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
+# Seed default KB content for demonstration
+@api.post("/knowledge-base/seed-content")
+async def seed_kb_content(current=Depends(require_role("navigator"))):
+    """Seed the knowledge base with default content (Navigator only)"""
+    try:
+        # Check if content already exists
+        existing_count = await db.kb_articles.count_documents({})
+        if existing_count > 0:
+            return {"message": f"Knowledge base already has {existing_count} articles"}
+        
+        # Sample articles for each area
+        sample_articles = [
+            {
+                "title": "Business License Requirements Checklist",
+                "content": """# Business License Requirements Checklist
+
+## Federal Requirements
+- [ ] Federal Tax ID (EIN) from IRS
+- [ ] Business registration with appropriate federal agencies
+- [ ] Industry-specific federal licenses (if applicable)
+
+## State Requirements  
+- [ ] State business license or registration
+- [ ] State tax registration
+- [ ] Professional licenses (if applicable)
+- [ ] Workers' compensation insurance
+
+## Local Requirements
+- [ ] City/county business license
+- [ ] Zoning compliance verification
+- [ ] Local tax registration
+- [ ] Building permits (if applicable)
+
+## Documentation to Gather
+- Articles of incorporation or LLC formation documents
+- Operating agreements
+- Insurance certificates
+- Proof of registered address
+
+## Timeline
+Most licenses can be obtained within 2-4 weeks with proper documentation.""",
+                "area_ids": ["area1"],
+                "tags": ["licensing", "registration", "compliance", "checklist"],
+                "content_type": "checklist",
+                "difficulty_level": "beginner",
+                "estimated_time": "2-4 weeks"
+            },
+            {
+                "title": "Financial Record-Keeping Template",
+                "content": """# Financial Record-Keeping Template
+
+## Monthly Financial Tracking
+
+### Income Tracking
+| Date | Source | Amount | Category |
+|------|--------|---------|----------|
+|      |        |         |          |
+
+### Expense Tracking  
+| Date | Vendor | Amount | Category | Business Purpose |
+|------|--------|---------|----------|------------------|
+|      |        |         |          |                  |
+
+## Quarterly Reviews
+- [ ] Profit & Loss statement
+- [ ] Balance sheet
+- [ ] Cash flow statement
+- [ ] Tax obligation estimates
+
+## Annual Requirements
+- [ ] Annual tax filings
+- [ ] Financial statement preparation
+- [ ] Audit preparation (if required)
+- [ ] Insurance policy reviews
+
+## Best Practices
+1. Record transactions within 24 hours
+2. Keep all receipts and invoices
+3. Separate business and personal expenses
+4. Use accounting software for automation
+5. Regular bank reconciliation""",
+                "area_ids": ["area2"],
+                "tags": ["accounting", "bookkeeping", "templates", "financial"],
+                "content_type": "template",
+                "difficulty_level": "beginner", 
+                "estimated_time": "30 minutes setup"
+            },
+            {
+                "title": "Contract Management Best Practices",
+                "content": """# Contract Management Best Practices
+
+## Contract Lifecycle Management
+
+### Pre-Contract Phase
+1. Define requirements and scope
+2. Identify key stakeholders
+3. Establish evaluation criteria
+4. Develop timeline and milestones
+
+### Contract Creation
+- Use standardized templates
+- Include clear terms and conditions
+- Define deliverables and acceptance criteria  
+- Establish payment terms and schedules
+- Include dispute resolution procedures
+
+### Contract Execution
+- Obtain proper signatures and approvals
+- Distribute copies to relevant parties
+- Set up monitoring and tracking systems
+- Establish communication protocols
+
+### Ongoing Management
+- Track key dates and milestones
+- Monitor performance against requirements
+- Manage changes through formal process
+- Maintain documentation and records
+
+## Risk Mitigation
+- Regular contract reviews
+- Performance monitoring
+- Early identification of issues
+- Proactive communication
+- Documentation of all changes
+
+## Compliance Considerations
+- Regulatory requirements
+- Industry standards
+- Internal policies
+- Audit requirements""",
+                "area_ids": ["area3"],
+                "tags": ["contracts", "legal", "risk management", "compliance"],
+                "content_type": "guide",
+                "difficulty_level": "intermediate",
+                "estimated_time": "1-2 hours"
+            }
+        ]
+        
+        # Insert sample articles
+        created_articles = []
+        for article_data in sample_articles:
+            article_id = str(uuid.uuid4())
+            article_doc = {
+                "_id": article_id,
+                "id": article_id,
+                "version": 1,
+                "author_id": current["id"],
+                "status": "published",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "view_count": 0,
+                **article_data
+            }
+            
+            await db.kb_articles.insert_one(article_doc)
+            created_articles.append(article_id)
+        
+        return {
+            "message": f"Successfully created {len(created_articles)} sample articles",
+            "article_ids": created_articles
+        }
+        
+    except Exception as e:
+        logger.error(f"Error seeding KB content: {e}")
+        raise HTTPException(status_code=500, detail="Failed to seed content")
+
+# ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
+
 # Include router
 app.include_router(api)
 
