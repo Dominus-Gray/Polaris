@@ -3477,6 +3477,8 @@ function NavigatorAnalyticsPage(){
 function AgencyHome(){
   const [impact, setImpact] = useState(null);
   const [certificates, setCertificates] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
+  
   useEffect(()=>{ 
     const load=async()=>{ 
       const {data} = await axios.get(`${API}/home/agency`); 
