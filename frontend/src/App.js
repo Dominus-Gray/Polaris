@@ -3613,7 +3613,7 @@ function AgencyHome(){
             </svg>
             Opportunities
           </div>
-          <div className="tile-num">{String(impact.opportunities?.count || 0)}</div>
+          <div className="tile-num">{String(impact?.opportunities?.count || 0)}</div>
           <div className="tile-sub">available contracts</div>
         </div>
       </div>
