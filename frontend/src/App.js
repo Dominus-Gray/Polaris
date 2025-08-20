@@ -5124,4 +5124,458 @@ function AIAssistantCard({ areaId, context }) {
   );
 }
 
+// ---------------- Phase 4: Multi-tenant/White-label Components ----------------
+function AgencyThemeManager() {
+  const [theme, setTheme] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const me = JSON.parse(localStorage.getItem('polaris_me') || 'null');
+
+  useEffect(() => {
+    if (me?.role === 'agency') {
+      loadAgencyTheme();
+    }
+  }, []);
+
+  const loadAgencyTheme = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/agency/theme/${me.id}`);
+      setTheme(data);
+    } catch (e) {
+      // No theme exists yet, create default
+      setTheme({
+        agency_id: me.id,
+        branding_name: '',
+        theme_config: {
+          primary_color: '#1B365D',
+          secondary_color: '#4A90C2',
+          logo_url: ''
+        },
+        contact_info: {
+          support_email: '',
+          website: ''
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveTheme = async () => {
+    setSaving(true);
+    try {
+      await axios.post(`${API}/agency/theme`, theme);
+      toast.success('Agency theme updated successfully');
+    } catch (e) {
+      toast.error('Failed to update theme', { description: e.response?.data?.detail });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span>Loading theme settings...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!theme) return null;
+
+  return (
+    <div className="container mt-6 max-w-4xl">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="border-b p-6">
+          <h2 className="text-xl font-semibold">Agency Theme & Branding</h2>
+          <p className="text-slate-600 mt-1">Customize the platform appearance for your agency</p>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Branding Name */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Agency Branding Name
+            </label>
+            <input
+              type="text"
+              className="input w-full"
+              value={theme.branding_name || ''}
+              onChange={(e) => setTheme({...theme, branding_name: e.target.value})}
+              placeholder="Your Agency Name"
+            />
+          </div>
+
+          {/* Colors */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Primary Color
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  className="w-12 h-10 border border-slate-300 rounded"
+                  value={theme.theme_config?.primary_color || '#1B365D'}
+                  onChange={(e) => setTheme({
+                    ...theme,
+                    theme_config: { ...theme.theme_config, primary_color: e.target.value }
+                  })}
+                />
+                <input
+                  type="text"
+                  className="input flex-1"
+                  value={theme.theme_config?.primary_color || '#1B365D'}
+                  onChange={(e) => setTheme({
+                    ...theme,
+                    theme_config: { ...theme.theme_config, primary_color: e.target.value }
+                  })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Secondary Color
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  className="w-12 h-10 border border-slate-300 rounded"
+                  value={theme.theme_config?.secondary_color || '#4A90C2'}
+                  onChange={(e) => setTheme({
+                    ...theme,
+                    theme_config: { ...theme.theme_config, secondary_color: e.target.value }
+                  })}
+                />
+                <input
+                  type="text"
+                  className="input flex-1"
+                  value={theme.theme_config?.secondary_color || '#4A90C2'}
+                  onChange={(e) => setTheme({
+                    ...theme,
+                    theme_config: { ...theme.theme_config, secondary_color: e.target.value }
+                  })}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Logo URL */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Logo URL
+            </label>
+            <input
+              type="url"
+              className="input w-full"
+              value={theme.theme_config?.logo_url || ''}
+              onChange={(e) => setTheme({
+                ...theme,
+                theme_config: { ...theme.theme_config, logo_url: e.target.value }
+              })}
+              placeholder="https://example.com/logo.png"
+            />
+          </div>
+
+          {/* Contact Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Support Email
+              </label>
+              <input
+                type="email"
+                className="input w-full"
+                value={theme.contact_info?.support_email || ''}
+                onChange={(e) => setTheme({
+                  ...theme,
+                  contact_info: { ...theme.contact_info, support_email: e.target.value }
+                })}
+                placeholder="support@youragency.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Website
+              </label>
+              <input
+                type="url"
+                className="input w-full"
+                value={theme.contact_info?.website || ''}
+                onChange={(e) => setTheme({
+                  ...theme,
+                  contact_info: { ...theme.contact_info, website: e.target.value }
+                })}
+                placeholder="https://youragency.com"
+              />
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-slate-900 mb-3">Preview</h4>
+            <div 
+              className="rounded-lg p-4 text-white"
+              style={{ backgroundColor: theme.theme_config?.primary_color || '#1B365D' }}
+            >
+              <h3 className="text-lg font-semibold">
+                {theme.branding_name || 'Your Agency Name'} - Procurement Platform
+              </h3>
+              <p className="opacity-90 text-sm">Small Business Readiness Assessment</p>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end gap-3">
+            <button className="btn" onClick={loadAgencyTheme}>
+              Reset
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={saveTheme}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Theme'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Medium Phase: Notification System ----------------
+function NotificationCenter() {
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [showAll]);
+
+  const loadNotifications = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/notifications/my`, {
+        params: { unread_only: !showAll }
+      });
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unread_count || 0);
+    } catch (e) {
+      console.error('Failed to load notifications:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAsRead = async (notificationId) => {
+    try {
+      await axios.put(`${API}/notifications/${notificationId}/read`);
+      setNotifications(notifications.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      ));
+      setUnreadCount(Math.max(0, unreadCount - 1));
+    } catch (e) {
+      console.error('Failed to mark as read:', e);
+    }
+  };
+
+  const getNotificationIcon = (type) => {
+    const icons = {
+      info: '📋',
+      success: '✅',
+      warning: '⚠️',
+      error: '❌',
+      opportunity: '🎯',
+      assessment: '📝',
+      service: '🔧'
+    };
+    return icons[type] || '📋';
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border">
+      <div className="border-b p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold">Notifications</h3>
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <button
+              className={`btn btn-sm ${!showAll ? 'btn-primary' : ''}`}
+              onClick={() => setShowAll(false)}
+            >
+              Unread
+            </button>
+            <button
+              className={`btn btn-sm ${showAll ? 'btn-primary' : ''}`}
+              onClick={() => setShowAll(true)}
+            >
+              All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-h-96 overflow-y-auto">
+        {loading ? (
+          <div className="p-4 text-center">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <span className="text-sm text-slate-600 mt-2">Loading notifications...</span>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="p-4 text-center text-slate-500">
+            <svg className="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V3h0z" />
+            </svg>
+            {showAll ? 'No notifications yet' : 'No unread notifications'}
+          </div>
+        ) : (
+          <div className="divide-y">
+            {notifications.map((notification) => (
+              <div 
+                key={notification.id} 
+                className={`p-4 hover:bg-slate-50 transition-colors ${!notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-lg">
+                    {getNotificationIcon(notification.notification_type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <h4 className="text-sm font-medium text-slate-900">
+                        {notification.title}
+                      </h4>
+                      <div className="flex items-center gap-2 ml-2">
+                        <span className="text-xs text-slate-500">
+                          {new Date(notification.created_at).toLocaleDateString()}
+                        </span>
+                        {!notification.read && (
+                          <button
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                            onClick={() => markAsRead(notification.id)}
+                          >
+                            Mark read
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {notification.message}
+                    </p>
+                    {notification.action_url && (
+                      <button
+                        className="text-xs text-blue-600 hover:text-blue-800 mt-2"
+                        onClick={() => {
+                          markAsRead(notification.id);
+                          // Navigate to action URL
+                          window.location.href = notification.action_url;
+                        }}
+                      >
+                        Take Action →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Quick Wins: System Health Component ----------------
+function SystemHealthDashboard() {
+  const [health, setHealth] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    checkSystemHealth();
+    const interval = setInterval(checkSystemHealth, 30000); // Check every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkSystemHealth = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/system/health`);
+      setHealth(data);
+    } catch (e) {
+      setHealth({
+        status: 'unhealthy',
+        error: 'Failed to check system health',
+        components: {}
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      healthy: 'text-green-600 bg-green-100',
+      unhealthy: 'text-red-600 bg-red-100',
+      unavailable: 'text-yellow-600 bg-yellow-100'
+    };
+    return colors[status] || 'text-slate-600 bg-slate-100';
+  };
+
+  if (!health) return null;
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">System Health</h3>
+        <div className="flex items-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${health.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <span className="text-sm font-medium capitalize">{health.status}</span>
+          {loading && (
+            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {health.components && Object.entries(health.components).map(([component, status]) => (
+          <div key={component} className="border rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium capitalize">{component.replace('_', ' ')}</h4>
+              <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)}`}>
+                {status}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {health.error && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-800">{health.error}</p>
+        </div>
+      )}
+
+      <div className="mt-4 text-xs text-slate-500">
+        Last checked: {health.timestamp ? new Date(health.timestamp).toLocaleString() : 'Never'}
+      </div>
+    </div>
+  );
+}
+
 export default function App(){ return (<BrowserRouter><AppShell /></BrowserRouter>); }
