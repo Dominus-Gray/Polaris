@@ -284,8 +284,8 @@ class ComprehensiveBackendTester:
         # Test 1: Knowledge base payment
         try:
             payment_data = {
-                "product": "knowledge_base_full_access",
-                "amount": 10000  # $100.00 in cents
+                "package_id": "knowledge_base_all",
+                "origin_url": "https://polaris-navigator-1.preview.emergentagent.com"
             }
             response = requests.post(f"{BASE_URL}/payments/knowledge-base", 
                                    json=payment_data, 
