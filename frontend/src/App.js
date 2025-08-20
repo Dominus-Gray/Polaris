@@ -1235,9 +1235,20 @@ function KnowledgeBasePage(){
   const loadKnowledgeBaseAreas = async () => {
     try {
       const { data } = await axios.get(`${API}/knowledge-base/areas`);
-      setAreas(data.areas);
+      setAreas(data.areas || []);
     } catch (e) {
       console.error('Failed to load knowledge base areas:', e);
+      // Fallback to static areas if API fails
+      setAreas([
+        { id: 'area1', title: 'Business Formation & Registration', description: 'Essential business setup, licensing, and legal registration requirements', resources: 12 },
+        { id: 'area2', title: 'Financial Operations & Management', description: 'Accounting systems, financial controls, and budget management', resources: 15 },
+        { id: 'area3', title: 'Legal & Contracting Compliance', description: 'Contract management, legal compliance, and regulatory requirements', resources: 18 },
+        { id: 'area4', title: 'Quality Management & Standards', description: 'Quality assurance processes, standards compliance, and certifications', resources: 10 },
+        { id: 'area5', title: 'Technology & Security Infrastructure', description: 'IT systems, cybersecurity protocols, and technology management', resources: 20 },
+        { id: 'area6', title: 'Human Resources & Capacity', description: 'HR policies, workforce management, and organizational capacity', resources: 14 },
+        { id: 'area7', title: 'Performance Tracking & Reporting', description: 'Metrics, KPIs, performance monitoring, and reporting systems', resources: 16 },
+        { id: 'area8', title: 'Risk Management & Business Continuity', description: 'Risk assessment, mitigation strategies, and business continuity planning', resources: 13 }
+      ]);
     }
   };
 
