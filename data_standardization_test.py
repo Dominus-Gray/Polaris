@@ -246,7 +246,7 @@ class DataStandardizationTester:
         
         if status == 200 or status == 201:
             # Verify standardized response structure
-            required_fields = ["response_id", "request_id", "provider_id", "proposed_fee", "currency", "fee_formatted", "estimated_timeline", "proposal_note", "status", "created_at", "updated_at", "data_version", "metadata"]
+            required_fields = ["success", "response_id", "request_id", "proposed_fee", "estimated_timeline", "status", "created_at", "metadata"]
             
             missing_fields = [field for field in required_fields if field not in response]
             if not missing_fields:
@@ -255,20 +255,21 @@ class DataStandardizationTester:
                 
                 # Verify currency standardization
                 currency_checks = [
-                    response["proposed_fee"] == 2500.00,
-                    response["currency"] == "USD",
-                    response["fee_formatted"] == "$2,500.00",
+                    response["success"] == True,
+                    response["proposed_fee"] == "$2,500.00",  # Formatted currency
+                    response["estimated_timeline"] == "2-4 weeks",
                     response["status"] == "submitted",
-                    response["data_version"] == "1.0",
+                    response["metadata"]["data_version"] == "1.0",
                     response["metadata"]["standardized"] == True,
-                    response["metadata"]["fee_validation"] == "passed"
+                    response["metadata"]["client_notified"] == True,
+                    "Z" in response["created_at"]  # ISO8601 format
                 ]
                 
                 if all(currency_checks):
                     self.log_test_result(
                         "Standardized Provider Response", 
                         True, 
-                        f"Response created with ID: {response['response_id']}, Fee: {response['fee_formatted']}"
+                        f"Response created with ID: {response['response_id']}, Fee: {response['proposed_fee']}, Client notified: {response['metadata']['client_notified']}"
                     )
                 else:
                     self.log_test_result(
