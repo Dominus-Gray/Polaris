@@ -408,6 +408,105 @@ class UserOut(BaseModel):
     created_at: datetime
     profile_complete: bool = False
 
+# Standardized Engagement Data Models
+class StandardizedEngagementRequest(BaseModel):
+    """Standardized model for creating service requests"""
+    area_id: str = Field(..., description="Must be valid service area ID")
+    budget_range: str = Field(..., description="Must be valid budget range")
+    timeline: str = Field(..., description="Expected completion timeline")
+    description: str = Field(..., min_length=10, max_length=2000, description="Detailed service description")
+    priority: str = Field(default="medium", description="Priority level")
+    urgency: str = Field(default="medium", description="Urgency level")
+    
+    @validator('area_id')
+    def validate_area_id(cls, v):
+        return DataValidator.validate_service_area(v)
+    
+    @validator('budget_range')
+    def validate_budget_range(cls, v):
+        return DataValidator.validate_budget_range(v)
+    
+    @validator('timeline')
+    def validate_timeline(cls, v):
+        return DataValidator.validate_timeline(v)
+    
+    @validator('priority')
+    def validate_priority(cls, v):
+        return DataValidator.validate_priority(v)
+    
+    @validator('description')
+    def validate_description(cls, v):
+        return DataValidator.sanitize_text(v, max_length=2000)
+
+class StandardizedProviderResponse(BaseModel):
+    """Standardized model for provider responses"""
+    request_id: str = Field(..., description="Service request identifier")
+    proposed_fee: float = Field(..., ge=0, le=50000, description="Proposed service fee in USD")
+    estimated_timeline: str = Field(..., description="Estimated completion timeline")
+    proposal_note: str = Field(..., min_length=20, max_length=1500, description="Detailed proposal description")
+    
+    @validator('estimated_timeline')
+    def validate_timeline(cls, v):
+        return DataValidator.validate_timeline(v)
+    
+    @validator('proposal_note')
+    def validate_proposal(cls, v):
+        return DataValidator.sanitize_text(v, max_length=1500)
+    
+    @validator('proposed_fee')
+    def validate_fee(cls, v):
+        if v <= 0:
+            raise ValueError('Proposed fee must be greater than 0')
+        return round(float(v), 2)
+
+class StandardizedEngagementUpdate(BaseModel):
+    """Standardized model for engagement status updates"""
+    engagement_id: str = Field(..., description="Engagement identifier")
+    status: str = Field(..., description="New engagement status")
+    notes: Optional[str] = Field(None, max_length=1000, description="Update notes")
+    deliverables: Optional[List[str]] = Field(None, description="List of deliverables")
+    milestone_completion: Optional[float] = Field(None, ge=0, le=100, description="Completion percentage")
+    
+    @validator('status')
+    def validate_status(cls, v):
+        return DataValidator.validate_engagement_status(v)
+    
+    @validator('notes')
+    def validate_notes(cls, v):
+        if v:
+            return DataValidator.sanitize_text(v, max_length=1000)
+        return v
+
+class StandardizedEngagementRating(BaseModel):
+    """Standardized model for engagement ratings"""
+    rating: int = Field(..., ge=1, le=5, description="Overall rating 1-5")
+    feedback: str = Field(..., min_length=10, max_length=1000, description="Detailed feedback")
+    quality_score: int = Field(..., ge=1, le=5, description="Quality rating 1-5")
+    communication_score: int = Field(..., ge=1, le=5, description="Communication rating 1-5")
+    timeliness_score: int = Field(..., ge=1, le=5, description="Timeliness rating 1-5")
+    would_recommend: bool = Field(default=True, description="Would recommend provider")
+    
+    @validator('feedback')
+    def validate_feedback(cls, v):
+        return DataValidator.sanitize_text(v, max_length=1000)
+
+class StandardizedEngagementOut(BaseModel):
+    """Standardized engagement output model"""
+    id: str
+    request_id: str
+    client_id: str
+    provider_id: str
+    area_id: str
+    area_name: str
+    status: str
+    priority: str
+    budget_info: dict
+    timeline_info: dict
+    progress_tracking: dict
+    created_at: str
+    updated_at: str
+    metadata: dict
+
 async def get_user_by_email(email: str) -> Optional[dict]:
     return await db.users.find_one({"email": email.lower()})
 
