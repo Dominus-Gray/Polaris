@@ -299,19 +299,19 @@ class PolarisErrorCodeTester:
             
             if response.status_code == 400:
                 error_data = response.json()
-                detail = error_data.get("detail", {})
                 
-                # Check if it's the new Polaris error format
-                if isinstance(detail, dict):
-                    has_error_code = "error_code" in detail
-                    has_message = "message" in detail
-                    has_detail = "detail" in detail
+                # Check if it's the new Polaris error format (nested in message field)
+                message_data = error_data.get("message", {})
+                if isinstance(message_data, dict):
+                    has_error_code = "error_code" in message_data
+                    has_message = "message" in message_data
+                    has_detail = "detail" in message_data
                     
                     if has_error_code and has_message:
                         self.log_result(
                             "Error Response Format", 
                             "PASS", 
-                            f"Proper error format with code: {detail.get('error_code')}, message: {detail.get('message')}"
+                            f"Proper error format with code: {message_data.get('error_code')}, message: {message_data.get('message')}, detail: {message_data.get('detail')}"
                         )
                         return True
                     else:
@@ -322,14 +322,14 @@ class PolarisErrorCodeTester:
                         self.log_result(
                             "Error Response Format", 
                             "FAIL", 
-                            f"Missing required fields: {missing_fields}. Response: {detail}"
+                            f"Missing required fields: {missing_fields}. Message data: {message_data}"
                         )
                         return False
                 else:
                     self.log_result(
                         "Error Response Format", 
                         "FAIL", 
-                        f"Error detail is not a dict: {detail}"
+                        f"Message field is not a dict or missing. Full response: {error_data}"
                     )
                     return False
             else:
