@@ -3930,7 +3930,7 @@ async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn,
         return {"url": session.url, "session_id": session.session_id}
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Knowledge base payment creation failed: {str(e)}")
+        raise create_polaris_error("POL-2003", f"Knowledge base payment creation failed: {str(e)}", 500)
 
 @api.get("/knowledge-base/access")
 async def get_knowledge_base_access(current=Depends(require_user)):
