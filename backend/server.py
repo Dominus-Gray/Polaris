@@ -143,6 +143,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Performance monitoring middleware
+@app.middleware("http")
+async def performance_monitoring_middleware(request: Request, call_next):
+    start_time = time.time()
+    
+    response = await call_next(request)
+    
+    duration = time.time() - start_time
+    endpoint = request.url.path
+    method = request.method
+    status = response.status_code
+    
+    # Record metrics
+    REQUEST_COUNT.labels(method=method, endpoint=endpoint, status=status).inc()
+    REQUEST_DURATION.labels(method=method, endpoint=endpoint).observe(duration)
+    
+    # Log slow requests
+    if duration > 1.0:  # Log requests over 1 second
+        logger.warning(f"Slow request: {method} {endpoint} took {duration:.2f}s")
+    
+    # Add performance headers
+    response.headers["X-Response-Time"] = f"{duration:.3f}s"
+    
+    return response
+
 # Security headers middleware
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
