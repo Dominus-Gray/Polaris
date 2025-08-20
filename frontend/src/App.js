@@ -1507,11 +1507,10 @@ function KnowledgeBasePage(){
                     </button>
                   </div>
                 )}
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Resource Viewer */}
