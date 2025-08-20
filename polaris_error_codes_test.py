@@ -57,18 +57,19 @@ class PolarisErrorCodeTester:
             
             if response.status_code == 400:
                 error_data = response.json()
-                detail = error_data.get("detail", {})
                 
-                # Check if it's the new Polaris error format
-                if isinstance(detail, dict) and "error_code" in detail:
-                    error_code = detail.get("error_code")
-                    message = detail.get("message")
+                # Check if it's the new Polaris error format (nested in message field)
+                message_data = error_data.get("message", {})
+                if isinstance(message_data, dict) and "error_code" in message_data:
+                    error_code = message_data.get("error_code")
+                    message = message_data.get("message")
+                    detail = message_data.get("detail")
                     
                     if error_code == "POL-1001":
                         self.log_result(
                             "Invalid Credentials Error Code", 
                             "PASS", 
-                            f"Correct error code POL-1001 returned with message: '{message}'"
+                            f"Correct error code POL-1001 returned with message: '{message}', detail: '{detail}'"
                         )
                         return True
                     else:
@@ -82,7 +83,7 @@ class PolarisErrorCodeTester:
                     self.log_result(
                         "Invalid Credentials Error Code", 
                         "FAIL", 
-                        f"Response not in new Polaris error format: {detail}"
+                        f"Response not in new Polaris error format. Full response: {error_data}"
                     )
                     return False
             else:
