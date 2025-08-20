@@ -5776,4 +5776,333 @@ function SystemHealthDashboard() {
   );
 }
 
+// ---------------- Phase 4: White-label Landing & Certificate Verification ----------------
+function WhiteLabelLanding({ agencyId }) {
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadWhiteLabelConfig();
+  }, [agencyId]);
+
+  const loadWhiteLabelConfig = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/public/white-label/${agencyId}`);
+      setConfig(data);
+    } catch (e) {
+      console.error('Failed to load white-label config:', e);
+      // Fallback to default Polaris branding
+      setConfig({
+        branding_name: "Polaris",
+        theme_config: {
+          primary_color: "#1B365D",
+          secondary_color: "#4A90C2",
+          logo_url: "/polaris-logo.svg"
+        },
+        custom_messaging: {
+          hero_title: "Small Business Procurement Readiness",
+          hero_subtitle: "Assess readiness, get certified, and win government contracts",
+          cta_text: "Start Assessment"
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading platform...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!config) return null;
+
+  const primaryColor = config.theme_config?.primary_color || '#1B365D';
+  const secondaryColor = config.theme_config?.secondary_color || '#4A90C2';
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section with Agency Branding */}
+      <div 
+        className="relative text-white py-24"
+        style={{ 
+          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)` 
+        }}
+      >
+        <div className="container mx-auto px-6 text-center">
+          {config.theme_config?.logo_url && (
+            <img 
+              src={config.theme_config.logo_url} 
+              alt={config.branding_name}
+              className="h-16 mx-auto mb-6"
+            />
+          )}
+          
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            {config.custom_messaging?.hero_title || `${config.branding_name} Platform`}
+          </h1>
+          
+          <p className="text-xl md:text-2xl opacity-90 mb-8 max-w-3xl mx-auto">
+            {config.custom_messaging?.hero_subtitle || "Powered by Polaris - Small Business Assessment & Certification"}
+          </p>
+          
+          <button 
+            className="px-8 py-4 bg-white text-slate-900 rounded-lg font-semibold hover:bg-slate-100 transition-colors text-lg"
+            onClick={() => window.location.href = '#auth'}
+          >
+            {config.custom_messaging?.cta_text || "Begin Assessment"}
+          </button>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-16">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Comprehensive Procurement Readiness
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Complete assessment, get certified, and unlock government contracting opportunities
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6">
+              <div 
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                style={{ backgroundColor: `${primaryColor}20` }}
+              >
+                <svg className="w-8 h-8" style={{ color: primaryColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">8-Area Assessment</h3>
+              <p className="text-slate-600">Comprehensive evaluation across all key business areas for procurement readiness</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div 
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                style={{ backgroundColor: `${primaryColor}20` }}
+              >
+                <svg className="w-8 h-8" style={{ color: primaryColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 714.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 713.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 710 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 710-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Official Certification</h3>
+              <p className="text-slate-600">Receive verified certification recognized by government agencies</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div 
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                style={{ backgroundColor: `${primaryColor}20` }}
+              >
+                <svg className="w-8 h-8" style={{ color: primaryColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 414 0zM7 10a2 2 0 11-4 0 2 2 0 414 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Expert Support</h3>
+              <p className="text-slate-600">Connect with qualified service providers for professional assistance</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer with Agency Branding */}
+      <footer className="bg-slate-900 text-white py-8">
+        <div className="container mx-auto px-6 text-center">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">{config.branding_name}</h3>
+            {config.contact_info?.website && (
+              <a 
+                href={config.contact_info.website}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                {config.contact_info.website}
+              </a>
+            )}
+          </div>
+          <p className="text-slate-400 text-sm">
+            Powered by Polaris • Small Business Procurement Readiness Platform
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function CertificateVerification({ certificateId }) {
+  const [certificate, setCertificate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (certificateId) {
+      verifyCertificate();
+    }
+  }, [certificateId]);
+
+  const verifyCertificate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await axios.get(`${API}/verify/certificate/${certificateId}`);
+      setCertificate(data);
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Certificate verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Verifying certificate...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center p-6">
+          <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Certificate Verification Failed</h1>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <button 
+            className="btn btn-primary"
+            onClick={verifyCertificate}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!certificate) return null;
+
+  const primaryColor = certificate.agency_branding?.primary_color || '#1B365D';
+
+  return (
+    <div className="min-h-screen bg-slate-50 py-12">
+      <div className="max-w-4xl mx-auto px-6">
+        {/* Verification Success Header */}
+        <div className="text-center mb-8">
+          <svg className="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 714.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 713.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 710 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 710-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z" />
+          </svg>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Certificate Verified ✅</h1>
+          <p className="text-lg text-slate-600">This certificate is valid and officially recognized</p>
+        </div>
+
+        {/* Certificate Details */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Certificate Header */}
+          <div 
+            className="text-white p-8"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                {certificate.agency_branding?.logo_url && (
+                  <img 
+                    src={certificate.agency_branding.logo_url} 
+                    alt={certificate.agency_branding.name}
+                    className="h-12 mb-4"
+                  />
+                )}
+                <h2 className="text-2xl font-bold">{certificate.certificate_type}</h2>
+                <p className="opacity-90">Issued by {certificate.agency_branding?.name || 'Polaris'}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold">{certificate.certification_level}</div>
+                <div className="opacity-90">Certification Level</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Certificate Body */}
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Certificate Holder</h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-slate-600">Business Name:</span>
+                    <span className="ml-2 font-medium">{certificate.business_name}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Certificate Holder:</span>
+                    <span className="ml-2 font-medium">{certificate.client_name}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Certificate ID:</span>
+                    <span className="ml-2 font-mono text-sm">{certificate.certificate_id}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Verification Code:</span>
+                    <span className="ml-2 font-mono text-sm font-bold">{certificate.verification_code}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Certificate Details</h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-slate-600">Issued Date:</span>
+                    <span className="ml-2 font-medium">{new Date(certificate.issued_at).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Expires Date:</span>
+                    <span className="ml-2 font-medium">{new Date(certificate.expires_at).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Status:</span>
+                    <span className="ml-2 font-medium text-green-600">Valid & Active</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Compliance Standards:</span>
+                    <div className="ml-2 flex gap-2 mt-1">
+                      {certificate.compliance_standards?.map((standard, index) => (
+                        <span key={index} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+                          {standard}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Footer */}
+            <div className="mt-8 pt-6 border-t border-slate-200 text-center">
+              <p className="text-sm text-slate-600">
+                This certificate has been verified as authentic and is recognized for government contracting purposes.
+                For questions about this certificate, please contact {certificate.agency_branding?.name || 'the issuing agency'}.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){ return (<BrowserRouter><AppShell /></BrowserRouter>); }
