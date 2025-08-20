@@ -75,23 +75,18 @@ def test_pol_1005():
     
     print("Test user logged in successfully")
     
-    # Now try to access Knowledge Base payment endpoint (should trigger POL-1005)
-    kb_payment_response = requests.post(
-        f"{BASE_URL}/payments/knowledge-base",
-        json={
-            "package_id": "knowledge_base_single",
-            "origin_url": "https://agency-connect-4.preview.emergentagent.com",
-            "metadata": {"area_id": "area1"}
-        },
+    # Now try to access Knowledge Base download endpoint (should trigger POL-1005)
+    kb_download_response = requests.get(
+        f"{BASE_URL}/knowledge-base/download/default_template_area1",
         headers=test_headers
     )
     
-    print(f"KB Payment Response Status: {kb_payment_response.status_code}")
-    print(f"KB Payment Response: {kb_payment_response.text}")
+    print(f"KB Download Response Status: {kb_download_response.status_code}")
+    print(f"KB Download Response: {kb_download_response.text}")
     
-    if kb_payment_response.status_code == 402 or kb_payment_response.status_code == 403:
+    if kb_download_response.status_code == 402 or kb_download_response.status_code == 403:
         try:
-            error_data = kb_payment_response.json()
+            error_data = kb_download_response.json()
             message_data = error_data.get("message", {})
             
             if isinstance(message_data, dict) and message_data.get("error_code") == "POL-1005":
@@ -107,7 +102,7 @@ def test_pol_1005():
             print(f"❌ FAIL: Could not parse error response as JSON")
             return False
     else:
-        print(f"❌ FAIL: Expected 402/403 status but got {kb_payment_response.status_code}")
+        print(f"❌ FAIL: Expected 402/403 status but got {kb_download_response.status_code}")
         return False
 
 if __name__ == "__main__":
