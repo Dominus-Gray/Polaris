@@ -5604,6 +5604,221 @@ async def get_system_analytics(
         logger.error(f"Error getting system analytics: {e}")
         raise HTTPException(status_code=500, detail="Failed to get analytics")
 
+# Additional Phase 4 Features: Advanced Multi-tenant System
+
+# White-label Landing Page with Agency Branding
+@api.get("/public/white-label/{agency_id}")
+async def get_white_label_config(agency_id: str):
+    """Get white-label configuration for agency-specific landing pages"""
+    try:
+        agency_theme = await db.agency_themes.find_one({"agency_id": agency_id})
+        
+        if not agency_theme:
+            # Return default Polaris configuration
+            return {
+                "agency_id": agency_id,
+                "branding_name": "Polaris",
+                "theme_config": {
+                    "primary_color": "#1B365D",
+                    "secondary_color": "#4A90C2",
+                    "logo_url": "/polaris-logo.svg",
+                    "favicon_url": "/favicon.ico"
+                },
+                "contact_info": {
+                    "support_email": "support@polaris.example.com",
+                    "website": "https://polaris.example.com"
+                },
+                "custom_messaging": {
+                    "hero_title": "Small Business Procurement Readiness",
+                    "hero_subtitle": "Assess readiness, get certified, and win government contracts",
+                    "cta_text": "Start Assessment"
+                }
+            }
+        
+        # Return agency-specific configuration
+        return {
+            "agency_id": agency_id,
+            "branding_name": agency_theme.get("branding_name", "Polaris"),
+            "theme_config": agency_theme.get("theme_config", {}),
+            "contact_info": agency_theme.get("contact_info", {}),
+            "custom_messaging": agency_theme.get("custom_messaging", {
+                "hero_title": f"{agency_theme.get('branding_name', 'Agency')} Procurement Platform",
+                "hero_subtitle": "Powered by Polaris - Small Business Assessment & Certification",
+                "cta_text": "Begin Assessment"
+            })
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting white-label config: {e}")
+        return {
+            "agency_id": agency_id,
+            "branding_name": "Polaris",
+            "theme_config": {
+                "primary_color": "#1B365D",
+                "secondary_color": "#4A90C2"
+            }
+        }
+
+# Enhanced Certificate Generation with Full Agency Branding
+@api.post("/certificates/generate-branded")
+async def generate_branded_certificate(
+    client_user_id: str = Query(...),
+    agency_id: Optional[str] = Query(None),
+    current=Depends(require_role("navigator"))
+):
+    """Generate comprehensive branded certificate with agency theming"""
+    try:
+        # Get client and assessment data
+        client_user = await db.users.find_one({"id": client_user_id})
+        if not client_user:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        business_profile = await db.business_profiles.find_one({"user_id": client_user_id})
+        assessment = await db.assessments.find_one({"user_id": client_user_id})
+        
+        if not assessment or assessment.get("completion_percentage", 0) < 80:
+            raise HTTPException(status_code=400, detail="Assessment must be at least 80% complete for certification")
+        
+        # Get agency branding
+        agency_branding = {
+            "name": "Polaris",
+            "logo_url": "/polaris-logo.svg",
+            "primary_color": "#1B365D",
+            "secondary_color": "#4A90C2",
+            "website": "https://polaris.example.com"
+        }
+        
+        if agency_id:
+            agency_theme = await db.agency_themes.find_one({"agency_id": agency_id})
+            if agency_theme:
+                theme_config = agency_theme.get("theme_config", {})
+                contact_info = agency_theme.get("contact_info", {})
+                
+                agency_branding.update({
+                    "name": agency_theme.get("branding_name", "Polaris"),
+                    "logo_url": theme_config.get("logo_url", "/polaris-logo.svg"),
+                    "primary_color": theme_config.get("primary_color", "#1B365D"),
+                    "secondary_color": theme_config.get("secondary_color", "#4A90C2"),
+                    "website": contact_info.get("website", "https://polaris.example.com")
+                })
+        
+        # Generate enhanced certificate
+        certificate_id = str(uuid.uuid4())
+        verification_code = f"SBPR-{secrets.token_hex(8).upper()}"
+        
+        # Calculate detailed metrics
+        readiness_metrics = {
+            "overall_score": assessment.get("completion_percentage", 0),
+            "areas_completed": 0,
+            "areas_total": 8,
+            "certification_level": "Basic"
+        }
+        
+        # Determine certification level
+        score = readiness_metrics["overall_score"]
+        if score >= 95:
+            readiness_metrics["certification_level"] = "Platinum"
+        elif score >= 90:
+            readiness_metrics["certification_level"] = "Gold"
+        elif score >= 80:
+            readiness_metrics["certification_level"] = "Silver"
+        else:
+            readiness_metrics["certification_level"] = "Bronze"
+        
+        certificate_data = {
+            "_id": certificate_id,
+            "id": certificate_id,
+            "client_user_id": client_user_id,
+            "client_name": f"{client_user.get('first_name', '')} {client_user.get('last_name', '')}".strip(),
+            "business_name": business_profile.get("business_name", "Unknown Business"),
+            "business_type": business_profile.get("business_type", "Not specified"),
+            "industry": business_profile.get("industry", "Not specified"),
+            "readiness_metrics": readiness_metrics,
+            "issued_by": current["id"],
+            "issuer_name": current.get("first_name", "Navigator"),
+            "agency_id": agency_id,
+            "agency_branding": agency_branding,
+            "certificate_type": "Small Business Procurement Readiness Certification",
+            "issued_at": datetime.utcnow(),
+            "expires_at": datetime.utcnow() + timedelta(days=365),
+            "status": "active",
+            "verification_code": verification_code,
+            "verification_url": f"/verify/certificate/{certificate_id}",
+            "downloadable": True,
+            "metadata": {
+                "assessment_completed": assessment.get("updated_at"),
+                "areas_assessed": assessment.get("areas_completed", []),
+                "compliance_standards": ["NIST", "SBA", "GSA"]
+            }
+        }
+        
+        await db.certificates.insert_one(certificate_data)
+        
+        # Log certificate generation
+        await db.analytics.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": client_user_id,
+            "action": "certificate_generated",
+            "certificate_id": certificate_id,
+            "agency_id": agency_id,
+            "readiness_score": score,
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {
+            "certificate_id": certificate_id,
+            "verification_code": verification_code,
+            "verification_url": certificate_data["verification_url"],
+            "download_url": f"/api/certificates/{certificate_id}/download",
+            "expires_at": certificate_data["expires_at"].isoformat(),
+            "certification_level": readiness_metrics["certification_level"],
+            "agency_branding": agency_branding,
+            "business_name": certificate_data["business_name"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating branded certificate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate certificate")
+
+# Public Certificate Verification
+@api.get("/verify/certificate/{certificate_id}")
+async def verify_certificate(certificate_id: str):
+    """Public certificate verification endpoint"""
+    try:
+        certificate = await db.certificates.find_one({"id": certificate_id})
+        if not certificate:
+            raise HTTPException(status_code=404, detail="Certificate not found")
+        
+        if certificate.get("status") != "active":
+            raise HTTPException(status_code=400, detail="Certificate is no longer valid")
+        
+        # Check expiration
+        expires_at = certificate.get("expires_at")
+        if expires_at and datetime.utcnow() > expires_at:
+            raise HTTPException(status_code=400, detail="Certificate has expired")
+        
+        return {
+            "valid": True,
+            "certificate_id": certificate_id,
+            "business_name": certificate.get("business_name"),
+            "client_name": certificate.get("client_name"),
+            "certificate_type": certificate.get("certificate_type"),
+            "certification_level": certificate.get("readiness_metrics", {}).get("certification_level"),
+            "issued_at": certificate.get("issued_at").isoformat() if certificate.get("issued_at") else None,
+            "expires_at": certificate.get("expires_at").isoformat() if certificate.get("expires_at") else None,
+            "verification_code": certificate.get("verification_code"),
+            "agency_branding": certificate.get("agency_branding", {}),
+            "compliance_standards": certificate.get("metadata", {}).get("compliance_standards", [])
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying certificate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify certificate")
+
 # ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
 
 # Include router
