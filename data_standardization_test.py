@@ -372,8 +372,9 @@ class DataStandardizationTester:
         
         # Even if engagement doesn't exist, we should get proper error handling
         if status == 404:
-            error_detail = response.get("detail", {}) if isinstance(response, dict) else {}
-            if error_detail.get("error_code") == "POL-1007":
+            # The error format is nested: error_code: POL-6005, message: {error_code: POL-1007, ...}
+            error_message = response.get("message", {}) if isinstance(response, dict) else {}
+            if error_message.get("error_code") == "POL-1007":
                 self.log_test_result(
                     "Engagement Status Update Error Handling", 
                     True, 
