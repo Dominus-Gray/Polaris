@@ -3547,7 +3547,35 @@ function AgencyHome(){
         </div>
       </div>
 
-      <div className="dashboard-grid">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border mb-6">
+        <div className="border-b p-4">
+          <nav className="flex gap-6">
+            {[
+              { id: 'overview', label: 'Overview', icon: '📊' },
+              { id: 'branding', label: 'Branding & Theme', icon: '🎨' },
+              { id: 'system', label: 'System Health', icon: '⚡' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id 
+                    ? 'border-indigo-500 text-indigo-600' 
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          {activeTab === 'overview' && (
+            <div>
+              <div className="dashboard-grid mb-6">
         <div className="tile">
           <div className="tile-title">
             <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
