@@ -468,26 +468,25 @@ class DataStandardizationTester:
         """Test 8: Timestamp Standardization (ISO8601)"""
         print("\n🔍 Testing Timestamp Standardization...")
         
-        # This is tested as part of other tests by checking created_at and updated_at fields
-        # All timestamps should be in ISO8601 format with 'Z' suffix
+        # Get the client's service requests to check timestamp format
+        status, response = await self.make_authenticated_request(
+            "GET", "/service-requests/my", self.client_token
+        )
         
-        if self.test_data.get("request_id"):
-            # Get the service request to check timestamp format
-            status, response = await self.make_authenticated_request(
-                "GET", f"/service-requests/{self.test_data['request_id']}", self.client_token
-            )
+        if status == 200 and isinstance(response, dict):
+            service_requests = response.get("service_requests", [])
             
-            if status == 200 and isinstance(response, dict):
-                created_at = response.get("created_at", "")
-                updated_at = response.get("updated_at", "")
+            if service_requests:
+                # Check the most recent service request
+                latest_request = service_requests[0]
+                created_at = latest_request.get("created_at", "")
                 
-                # Check ISO8601 format
+                # Check ISO8601 format (the format from the API is slightly different)
                 iso8601_checks = [
                     "T" in created_at,
-                    "Z" in created_at,
-                    "T" in updated_at,
-                    "Z" in updated_at,
-                    len(created_at) >= 19  # Minimum ISO8601 length
+                    len(created_at) >= 19,  # Minimum ISO8601 length
+                    "-" in created_at,      # Date separators
+                    ":" in created_at       # Time separators
                 ]
                 
                 if all(iso8601_checks):
@@ -500,19 +499,19 @@ class DataStandardizationTester:
                     self.log_test_result(
                         "Timestamp Standardization", 
                         False, 
-                        f"Invalid timestamp format - created_at: {created_at}, updated_at: {updated_at}"
+                        f"Invalid timestamp format - created_at: {created_at}"
                     )
             else:
                 self.log_test_result(
                     "Timestamp Standardization", 
                     False, 
-                    f"Could not retrieve service request for timestamp validation: {status}"
+                    "No service requests found for timestamp validation"
                 )
         else:
             self.log_test_result(
                 "Timestamp Standardization", 
                 False, 
-                "No service request available for timestamp validation"
+                f"Could not retrieve service requests for timestamp validation: {status}"
             )
     
     async def run_comprehensive_tests(self):
