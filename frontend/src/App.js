@@ -5217,6 +5217,7 @@ function AgencyThemeManager() {
       const { data } = await axios.get(`${API}/agency/theme/${me.id}`);
       setTheme(data);
     } catch (e) {
+      console.log('No existing theme found, creating default:', e.response?.status);
       // No theme exists yet, create default
       setTheme({
         agency_id: me.id,
@@ -5237,189 +5238,215 @@ function AgencyThemeManager() {
   };
 
   const saveTheme = async () => {
+    if (!theme) return;
+    
     setSaving(true);
     try {
       await axios.post(`${API}/agency/theme`, theme);
       toast.success('Agency theme updated successfully');
     } catch (e) {
-      toast.error('Failed to update theme', { description: e.response?.data?.detail });
+      console.error('Theme save error:', e.response?.data);
+      toast.error('Failed to update theme', { 
+        description: e.response?.data?.detail || 'Unknown error occurred' 
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  if (!me || me.role !== 'agency') {
     return (
-      <div className="container mt-6 max-w-4xl">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span>Loading theme settings...</span>
-          </div>
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="text-center text-slate-500">
+          <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h3 className="text-lg font-medium text-slate-900 mb-2">Access Restricted</h3>
+          <p className="text-slate-600">Theme management is only available to agency users.</p>
         </div>
       </div>
     );
   }
 
-  if (!theme) return null;
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="flex items-center gap-2 justify-center">
+          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span>Loading theme settings...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!theme) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="text-center text-slate-500">
+          <p>Unable to load theme settings. Please try again.</p>
+          <button className="btn btn-primary mt-3" onClick={loadAgencyTheme}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-6 max-w-4xl">
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="border-b p-6">
-          <h2 className="text-xl font-semibold">Agency Theme & Branding</h2>
-          <p className="text-slate-600 mt-1">Customize the platform appearance for your agency</p>
+    <div className="bg-white rounded-lg shadow-sm border">
+      <div className="border-b p-6">
+        <h3 className="text-xl font-semibold">Agency Theme & Branding</h3>
+        <p className="text-slate-600 mt-1">Customize the platform appearance for your agency</p>
+      </div>
+
+      <div className="p-6 space-y-6">
+        {/* Branding Name */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Agency Branding Name
+          </label>
+          <input
+            type="text"
+            className="input w-full"
+            value={theme.branding_name || ''}
+            onChange={(e) => setTheme({...theme, branding_name: e.target.value})}
+            placeholder="Your Agency Name"
+          />
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Branding Name */}
+        {/* Colors */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Agency Branding Name
+              Primary Color
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                className="w-12 h-10 border border-slate-300 rounded"
+                value={theme.theme_config?.primary_color || '#1B365D'}
+                onChange={(e) => setTheme({
+                  ...theme,
+                  theme_config: { ...theme.theme_config, primary_color: e.target.value }
+                })}
+              />
+              <input
+                type="text"
+                className="input flex-1"
+                value={theme.theme_config?.primary_color || '#1B365D'}
+                onChange={(e) => setTheme({
+                  ...theme,
+                  theme_config: { ...theme.theme_config, primary_color: e.target.value }
+                })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Secondary Color
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                className="w-12 h-10 border border-slate-300 rounded"
+                value={theme.theme_config?.secondary_color || '#4A90C2'}
+                onChange={(e) => setTheme({
+                  ...theme,
+                  theme_config: { ...theme.theme_config, secondary_color: e.target.value }
+                })}
+              />
+              <input
+                type="text"
+                className="input flex-1"
+                value={theme.theme_config?.secondary_color || '#4A90C2'}
+                onChange={(e) => setTheme({
+                  ...theme,
+                  theme_config: { ...theme.theme_config, secondary_color: e.target.value }
+                })}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Logo URL */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Logo URL
+          </label>
+          <input
+            type="url"
+            className="input w-full"
+            value={theme.theme_config?.logo_url || ''}
+            onChange={(e) => setTheme({
+              ...theme,
+              theme_config: { ...theme.theme_config, logo_url: e.target.value }
+            })}
+            placeholder="https://example.com/logo.png"
+          />
+        </div>
+
+        {/* Contact Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Support Email
             </label>
             <input
-              type="text"
+              type="email"
               className="input w-full"
-              value={theme.branding_name || ''}
-              onChange={(e) => setTheme({...theme, branding_name: e.target.value})}
-              placeholder="Your Agency Name"
+              value={theme.contact_info?.support_email || ''}
+              onChange={(e) => setTheme({
+                ...theme,
+                contact_info: { ...theme.contact_info, support_email: e.target.value }
+              })}
+              placeholder="support@youragency.com"
             />
           </div>
 
-          {/* Colors */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Primary Color
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  className="w-12 h-10 border border-slate-300 rounded"
-                  value={theme.theme_config?.primary_color || '#1B365D'}
-                  onChange={(e) => setTheme({
-                    ...theme,
-                    theme_config: { ...theme.theme_config, primary_color: e.target.value }
-                  })}
-                />
-                <input
-                  type="text"
-                  className="input flex-1"
-                  value={theme.theme_config?.primary_color || '#1B365D'}
-                  onChange={(e) => setTheme({
-                    ...theme,
-                    theme_config: { ...theme.theme_config, primary_color: e.target.value }
-                  })}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Secondary Color
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  className="w-12 h-10 border border-slate-300 rounded"
-                  value={theme.theme_config?.secondary_color || '#4A90C2'}
-                  onChange={(e) => setTheme({
-                    ...theme,
-                    theme_config: { ...theme.theme_config, secondary_color: e.target.value }
-                  })}
-                />
-                <input
-                  type="text"
-                  className="input flex-1"
-                  value={theme.theme_config?.secondary_color || '#4A90C2'}
-                  onChange={(e) => setTheme({
-                    ...theme,
-                    theme_config: { ...theme.theme_config, secondary_color: e.target.value }
-                  })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Logo URL */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Logo URL
+              Website
             </label>
             <input
               type="url"
               className="input w-full"
-              value={theme.theme_config?.logo_url || ''}
+              value={theme.contact_info?.website || ''}
               onChange={(e) => setTheme({
                 ...theme,
-                theme_config: { ...theme.theme_config, logo_url: e.target.value }
+                contact_info: { ...theme.contact_info, website: e.target.value }
               })}
-              placeholder="https://example.com/logo.png"
+              placeholder="https://youragency.com"
             />
           </div>
+        </div>
 
-          {/* Contact Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Support Email
-              </label>
-              <input
-                type="email"
-                className="input w-full"
-                value={theme.contact_info?.support_email || ''}
-                onChange={(e) => setTheme({
-                  ...theme,
-                  contact_info: { ...theme.contact_info, support_email: e.target.value }
-                })}
-                placeholder="support@youragency.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Website
-              </label>
-              <input
-                type="url"
-                className="input w-full"
-                value={theme.contact_info?.website || ''}
-                onChange={(e) => setTheme({
-                  ...theme,
-                  contact_info: { ...theme.contact_info, website: e.target.value }
-                })}
-                placeholder="https://youragency.com"
-              />
-            </div>
+        {/* Preview */}
+        <div className="bg-slate-50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-slate-900 mb-3">Preview</h4>
+          <div 
+            className="rounded-lg p-4 text-white"
+            style={{ backgroundColor: theme.theme_config?.primary_color || '#1B365D' }}
+          >
+            <h3 className="text-lg font-semibold">
+              {theme.branding_name || 'Your Agency Name'} - Procurement Platform
+            </h3>
+            <p className="opacity-90 text-sm">Small Business Readiness Assessment</p>
           </div>
+        </div>
 
-          {/* Preview */}
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-slate-900 mb-3">Preview</h4>
-            <div 
-              className="rounded-lg p-4 text-white"
-              style={{ backgroundColor: theme.theme_config?.primary_color || '#1B365D' }}
-            >
-              <h3 className="text-lg font-semibold">
-                {theme.branding_name || 'Your Agency Name'} - Procurement Platform
-              </h3>
-              <p className="opacity-90 text-sm">Small Business Readiness Assessment</p>
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end gap-3">
-            <button className="btn" onClick={loadAgencyTheme}>
-              Reset
-            </button>
-            <button 
-              className="btn btn-primary"
-              onClick={saveTheme}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Theme'}
-            </button>
-          </div>
+        {/* Save Button */}
+        <div className="flex justify-end gap-3">
+          <button className="btn" onClick={loadAgencyTheme} disabled={loading}>
+            Reset
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={saveTheme}
+            disabled={saving || !theme}
+          >
+            {saving ? 'Saving...' : 'Save Theme'}
+          </button>
         </div>
       </div>
     </div>
