@@ -49,6 +49,34 @@ POLARIS_ERROR_CODES = {
     "POL-3005": "AI service unavailable"
 }
 
+# Data Standardization Configuration
+DATA_STANDARDS = {
+    "engagement_statuses": [
+        "pending", "active", "in_progress", "under_review", 
+        "delivered", "approved", "completed", "cancelled", "disputed"
+    ],
+    "priority_levels": ["low", "medium", "high", "urgent"],
+    "service_areas": {
+        "area1": "Business Formation & Registration",
+        "area2": "Financial Operations & Management", 
+        "area3": "Legal & Contracting Compliance",
+        "area4": "Quality Management & Standards",
+        "area5": "Technology & Security Infrastructure",
+        "area6": "Human Resources & Capacity",
+        "area7": "Performance Tracking & Reporting",
+        "area8": "Risk Management & Business Continuity"
+    },
+    "budget_ranges": [
+        "under-500", "500-1500", "1500-5000", "5000-15000", "over-15000"
+    ],
+    "timeline_ranges": [
+        "1-2 weeks", "2-4 weeks", "1-2 months", "2-3 months", "3+ months"
+    ],
+    "currency_format": "USD",
+    "date_format": "ISO8601",
+    "id_format": "UUID4"
+}
+
 def create_polaris_error(code: str, detail: str = None, status_code: int = 400):
     """Create a standardized Polaris error response"""
     error_message = POLARIS_ERROR_CODES.get(code, "Unknown error")
@@ -63,6 +91,81 @@ def create_polaris_error(code: str, detail: str = None, status_code: int = 400):
             "detail": detail
         }
     )
+
+class DataValidator:
+    """Centralized data validation and standardization"""
+    
+    @staticmethod
+    def validate_engagement_status(status: str) -> str:
+        """Validate and standardize engagement status"""
+        if not status or status not in DATA_STANDARDS["engagement_statuses"]:
+            raise create_polaris_error("POL-3002", f"Invalid engagement status: {status}")
+        return status.lower().strip()
+    
+    @staticmethod
+    def validate_priority(priority: str) -> str:
+        """Validate and standardize priority level"""
+        if not priority or priority not in DATA_STANDARDS["priority_levels"]:
+            raise create_polaris_error("POL-3002", f"Invalid priority level: {priority}")
+        return priority.lower().strip()
+    
+    @staticmethod
+    def validate_service_area(area_id: str) -> str:
+        """Validate and standardize service area"""
+        if not area_id or area_id not in DATA_STANDARDS["service_areas"]:
+            raise create_polaris_error("POL-3002", f"Invalid service area: {area_id}")
+        return area_id.lower().strip()
+    
+    @staticmethod
+    def validate_budget_range(budget: str) -> str:
+        """Validate and standardize budget range"""
+        if not budget or budget not in DATA_STANDARDS["budget_ranges"]:
+            raise create_polaris_error("POL-3002", f"Invalid budget range: {budget}")
+        return budget.lower().strip()
+    
+    @staticmethod
+    def validate_timeline(timeline: str) -> str:
+        """Validate and standardize timeline"""
+        if not timeline or timeline not in DATA_STANDARDS["timeline_ranges"]:
+            raise create_polaris_error("POL-3002", f"Invalid timeline: {timeline}")
+        return timeline.strip()
+    
+    @staticmethod
+    def standardize_currency(amount: float) -> dict:
+        """Standardize currency format"""
+        return {
+            "amount": round(float(amount), 2),
+            "currency": DATA_STANDARDS["currency_format"],
+            "formatted": f"${amount:,.2f}"
+        }
+    
+    @staticmethod
+    def standardize_timestamp() -> str:
+        """Generate standardized ISO8601 timestamp"""
+        return datetime.utcnow().isoformat() + "Z"
+    
+    @staticmethod
+    def generate_standard_id(prefix: str = "") -> str:
+        """Generate standardized UUID4 identifier"""
+        base_id = str(uuid.uuid4())
+        return f"{prefix}_{base_id}" if prefix else base_id
+    
+    @staticmethod
+    def sanitize_text(text: str, max_length: int = None) -> str:
+        """Sanitize and standardize text input"""
+        if not text:
+            return ""
+        
+        # Remove excessive whitespace and normalize
+        sanitized = re.sub(r'\s+', ' ', text.strip())
+        
+        # Remove potentially harmful characters but keep basic punctuation
+        sanitized = re.sub(r'[<>{}\\]', '', sanitized)
+        
+        if max_length and len(sanitized) > max_length:
+            sanitized = sanitized[:max_length].strip()
+        
+        return sanitized
 
 # Stripe Payment Integration
 try:
