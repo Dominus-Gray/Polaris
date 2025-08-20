@@ -2428,12 +2428,20 @@ function ClientHome(){
           
           // Load dynamic free services based on gaps
           const freeServicesRes = await axios.get(`${API}/free-resources/recommendations`, {
+            ...authHeaders,
             params: { gaps: calculatedGaps.map(g => g.area_id).join(',') }
           });
           setFreeServices(freeServicesRes.data.resources || []);
         }
       } catch(e) {
         console.error('Error loading client home data:', e);
+        // Show user-friendly error message
+        if (e.response?.status === 401) {
+          console.error('Authentication failed - redirecting to login');
+          localStorage.removeItem('polaris_token');
+          localStorage.removeItem('polaris_me');
+          navigate('/');
+        }
       }
     }; 
     load(); 
