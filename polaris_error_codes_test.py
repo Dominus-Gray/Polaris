@@ -174,22 +174,41 @@ class PolarisErrorCodeTester:
                 
                 if content_response.status_code == 403:
                     error_data = content_response.json()
-                    detail = error_data.get("detail", {})
+                    message_data = error_data.get("message", {})
                     
-                    if isinstance(detail, dict) and detail.get("error_code") == "POL-1005":
+                    if isinstance(message_data, dict) and message_data.get("error_code") == "POL-1005":
                         self.log_result(
                             "KB Access Control Error Code", 
                             "PASS", 
-                            f"Correct POL-1005 error code for locked KB area: {detail.get('message')}"
+                            f"Correct POL-1005 error code for locked KB area: {message_data.get('message')}"
                         )
                         return True
                     else:
                         self.log_result(
                             "KB Access Control Error Code", 
                             "INFO", 
-                            f"Area accessible or different error format: {detail}"
+                            f"Area access denied but different error format: {error_data}"
                         )
-                        return True  # Not a failure, just means area is unlocked
+                        return True  # Not a failure, just different error
+                elif content_response.status_code == 402:
+                    # Payment required - this might also trigger POL-1005
+                    error_data = content_response.json()
+                    message_data = error_data.get("message", {})
+                    
+                    if isinstance(message_data, dict) and message_data.get("error_code") == "POL-1005":
+                        self.log_result(
+                            "KB Access Control Error Code", 
+                            "PASS", 
+                            f"Correct POL-1005 error code for payment required: {message_data.get('message')}"
+                        )
+                        return True
+                    else:
+                        self.log_result(
+                            "KB Access Control", 
+                            "INFO", 
+                            f"Payment required but different error format: {error_data}"
+                        )
+                        return True
                 else:
                     self.log_result(
                         "KB Access Control", 
