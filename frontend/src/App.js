@@ -2400,24 +2400,24 @@ function ClientHome(){
         setMatchedServices(services.data.services || []);
 
         // Load knowledge base access status
-        const access = await axios.get(`${API}/knowledge-base/access`);
+        const access = await axios.get(`${API}/knowledge-base/access`, authHeaders);
         setKnowledgeBaseAccess(access.data);
 
         // Load assessment data and gaps
         const userId = meLocal?.id;
         let assessmentRes = null;
         if (userId) {
-          assessmentRes = await axios.get(`${API}/assessment/progress/${userId}`);
+          assessmentRes = await axios.get(`${API}/assessment/progress/${userId}`, authHeaders);
           setAssessmentData(assessmentRes.data);
         }
 
         // Load active service requests
-        const requests = await axios.get(`${API}/engagements/my-services`);
+        const requests = await axios.get(`${API}/engagements/my-services`, authHeaders);
         setServiceRequests(requests.data.engagements || []);
 
         // Load sponsoring agency info (from license code)
         if (data.sponsoring_agency_id) {
-          const agency = await axios.get(`${API}/agency/info/${data.sponsoring_agency_id}`);
+          const agency = await axios.get(`${API}/agency/info/${data.sponsoring_agency_id}`, authHeaders);
           setSponsoringAgency(agency.data);
         }
 
