@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-navigator-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://agency-connect-4.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"🔐 COMPREHENSIVE AUTHENTICATION TESTING - ACTUAL IMPLEMENTATION")
@@ -365,7 +365,7 @@ def test_cors_and_security():
         response = requests.options(
             f"{API_BASE}/auth/login",
             headers={
-                "Origin": "https://polaris-navigator-1.preview.emergentagent.com",
+                "Origin": "https://agency-connect-4.preview.emergentagent.com",
                 "Access-Control-Request-Method": "POST",
                 "Access-Control-Request-Headers": "Content-Type,Authorization"
             }

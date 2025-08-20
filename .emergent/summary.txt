@@ -1,77 +1,84 @@
 <analysis>
-The previous AI engineer's trajectory involved an extensive evolution of the Polaris platform, moving beyond MVP. Key efforts included resolving Google OAuth issues, refining UI/UX, and implementing major features like a comprehensive assessment system, a Service Request system with payment integration (Stripe), and a robust role-based registration/approval flow. Significant time was spent iterating on the Polaris logo, which underwent numerous design changes and placement adjustments due to the user's high quality standards.
+The AI engineer's trajectory for the Polaris platform involved a systematic expansion from MVP, addressing various technical challenges and implementing complex features. Initially, efforts focused on stabilizing the monolithic  by refactoring components, resolving Google OAuth issues, and iteratively refining the UI/UX, particularly the Polaris logo.
 
-The engineer adopted a structured phased approach: Bigger Bets, Medium, and Quick Wins. Phases 1 (Procurement Opportunities) and 2 (Milestone-based Engagements) are functionally complete, with UI polish on Engagements. A critical looping issue caused by a monolithic  and inconsistent frontend state was identified and addressed by refactoring large components into separate files, stabilizing development. The work concluded with the engineer actively implementing Phase 3 (Advanced Knowledge Base + AI), maintaining a focus on premium UI/UX and adherence to environment variables and API routing rules.
+Major feature development occurred in phases: Phases 1 and 2 (Procurement Opportunities, Milestone-based Engagements) were completed, and Phase 3 (Advanced Knowledge Base + AI) was actively implemented. This included building a comprehensive assessment system, a Service Request system with Stripe payments, and a robust role-based registration/approval flow. A significant recent pivot involved generating highly detailed SaaS documentation based on platform specifics and deeply researching/implementing a new per-assessment usage-based pricing model. The work currently focuses on resolving UI/UX issues, fixing download links, and ensuring proper access control for Knowledge Base content, demonstrating an agile response to user feedback.
 </analysis>
 
 <product_requirements>
-The Polaris platform, developed for the City of San Antonio's SBAP, aims to assess small business maturity and provide comprehensive procurement readiness support. It caters to Small Business Clients, Digital Navigators, Service Providers, and Local Agencies. Core features include an 8-area maturity assessment, offering AI-generated resources or provider matching (with evidence upload), and AI assistance providing dynamic guidance. Authentication is JWT-based with Google OAuth, incorporating role-gated routes, invitation codes, and payment info collection for most users. Business profiles are mandatory. The Service Request system (akin to Fiverr) enables client-initiated requests, budget-aware provider matching, payment collection upon selection, service tracking, rating, and feedback. Local Agencies manage business invitations, licenses, and forecasts. The platform also includes Small Business Maturity Assurance certificates and a responsive React UI with Polaris branding, role-specific dashboards, and a redesigned landing page. Implementation so far has covered these core feature sets, with an ongoing focus on refinement and expansion.
+The Polaris platform, built for the City of San Antonio's SBAP, aims to elevate small business procurement readiness. It features an 8-area maturity assessment, AI-generated resources, and provider matching. Key user roles include Small Business Clients, Digital Navigators, Service Providers, and Local Agencies. Authentication is JWT-based with Google OAuth, incorporating role-gated routes and invitation codes. A Service Request system facilitates client-initiated requests, budget-aware provider matching, Stripe-based payments, tracking, rating, and feedback. Local Agencies manage business invitations, licenses, and forecasts. The platform also generates Small Business Maturity Assurance certificates and boasts a responsive React UI with Polaris branding, role-specific dashboards, and a redesigned landing page. Implementation has covered these core features, with an ongoing focus on refinement and expansion, including a revised per-assessment usage-based pricing model for agencies (5-25 per assessment).
 </product_requirements>
 
 <key_technical_concepts>
 -   **FastAPI**: Python framework for backend APIs.
 -   **React**: JavaScript library for frontend UI.
--   **MongoDB**: NoSQL database (uses UUIDs).
+-   **MongoDB**: NoSQL database (UUIDs used for IDs).
 -   ****: Custom library for LLM and external API integrations.
 -   **JWT**: JSON Web Tokens for authentication.
 -   **Tailwind CSS**: Utility-first CSS framework.
 -   **Stripe**: Payment gateway.
--   **uPlot/uplot-react**: Lightweight charting library.
--   **Supervisor**: Process control system.
+-   **Prometheus**: For performance monitoring.
+-   **Supervisor**: Process control system for managing frontend/backend.
 -   **Google OAuth 2.0/OIDC**: Social login.
 </key_technical_concepts>
 
 <code_architecture>
-The application uses a standard full-stack architecture:
+The application employs a standard full-stack architecture:
 
 
--   ****:
-    -   **Importance**: Core FastAPI backend for API endpoints, business logic, and database interactions.
-    -   **Changes**: Extensive additions for Stripe payments, expanded 8-area assessment schema, new endpoints for assessment management, service requests, Knowledge Base unlocks, role-based registration/approval (including license generation), and provider management. New endpoints were added for  (permanent unlock for test users),  (for landing page KPIs), and models/endpoints for  and  (milestone-based payments). Security middleware, logging, and rate limiting were also implemented. Fixed a Pydantic pattern bug on a datetime field.
 
 -   ****:
-    -   **Importance**: Main React component managing UI, routing, and application state.
-    -   **Changes**:  was completely refactored.  was redesigned with tabs, assessment status, and dynamic resources.  logic was refined.  page hero section was redesigned multiple times to accommodate various logo iterations and content changes.  was enhanced for 8-area assessment, conditional logic, and free resource display/logging.  was modified for conditional visibility and Knowledge Base navigation. Critically, major components like  and  were refactored out of  into  to resolve compilation errors and improve maintainability. Routing was updated to point to these new page components. The Services header link was updated from  to .
+    -   **Importance**: Central FastAPI backend for API endpoints, business logic, and database interactions.
+    -   **Changes**: Extended with Stripe payments, an 8-area assessment schema, new endpoints for assessment management, service requests, Knowledge Base unlocks, role-based registration/approval, provider management, , , , and . Security middleware, logging, and rate limiting were implemented. Key additions include endpoints for:
+        *   Knowledge Base CMS (articles, versions, tags, AI generation).
+        *   Contextual KB cards and engagement analytics.
+        *   Multi-tenant/White-label features (agency theme config, certificate generation, white-label landing pages).
+        *   Prometheus metrics and performance targets.
+        *   Usage-based pricing management (, , ).
+
+-   ****:
+    -   **Importance**: Primary React component for UI, routing, and application state.
+    -   **Changes**: Major refactoring moved  and  to  to resolve compilation issues.  was refactored.  was redesigned with tabs.  refined.  page hero section repeatedly updated for logo iterations.  enhanced for 8-area assessment.  modified for conditional visibility and Knowledge Base navigation. Most recently,  and  components were integrated into  and . Notification dropdown was attempted to be moved from header to user profile, causing JSX errors that were fixed.  was updated to navigate to external links.
 
 -   ****:
     -   **Importance**: Global styles and custom branding.
-    -   **Changes**: Significant updates for new UI/UX components, responsive adjustments, and consistent visual styling for new features.
+    -   **Changes**: Updated to support new UI/UX components and responsive design for new features.
 
 -   ** & **:
     -   **Importance**: Manage Python and Node.js dependencies.
-    -   **Changes**: Updated to include , , , , and other security/notification libraries.
+    -   **Changes**: Updated for , , , , security/notification libraries, and most recently, .
 
 -   ****:
     -   **Importance**: Stores frontend environment variables.
-    -   **Changes**:  was critically updated, and  was added.
+    -   **Changes**:  updated,  and  added.
 
 -   ****:
-    -   **Importance**: Stores static assets, particularly the various Polaris logo SVGs.
-    -   **Changes**: Numerous SVG files were created and updated (, , , , , , , , , , , , , , , , , , , , , , ) reflecting the iterative logo design process and its final implementation.
+    -   **Importance**: Stores static assets, especially Polaris logo SVGs.
+    -   **Changes**: Numerous SVG files created/updated reflecting iterative logo design.
 </code_architecture>
 
 <pending_tasks>
--   **Phase 3 (Advanced Knowledge Base + AI)**: Implement KB editor (versioned articles, tags, attachments), contextual KB cards in assessment and client home, AI Next Best Actions (awaiting ), and KB engagement analytics in Navigator Analytics.
--   **Phase 4 (Multi-tenant/White-label)**: Implement per-agency theme configuration (logo/palette) across the UI, certificates, and OG images.
--   **Medium and Quick Wins Phases**: All tasks outlined in these phases are pending for future implementation.
+-   Fix download links not generating templates.
+-   Ensure Knowledge Base templates/services require payment to unlock for non-test accounts.
+-   Remove notification dropdown from header; add notifications as a tab in the user profile and highlight user icon on new notifications.
+-   Perform minor UI/UX improvements for consistency in colors and formatting.
+-   Clarify and implement the function for the Engagements page.
+-   Define and implement custom error codes (e.g., POL-1001).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was actively engaged in a major refactoring effort to stabilize the frontend and continue implementing the ambitious Bigger Bets phase of the Polaris platform. The key issues addressed were frontend compilation loops caused by a monolithic  file and inconsistent code insertions.
+Immediately before this summary request, the AI engineer was addressing several critical issues identified by the user to refine the application's functionality and UI/UX.
 
-**Current State of Phased Work:**
--   **Phase 1 (Procurement Opportunities)**: Completed. Backend models and endpoints are implemented for agencies to create/manage opportunities, clients to browse/apply with fit scores, and providers to view leads. The frontend UI for these flows is in place.
--   **Phase 2 (Milestone-based Engagements)**: Completed. Backend endpoints for engagement lifecycle (create, fund, deliver, approve, release) are operational with audit trails. The frontend has a dedicated  accessible via client/provider navigation, featuring a polished timeline stepper, activity log, milestone status chips, and a compact summary. A preview-safe Fund modal simulates funding until Stripe keys are provided.
--   **Phase 3 (Advanced Knowledge Base + AI)**: Currently in progress. The engineer is implementing the Knowledge Base CMS (versioned articles, tags, attachments, draft/publish workflow) and contextual KB cards for assessment and client home. Work on the AI Next Best Actions and Navigator review queue (feature-flagged) and KB engagement analytics is also underway.
--   **Phase 4 (Multi-tenant/White-label)**: This phase is queued to start immediately after Phase 3.
+The primary focus is on fixing:
+1.  **Download Links:** The user reported that download links within the platform (likely for templates or resources) are not generating any files. The engineer has begun to address this by modifying  to handle  for template downloads, specifically for  functionality in the backend.
+2.  **Free Resources Navigation:** The Free Resources section is intended to navigate to external community and organizational resources for registration. The  component in  was updated to reflect this, with the engineer ensuring it directs users to external links rather than internal assets. This involved replacing the existing component with a new implementation designed for external navigation.
+3.  **Knowledge Base Access Control:** Outside of user test accounts, all templates and services related to the Knowledge Base are explicitly required to be unlockable only after payment. The engineer has acknowledged this but has not yet fully implemented this payment-gating for all KB content, only having  for test users. This is a crucial outstanding access control task.
+4.  **Notification UI/UX:** The notification dropdown area in the header was deemed visually unappealing. The engineer is in the process of removing this dropdown and plans to move the notifications view into a tab within the user profile. The goal is also to highlight the user icon when new notifications are available. The removal from the header involved several attempts to fix JSX and linting errors in .
+5.  **General UI/UX Improvements:** The user explicitly requested minor UI/UX improvements to ensure consistency, proper colors, and formatting across the platform. This is a broader task that will likely be addressed as other specific UI fixes are implemented.
+6.  **Engagements Page Functionality:** The user noted that nothing happens when clicking engagements and questioned its function. This page is crucial for milestone-based engagements but its current state is non-functional, requiring the engineer to define and implement its correct behavior and content.
 
-**Key Recent Changes and Nuances:**
--   **Frontend Refactor**: Major structural changes involved moving large page components (, ) from the monolithic  into  to prevent compilation errors and enhance stability.
--   **Landing Page**: The KPI dashboard was recently removed. The logo on the landing page underwent extensive iterations and is now composed of a stacked icon (star-in-circle) above the POLARIS lettering, centered and scaled to visually match the headline, without a blue banner.
--   **Knowledge Base Access**: Automated access for  test accounts has been permanently enabled for the Knowledge Base.
--   **Adherence to Rules**: The engineer consistently ensured that all backend API routes are prefixed with , environment variables (, ) are exclusively used, and no  values are modified.
+The most recent action was an edit to  to update the  to navigate to external links, confirming the successful update of that specific component. The engineer's next step is to add routes for notifications and fix the engagements page, alongside other UI improvements.
 </current_work>
 
 <optional_next_step>
-Continue implementing Phase 3: Advanced Knowledge Base and AI features, focusing on the KB editor and contextual cards.
+Add routes for notifications, fix the Engagements page functionality, and continue with general UI/UX improvements to ensure consistency.
 </optional_next_step>
