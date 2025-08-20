@@ -1427,19 +1427,34 @@ function KnowledgeBasePage(){
       const filename = response.data.filename || `polaris_${areaId}_${resourceType}.docx`;
       const contentType = response.data.content_type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       
-      // For Office documents, we need to handle base64 encoding
+      // For now, handle content as text since backend returns markdown text
+      // In production, this should be actual Office document binary data
       let blob;
-      if (contentType.includes('officedocument')) {
-        // Assume base64 encoded content for Office documents
-        const binaryString = window.atob(content);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+      try {
+        if (contentType.includes('officedocument')) {
+          // Try to decode as base64 first, fallback to text
+          try {
+            const binaryString = window.atob(content);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            blob = new Blob([bytes], { type: contentType });
+          } catch (base64Error) {
+            // Fallback to text content with Word content type
+            blob = new Blob([content], { type: 'text/plain' });
+            // Update filename to reflect actual content type
+            const extension = filename.split('.').pop();
+            const baseName = filename.replace(`.${extension}`, '');
+            filename = `${baseName}.txt`;
+          }
+        } else {
+          // Plain text content
+          blob = new Blob([content], { type: contentType });
         }
-        blob = new Blob([bytes], { type: contentType });
-      } else {
-        // Plain text content
-        blob = new Blob([content], { type: contentType });
+      } catch (error) {
+        console.warn('Content processing error, using fallback:', error);
+        blob = new Blob([content], { type: 'text/plain' });
       }
       
       const url = window.URL.createObjectURL(blob);
