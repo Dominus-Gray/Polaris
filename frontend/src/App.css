@@ -15,20 +15,22 @@ body { @apply bg-slate-50 text-slate-900; }
 /* Professional Header Design */
 .professional-header {
   @apply bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid rgb(226, 232, 240);
 }
 
 .header-container {
   @apply container mx-auto px-6 flex items-center justify-between h-16;
+  max-width: 1400px;
 }
 
 .header-logo {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-3;
 }
 
 .polaris-logo-container {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-3;
 }
 
 .logo-large {
@@ -48,15 +50,33 @@ body { @apply bg-slate-50 text-slate-900; }
 }
 
 .main-navigation {
-  @apply hidden md:flex items-center space-x-1;
+  @apply hidden md:flex items-center space-x-2;
 }
 
 .nav-item {
-  @apply flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200;
+  @apply flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(241, 245, 249) 100%);
 }
 
 .nav-item.active {
   @apply text-[#1B365D] bg-blue-50;
+  background: linear-gradient(135deg, rgb(219, 234, 254) 0%, rgb(239, 246, 255) 100%);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: linear-gradient(180deg, #1B365D 0%, #4A90C2 100%);
+  border-radius: 2px;
 }
 
 .nav-icon {
@@ -75,8 +95,14 @@ body { @apply bg-slate-50 text-slate-900; }
   @apply flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer;
 }
 
+.user-menu-trigger:hover {
+  background: linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(241, 245, 249) 100%);
+}
+
 .user-avatar {
-  @apply w-8 h-8 rounded-full bg-gradient-to-br from-[#1B365D] to-[#4A90C2] flex items-center justify-center text-white text-sm font-semibold;
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold relative;
+  background: linear-gradient(135deg, #1B365D 0%, #4A90C2 50%, #5BA3D9 100%);
+  box-shadow: 0 2px 8px rgba(27, 54, 93, 0.2);
 }
 
 .user-info {
@@ -96,11 +122,16 @@ body { @apply bg-slate-50 text-slate-900; }
 }
 
 .user-menu-dropdown {
-  @apply absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50;
+  @apply absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .menu-item {
-  @apply flex items-center space-x-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-150 w-full text-left;
+  @apply flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-150 w-full text-left;
+}
+
+.menu-item:hover {
+  background: linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(241, 245, 249) 100%);
 }
 
 .menu-icon {
