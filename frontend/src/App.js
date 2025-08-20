@@ -1450,6 +1450,46 @@ function KnowledgeBasePage(){
     }
   };
 
+  const sendAIMessage = async () => {
+    if (!aiInput.trim()) return;
+    
+    const userMessage = aiInput.trim();
+    setAIInput('');
+    setAIMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setAILoading(true);
+    
+    try {
+      const areaContext = selectedArea ? areas.find(a => a.id === selectedArea)?.title : 'general procurement readiness';
+      const response = await axios.post(
+        `${API}/ai/knowledge-base-assistance`,
+        {
+          message: userMessage,
+          context: {
+            area: selectedArea,
+            area_name: areaContext,
+            user_type: 'small_business'
+          }
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('polaris_token')}` }
+        }
+      );
+      
+      setAIMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.data.response || 'I apologize, but I encountered an issue processing your request. Please try again.' 
+      }]);
+    } catch (e) {
+      console.error('AI message failed:', e);
+      setAIMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'I\'m currently unable to respond. Please try asking your question again, or contact support if the issue persists.' 
+      }]);
+    } finally {
+      setAILoading(false);
+    }
+  };
+
   return (
     <div className="container mt-6 max-w-7xl">
       {/* Knowledge Base Header */}
