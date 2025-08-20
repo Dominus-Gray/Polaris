@@ -5819,6 +5819,259 @@ async def verify_certificate(certificate_id: str):
         logger.error(f"Error verifying certificate: {e}")
         raise HTTPException(status_code=500, detail="Failed to verify certificate")
 
+# ---------------- Standardized Error Code System ----------------
+
+class PolarisErrorCodes:
+    # Authentication & Authorization (1000-1999)
+    AUTH_FAILED = "POL-1001"
+    TOKEN_EXPIRED = "POL-1002" 
+    INSUFFICIENT_PERMISSIONS = "POL-1003"
+    ACCOUNT_SUSPENDED = "POL-1004"
+    
+    # Assessment System (2000-2999)
+    ASSESSMENT_NOT_FOUND = "POL-2001"
+    ASSESSMENT_INCOMPLETE = "POL-2002"
+    INVALID_AREA_ID = "POL-2003"
+    DUPLICATE_SUBMISSION = "POL-2004"
+    
+    # Payment & Billing (3000-3999)
+    PAYMENT_FAILED = "POL-3001"
+    INSUFFICIENT_CREDITS = "POL-3002"
+    INVALID_SUBSCRIPTION = "POL-3003"
+    BILLING_ERROR = "POL-3004"
+    
+    # Service Marketplace (4000-4999)
+    SERVICE_REQUEST_ERROR = "POL-4001"
+    PROVIDER_NOT_AVAILABLE = "POL-4002"
+    INVALID_PROPOSAL = "POL-4003"
+    ESCROW_ERROR = "POL-4004"
+    
+    # AI & Knowledge Base (5000-5999) 
+    AI_SERVICE_UNAVAILABLE = "POL-5001"
+    KB_ACCESS_DENIED = "POL-5002"
+    CONTENT_GENERATION_FAILED = "POL-5003"
+    RECOMMENDATION_ERROR = "POL-5004"
+    
+    # System & Infrastructure (6000-6999)
+    DATABASE_ERROR = "POL-6001"
+    RATE_LIMIT_EXCEEDED = "POL-6002"
+    MAINTENANCE_MODE = "POL-6003"
+    INTEGRATION_ERROR = "POL-6004"
+
+class PolarisException(Exception):
+    def __init__(self, error_code: str, message: str, status_code: int = 400):
+        self.error_code = error_code
+        self.message = message
+        self.status_code = status_code
+        super().__init__(self.message)
+
+def create_error_response(error_code: str, message: str, details: dict = None):
+    """Create standardized error response"""
+    response = {
+        "error": True,
+        "error_code": error_code,
+        "message": message,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    if details:
+        response["details"] = details
+    return response
+
+# ---------------- Agency Subscription Management ----------------
+
+class SubscriptionTier(BaseModel):
+    tier_name: str = Field(..., regex="^(starter|professional|enterprise|government_enterprise)$")
+    monthly_base: float
+    assessment_credits: int
+    overage_rate: float
+    businesses_supported: int  # -1 for unlimited
+    features: List[str]
+
+class AgencySubscription(BaseModel):
+    agency_id: str
+    tier: SubscriptionTier
+    current_credits: int
+    credits_used: int
+    billing_period_start: datetime
+    billing_period_end: datetime
+    status: str = Field(..., regex="^(active|suspended|cancelled)$")
+
+SUBSCRIPTION_TIERS = {
+    "starter": SubscriptionTier(
+        tier_name="starter",
+        monthly_base=499.0,
+        assessment_credits=25,
+        overage_rate=15.0,
+        businesses_supported=100,
+        features=["Basic assessments", "Standard support", "Basic analytics", "Standard certificates"]
+    ),
+    "professional": SubscriptionTier(
+        tier_name="professional", 
+        monthly_base=1299.0,
+        assessment_credits=75,
+        overage_rate=12.0,
+        businesses_supported=500,
+        features=["AI recommendations", "Priority support", "Advanced analytics", "Branded certificates", "Provider marketplace"]
+    ),
+    "enterprise": SubscriptionTier(
+        tier_name="enterprise",
+        monthly_base=2999.0,
+        assessment_credits=200,
+        overage_rate=10.0,
+        businesses_supported=-1,  # unlimited
+        features=["Custom integrations", "24/7 support", "API access", "Full white-label", "Advanced marketplace"]
+    ),
+    "government_enterprise": SubscriptionTier(
+        tier_name="government_enterprise",
+        monthly_base=7500.0,  # Average of custom range
+        assessment_credits=-1,  # unlimited
+        overage_rate=0.0,
+        businesses_supported=-1,
+        features=["Multi-tenant", "Custom compliance", "Advanced security", "Dedicated infrastructure"]
+    )
+}
+
+@api.get("/pricing/tiers")
+async def get_subscription_tiers():
+    """Get all available subscription tiers"""
+    return {
+        "tiers": SUBSCRIPTION_TIERS,
+        "knowledge_base_pricing": {
+            "individual_area": 25.0,
+            "all_areas_bundle": 149.0, 
+            "business_premium_monthly": 49.0
+        },
+        "marketplace_commission": {
+            "standard_rate": 0.12,
+            "volume_discounts": [
+                {"threshold": 10000, "rate": 0.10},
+                {"threshold": 25000, "rate": 0.08},
+                {"threshold": 50000, "rate": 0.06}
+            ]
+        },
+        "additional_services": {
+            "certificate_generation": 15.0,
+            "custom_branding_setup": 500.0,
+            "integration_consulting_hourly": 200.0,
+            "training_workshop": 2500.0,
+            "api_access_premium_monthly": 299.0
+        }
+    }
+
+@api.get("/agency/subscription-status")
+async def get_agency_subscription_status(current=Depends(require_role("agency"))):
+    """Get current agency subscription status and usage"""
+    try:
+        subscription = await db.agency_subscriptions.find_one({"agency_id": current["id"]})
+        
+        if not subscription:
+            # Default to starter tier for new agencies
+            default_sub = {
+                "agency_id": current["id"],
+                "tier_name": "starter",
+                "tier_details": SUBSCRIPTION_TIERS["starter"].dict(),
+                "current_credits": 25,
+                "credits_used": 0,
+                "billing_period_start": datetime.utcnow(),
+                "billing_period_end": datetime.utcnow() + timedelta(days=30),
+                "status": "active",
+                "overage_charges": 0.0
+            }
+            
+            await db.agency_subscriptions.insert_one({
+                "_id": str(uuid.uuid4()),
+                **default_sub
+            })
+            
+            return default_sub
+        
+        # Calculate usage and overage charges
+        tier_details = SUBSCRIPTION_TIERS[subscription["tier_name"]]
+        credits_remaining = max(0, subscription["current_credits"] - subscription["credits_used"])
+        overage_usage = max(0, subscription["credits_used"] - subscription["current_credits"])
+        overage_charges = overage_usage * tier_details.overage_rate
+        
+        return {
+            **subscription,
+            "tier_details": tier_details.dict(),
+            "credits_remaining": credits_remaining,
+            "overage_usage": overage_usage,
+            "overage_charges": overage_charges,
+            "days_remaining": (subscription["billing_period_end"] - datetime.utcnow()).days
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting subscription status: {e}")
+        raise HTTPException(status_code=500, detail=create_error_response(
+            PolarisErrorCodes.DATABASE_ERROR, 
+            "Failed to retrieve subscription status"
+        ))
+
+# ---------------- Performance Monitoring System ----------------
+
+class PerformanceMetrics(BaseModel):
+    endpoint: str
+    response_time_ms: float
+    status_code: int
+    timestamp: datetime
+    user_id: Optional[str] = None
+    agency_id: Optional[str] = None
+
+PERFORMANCE_TARGETS = {
+    "api_response_time_p95": 200,  # 95% of requests under 200ms
+    "ai_response_time_max": 3000,  # AI responses under 3 seconds
+    "concurrent_users_max": 1000,  # Support 1000+ concurrent users
+    "uptime_target": 0.999,  # 99.9% uptime
+    "error_rate_max": 0.01  # <1% error rate
+}
+
+@api.get("/system/performance-targets")
+async def get_performance_targets():
+    """Get system performance targets and SLAs"""
+    return {
+        "targets": PERFORMANCE_TARGETS,
+        "sla_commitments": {
+            "uptime": "99.9% monthly uptime",
+            "response_time": "95% of API calls under 200ms",
+            "ai_response_time": "AI recommendations under 3 seconds", 
+            "concurrent_users": "Support 1000+ simultaneous users",
+            "data_backup": "Daily automated backups with 99.99% reliability",
+            "security_response": "Critical security issues resolved within 4 hours"
+        },
+        "monitoring": {
+            "real_time_alerts": True,
+            "performance_dashboard": True,
+            "automated_scaling": True,
+            "health_checks": "Every 30 seconds"
+        }
+    }
+
+# ---------------- Enhanced Error Handling Middleware ----------------
+
+@app.exception_handler(PolarisException)
+async def polaris_exception_handler(request: Request, exc: PolarisException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=create_error_response(exc.error_code, exc.message)
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    # Map HTTP exceptions to Polaris error codes
+    error_code_mapping = {
+        401: PolarisErrorCodes.AUTH_FAILED,
+        403: PolarisErrorCodes.INSUFFICIENT_PERMISSIONS,
+        404: "POL-6005",  # Resource not found
+        429: PolarisErrorCodes.RATE_LIMIT_EXCEEDED,
+        500: PolarisErrorCodes.DATABASE_ERROR
+    }
+    
+    error_code = error_code_mapping.get(exc.status_code, "POL-6000")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=create_error_response(error_code, exc.detail)
+    )
+
 # ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
 
 # Include router
