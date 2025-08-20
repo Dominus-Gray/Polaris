@@ -5028,7 +5028,7 @@ function Landing(){
           </div>
           
           <div className="mt-6 pt-6 border-t border-slate-300 text-center text-xs text-slate-500">
-            <p>© 2025 Polaris Small Business Procurement Readiness Platform • Built in partnership with the City of San Antonio</p>
+            <p>© 2025 Polaris Small Business Procurement Readiness Platform • Establishing local level service to support small business pathway towards opportunity</p>
             <p className="mt-1">By using this platform, you agree to our Terms of Service and Privacy Policy</p>
           </div>
         </div>
