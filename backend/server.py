@@ -4173,7 +4173,7 @@ async def generate_template_download(area_id: str, template_type: str, current=D
                 has_access = (knowledge_access.get("all_areas", False) or knowledge_access.get(area_id, False))
         
         if not has_access:
-            raise HTTPException(status_code=403, detail="Knowledge base access required")
+            raise create_polaris_error("POL-1005", "Knowledge base area not unlocked - payment required", 403)
         
         content = await generate_template_content(area_id, template_type)
         
