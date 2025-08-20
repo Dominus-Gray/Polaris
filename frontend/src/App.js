@@ -4786,7 +4786,6 @@ function Landing(){
             <p className="hero-sub">Prove Readiness. Unlock Opportunity.</p>
             <div className="hero-ctas justify-center">
               <a className="btn btn-primary" href="#role-selection">Start Your Journey</a>
-              <a className="btn bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20" href="#auth">Sign In</a>
             </div>
           </div>
         </div>
