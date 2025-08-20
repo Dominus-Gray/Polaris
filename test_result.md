@@ -165,7 +165,7 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "Complete E2E approval and license flow testing"
+    - "Phase 3 Knowledge Base AI-powered features testing"
   stuck_tasks: []
   test_all: false
 
