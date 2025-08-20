@@ -2914,7 +2914,7 @@ async def delete_kb_article(article_id: str, current=Depends(require_role("navig
 @api.post("/knowledge-base/generate-content")
 async def generate_kb_content(
     area_id: str = Query(...),
-    content_type: str = Query(..., regex="^(template|sop|guide|checklist|compliance)$"),
+    content_type: str = Query(..., pattern="^(template|sop|guide|checklist|compliance)$"),
     topic: str = Query(...),
     current=Depends(require_role("navigator"))
 ):
