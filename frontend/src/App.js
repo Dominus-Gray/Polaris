@@ -2671,6 +2671,14 @@ function ClientHome(){
                 </div>
               </div>
               
+              {/* Contextual Knowledge Base Cards */}
+              <KBContextualCards 
+                areaId={gaps.length > 0 ? gaps[0].area_id : 'area1'} 
+                context="client_home"
+                title="📚 Recommended Resources for You"
+                limit={4}
+              />
+              
               <div className="mt-6 flex gap-3">
                 <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
                 <button className="btn" onClick={()=>navigate('/assessment')}>Continue Assessment</button>
