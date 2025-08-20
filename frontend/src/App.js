@@ -572,7 +572,7 @@ function ProfilePage(){
               </div>
             </div>
             <h1 className="processing-title">Welcome to Polaris</h1>
-            <p className="processing-subtitle">Your North Star for Procurement Readiness</p>
+            <p className="processing-subtitle">Your North Star for Small Business Procurement Readiness</p>
           </div>
 
           {/* Professional Loading Animation */}
