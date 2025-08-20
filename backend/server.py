@@ -4045,85 +4045,73 @@ async def navigator_resource_analytics(since_days: int = 30, current=Depends(req
 
 # ---------------- Service Provider Matching System ----------------
 @api.post("/service-requests/professional-help")
-async def request_professional_help(request_data: dict, current=Depends(require_user)):
-    """Create service request and notify matching providers - Available to all authenticated users"""
-    area_id = request_data.get("area_id")
-    budget_range = request_data.get("budget_range")
-    description = request_data.get("description", "")
+async def request_professional_help(request_data: StandardizedEngagementRequest, current=Depends(require_user)):
+    """Create standardized service request and notify matching providers"""
+    if not current:
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
     
-    if not area_id or not budget_range:
-        raise HTTPException(status_code=400, detail="Area ID and budget range are required")
-    
-    # Create service request
-    request_id = str(uuid.uuid4())
-    service_request = {
-        "_id": request_id,
-        "id": request_id,
-        "user_id": current["id"],
-        "area_id": area_id,
-        "budget_range": budget_range,
-        "description": description,
-        "status": "open",
-        "created_at": datetime.utcnow(),
-        "provider_responses": []
-    }
-    
-    await db.service_requests.insert_one(service_request)
-    
-    # Find matching service providers
-    area_names = {
-        'area1': 'Business Formation & Registration',
-        'area2': 'Financial Operations & Management', 
-        'area3': 'Legal & Contracting Compliance',
-        'area4': 'Quality Management & Standards',
-        'area5': 'Technology & Security Infrastructure',
-        'area6': 'Human Resources & Capacity',
-        'area7': 'Performance Tracking & Reporting',
-        'area8': 'Risk Management & Business Continuity'
-    }
-    
-    area_name = area_names.get(area_id, area_id)
-    
-    # Find providers with matching service areas (approved providers only)
-    approved_providers = await db.users.find({
-        "role": "provider", 
-        "approval_status": "approved"
-    }).to_list(200)
-    
-    # Get their business profiles and match by service areas
-    matching_providers = []
-    for provider in approved_providers:
-        profile = await db.business_profiles.find_one({"user_id": provider["_id"]})
-        if profile and profile.get("service_areas"):
-            # Check if any service area matches the requested area
-            if any(area_name.lower() in (service_area or "").lower() or (service_area or "").lower() in area_name.lower() 
-                   for service_area in profile.get("service_areas", [])):
-                matching_providers.append({"profile": profile, "user": provider})
-    
-    # Notify first 5 matching providers
-    notification_count = 0
-    for item in matching_providers[:5]:
-        provider_profile = item["profile"]
-        notification_id = str(uuid.uuid4())
-        notification = {
-            "_id": notification_id,
-            "provider_id": provider_profile["user_id"],
-            "service_request_id": request_id,
-            "client_id": current["id"],
-            "area_name": area_name,
-            "budget_range": budget_range,
-            "description": description,
-            "status": "pending",
-            "created_at": datetime.utcnow()
+    try:
+        # Create standardized service request using data processor
+        service_request = EngagementDataProcessor.create_standardized_service_request(
+            request_data, current["id"]
+        )
+        
+        # Store in database
+        await db.service_requests.insert_one(service_request)
+        
+        # Find and notify matching providers
+        matching_providers = await db.users.find({
+            "role": "provider", 
+            "approval_status": "approved",
+            "is_active": True
+        }).to_list(length=None)
+        
+        notifications_sent = 0
+        for provider in matching_providers:
+            try:
+                # Create standardized notification
+                notification = {
+                    "id": DataValidator.generate_standard_id("notif"),
+                    "user_id": provider["id"],
+                    "type": "new_service_request",
+                    "title": f"New Service Request: {service_request['area_name']}",
+                    "message": f"Budget: {service_request['budget_range']}, Timeline: {service_request['timeline']}",
+                    "data": {
+                        "request_id": service_request["request_id"],
+                        "area_id": service_request["area_id"],
+                        "area_name": service_request["area_name"],
+                        "budget_range": service_request["budget_range"],
+                        "priority": service_request["priority"]
+                    },
+                    "read": False,
+                    "created_at": DataValidator.standardize_timestamp(),
+                    "data_version": "1.0"
+                }
+                await db.notifications.insert_one(notification)
+                notifications_sent += 1
+            except Exception as e:
+                logger.error(f"Failed to notify provider {provider['id']}: {e}")
+        
+        logger.info(f"Service request {service_request['request_id']} created, {notifications_sent} providers notified")
+        
+        return {
+            "success": True,
+            "request_id": service_request["request_id"],
+            "area_name": service_request["area_name"],
+            "providers_notified": notifications_sent,
+            "status": "active",
+            "created_at": service_request["created_at"],
+            "metadata": {
+                "standardized": True,
+                "data_version": service_request["data_version"]
+            }
         }
-        await db.provider_notifications.insert_one(notification)
-        notification_count += 1
-    
-    return {
-        "request_id": request_id,
-        "message": f"Service request created and sent to {notification_count} matching providers",
-        "notified_providers": notification_count
-    }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Service request creation failed: {e}")
+        raise create_polaris_error("POL-3003", f"Failed to create service request: {str(e)}", 500)
 
 @api.get("/service-requests/my")
 async def list_my_service_requests(current=Depends(require_role("client"))):
