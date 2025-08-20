@@ -6106,6 +6106,11 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 # ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
 
+@api.get("/metrics")
+async def get_prometheus_metrics():
+    """Prometheus metrics endpoint"""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 # Include router
 app.include_router(api)
 
