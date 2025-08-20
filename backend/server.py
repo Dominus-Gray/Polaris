@@ -4903,6 +4903,247 @@ Most licenses can be obtained within 2-4 weeks with proper documentation.""",
         logger.error(f"Error seeding KB content: {e}")
         raise HTTPException(status_code=500, detail="Failed to seed content")
 
+# ---------------- Phase 4: Multi-tenant/White-label System ----------------
+
+class AgencyThemeIn(BaseModel):
+    agency_id: str
+    theme_config: Dict[str, Any]  # logo_url, primary_color, secondary_color, etc.
+    branding_name: Optional[str] = None
+    contact_info: Optional[Dict[str, str]] = None
+
+class AgencyThemeOut(BaseModel):
+    id: str
+    agency_id: str
+    theme_config: Dict[str, Any]
+    branding_name: Optional[str]
+    contact_info: Optional[Dict[str, str]]
+    created_at: datetime
+    updated_at: datetime
+
+@api.post("/agency/theme", response_model=AgencyThemeOut)
+async def create_agency_theme(theme: AgencyThemeIn, current=Depends(require_role("agency"))):
+    """Create or update agency theme configuration"""
+    try:
+        # Check if theme already exists for this agency
+        existing_theme = await db.agency_themes.find_one({"agency_id": theme.agency_id})
+        
+        if existing_theme:
+            # Update existing theme
+            update_data = {
+                "theme_config": theme.theme_config,
+                "branding_name": theme.branding_name,
+                "contact_info": theme.contact_info,
+                "updated_at": datetime.utcnow()
+            }
+            
+            await db.agency_themes.update_one(
+                {"agency_id": theme.agency_id},
+                {"$set": update_data}
+            )
+            
+            updated_theme = await db.agency_themes.find_one({"agency_id": theme.agency_id})
+            return AgencyThemeOut(**updated_theme)
+        else:
+            # Create new theme
+            theme_id = str(uuid.uuid4())
+            theme_doc = {
+                "_id": theme_id,
+                "id": theme_id,
+                "agency_id": theme.agency_id,
+                "theme_config": theme.theme_config,
+                "branding_name": theme.branding_name,
+                "contact_info": theme.contact_info,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            await db.agency_themes.insert_one(theme_doc)
+            return AgencyThemeOut(**theme_doc)
+            
+    except Exception as e:
+        logger.error(f"Error creating/updating agency theme: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create/update theme")
+
+@api.get("/agency/theme/{agency_id}", response_model=AgencyThemeOut)
+async def get_agency_theme(agency_id: str, current=Depends(require_user)):
+    """Get agency theme configuration"""
+    try:
+        theme = await db.agency_themes.find_one({"agency_id": agency_id})
+        if not theme:
+            raise HTTPException(status_code=404, detail="Agency theme not found")
+        
+        return AgencyThemeOut(**theme)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting agency theme: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get theme")
+
+@api.get("/public/agency-theme/{agency_id}")
+async def get_public_agency_theme(agency_id: str):
+    """Get public agency theme for white-label branding (no auth required)"""
+    try:
+        theme = await db.agency_themes.find_one({"agency_id": agency_id})
+        if not theme:
+            # Return default Polaris theme
+            return {
+                "branding_name": "Polaris",
+                "theme_config": {
+                    "primary_color": "#1B365D",
+                    "secondary_color": "#4A90C2",
+                    "logo_url": "/polaris-logo.svg",
+                    "favicon_url": "/favicon.ico"
+                },
+                "contact_info": {
+                    "support_email": "support@polaris.example.com",
+                    "website": "https://polaris.example.com"
+                }
+            }
+        
+        # Return only public theme information
+        return {
+            "branding_name": theme.get("branding_name", "Polaris"),
+            "theme_config": theme.get("theme_config", {}),
+            "contact_info": theme.get("contact_info", {})
+        }
+    except Exception as e:
+        logger.error(f"Error getting public agency theme: {e}")
+        return {
+            "branding_name": "Polaris",
+            "theme_config": {
+                "primary_color": "#1B365D",
+                "secondary_color": "#4A90C2"
+            }
+        }
+
+# Certificate Generation with Agency Branding
+@api.post("/certificates/generate")
+async def generate_certificate(
+    client_user_id: str = Query(...),
+    agency_id: Optional[str] = Query(None),
+    current=Depends(require_role("navigator"))
+):
+    """Generate procurement readiness certificate with agency branding"""
+    try:
+        # Get client user data
+        client_user = await db.users.find_one({"id": client_user_id})
+        if not client_user:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        # Get business profile
+        business_profile = await db.business_profiles.find_one({"user_id": client_user_id})
+        if not business_profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        # Get assessment data
+        assessment = await db.assessments.find_one({"user_id": client_user_id})
+        if not assessment or assessment.get("completion_percentage", 0) < 80:
+            raise HTTPException(status_code=400, detail="Assessment must be at least 80% complete")
+        
+        # Get agency theme if specified
+        agency_theme = None
+        if agency_id:
+            agency_theme = await db.agency_themes.find_one({"agency_id": agency_id})
+        
+        # Generate certificate ID
+        certificate_id = str(uuid.uuid4())
+        
+        # Certificate data
+        certificate_data = {
+            "_id": certificate_id,
+            "id": certificate_id,
+            "client_user_id": client_user_id,
+            "business_name": business_profile.get("business_name", "Unknown Business"),
+            "completion_percentage": assessment.get("completion_percentage", 0),
+            "readiness_score": assessment.get("readiness_score", 0),
+            "issued_by": current["id"],
+            "agency_id": agency_id,
+            "certificate_type": "Small Business Procurement Readiness",
+            "issued_at": datetime.utcnow(),
+            "expires_at": datetime.utcnow() + timedelta(days=365),  # 1 year validity
+            "status": "active",
+            "verification_code": f"SBPR-{secrets.token_hex(8).upper()}",
+            "agency_branding": {
+                "name": agency_theme.get("branding_name", "Polaris") if agency_theme else "Polaris",
+                "logo_url": agency_theme.get("theme_config", {}).get("logo_url") if agency_theme else "/polaris-logo.svg"
+            }
+        }
+        
+        await db.certificates.insert_one(certificate_data)
+        
+        return {
+            "certificate_id": certificate_id,
+            "verification_code": certificate_data["verification_code"],
+            "download_url": f"/api/certificates/{certificate_id}/download",
+            "expires_at": certificate_data["expires_at"].isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating certificate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate certificate")
+
+@api.get("/certificates/{certificate_id}/download")
+async def download_certificate(certificate_id: str):
+    """Download certificate PDF with agency branding"""
+    try:
+        certificate = await db.certificates.find_one({"id": certificate_id})
+        if not certificate:
+            raise HTTPException(status_code=404, detail="Certificate not found")
+        
+        # For demo purposes, return certificate data
+        # In production, this would generate and return a PDF
+        return {
+            "certificate_id": certificate_id,
+            "business_name": certificate["business_name"],
+            "certificate_type": certificate["certificate_type"],
+            "issued_at": certificate["issued_at"].isoformat(),
+            "expires_at": certificate["expires_at"].isoformat(),
+            "verification_code": certificate["verification_code"],
+            "agency_branding": certificate.get("agency_branding", {}),
+            "download_note": "PDF generation would be implemented here"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error downloading certificate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to download certificate")
+
+# OG Image Generation with Agency Branding
+@api.get("/og-image/{agency_id}")
+async def generate_og_image(agency_id: str):
+    """Generate Open Graph image with agency branding"""
+    try:
+        # Get agency theme
+        agency_theme = await db.agency_themes.find_one({"agency_id": agency_id})
+        
+        branding_name = "Polaris"
+        primary_color = "#1B365D"
+        
+        if agency_theme:
+            branding_name = agency_theme.get("branding_name", "Polaris")
+            primary_color = agency_theme.get("theme_config", {}).get("primary_color", "#1B365D")
+        
+        # Return OG image data (in production, this would generate an actual image)
+        return {
+            "og_image_url": f"/api/og-image/{agency_id}/generated.png",
+            "branding_name": branding_name,
+            "primary_color": primary_color,
+            "title": f"{branding_name} - Small Business Procurement Readiness Platform",
+            "description": "Assess readiness, get certified, and win government contracts",
+            "generation_note": "Dynamic OG image generation would be implemented here"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating OG image: {e}")
+        return {
+            "og_image_url": "/polaris-og-image.png",
+            "branding_name": "Polaris",
+            "title": "Polaris - Small Business Procurement Readiness Platform"
+        }
+
 # ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
 
 # Include router
