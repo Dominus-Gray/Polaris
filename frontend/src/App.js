@@ -3603,7 +3603,7 @@ function AgencyHome(){
             </svg>
             Revenue Generated
           </div>
-          <div className="tile-num">${String(impact.revenue?.assessment_fees || 0)}</div>
+          <div className="tile-num">${String(impact?.revenue?.assessment_fees || 0)}</div>
           <div className="tile-sub">assessment fees</div>
         </div>
         <div className="tile">
