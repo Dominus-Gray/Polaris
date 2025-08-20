@@ -4946,7 +4946,7 @@ function Landing(){
       <section className="container section">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-slate-900 mb-2">Driving Procurement Readiness</h2>
-          <p className="text-slate-600">Built in partnership with the City of San Antonio's Small Business Assurance Program</p>
+          <p className="text-slate-600">Establishing local level service to support small business pathway towards opportunity</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
