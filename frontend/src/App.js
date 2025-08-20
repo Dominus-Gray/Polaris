@@ -1269,6 +1269,10 @@ function KnowledgeBasePage(){
   const [resources, setResources] = useState([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [userAccess, setUserAccess] = useState(null);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [aiMessages, setAIMessages] = useState([]);
+  const [aiInput, setAIInput] = useState('');
+  const [aiLoading, setAILoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
