@@ -1424,7 +1424,7 @@ function KnowledgeBasePage(){
       
       // Create and download file with proper content type
       const content = response.data.content;
-      const filename = response.data.filename || `polaris_${areaId}_${resourceType}.docx`;
+      let filename = response.data.filename || `polaris_${areaId}_${resourceType}.docx`;
       const contentType = response.data.content_type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       
       // For now, handle content as text since backend returns markdown text
