@@ -4383,6 +4383,24 @@ function Header(){
               </div>
 
               <div className="user-menu-container">
+                <button 
+                  className="user-menu-trigger"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                >
+                  <div className="user-avatar">
+                    <span>{me.email?.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div className="user-info">
+                    <div className="user-email">{me.email}</div>
+                    <div className="user-role">{me.role}</div>
+                  </div>
+                  <svg className="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {showUserMenu && (
+                  <div className="user-menu-dropdown">
               <button 
                 className="user-menu-trigger"
                 onClick={() => setShowUserMenu(!showUserMenu)}
