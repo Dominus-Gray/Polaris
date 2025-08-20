@@ -4358,7 +4358,31 @@ function Header(){
           {!me ? (
             <a className="btn btn-primary" href="#auth">Sign In</a>
           ) : (
-            <div className="user-menu-container">
+            <div className="flex items-center gap-3">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button 
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V3h0z" />
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {showNotifications && (
+                  <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-lg shadow-lg border z-50">
+                    <NotificationCenter />
+                  </div>
+                )}
+              </div>
+
+              <div className="user-menu-container">
               <button 
                 className="user-menu-trigger"
                 onClick={() => setShowUserMenu(!showUserMenu)}
