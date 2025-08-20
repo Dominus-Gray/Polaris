@@ -2627,7 +2627,7 @@ class KBArticleIn(BaseModel):
     area_ids: List[str] = []
     tags: List[str] = []
     content_type: str = Field(default="template", pattern="^(template|sop|guide|checklist|compliance)$")
-    status: str = Field(default="draft", regex="^(draft|published|archived)$")
+    status: str = Field(default="draft", pattern="^(draft|published|archived)$")
     difficulty_level: str = Field(default="beginner", regex="^(beginner|intermediate|advanced)$")
     estimated_time: Optional[str] = None  # e.g., "30 minutes", "2 hours"
 
