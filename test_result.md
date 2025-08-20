@@ -137,6 +137,9 @@ The user has identified multiple critical issues and requirements that need to b
       - working: true
         agent: "testing"
         comment: "✅ FINAL VALIDATION PASS: Knowledge Base template download functionality re-verified during final comprehensive backend validation. All 3 tested template combinations working perfectly: area1/template (1466 chars), area2/guide (1466 chars), area5/practices (1481 chars). Template generation working correctly with proper markdown content and filename format (polaris_{area_id}_{template_type}.md). Access control properly enforced - @polaris.example.com accounts have full access to all KB areas. Template downloads generating meaningful content immediately without payment flow. 100% success rate. System ready for production deployment."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL FRONTEND DOWNLOAD ISSUE: Knowledge Base template downloads failing in frontend with 'InvalidCharacterError: Failed to execute atob on Window: The string to be decoded is not correctly encoded' error. Backend template generation working correctly, but frontend downloadAreaTemplate function has base64 decoding bug. Office document downloads (Word, Excel, PowerPoint) not functional due to improper base64 handling in downloadTemplate function. Authentication headers also missing from loadAreaResources function causing 401 errors on KB API calls. URGENT FIX NEEDED: 1) Fix base64 decoding in downloadAreaTemplate function, 2) Add proper Authorization headers to loadAreaResources function, 3) Ensure Office document downloads generate proper .docx/.xlsx/.pptx files instead of markdown."
 
   - task: "Phase 4 Multi-tenant and Advanced Features Implementation"
     implemented: true
