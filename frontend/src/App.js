@@ -2376,17 +2376,27 @@ function ClientHome(){
   useEffect(()=>{ 
     const load=async()=>{ 
       try {
+        const token = localStorage.getItem('polaris_token');
+        if (!token) {
+          console.error('No authentication token found');
+          return;
+        }
+        
+        const authHeaders = {
+          headers: { Authorization: `Bearer ${token}` }
+        };
+        
         const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
-        const {data} = await axios.get(`${API}/home/client`); 
+        const {data} = await axios.get(`${API}/home/client`, authHeaders); 
         setData(data); 
         const meLocal = JSON.parse(localStorage.getItem('polaris_me')||'null');
         
         // Load certificates
-        const certs = await axios.get(`${API}/client/certificates`);
+        const certs = await axios.get(`${API}/client/certificates`, authHeaders);
         setCertificates(certs.data.certificates || []);
         
         // Load matched services for the client
-        const services = await axios.get(`${API}/client/matched-services`);
+        const services = await axios.get(`${API}/client/matched-services`, authHeaders);
         setMatchedServices(services.data.services || []);
 
         // Load knowledge base access status
