@@ -438,12 +438,12 @@ async def login_user(request: Request, user: UserLogin):
     db_user = await db.users.find_one({"email": user.email})
     if not db_user:
         log_security_event("LOGIN_USER_NOT_FOUND", details={"email": user.email, "ip": request.client.host})
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise create_polaris_error("POL-1001", "User not found", 400)
     
     # Check if account is locked
     if db_user.get("locked_until") and db_user["locked_until"] > datetime.utcnow():
         log_security_event("LOGIN_ACCOUNT_LOCKED", user_id=db_user["id"], details={"email": user.email})
-        raise HTTPException(status_code=423, detail="Account temporarily locked due to failed login attempts")
+        raise create_polaris_error("POL-1002", "Account temporarily locked due to failed login attempts", 423)
     
     # Verify password
     if not pbkdf2_sha256.verify(user.password, db_user["hashed_password"]):
@@ -463,12 +463,12 @@ async def login_user(request: Request, user: UserLogin):
             "attempts": failed_attempts,
             "ip": request.client.host
         })
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise create_polaris_error("POL-1001", "Invalid password", 400)
     
     # Check if provider or agency is approved
     if db_user["role"] in ["provider", "agency"] and db_user.get("approval_status") != "approved":
         log_security_event("LOGIN_USER_NOT_APPROVED", user_id=db_user["id"], details={"email": user.email, "role": db_user["role"]})
-        raise HTTPException(status_code=403, detail=f"{db_user['role'].title()} account pending approval")
+        raise create_polaris_error("POL-1003", f"{db_user['role'].title()} account pending approval", 403)
     
     # Reset failed attempts on successful login
     await db.users.update_one(
