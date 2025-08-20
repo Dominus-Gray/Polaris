@@ -125,11 +125,11 @@ The user has identified multiple critical issues and requirements that need to b
 
   - task: "Knowledge Base Template Download Functionality"
     implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "testing"
