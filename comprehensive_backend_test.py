@@ -204,7 +204,8 @@ class ComprehensiveBackendTester:
         try:
             ai_request = {
                 "question": "How do I improve my cybersecurity posture for government contracting?",
-                "context": "small business procurement readiness"
+                "context": {"business_type": "small business", "focus": "procurement readiness"},
+                "area_id": "area5"
             }
             response = requests.post(f"{BASE_URL}/knowledge-base/ai-assistance", 
                                    json=ai_request, 
