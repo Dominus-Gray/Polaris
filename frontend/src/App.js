@@ -4523,7 +4523,7 @@ function Landing(){
               <div className="text-white font-extrabold text-3xl lg:text-5xl" style={{ letterSpacing: '0.35em' }}>POLARIS</div>
             </div>
 
-            <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Procurement Readiness</h1>
+            <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Small Business Procurement Readiness</h1>
             <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
             <div className="hero-ctas justify-center">
               <a className="btn btn-primary" href="#role-selection">Start Your Journey</a>
