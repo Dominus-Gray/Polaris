@@ -219,8 +219,9 @@ class ComprehensiveBackendTester:
         # Test 5: Next best actions
         try:
             nba_request = {
-                "user_context": "completed_assessment",
-                "current_gaps": ["cybersecurity", "financial_operations"]
+                "user_id": "test-user-id",
+                "current_gaps": ["cybersecurity", "financial_operations"],
+                "completed_areas": ["business_formation"]
             }
             response = requests.post(f"{BASE_URL}/knowledge-base/next-best-actions", 
                                    json=nba_request, 
