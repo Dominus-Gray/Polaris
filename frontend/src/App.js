@@ -3583,7 +3583,7 @@ function AgencyHome(){
             </svg>
             Total Invites
           </div>
-          <div className="tile-num">{String(impact?.invites?.total || 0)}</div>
+          <div className="tile-num">{String(impact.invites?.total || 0)}</div>
           <div className="tile-sub">businesses engaged</div>
         </div>
         <div className="tile">
