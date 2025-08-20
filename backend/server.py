@@ -2768,8 +2768,402 @@ async def get_knowledge_base_areas(current=Depends(require_user)):
     
     return {"areas": areas}
 
+@api.post("/knowledge-base/articles", response_model=KBArticleOut)
+async def create_kb_article(article: KBArticleIn, current=Depends(require_role("navigator"))):
+    """Create a new knowledge base article (Navigator only)"""
+    try:
+        article_id = str(uuid.uuid4())
+        article_doc = {
+            "_id": article_id,
+            "id": article_id,
+            "title": article.title,
+            "content": article.content,
+            "area_ids": article.area_ids,
+            "tags": article.tags,
+            "content_type": article.content_type,
+            "status": article.status,
+            "difficulty_level": article.difficulty_level,
+            "estimated_time": article.estimated_time,
+            "version": 1,
+            "author_id": current["id"],
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "view_count": 0
+        }
+        
+        await db.kb_articles.insert_one(article_doc)
+        return KBArticleOut(**article_doc)
+    except Exception as e:
+        logger.error(f"Error creating KB article: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create article")
 
-# ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
+@api.get("/knowledge-base/articles", response_model=List[KBArticleOut])
+async def list_kb_articles(
+    area_id: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
+    content_type: Optional[str] = Query(None),
+    status: Optional[str] = Query("published"),
+    current=Depends(require_user)
+):
+    """List knowledge base articles with filtering"""
+    try:
+        # Build filter
+        filter_query = {}
+        if area_id:
+            filter_query["area_ids"] = area_id
+        if tag:
+            filter_query["tags"] = tag
+        if content_type:
+            filter_query["content_type"] = content_type
+        if status:
+            filter_query["status"] = status
+            
+        # Non-navigators can only see published articles
+        if current.get("role") != "navigator":
+            filter_query["status"] = "published"
+        
+        articles = await db.kb_articles.find(filter_query).to_list(100)
+        return [KBArticleOut(**article) for article in articles]
+    except Exception as e:
+        logger.error(f"Error listing KB articles: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list articles")
+
+@api.get("/knowledge-base/articles/{article_id}", response_model=KBArticleOut)
+async def get_kb_article(article_id: str, current=Depends(require_user)):
+    """Get a specific knowledge base article"""
+    try:
+        article = await db.kb_articles.find_one({"_id": article_id})
+        if not article:
+            raise HTTPException(status_code=404, detail="Article not found")
+        
+        # Check if user can view draft articles
+        if article["status"] != "published" and current.get("role") != "navigator":
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Increment view count
+        await db.kb_articles.update_one(
+            {"_id": article_id},
+            {"$inc": {"view_count": 1}}
+        )
+        
+        # Log analytics
+        await db.analytics.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": current["id"],
+            "action": "kb_article_view",
+            "resource_id": article_id,
+            "area_ids": article.get("area_ids", []),
+            "timestamp": datetime.utcnow()
+        })
+        
+        return KBArticleOut(**article)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting KB article: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get article")
+
+@api.put("/knowledge-base/articles/{article_id}", response_model=KBArticleOut)
+async def update_kb_article(
+    article_id: str, 
+    update: KBArticleUpdate, 
+    current=Depends(require_role("navigator"))
+):
+    """Update a knowledge base article (Navigator only)"""
+    try:
+        existing_article = await db.kb_articles.find_one({"_id": article_id})
+        if not existing_article:
+            raise HTTPException(status_code=404, detail="Article not found")
+        
+        # Create new version for major changes
+        update_data = update.dict(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Increment version if content or title changed
+        if "content" in update_data or "title" in update_data:
+            update_data["version"] = existing_article.get("version", 1) + 1
+        
+        await db.kb_articles.update_one(
+            {"_id": article_id},
+            {"$set": update_data}
+        )
+        
+        updated_article = await db.kb_articles.find_one({"_id": article_id})
+        return KBArticleOut(**updated_article)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating KB article: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update article")
+
+@api.delete("/knowledge-base/articles/{article_id}")
+async def delete_kb_article(article_id: str, current=Depends(require_role("navigator"))):
+    """Delete a knowledge base article (Navigator only)"""
+    try:
+        result = await db.kb_articles.delete_one({"_id": article_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Article not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting KB article: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete article")
+
+# AI-Powered Content Generation
+@api.post("/knowledge-base/generate-content")
+async def generate_kb_content(
+    area_id: str = Query(...),
+    content_type: str = Query(..., regex="^(template|sop|guide|checklist|compliance)$"),
+    topic: str = Query(...),
+    current=Depends(require_role("navigator"))
+):
+    """Generate AI-powered content for knowledge base articles"""
+    try:
+        area_names = {
+            "area1": "Business Formation & Registration",
+            "area2": "Financial Operations & Management", 
+            "area3": "Legal & Contracting Compliance",
+            "area4": "Quality Management & Standards",
+            "area5": "Technology & Security Infrastructure",
+            "area6": "Human Resources & Capacity",
+            "area7": "Performance Tracking & Reporting",
+            "area8": "Risk Management & Business Continuity"
+        }
+        
+        area_name = area_names.get(area_id, "Unknown Area")
+        
+        prompt = f"""
+        Create a comprehensive {content_type} for small businesses related to {topic} in the context of {area_name}.
+        
+        Requirements:
+        - Focus on government contracting and procurement readiness
+        - Include specific actionable steps
+        - List required documentation and deliverables
+        - Provide compliance guidelines and best practices
+        - Use clear headings and bullet points
+        - Include templates or checklists where appropriate
+        
+        Target audience: Small business owners preparing for government contracting opportunities.
+        
+        Topic: {topic}
+        Content Type: {content_type.title()}
+        Business Area: {area_name}
+        """
+        
+        generated_content = await generate_ai_content(prompt, content_type)
+        
+        return {
+            "generated_content": generated_content,
+            "area_id": area_id,
+            "content_type": content_type,
+            "topic": topic,
+            "suggested_title": f"{area_name}: {topic} {content_type.title()}"
+        }
+    except Exception as e:
+        logger.error(f"Error generating KB content: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate content")
+
+# AI Assistant for Contextual Help
+@api.post("/knowledge-base/ai-assistance")
+async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(require_user)):
+    """Get AI-powered assistance and guidance"""
+    try:
+        # Build context from user's assessment data and business profile
+        context_parts = []
+        
+        if request.area_id:
+            area_names = {
+                "area1": "Business Formation & Registration",
+                "area2": "Financial Operations & Management", 
+                "area3": "Legal & Contracting Compliance",
+                "area4": "Quality Management & Standards",
+                "area5": "Technology & Security Infrastructure",
+                "area6": "Human Resources & Capacity",
+                "area7": "Performance Tracking & Reporting",
+                "area8": "Risk Management & Business Continuity"
+            }
+            context_parts.append(f"Business area focus: {area_names.get(request.area_id)}")
+        
+        if request.user_assessment_data:
+            gaps = request.user_assessment_data.get("gaps", [])
+            if gaps:
+                context_parts.append(f"Current assessment gaps: {', '.join(gaps)}")
+        
+        if request.context:
+            context_parts.append(f"Additional context: {request.context}")
+        
+        context_str = "\n".join(context_parts) if context_parts else "General business guidance"
+        
+        prompt = f"""
+        You are an expert business consultant specializing in small business procurement readiness for government contracting.
+        
+        Context:
+        {context_str}
+        
+        User Question: {request.question}
+        
+        Provide specific, actionable guidance that:
+        1. Directly addresses their question
+        2. Considers their current assessment status and gaps
+        3. Provides step-by-step recommendations
+        4. Suggests specific resources or documentation needed
+        5. Includes compliance considerations for government contracting
+        
+        Keep your response practical and focused on helping them achieve procurement readiness.
+        """
+        
+        if not EMERGENT_OK:
+            return {
+                "response": "AI assistance is temporarily unavailable. Please contact a Digital Navigator for personalized guidance.",
+                "source": "system_message"
+            }
+        
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=f"ai_assistance_{current['id']}_{str(uuid.uuid4())[:8]}",
+            system_message="You are an expert business consultant for small business procurement readiness."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Log the AI assistance interaction
+        await db.analytics.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": current["id"],
+            "action": "ai_assistance_request",
+            "question": request.question,
+            "area_id": request.area_id,
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {
+            "response": response,
+            "source": "ai_assistant",
+            "area_id": request.area_id
+        }
+    except Exception as e:
+        logger.error(f"Error getting AI assistance: {e}")
+        return {
+            "response": "I'm having trouble processing your request right now. Please try again or contact a Digital Navigator for assistance.",
+            "source": "error_fallback"
+        }
+
+# Next Best Actions AI Recommendations
+@api.post("/knowledge-base/next-best-actions")
+async def get_next_best_actions(request: NextBestActionRequest, current=Depends(require_user)):
+    """Get AI-powered next best action recommendations"""
+    try:
+        # Get user's current assessment status and business profile
+        assessment = await db.assessments.find_one({"user_id": request.user_id})
+        business_profile = await db.business_profiles.find_one({"user_id": request.user_id})
+        
+        # Build comprehensive context
+        context_parts = [
+            f"User ID: {request.user_id}",
+        ]
+        
+        if request.current_gaps:
+            context_parts.append(f"Current gaps: {', '.join(request.current_gaps)}")
+        
+        if request.completed_areas:
+            context_parts.append(f"Completed areas: {', '.join(request.completed_areas)}")
+        
+        if assessment:
+            context_parts.append(f"Assessment completion: {assessment.get('completion_percentage', 0)}%")
+        
+        if business_profile:
+            context_parts.append(f"Business industry: {business_profile.get('industry', 'Not specified')}")
+            context_parts.append(f"Business size: {business_profile.get('employee_count', 'Not specified')} employees")
+        
+        context_str = "\n".join(context_parts)
+        
+        prompt = f"""
+        Based on the following small business context, provide the top 3 next best actions for improving their government contracting readiness:
+        
+        {context_str}
+        
+        Prioritize actions that:
+        1. Address the most critical gaps first
+        2. Build upon their completed areas
+        3. Have the highest impact on procurement readiness
+        4. Are achievable given their current status
+        
+        For each action, provide:
+        - Clear action title
+        - Brief description (1-2 sentences)
+        - Estimated time to complete
+        - Priority level (high/medium/low)
+        - Required resources or documentation
+        
+        Format your response as actionable recommendations.
+        """
+        
+        if not EMERGENT_OK:
+            # Provide fallback recommendations
+            fallback_actions = [
+                {
+                    "title": "Complete Outstanding Assessment Areas",
+                    "description": "Finish your maturity assessment to identify all gaps and opportunities.",
+                    "estimated_time": "1-2 hours",
+                    "priority": "high",
+                    "resources": ["Assessment questionnaire", "Supporting documentation"]
+                },
+                {
+                    "title": "Update Business Profile",
+                    "description": "Ensure your business profile is complete and current.",
+                    "estimated_time": "30 minutes", 
+                    "priority": "medium",
+                    "resources": ["Business license", "Insurance certificates"]
+                },
+                {
+                    "title": "Review Knowledge Base Resources",
+                    "description": "Explore available templates and guides for your business areas.",
+                    "estimated_time": "45 minutes",
+                    "priority": "medium", 
+                    "resources": ["Knowledge Base access", "Templates"]
+                }
+            ]
+            return {"next_actions": fallback_actions, "source": "fallback_recommendations"}
+        
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=f"next_actions_{request.user_id}_{str(uuid.uuid4())[:8]}",
+            system_message="You are an expert business consultant providing prioritized action recommendations for procurement readiness."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        # Log the recommendation request
+        await db.analytics.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": current["id"],
+            "action": "next_best_actions_request",
+            "gaps_count": len(request.current_gaps),
+            "completed_count": len(request.completed_areas),
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {
+            "recommendations": ai_response,
+            "source": "ai_recommendations",
+            "generated_at": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting next best actions: {e}")
+        # Return fallback recommendations
+        fallback_actions = [
+            {
+                "title": "Complete Outstanding Assessment Areas", 
+                "description": "Focus on finishing your maturity assessment to get a complete picture.",
+                "estimated_time": "1-2 hours",
+                "priority": "high"
+            }
+        ]
+        return {"recommendations": fallback_actions, "source": "error_fallback"}
+
 class OpportunityIn(BaseModel):
     title: str
     description: str
