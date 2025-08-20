@@ -5965,9 +5965,32 @@ SUBSCRIPTION_TIERS = {
 
 @api.get("/pricing/tiers")
 async def get_subscription_tiers():
-    """Get all available subscription tiers"""
+    """Get all available subscription tiers with per-assessment pricing"""
     return {
+        "pricing_model": "per_assessment_usage",
         "tiers": SUBSCRIPTION_TIERS,
+        "pricing_structure": {
+            "starter": {
+                "price_per_assessment": 75.0,
+                "business_limit": 50,
+                "description": "Perfect for small municipalities and county programs"
+            },
+            "professional": {
+                "price_per_assessment": 100.0,
+                "business_limit": 200,
+                "description": "Ideal for mid-size cities and state programs"
+            },
+            "enterprise": {
+                "price_per_assessment": 125.0,
+                "business_limit": "unlimited",
+                "description": "Designed for large cities and federal programs"
+            },
+            "government_enterprise": {
+                "price_per_assessment": "custom (typically $100-150)",
+                "business_limit": "unlimited",
+                "description": "Custom solutions for multi-agency deployments"
+            }
+        },
         "knowledge_base_pricing": {
             "individual_area": 25.0,
             "all_areas_bundle": 149.0, 
@@ -5987,6 +6010,12 @@ async def get_subscription_tiers():
             "integration_consulting_hourly": 200.0,
             "training_workshop": 2500.0,
             "api_access_premium_monthly": 299.0
+        },
+        "billing_model": {
+            "assessment_charges": "Pay per completed assessment",
+            "billing_frequency": "Monthly invoicing for usage",
+            "minimum_commitment": "None - pure usage-based pricing",
+            "volume_discounts": "Available for high-volume agencies (>100 assessments/month)"
         }
     }
 
