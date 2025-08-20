@@ -4863,6 +4863,7 @@ function AppShell(){
           <Route path="/settings" element={<ProfileSettings />} />
           <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
           <Route path="/free-resources" element={<FreeResourcesPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/home" element={<HomeRouter />} />
           <Route path="/business/profile" element={<BusinessProfileForm />} />
