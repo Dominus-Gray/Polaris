@@ -5931,33 +5931,33 @@ class AgencySubscription(BaseModel):
 SUBSCRIPTION_TIERS = {
     "starter": SubscriptionTier(
         tier_name="starter",
-        monthly_base=499.0,
-        assessment_credits=25,
-        overage_rate=15.0,
-        businesses_supported=100,
+        monthly_base=0.0,  # No monthly base fee
+        assessment_credits=0,  # No included credits
+        overage_rate=75.0,  # $75 per assessment
+        businesses_supported=50,
         features=["Basic assessments", "Standard support", "Basic analytics", "Standard certificates"]
     ),
     "professional": SubscriptionTier(
         tier_name="professional", 
-        monthly_base=1299.0,
-        assessment_credits=75,
-        overage_rate=12.0,
-        businesses_supported=500,
+        monthly_base=0.0,  # No monthly base fee
+        assessment_credits=0,  # No included credits
+        overage_rate=100.0,  # $100 per assessment
+        businesses_supported=200,
         features=["AI recommendations", "Priority support", "Advanced analytics", "Branded certificates", "Provider marketplace"]
     ),
     "enterprise": SubscriptionTier(
         tier_name="enterprise",
-        monthly_base=2999.0,
-        assessment_credits=200,
-        overage_rate=10.0,
+        monthly_base=0.0,  # No monthly base fee
+        assessment_credits=0,  # No included credits
+        overage_rate=125.0,  # $125 per assessment
         businesses_supported=-1,  # unlimited
         features=["Custom integrations", "24/7 support", "API access", "Full white-label", "Advanced marketplace"]
     ),
     "government_enterprise": SubscriptionTier(
         tier_name="government_enterprise",
-        monthly_base=7500.0,  # Average of custom range
-        assessment_credits=-1,  # unlimited
-        overage_rate=0.0,
+        monthly_base=0.0,  # Custom pricing negotiated
+        assessment_credits=0,  # No included credits
+        overage_rate=100.0,  # Negotiated rate (typically $100-150 per assessment)
         businesses_supported=-1,
         features=["Multi-tenant", "Custom compliance", "Advanced security", "Dedicated infrastructure"]
     )
