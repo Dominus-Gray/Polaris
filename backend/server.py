@@ -5926,7 +5926,7 @@ class AgencySubscription(BaseModel):
     credits_used: int
     billing_period_start: datetime
     billing_period_end: datetime
-    status: str = Field(..., regex="^(active|suspended|cancelled)$")
+    status: str = Field(..., pattern="^(active|suspended|cancelled)$")
 
 SUBSCRIPTION_TIERS = {
     "starter": SubscriptionTier(
