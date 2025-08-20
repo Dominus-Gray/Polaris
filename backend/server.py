@@ -25,6 +25,45 @@ from functools import wraps
 import time
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
+# Custom Polaris Error Codes
+POLARIS_ERROR_CODES = {
+    "POL-1001": "Invalid authentication credentials provided",
+    "POL-1002": "User account not found or disabled", 
+    "POL-1003": "Insufficient permissions for requested action",
+    "POL-1004": "Payment required to access this resource",
+    "POL-1005": "Knowledge base area not unlocked",
+    "POL-1006": "Assessment not completed or invalid",
+    "POL-1007": "Service request not found or unauthorized",
+    "POL-1008": "Engagement workflow violation",
+    "POL-1009": "License code invalid or expired",
+    "POL-1010": "File upload failed or unsupported format",
+    "POL-2001": "Database connection error",
+    "POL-2002": "External API integration failure",
+    "POL-2003": "Payment processing error", 
+    "POL-2004": "Email delivery failure",
+    "POL-2005": "Rate limit exceeded",
+    "POL-3001": "Invalid request data format",
+    "POL-3002": "Required field missing or invalid",
+    "POL-3003": "Business logic validation failed",
+    "POL-3004": "Template generation failed",
+    "POL-3005": "AI service unavailable"
+}
+
+def create_polaris_error(code: str, detail: str = None, status_code: int = 400):
+    """Create a standardized Polaris error response"""
+    error_message = POLARIS_ERROR_CODES.get(code, "Unknown error")
+    if detail:
+        error_message = f"{error_message}: {detail}"
+    
+    return HTTPException(
+        status_code=status_code,
+        detail={
+            "error_code": code,
+            "message": error_message,
+            "detail": detail
+        }
+    )
+
 # Stripe Payment Integration
 try:
     from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
