@@ -4810,4 +4810,310 @@ function AppShell(){
   );
 }
 
+// ---------------- Phase 3: Contextual KB Cards Component ----------------
+function KBContextualCards({ areaId, context, title, limit = 3 }) {
+  const [cards, setCards] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (areaId) {
+      loadContextualCards();
+    }
+  }, [areaId, context]);
+
+  const loadContextualCards = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/knowledge-base/contextual-cards`, {
+        params: { area_id: areaId, user_context: context, limit }
+      });
+      setCards(data.cards || []);
+    } catch (e) {
+      console.error('Failed to load contextual cards:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm text-slate-600">Loading resources...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cards.length) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-sm border p-6 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <h4 className="text-lg font-semibold text-slate-900">{title || 'Recommended Resources'}</h4>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {cards.map((card) => (
+          <div key={card.id} className="bg-white rounded-lg p-4 border border-blue-200 hover:border-blue-300 transition-colors">
+            <div className="flex items-start justify-between mb-2">
+              <h5 className="text-sm font-semibold text-slate-900 line-clamp-2">{card.title}</h5>
+              <div className="flex items-center gap-1 text-xs text-slate-500">
+                {card.content_type === 'template' && (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                )}
+                {card.content_type === 'checklist' && (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                )}
+              </div>
+            </div>
+            
+            <p className="text-xs text-slate-600 mb-3 line-clamp-3">{card.description}</p>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                {card.difficulty_level && (
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    card.difficulty_level === 'beginner' ? 'bg-green-100 text-green-700' :
+                    card.difficulty_level === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {card.difficulty_level}
+                  </span>
+                )}
+                {card.estimated_time && (
+                  <span className="text-xs text-slate-500">{card.estimated_time}</span>
+                )}
+              </div>
+              
+              <button 
+                className="btn btn-sm btn-primary text-xs px-3 py-1"
+                onClick={() => {
+                  // Navigate to knowledge base with specific article
+                  window.open(`/knowledge-base#article-${card.id}`, '_blank');
+                }}
+              >
+                View
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="mt-4 text-center">
+        <button 
+          className="btn btn-sm border text-blue-700 hover:bg-blue-50"
+          onClick={() => window.open(`/knowledge-base?area=${areaId}`, '_blank')}
+        >
+          View All Resources for This Area
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Phase 3: AI Assistant Component ----------------
+function AIAssistantCard({ areaId, context }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [question, setQuestion] = useState('');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [nextActions, setNextActions] = useState([]);
+
+  useEffect(() => {
+    if (isOpen && !nextActions.length) {
+      loadNextBestActions();
+    }
+  }, [isOpen]);
+
+  const loadNextBestActions = async () => {
+    try {
+      const me = JSON.parse(localStorage.getItem('polaris_me') || 'null');
+      if (!me) return;
+
+      const { data } = await axios.post(`${API}/knowledge-base/next-best-actions`, {
+        user_id: me.id,
+        current_gaps: [areaId], // Current area as gap for context
+        completed_areas: [],
+        business_profile: {}
+      });
+
+      // Parse AI response to extract actions (simplified)
+      if (data.recommendations) {
+        setNextActions([
+          {
+            title: "Complete Current Assessment Area",
+            description: "Focus on completing this business area assessment first.",
+            priority: "high",
+            estimated_time: "30 minutes"
+          },
+          {
+            title: "Review Knowledge Base Resources",
+            description: "Explore templates and guides specific to this area.",
+            priority: "medium", 
+            estimated_time: "15 minutes"
+          },
+          {
+            title: "Consider Professional Help",
+            description: "Get expert assistance for complex requirements.",
+            priority: "low",
+            estimated_time: "Varies"
+          }
+        ]);
+      }
+    } catch (e) {
+      console.error('Failed to load next best actions:', e);
+    }
+  };
+
+  const askAI = async () => {
+    if (!question.trim()) return;
+    
+    setLoading(true);
+    try {
+      const me = JSON.parse(localStorage.getItem('polaris_me') || 'null');
+      const { data } = await axios.post(`${API}/knowledge-base/ai-assistance`, {
+        question: question,
+        area_id: areaId,
+        context: { page: context, area: areaId },
+        user_assessment_data: { gaps: [areaId] }
+      });
+
+      setResponse(data.response || 'Sorry, I couldn\'t provide an answer right now.');
+    } catch (e) {
+      setResponse('I\'m having trouble right now. Please try again or contact support.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) {
+    return (
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-sm border p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900">AI Business Assistant</h4>
+              <p className="text-xs text-slate-600">Get personalized guidance and next steps</p>
+            </div>
+          </div>
+          <button 
+            className="btn btn-sm btn-primary"
+            onClick={() => setIsOpen(true)}
+          >
+            Get AI Help
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <h4 className="text-lg font-semibold text-slate-900">AI Business Assistant</h4>
+        </div>
+        <button 
+          className="text-slate-500 hover:text-slate-700"
+          onClick={() => setIsOpen(false)}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Next Best Actions */}
+      {nextActions.length > 0 && (
+        <div className="mb-6">
+          <h5 className="text-sm font-semibold text-slate-900 mb-3">💡 Next Best Actions</h5>
+          <div className="space-y-2">
+            {nextActions.map((action, index) => (
+              <div key={index} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                <div className={`w-2 h-2 rounded-full mt-2 ${
+                  action.priority === 'high' ? 'bg-red-500' :
+                  action.priority === 'medium' ? 'bg-yellow-500' :
+                  'bg-green-500'
+                }`}></div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h6 className="text-sm font-medium text-slate-900">{action.title}</h6>
+                    <span className="text-xs text-slate-500">({action.estimated_time})</span>
+                  </div>
+                  <p className="text-xs text-slate-600">{action.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AI Chat Interface */}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Ask me anything about this business area:
+          </label>
+          <div className="flex gap-2">
+            <input 
+              type="text"
+              className="input flex-1"
+              placeholder="e.g., How do I get started with business licensing?"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && askAI()}
+            />
+            <button 
+              className="btn btn-primary"
+              onClick={askAI}
+              disabled={loading || !question.trim()}
+            >
+              {loading ? 'Thinking...' : 'Ask'}
+            </button>
+          </div>
+        </div>
+
+        {response && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-2">
+              <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="text-sm text-blue-900">
+                <strong>AI Assistant:</strong>
+                <div className="mt-1 whitespace-pre-wrap">{response}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-center pt-2">
+          <p className="text-xs text-slate-500">
+            Powered by AI • For complex issues, consider getting professional help
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){ return (<BrowserRouter><AppShell /></BrowserRouter>); }
