@@ -1105,33 +1105,58 @@ function AssessmentPage(){
         <div className="p-6">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">{currentAreaData.title}</h3>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             {currentAreaData.questions.map((question, index) => (
-              <div key={question.id} className="bg-slate-50 rounded-lg p-4">
-                <div className="flex items-start justify-between">
+              <div key={question.id} className="card-enhanced p-6">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 mb-2">
-                      {index + 1}. {question.text}
-                    </p>
-                    <div className="text-xs text-slate-600 mb-3">
-                      <strong>Deliverable:</strong> {question.deliverable}
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-bold">
+                        {index + 1}
+                      </span>
+                      <h4 className="text-base font-semibold text-slate-900 leading-relaxed">
+                        {question.text}
+                      </h4>
+                    </div>
+                    
+                    <div className="ml-11">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                        <div className="text-xs font-medium text-blue-800 mb-1">Required Deliverable:</div>
+                        <div className="text-sm text-blue-700">{question.deliverable}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex gap-3 mb-3">
-                  <button 
-                    className={`btn btn-sm ${answers[question.id] === 'yes' ? 'btn-primary' : 'border'}`}
-                    onClick={() => handleAnswer(question.id, 'yes')}
-                  >
-                    Yes, I have this
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${answers[question.id] === 'no_help' ? 'bg-red-600 text-white border-red-600' : 'border hover:bg-red-50 hover:border-red-300'}`}
-                    onClick={() => handleAnswer(question.id, 'no_help')}
-                  >
-                    No, I need help
-                  </button>
+                <div className="ml-11">
+                  <div className="flex gap-3 mb-4">
+                    <button 
+                      className={`btn btn-sm transition-all duration-200 ${
+                        answers[question.id] === 'yes' 
+                          ? 'btn-primary shadow-lg' 
+                          : 'border border-green-300 hover:bg-green-50 text-green-700'
+                      }`}
+                      onClick={() => handleAnswer(question.id, 'yes')}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Yes, I have this
+                    </button>
+                    <button 
+                      className={`btn btn-sm transition-all duration-200 ${
+                        answers[question.id] === 'no_help' 
+                          ? 'bg-red-600 text-white border-red-600 shadow-lg' 
+                          : 'border border-red-300 hover:bg-red-50 hover:border-red-400 text-red-700'
+                      }`}
+                      onClick={() => handleAnswer(question.id, 'no_help')}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      No, I need help
+                    </button>
+                  </div>
                 </div>
 
 
