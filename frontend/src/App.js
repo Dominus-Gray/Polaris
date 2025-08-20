@@ -1289,6 +1289,38 @@ function KnowledgeBasePage(){
     }
   };
 
+  const downloadTemplate = async (template, resourceType = 'template') => {
+    try {
+      const response = await axios.get(
+        `${API}/knowledge-base/generate-template/${selectedArea}/${resourceType}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('polaris_token')}` }
+        }
+      );
+      
+      // Create and download file
+      const content = response.data.content;
+      const filename = response.data.filename || `polaris_${selectedArea}_${resourceType}.md`;
+      
+      const blob = new Blob([content], { type: 'text/markdown' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Downloaded ${template.name}`);
+    } catch (e) {
+      console.error('Download failed:', e);
+      toast.error('Download failed', { 
+        description: e.response?.data?.detail || 'Unable to download template' 
+      });
+    }
+  };
+
   return (
     <div className="container mt-6 max-w-7xl">
       {/* Knowledge Base Header */}
