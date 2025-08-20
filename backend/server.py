@@ -23,6 +23,7 @@ import re
 import random
 from functools import wraps
 import time
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 # Stripe Payment Integration
 try:
