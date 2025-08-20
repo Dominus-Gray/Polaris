@@ -547,6 +547,185 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Optio
     except JWTError:
         return None
 
+class EngagementDataProcessor:
+    """Centralized engagement data processing with standardization"""
+    
+    @staticmethod
+    def create_standardized_service_request(data: StandardizedEngagementRequest, client_id: str) -> dict:
+        """Create standardized service request document"""
+        request_id = DataValidator.generate_standard_id("req")
+        timestamp = DataValidator.standardize_timestamp()
+        
+        return {
+            "id": request_id,
+            "request_id": request_id,
+            "client_id": client_id,
+            "area_id": data.area_id,
+            "area_name": DATA_STANDARDS["service_areas"][data.area_id],
+            "budget_range": data.budget_range,
+            "timeline": data.timeline,
+            "description": data.description,
+            "priority": data.priority,
+            "urgency": data.urgency,
+            "status": "active",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "data_version": "1.0",
+            "metadata": {
+                "created_by": client_id,
+                "source": "polaris_platform",
+                "standardized": True,
+                "validation_passed": True
+            }
+        }
+    
+    @staticmethod
+    def create_standardized_provider_response(data: StandardizedProviderResponse, provider_id: str) -> dict:
+        """Create standardized provider response document"""
+        response_id = DataValidator.generate_standard_id("resp")
+        timestamp = DataValidator.standardize_timestamp()
+        fee_info = DataValidator.standardize_currency(data.proposed_fee)
+        
+        return {
+            "id": response_id,
+            "response_id": response_id,
+            "request_id": data.request_id,
+            "provider_id": provider_id,
+            "proposed_fee": fee_info["amount"],
+            "currency": fee_info["currency"],
+            "fee_formatted": fee_info["formatted"],
+            "estimated_timeline": data.estimated_timeline,
+            "proposal_note": data.proposal_note,
+            "status": "submitted",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "data_version": "1.0",
+            "metadata": {
+                "created_by": provider_id,
+                "source": "polaris_platform",
+                "standardized": True,
+                "fee_validation": "passed"
+            }
+        }
+    
+    @staticmethod
+    def create_standardized_engagement(request_data: dict, response_data: dict, client_id: str, provider_id: str) -> dict:
+        """Create standardized engagement document"""
+        engagement_id = DataValidator.generate_standard_id("eng")
+        timestamp = DataValidator.standardize_timestamp()
+        
+        # Calculate marketplace fee (5%)
+        service_fee = response_data["proposed_fee"]
+        marketplace_fee = round(service_fee * 0.05, 2)
+        total_amount = service_fee + marketplace_fee
+        
+        return {
+            "id": engagement_id,
+            "engagement_id": engagement_id,
+            "request_id": request_data["request_id"],
+            "response_id": response_data["response_id"],
+            "client_id": client_id,
+            "provider_id": provider_id,
+            "area_id": request_data["area_id"],
+            "area_name": request_data["area_name"],
+            "status": "active",
+            "priority": request_data["priority"],
+            "budget_info": {
+                "service_fee": service_fee,
+                "marketplace_fee": marketplace_fee,
+                "total_amount": total_amount,
+                "currency": "USD",
+                "budget_range": request_data["budget_range"]
+            },
+            "timeline_info": {
+                "estimated_timeline": response_data["estimated_timeline"],
+                "requested_timeline": request_data["timeline"],
+                "start_date": timestamp,
+                "estimated_completion": None  # To be calculated
+            },
+            "progress_tracking": {
+                "completion_percentage": 0,
+                "milestones": [],
+                "status_history": [{
+                    "status": "active",
+                    "timestamp": timestamp,
+                    "notes": "Engagement created and activated"
+                }]
+            },
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "data_version": "1.0",
+            "metadata": {
+                "created_by": client_id,
+                "source": "polaris_platform",
+                "standardized": True,
+                "fee_calculation": "verified",
+                "workflow_stage": "engagement_created"
+            }
+        }
+    
+    @staticmethod
+    def update_engagement_status(engagement_data: dict, update_data: StandardizedEngagementUpdate, user_id: str) -> dict:
+        """Update engagement with standardized data"""
+        timestamp = DataValidator.standardize_timestamp()
+        
+        # Update basic fields
+        engagement_data["status"] = update_data.status
+        engagement_data["updated_at"] = timestamp
+        
+        # Update progress tracking
+        if update_data.milestone_completion is not None:
+            engagement_data["progress_tracking"]["completion_percentage"] = update_data.milestone_completion
+        
+        # Add status history entry
+        status_entry = {
+            "status": update_data.status,
+            "timestamp": timestamp,
+            "updated_by": user_id,
+            "notes": update_data.notes or ""
+        }
+        engagement_data["progress_tracking"]["status_history"].append(status_entry)
+        
+        # Add deliverables if provided
+        if update_data.deliverables:
+            engagement_data["progress_tracking"]["deliverables"] = update_data.deliverables
+        
+        # Update metadata
+        engagement_data["metadata"]["last_updated_by"] = user_id
+        engagement_data["metadata"]["workflow_stage"] = f"status_{update_data.status}"
+        
+        return engagement_data
+    
+    @staticmethod
+    def create_standardized_rating(engagement_data: dict, rating_data: StandardizedEngagementRating, client_id: str) -> dict:
+        """Create standardized rating document"""
+        rating_id = DataValidator.generate_standard_id("rating")
+        timestamp = DataValidator.standardize_timestamp()
+        
+        return {
+            "id": rating_id,
+            "rating_id": rating_id,
+            "engagement_id": engagement_data["engagement_id"],
+            "client_id": client_id,
+            "provider_id": engagement_data["provider_id"],
+            "area_id": engagement_data["area_id"],
+            "overall_rating": rating_data.rating,
+            "quality_score": rating_data.quality_score,
+            "communication_score": rating_data.communication_score,
+            "timeliness_score": rating_data.timeliness_score,
+            "would_recommend": rating_data.would_recommend,
+            "feedback": rating_data.feedback,
+            "service_fee": engagement_data["budget_info"]["service_fee"],
+            "created_at": timestamp,
+            "data_version": "1.0",
+            "metadata": {
+                "created_by": client_id,
+                "source": "polaris_platform",
+                "standardized": True,
+                "rating_validation": "passed"
+            }
+        }
+
 async def require_user(current=Depends(get_current_user)) -> dict:
     if not current:
         raise HTTPException(status_code=401, detail="Not authenticated")
