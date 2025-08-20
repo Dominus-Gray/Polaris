@@ -5448,8 +5448,7 @@ function AgencyThemeManager() {
   );
 }
 
-// ---------------- Medium Phase: Notification System ----------------
-function NotificationCenter() {
+function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -5500,98 +5499,206 @@ function NotificationCenter() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
-      <div className="border-b p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">Notifications</h3>
-            {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                {unreadCount}
-              </span>
-            )}
+    <div className="container mt-6 max-w-4xl">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="border-b p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Notifications</h2>
+              <p className="text-slate-600 mt-1">Stay updated with your latest activities and updates</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                className={`btn btn-sm ${!showAll ? 'btn-primary' : ''}`}
+                onClick={() => setShowAll(false)}
+              >
+                Unread ({unreadCount})
+              </button>
+              <button
+                className={`btn btn-sm ${showAll ? 'btn-primary' : ''}`}
+                onClick={() => setShowAll(true)}
+              >
+                All
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              className={`btn btn-sm ${!showAll ? 'btn-primary' : ''}`}
-              onClick={() => setShowAll(false)}
-            >
-              Unread
-            </button>
-            <button
-              className={`btn btn-sm ${showAll ? 'btn-primary' : ''}`}
-              onClick={() => setShowAll(true)}
-            >
-              All
-            </button>
+        </div>
+
+        <div className="max-h-96 overflow-y-auto">
+          {loading ? (
+            <div className="p-6 text-center">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              <span className="text-sm text-slate-600">Loading notifications...</span>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-6 text-center text-slate-500">
+              <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V3h0z" />
+              </svg>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">No notifications</h3>
+              <p>{showAll ? 'No notifications yet' : 'No unread notifications'}</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {notifications.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className={`p-4 hover:bg-slate-50 transition-colors ${!notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl flex-shrink-0">
+                      {getNotificationIcon(notification.notification_type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <h4 className="text-sm font-medium text-slate-900">
+                          {notification.title}
+                        </h4>
+                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          <span className="text-xs text-slate-500">
+                            {new Date(notification.created_at).toLocaleDateString()}
+                          </span>
+                          {!notification.read && (
+                            <button
+                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              onClick={() => markAsRead(notification.id)}
+                            >
+                              Mark read
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 mt-1">
+                        {notification.message}
+                      </p>
+                      {notification.action_url && (
+                        <button
+                          className="text-xs text-blue-600 hover:text-blue-800 mt-2 font-medium"
+                          onClick={() => {
+                            markAsRead(notification.id);
+                            window.location.href = notification.action_url;
+                          }}
+                        >
+                          Take Action →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FreeResourcesPage() {
+  const [resources, setResources] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadFreeResources();
+  }, []);
+
+  const loadFreeResources = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/free-resources`);
+      setResources(data);
+    } catch (e) {
+      console.error('Failed to load free resources:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center gap-2 justify-center">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span>Loading free resources...</span>
           </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-h-96 overflow-y-auto">
-        {loading ? (
-          <div className="p-4 text-center">
-            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <span className="text-sm text-slate-600 mt-2">Loading notifications...</span>
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="p-4 text-center text-slate-500">
-            <svg className="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V3h0z" />
-            </svg>
-            {showAll ? 'No notifications yet' : 'No unread notifications'}
-          </div>
-        ) : (
-          <div className="divide-y">
-            {notifications.map((notification) => (
-              <div 
-                key={notification.id} 
-                className={`p-4 hover:bg-slate-50 transition-colors ${!notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-lg">
-                    {getNotificationIcon(notification.notification_type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <h4 className="text-sm font-medium text-slate-900">
-                        {notification.title}
-                      </h4>
-                      <div className="flex items-center gap-2 ml-2">
-                        <span className="text-xs text-slate-500">
-                          {new Date(notification.created_at).toLocaleDateString()}
-                        </span>
-                        {!notification.read && (
-                          <button
-                            className="text-xs text-blue-600 hover:text-blue-800"
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            Mark read
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-sm text-slate-600 mt-1">
-                      {notification.message}
-                    </p>
-                    {notification.action_url && (
-                      <button
-                        className="text-xs text-blue-600 hover:text-blue-800 mt-2"
-                        onClick={() => {
-                          markAsRead(notification.id);
-                          // Navigate to action URL
-                          window.location.href = notification.action_url;
-                        }}
-                      >
-                        Take Action →
-                      </button>
-                    )}
+  if (!resources) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+          <p className="text-slate-600">Unable to load resources. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-6 max-w-4xl">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="border-b p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Free Community Resources</h2>
+          <p className="text-slate-600">
+            {resources.registration_instructions}
+          </p>
+        </div>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {resources.community_resources?.map((resource, index) => (
+              <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-slate-900">{resource.name}</h3>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    {resource.type}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-slate-600 mb-4">{resource.description}</p>
+                
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-slate-900 mb-2">Focus Areas:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {resource.focus_areas?.map((area, areaIndex) => (
+                      <span key={areaIndex} className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                        {area}
+                      </span>
+                    ))}
                   </div>
                 </div>
+                
+                <a
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary w-full"
+                >
+                  Visit Website & Register
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
               </div>
             ))}
           </div>
-        )}
+
+          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Ready for Premium Features?</h3>
+            <p className="text-slate-600 mb-4">
+              {resources.additional_support}
+            </p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => window.location.href = '/knowledge-base'}
+            >
+              Explore Knowledge Base
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
