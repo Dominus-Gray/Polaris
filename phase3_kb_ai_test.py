@@ -333,20 +333,19 @@ Most licenses can be obtained within 2-4 weeks with proper documentation.
             
             if response.status_code == 200:
                 actions = response.json()
-                recommendations = actions.get("recommendations", [])
+                recommendations = actions.get("recommendations", "")
                 
+                # Check if we got meaningful recommendations (either as list or text)
                 if isinstance(recommendations, list) and len(recommendations) > 0:
                     self.log_result("Next Best Actions", True, f"Received {len(recommendations)} AI-powered recommendations")
                     return True
+                elif isinstance(recommendations, str) and len(recommendations) > 100:
+                    # AI returned recommendations as formatted text
+                    self.log_result("Next Best Actions", True, f"Received AI recommendations as formatted text ({len(recommendations)} chars)")
+                    return True
                 else:
-                    # Check if we got a text response instead
-                    response_text = actions.get("response", "")
-                    if len(response_text) > 50:
-                        self.log_result("Next Best Actions", True, f"Received AI recommendations as text ({len(response_text)} chars)")
-                        return True
-                    else:
-                        self.log_result("Next Best Actions", False, f"No meaningful recommendations received: {actions}")
-                        return False
+                    self.log_result("Next Best Actions", False, f"No meaningful recommendations received: {actions}")
+                    return False
             else:
                 self.log_result("Next Best Actions", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
