@@ -5912,7 +5912,7 @@ def create_error_response(error_code: str, message: str, details: dict = None):
 # ---------------- Agency Subscription Management ----------------
 
 class SubscriptionTier(BaseModel):
-    tier_name: str = Field(..., regex="^(starter|professional|enterprise|government_enterprise)$")
+    tier_name: str = Field(..., pattern="^(starter|professional|enterprise|government_enterprise)$")
     monthly_base: float
     assessment_credits: int
     overage_rate: float
