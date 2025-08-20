@@ -3951,44 +3951,6 @@ async def get_knowledge_base_access(current=Depends(require_user)):
 @api.get("/knowledge-base/{area_id}/content")
 async def get_knowledge_base_content(area_id: str, current=Depends(require_user)):
     """Get knowledge base content for an area (if unlocked)"""
-    # Check access
-    access = await db.user_access.find_one({"user_id": current["id"]})
-    
-    has_access = False
-    if access:
-        knowledge_access = access.get("knowledge_base_access", {})
-        has_access = (
-            knowledge_access.get("all_areas", False) or 
-            knowledge_access.get(area_id, False)
-        )
-    
-    # Auto-grant access for @polaris.example.com test accounts
-    if current["email"].endswith("@polaris.example.com"):
-        has_access = True
-    
-    if not has_access:
-        return {
-            "has_access": False,
-            "unlock_required": True,
-            "unlock_price": 20.0,
-            "preview": "This premium content is locked. Unlock to access AI-powered templates, guides, and resources."
-        }
-    
-    # Get actual articles from database
-    articles = await db.kb_articles.find({
-        "area_ids": area_id,
-        "status": "published" 
-    }).to_list(50)
-    
-    # Group articles by content type
-    content_by_type = {
-        "templates": [],
-        "sops": [],
-        "guides": [],
-        "checklists": [],
-        "compliance": []
-    }
-    
     area_names = {
         "area1": "Business Formation & Registration",
         "area2": "Financial Operations & Management", 
@@ -4000,55 +3962,383 @@ async def get_knowledge_base_content(area_id: str, current=Depends(require_user)
         "area8": "Risk Management & Business Continuity"
     }
     
+    # Check access - only test accounts get free access
+    has_access = False
+    if current["email"].endswith("@polaris.example.com"):
+        has_access = True
+    else:
+        # Check if user has paid for access
+        access = await db.user_access.find_one({"user_id": current["id"]})
+        if access:
+            knowledge_access = access.get("knowledge_base_access", {})
+            has_access = (
+                knowledge_access.get("all_areas", False) or 
+                knowledge_access.get(area_id, False)
+            )
+    
+    if not has_access:
+        return {
+            "has_access": False,
+            "unlock_required": True,
+            "unlock_price": 25.0,
+            "area_name": area_names.get(area_id, "Unknown Area"),
+            "preview": "This premium content includes AI-powered templates, compliance guides, and step-by-step resources. Unlock to access downloadable templates and expert guidance."
+        }
+    
+    # Get actual articles from database
+    articles = await db.kb_articles.find({
+        "area_ids": area_id,
+        "status": "published" 
+    }).to_list(50)
+    
+    # Create downloadable templates and resources
+    templates_and_resources = {
+        "templates": [],
+        "guides": [],
+        "checklists": [],
+        "sops": [],
+        "compliance": []
+    }
+    
     for article in articles:
         content_type = article.get("content_type", "guide")
-        
-        # Map content_type to appropriate category
-        if content_type == "template":
-            category = "templates"
-        elif content_type == "sop":
-            category = "sops"
-        elif content_type == "checklist":
-            category = "checklists" 
-        elif content_type == "compliance":
-            category = "compliance"
-        else:
-            category = "guides"
-        
-        content_by_type[category].append({
+        template_item = {
             "id": article["id"],
             "name": article["title"],
             "description": article.get("content", "")[:200] + "..." if len(article.get("content", "")) > 200 else article.get("content", ""),
-            "content": article.get("content", ""),
-            "tags": article.get("tags", []),
             "difficulty_level": article.get("difficulty_level", "beginner"),
             "estimated_time": article.get("estimated_time"),
             "view_count": article.get("view_count", 0),
+            "download_url": f"/api/knowledge-base/download/{article['id']}",
+            "preview_url": f"/api/knowledge-base/preview/{article['id']}",
             "created_at": article.get("created_at").isoformat() if article.get("created_at") else None
-        })
-    
-    # If no articles exist, provide default content
-    if not any(content_by_type.values()):
-        area_name = area_names.get(area_id, "Unknown Area")
-        content_by_type = {
-            "templates": [
-                {"name": f"{area_name} Template", "description": f"Comprehensive template for {area_name.lower()}", "content": f"# {area_name} Template\n\nThis template helps you organize and document requirements for {area_name.lower()}.\n\n## Required Documentation\n- [Document 1]\n- [Document 2]\n\n## Implementation Steps\n1. Step 1\n2. Step 2\n\n## Compliance Checklist\n- [ ] Requirement 1\n- [ ] Requirement 2"}
-            ],
-            "guides": [
-                {"name": f"Complete Guide to {area_name}", "description": f"Step-by-step guide for {area_name.lower()}", "content": f"# Complete Guide to {area_name}\n\nThis guide provides comprehensive instructions for achieving compliance in {area_name.lower()}.\n\n## Overview\nComplete overview of requirements...\n\n## Step-by-Step Process\n1. Initial preparation\n2. Documentation gathering\n3. Implementation\n4. Verification"}
-            ],
-            "checklists": [
-                {"name": f"{area_name} Compliance Checklist", "description": f"Essential compliance checklist for {area_name.lower()}", "content": f"# {area_name} Compliance Checklist\n\n## Pre-Implementation\n- [ ] Review requirements\n- [ ] Gather documentation\n\n## Implementation\n- [ ] Complete setup\n- [ ] Test procedures\n\n## Verification\n- [ ] Internal review\n- [ ] External validation"}
-            ]
         }
+        
+        if content_type in templates_and_resources:
+            templates_and_resources[content_type].append(template_item)
+    
+    # If no articles exist, provide default templates
+    if not any(templates_and_resources.values()):
+        area_name = area_names.get(area_id, "Unknown Area")
+        default_templates = create_default_templates(area_id, area_name)
+        templates_and_resources = default_templates
     
     return {
         "has_access": True,
         "area_name": area_names.get(area_id, "Unknown Area"),
         "area_id": area_id,
-        "content": content_by_type,
-        "total_articles": len(articles),
+        "content": templates_and_resources,
+        "total_resources": sum(len(resources) for resources in templates_and_resources.values()),
         "ai_assistance_available": EMERGENT_OK
+    }
+
+def create_default_templates(area_id: str, area_name: str):
+    """Create default downloadable templates for each area"""
+    return {
+        "templates": [
+            {
+                "id": f"default_template_{area_id}",
+                "name": f"{area_name} Business Template",
+                "description": f"Comprehensive template for organizing {area_name.lower()} requirements and documentation.",
+                "difficulty_level": "beginner",
+                "estimated_time": "30 minutes",
+                "download_url": f"/api/knowledge-base/generate-template/{area_id}/business-template",
+                "preview_url": f"/api/knowledge-base/preview-template/{area_id}/business-template"
+            }
+        ],
+        "checklists": [
+            {
+                "id": f"default_checklist_{area_id}",
+                "name": f"{area_name} Compliance Checklist",
+                "description": f"Essential compliance checklist for {area_name.lower()} with government contracting requirements.",
+                "difficulty_level": "beginner", 
+                "estimated_time": "15 minutes",
+                "download_url": f"/api/knowledge-base/generate-template/{area_id}/compliance-checklist",
+                "preview_url": f"/api/knowledge-base/preview-template/{area_id}/compliance-checklist"
+            }
+        ],
+        "guides": [
+            {
+                "id": f"default_guide_{area_id}",
+                "name": f"Complete {area_name} Guide",
+                "description": f"Step-by-step guide for achieving compliance and readiness in {area_name.lower()}.",
+                "difficulty_level": "intermediate",
+                "estimated_time": "1-2 hours",
+                "download_url": f"/api/knowledge-base/generate-template/{area_id}/complete-guide", 
+                "preview_url": f"/api/knowledge-base/preview-template/{area_id}/complete-guide"
+            }
+        ]
+    }
+
+@api.get("/knowledge-base/download/{resource_id}")
+async def download_kb_resource(resource_id: str, current=Depends(require_user)):
+    """Download knowledge base resource as PDF or document"""
+    try:
+        # Check access permissions
+        has_access = current["email"].endswith("@polaris.example.com")
+        if not has_access:
+            access = await db.user_access.find_one({"user_id": current["id"]})
+            if access and access.get("knowledge_base_access", {}).get("all_areas"):
+                has_access = True
+        
+        if not has_access:
+            raise HTTPException(status_code=403, detail="Knowledge base access required")
+        
+        # Get resource content
+        if resource_id.startswith("default_"):
+            # Generate default template content
+            area_id = resource_id.split("_")[-1]
+            template_type = resource_id.replace(f"default_template_{area_id}", "").replace(f"default_checklist_{area_id}", "").replace(f"default_guide_{area_id}", "")
+            content = await generate_template_content(area_id, template_type or "business-template")
+        else:
+            # Get from database
+            article = await db.kb_articles.find_one({"id": resource_id})
+            if not article:
+                raise HTTPException(status_code=404, detail="Resource not found")
+            content = article.get("content", "")
+        
+        # Log download
+        await db.analytics.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": current["id"],
+            "action": "kb_resource_download",
+            "resource_id": resource_id,
+            "timestamp": datetime.utcnow()
+        })
+        
+        # Return downloadable content
+        return {
+            "resource_id": resource_id,
+            "content": content,
+            "format": "markdown",
+            "download_name": f"polaris_resource_{resource_id}.md",
+            "content_type": "text/markdown"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error downloading resource: {e}")
+        raise HTTPException(status_code=500, detail="Download failed")
+
+@api.get("/knowledge-base/generate-template/{area_id}/{template_type}")
+async def generate_template_download(area_id: str, template_type: str, current=Depends(require_user)):
+    """Generate and download specific template types"""
+    try:
+        # Check access
+        has_access = current["email"].endswith("@polaris.example.com")
+        if not has_access:
+            access = await db.user_access.find_one({"user_id": current["id"]})
+            if access:
+                knowledge_access = access.get("knowledge_base_access", {})
+                has_access = (knowledge_access.get("all_areas", False) or knowledge_access.get(area_id, False))
+        
+        if not has_access:
+            raise HTTPException(status_code=403, detail="Knowledge base access required")
+        
+        content = await generate_template_content(area_id, template_type)
+        
+        return {
+            "content": content,
+            "filename": f"polaris_{area_id}_{template_type}.md",
+            "content_type": "text/markdown"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating template: {e}")
+        raise HTTPException(status_code=500, detail="Template generation failed")
+
+async def generate_template_content(area_id: str, template_type: str) -> str:
+    """Generate template content based on area and type"""
+    area_names = {
+        "area1": "Business Formation & Registration",
+        "area2": "Financial Operations & Management", 
+        "area3": "Legal & Contracting Compliance",
+        "area4": "Quality Management & Standards",
+        "area5": "Technology & Security Infrastructure",
+        "area6": "Human Resources & Capacity",
+        "area7": "Performance Tracking & Reporting",
+        "area8": "Risk Management & Business Continuity"
+    }
+    
+    area_name = area_names.get(area_id, "Business Area")
+    
+    if template_type == "business-template":
+        return f"""# {area_name} Business Template
+
+## Overview
+This template helps you organize and document all requirements for {area_name.lower()}.
+
+## Required Documentation
+- [ ] Document 1: _______________________
+- [ ] Document 2: _______________________
+- [ ] Document 3: _______________________
+
+## Implementation Steps
+1. **Step 1:** Initial Assessment
+   - Action items: _______________________
+   - Timeline: _______________________
+   - Resources needed: _______________________
+
+2. **Step 2:** Planning & Preparation  
+   - Action items: _______________________
+   - Timeline: _______________________
+   - Resources needed: _______________________
+
+3. **Step 3:** Implementation
+   - Action items: _______________________
+   - Timeline: _______________________
+   - Resources needed: _______________________
+
+## Compliance Checklist
+- [ ] Requirement 1: _______________________
+- [ ] Requirement 2: _______________________
+- [ ] Requirement 3: _______________________
+
+## Notes & Additional Information
+_Use this section for additional notes, contacts, and resources._
+
+---
+Generated by Polaris Platform | Government Procurement Readiness
+"""
+    
+    elif template_type == "compliance-checklist":
+        return f"""# {area_name} Compliance Checklist
+
+## Pre-Implementation Requirements
+- [ ] Review all applicable regulations
+- [ ] Identify required certifications
+- [ ] Gather necessary documentation
+- [ ] Establish compliance timeline
+
+## Implementation Checklist
+- [ ] Complete required training
+- [ ] Implement necessary procedures
+- [ ] Document all processes
+- [ ] Test compliance measures
+
+## Documentation Requirements
+- [ ] Policy documents created
+- [ ] Procedure manuals completed  
+- [ ] Training records maintained
+- [ ] Audit trails established
+
+## Ongoing Compliance
+- [ ] Regular compliance reviews scheduled
+- [ ] Update procedures as needed
+- [ ] Monitor regulatory changes
+- [ ] Maintain certification currency
+
+## Verification & Validation
+- [ ] Internal compliance audit
+- [ ] External verification (if required)
+- [ ] Corrective actions implemented
+- [ ] Compliance certification obtained
+
+---
+Generated by Polaris Platform | Government Procurement Readiness
+"""
+    
+    else:  # complete-guide
+        return f"""# Complete {area_name} Guide
+
+## Introduction
+This comprehensive guide provides step-by-step instructions for achieving full compliance and readiness in {area_name.lower()}.
+
+## Section 1: Understanding Requirements
+Understanding what's required for government contracting compliance in {area_name.lower()}.
+
+### Key Requirements:
+- Requirement A: Description and importance
+- Requirement B: Description and importance  
+- Requirement C: Description and importance
+
+## Section 2: Preparation & Planning
+Steps to prepare your business for {area_name.lower()} compliance.
+
+### Planning Steps:
+1. Assess current state
+2. Identify gaps
+3. Create implementation timeline
+4. Allocate resources
+
+## Section 3: Implementation
+Detailed implementation instructions for each requirement.
+
+### Implementation Process:
+1. **Phase 1:** Foundation (Weeks 1-2)
+2. **Phase 2:** Development (Weeks 3-4)  
+3. **Phase 3:** Testing (Week 5)
+4. **Phase 4:** Deployment (Week 6)
+
+## Section 4: Verification & Maintenance
+Ensuring ongoing compliance and continuous improvement.
+
+### Verification Steps:
+- Regular self-assessments
+- Documentation reviews
+- Process improvements
+- Compliance monitoring
+
+## Conclusion
+Following this guide will help ensure your business meets all requirements for {area_name.lower()} in government contracting.
+
+---
+Generated by Polaris Platform | Government Procurement Readiness
+"""
+
+@api.get("/free-resources")
+async def get_free_external_resources(current=Depends(require_user)):
+    """Get external community and organizational resources for small business support"""
+    return {
+        "community_resources": [
+            {
+                "name": "Small Business Administration (SBA)",
+                "description": "Official U.S. government resource for small business support and contracting opportunities",
+                "url": "https://www.sba.gov/business-guide/grow-your-business/government-contracting",
+                "type": "Government Agency",
+                "focus_areas": ["Contracting", "Financing", "Training"]
+            },
+            {
+                "name": "SCORE Mentors", 
+                "description": "Free business mentoring from experienced entrepreneurs and business leaders",
+                "url": "https://www.score.org/",
+                "type": "Mentorship",
+                "focus_areas": ["Business Planning", "Financial Management", "Marketing"]
+            },
+            {
+                "name": "Procurement Technical Assistance Centers (PTAC)",
+                "description": "Local assistance for government contracting and procurement readiness",
+                "url": "https://www.aptac-us.org/",
+                "type": "Technical Assistance",
+                "focus_areas": ["Proposal Writing", "Compliance", "Certification"]
+            },
+            {
+                "name": "Women's Business Centers (WBC)",
+                "description": "Specialized support for women entrepreneurs seeking government contracts", 
+                "url": "https://www.sba.gov/local-assistance/resource-partners/womens-business-centers",
+                "type": "Specialized Support",
+                "focus_areas": ["Business Development", "Access to Capital", "Networking"]
+            },
+            {
+                "name": "Veteran Business Outreach Centers (VBOC)",
+                "description": "Resources specifically designed for veteran-owned small businesses",
+                "url": "https://www.sba.gov/local-assistance/resource-partners/veterans-business-outreach-centers",
+                "type": "Veteran Support", 
+                "focus_areas": ["VOSB Certification", "Contracting", "Business Planning"]
+            },
+            {
+                "name": "Small Business Development Centers (SBDC)",
+                "description": "University-based consulting and training for small business growth",
+                "url": "https://americassbdc.org/",
+                "type": "Consulting & Training",
+                "focus_areas": ["Business Consulting", "Market Research", "Technology Transfer"]
+            }
+        ],
+        "registration_instructions": "These resources offer free registration and support. Click any link to visit their website and create an account or find local assistance in your area.",
+        "additional_support": "After registering with these organizations, return to Polaris to unlock premium templates and AI-powered guidance specific to your business needs."
     }
 
 # ---------------- Matching Core Endpoints ----------------
