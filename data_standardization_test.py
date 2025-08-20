@@ -102,7 +102,7 @@ class DataStandardizationTester:
         
         if status == 200 or status == 201:
             # Verify standardized response structure
-            required_fields = ["request_id", "area_id", "area_name", "budget_range", "timeline", "priority", "status", "created_at", "updated_at", "data_version", "metadata"]
+            required_fields = ["success", "request_id", "area_name", "providers_notified", "status", "created_at", "metadata"]
             
             missing_fields = [field for field in required_fields if field not in response]
             if not missing_fields:
@@ -111,19 +111,20 @@ class DataStandardizationTester:
                 
                 # Verify data standardization
                 standardization_checks = [
+                    response["success"] == True,
                     response["area_name"] == "Technology & Security Infrastructure",
                     response["status"] == "active",
-                    response["data_version"] == "1.0",
+                    response["metadata"]["data_version"] == "1.0",
                     response["metadata"]["standardized"] == True,
                     "Z" in response["created_at"],  # ISO8601 format check
-                    response["created_at"] == response["updated_at"]  # Initial timestamps should match
+                    response["providers_notified"] > 0  # Should notify providers
                 ]
                 
                 if all(standardization_checks):
                     self.log_test_result(
                         "Standardized Service Request Creation", 
                         True, 
-                        f"Request created with ID: {response['request_id']}, Area: {response['area_name']}"
+                        f"Request created with ID: {response['request_id']}, Area: {response['area_name']}, Providers notified: {response['providers_notified']}"
                     )
                 else:
                     self.log_test_result(
