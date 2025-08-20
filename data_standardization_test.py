@@ -199,12 +199,13 @@ class DataStandardizationTester:
         )
         
         if status == 400 and isinstance(response, dict):
-            error_detail = response.get("detail", {})
-            if error_detail.get("error_code") == "POL-3002":
+            # The error format is nested: error_code: POL-6000, message: {error_code: POL-3002, ...}
+            error_message = response.get("message", {})
+            if error_message.get("error_code") == "POL-3002":
                 self.log_test_result(
                     "Invalid Budget Range Validation", 
                     True, 
-                    f"Correctly returned POL-3002 error: {error_detail.get('message')}"
+                    f"Correctly returned POL-3002 error: {error_message.get('message')}"
                 )
             else:
                 self.log_test_result(
