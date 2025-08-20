@@ -1307,11 +1307,19 @@ function KnowledgeBasePage(){
 
   const loadAreaResources = async (areaId) => {
     try {
-      const { data } = await axios.get(`${API}/knowledge-base/${areaId}/content`);
+      const token = localStorage.getItem('polaris_token');
+      const authHeaders = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      
+      const { data } = await axios.get(`${API}/knowledge-base/${areaId}/content`, authHeaders);
       setResources(data.content || {});
       setSelectedArea(areaId);
     } catch (e) {
       console.error('Failed to load area resources:', e);
+      toast.error('Failed to load resources', {
+        description: e.response?.data?.detail || 'Unable to load area resources'
+      });
     }
   };
 
