@@ -4259,13 +4259,15 @@ function Header(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
-  // Load notification count
+  // Load notification count for user icon highlight
   useEffect(() => {
     if (me) {
       loadNotificationCount();
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(loadNotificationCount, 30000);
+      return () => clearInterval(interval);
     }
   }, [me]);
 
