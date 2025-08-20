@@ -4121,7 +4121,7 @@ async def download_kb_resource(resource_id: str, current=Depends(require_user)):
                 has_access = True
         
         if not has_access:
-            raise HTTPException(status_code=403, detail="Knowledge base access required")
+            raise create_polaris_error("POL-1005", "Knowledge base area not unlocked - payment required", 403)
         
         # Get resource content
         if resource_id.startswith("default_"):
