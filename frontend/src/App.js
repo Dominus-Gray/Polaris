@@ -2430,6 +2430,38 @@ function ClientHome(){
     }catch(e){ toast.error('Failed to copy link', { description: e.message }); }
   };
 
+  const downloadAreaTemplate = async (areaId, resourceType) => {
+    try {
+      const response = await axios.get(
+        `${API}/knowledge-base/generate-template/${areaId}/${resourceType}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('polaris_token')}` }
+        }
+      );
+      
+      // Create and download file
+      const content = response.data.content;
+      const filename = response.data.filename || `polaris_${areaId}_${resourceType}.md`;
+      
+      const blob = new Blob([content], { type: 'text/markdown' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Downloaded ${resourceType} for ${areaId}`);
+    } catch (e) {
+      console.error('Download failed:', e);
+      toast.error('Download failed', { 
+        description: e.response?.data?.detail || 'Unable to download template' 
+      });
+    }
+  };
+
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
   // Note: Removed profile_complete check - clients should see dashboard even without complete profile
   
