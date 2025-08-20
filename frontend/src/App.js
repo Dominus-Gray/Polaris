@@ -3637,9 +3637,13 @@ function AgencyHome(){
           </div>
         </div>
       )}
+            </div>
+          )}
 
-      <div className="mt-4 flex gap-2">
-        <Link className="btn btn-primary" to="/agency">Open Agency Dashboard</Link>
+          {activeTab === 'branding' && <AgencyThemeManager />}
+          
+          {activeTab === 'system' && <SystemHealthDashboard />}
+        </div>
       </div>
     </div>
   );
