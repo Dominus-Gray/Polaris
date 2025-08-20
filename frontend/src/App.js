@@ -4224,6 +4224,26 @@ function Header(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Load notification count
+  useEffect(() => {
+    if (me) {
+      loadNotificationCount();
+    }
+  }, [me]);
+
+  const loadNotificationCount = async () => {
+    try {
+      const { data } = await axios.get(`${API}/notifications/my`, {
+        params: { unread_only: true }
+      });
+      setUnreadCount(data.unread_count || 0);
+    } catch (e) {
+      console.error('Failed to load notification count:', e);
+    }
+  };
   
   const logout = () => {
     localStorage.removeItem('polaris_token');
