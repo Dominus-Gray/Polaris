@@ -1475,7 +1475,12 @@ function KnowledgeBasePage(){
                   {resources.templates.map((template, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                       <span className="text-sm font-medium text-blue-900">{template.name}</span>
-                      <button className="text-blue-600 hover:text-blue-700 text-sm">Download</button>
+                      <button 
+                        className="text-blue-600 hover:text-blue-700 text-sm"
+                        onClick={() => downloadTemplate(template, 'template')}
+                      >
+                        Download
+                      </button>
                     </div>
                   ))}
                 </div>
