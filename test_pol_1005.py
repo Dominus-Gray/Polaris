@@ -78,7 +78,11 @@ def test_pol_1005():
     # Now try to access Knowledge Base payment endpoint (should trigger POL-1005)
     kb_payment_response = requests.post(
         f"{BASE_URL}/payments/knowledge-base",
-        json={"area_id": "area1"},
+        json={
+            "package_id": "knowledge_base_single",
+            "origin_url": "https://agency-connect-4.preview.emergentagent.com",
+            "metadata": {"area_id": "area1"}
+        },
         headers=test_headers
     )
     
