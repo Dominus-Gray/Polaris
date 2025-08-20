@@ -1184,6 +1184,19 @@ function AssessmentPage(){
           </div>
         </div>
 
+        {/* Contextual Knowledge Base Cards */}
+        <KBContextualCards 
+          areaId={currentAreaData.id} 
+          context="assessment"
+          title={`Resources for ${currentAreaData.title}`}
+        />
+
+        {/* AI Assistant Section */}
+        <AIAssistantCard 
+          areaId={currentAreaData.id}
+          context="assessment"
+        />
+
         {/* Navigation */}
         <div className="border-t p-6 flex justify-between">
           <button 
