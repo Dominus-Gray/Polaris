@@ -1557,118 +1557,112 @@ function KnowledgeBasePage(){
   );
 }
 
-function FreeResourcesPage(){
-  const [resources, setResources] = useState([]);
-  const [selectedArea, setSelectedArea] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+function FreeResourcesPage() {
+  const [resources, setResources] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadFreeResources();
-  }, [selectedArea]);
+  }, []);
 
   const loadFreeResources = async () => {
+    setLoading(true);
     try {
-      const gap_areas = selectedArea === 'all' ? '' : selectedArea;
-      const { data } = await axios.get(`${API}/free-resources/recommendations?gaps=${gap_areas}`);
-      setResources(data.resources || []);
+      const { data } = await axios.get(`${API}/free-resources`);
+      setResources(data);
     } catch (e) {
       console.error('Failed to load free resources:', e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const logResourceAccess = async (resourceId, gapArea) => {
-    try {
-      await axios.post(`${API}/analytics/resource-access`, { 
-        resource_id: resourceId, 
-        gap_area: gapArea 
-      });
-    } catch (e) {
-      console.error('Failed to log resource access:', e);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center gap-2 justify-center">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span>Loading free resources...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const filteredResources = resources.filter(resource => 
-    resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    resource.area_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  if (!resources) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+          <p className="text-slate-600">Unable to load resources. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-6 max-w-6xl">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg p-8 mb-8">
-        <h1 className="text-3xl font-bold mb-2">Free Resources</h1>
-        <p className="text-green-100">Complimentary tools, guides, and templates to support your business growth</p>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="input w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <select 
-            className="input"
-            value={selectedArea}
-            onChange={(e) => setSelectedArea(e.target.value)}
-          >
-            <option value="all">All Areas</option>
-            <option value="area1">Business Formation</option>
-            <option value="area2">Financial Operations</option>
-            <option value="area3">Legal Compliance</option>
-            <option value="area4">Quality Management</option>
-            <option value="area5">Technology & Security</option>
-            <option value="area6">Human Resources</option>
-            <option value="area7">Performance Tracking</option>
-            <option value="area8">Risk Management</option>
-          </select>
+    <div className="container mt-6 max-w-4xl">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="border-b p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Free Community Resources</h2>
+          <p className="text-slate-600">
+            {resources.registration_instructions}
+          </p>
         </div>
-      </div>
 
-      {/* Resources Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map((resource, idx) => (
-          <div key={idx} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  {resource.area_name}
-                </span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">FREE</span>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {resources.community_resources?.map((resource, index) => (
+              <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-slate-900">{resource.name}</h3>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    {resource.type}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-slate-600 mb-4">{resource.description}</p>
+                
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-slate-900 mb-2">Focus Areas:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {resource.focus_areas?.map((area, areaIndex) => (
+                      <span key={areaIndex} className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                        {area}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <a
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary w-full"
+                >
+                  Visit Website & Register
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
               </div>
-              <h3 className="font-semibold text-slate-900 mb-2">{resource.title}</h3>
-              <p className="text-sm text-slate-600 mb-4">
-                Essential resource for {resource.area_name.toLowerCase()} requirements and best practices.
-              </p>
-              <button 
-                className="btn btn-primary w-full"
-                onClick={() => {
-                  logResourceAccess(resource.id, resource.area);
-                  // Simulate download
-                  toast.success(`Downloaded: ${resource.title}`);
-                }}
-              >
-                Download Resource
-              </button>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {filteredResources.length === 0 && (
-        <div className="text-center py-12">
-          <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h3 className="text-lg font-medium text-slate-900 mb-2">No Resources Found</h3>
-          <p className="text-slate-600">Try adjusting your search criteria or selecting a different area.</p>
+          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Ready for Premium Features?</h3>
+            <p className="text-slate-600 mb-4">
+              {resources.additional_support}
+            </p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => window.location.href = '/knowledge-base'}
+            >
+              Explore Knowledge Base
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
