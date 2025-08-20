@@ -1307,7 +1307,12 @@ function KnowledgeBasePage(){
 
   const loadUserAccess = async () => {
     try {
-      const { data } = await axios.get(`${API}/knowledge-base/access`);
+      const token = localStorage.getItem('polaris_token');
+      const authHeaders = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      
+      const { data } = await axios.get(`${API}/knowledge-base/access`, authHeaders);
       setUserAccess(data);
     } catch (e) {
       console.error('Failed to load user access:', e);
