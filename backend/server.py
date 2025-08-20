@@ -5144,6 +5144,466 @@ async def generate_og_image(agency_id: str):
             "title": "Polaris - Small Business Procurement Readiness Platform"
         }
 
+# ---------------- Medium Phase: Enhanced Features ----------------
+
+# Advanced Search and Filtering for Opportunities
+@api.get("/opportunities/search")
+async def search_opportunities(
+    q: Optional[str] = Query(None),
+    area_ids: Optional[str] = Query(None),  # comma-separated
+    budget_min: Optional[float] = Query(None),
+    budget_max: Optional[float] = Query(None),
+    location: Optional[str] = Query(None),
+    tags: Optional[str] = Query(None),  # comma-separated
+    sort_by: Optional[str] = Query("created_at"),
+    sort_order: Optional[str] = Query("desc"),
+    limit: int = Query(20, le=100),
+    offset: int = Query(0),
+    current=Depends(require_user)
+):
+    """Advanced search for procurement opportunities"""
+    try:
+        # Build search query
+        query = {"status": "open"}
+        
+        if q:
+            query["$or"] = [
+                {"title": {"$regex": q, "$options": "i"}},
+                {"description": {"$regex": q, "$options": "i"}}
+            ]
+        
+        if area_ids:
+            area_list = area_ids.split(",")
+            query["area_ids"] = {"$in": area_list}
+        
+        if budget_min is not None or budget_max is not None:
+            budget_query = {}
+            if budget_min is not None:
+                budget_query["$gte"] = budget_min
+            if budget_max is not None:
+                budget_query["$lte"] = budget_max
+            query["budget_max"] = budget_query
+        
+        if location:
+            query["location"] = {"$regex": location, "$options": "i"}
+        
+        if tags:
+            tag_list = tags.split(",")
+            query["tags"] = {"$in": tag_list}
+        
+        # Execute search with sorting and pagination
+        sort_direction = -1 if sort_order == "desc" else 1
+        
+        opportunities = await db.opportunities.find(query)\
+            .sort(sort_by, sort_direction)\
+            .skip(offset)\
+            .limit(limit)\
+            .to_list(limit)
+        
+        total_count = await db.opportunities.count_documents(query)
+        
+        return {
+            "opportunities": opportunities,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset,
+            "has_more": offset + limit < total_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching opportunities: {e}")
+        raise HTTPException(status_code=500, detail="Search failed")
+
+# Notification System
+class NotificationIn(BaseModel):
+    user_id: str
+    title: str
+    message: str
+    notification_type: str = Field(..., pattern="^(info|success|warning|error|opportunity|assessment|service)$")
+    action_url: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+@api.post("/notifications/send")
+async def send_notification(notification: NotificationIn, current=Depends(require_role("navigator"))):
+    """Send notification to user"""
+    try:
+        notification_id = str(uuid.uuid4())
+        notification_doc = {
+            "_id": notification_id,
+            "id": notification_id,
+            "user_id": notification.user_id,
+            "title": notification.title,
+            "message": notification.message,
+            "notification_type": notification.notification_type,
+            "action_url": notification.action_url,
+            "metadata": notification.metadata or {},
+            "read": False,
+            "sent_by": current["id"],
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.notifications.insert_one(notification_doc)
+        
+        # In production, this would trigger push notifications, emails, etc.
+        
+        return {"notification_id": notification_id, "status": "sent"}
+        
+    except Exception as e:
+        logger.error(f"Error sending notification: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send notification")
+
+@api.get("/notifications/my")
+async def get_my_notifications(
+    unread_only: bool = Query(False),
+    limit: int = Query(20, le=100),
+    current=Depends(require_user)
+):
+    """Get user's notifications"""
+    try:
+        query = {"user_id": current["id"]}
+        if unread_only:
+            query["read"] = False
+        
+        notifications = await db.notifications.find(query)\
+            .sort("created_at", -1)\
+            .limit(limit)\
+            .to_list(limit)
+        
+        unread_count = await db.notifications.count_documents({
+            "user_id": current["id"],
+            "read": False
+        })
+        
+        return {
+            "notifications": notifications,
+            "unread_count": unread_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting notifications: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get notifications")
+
+@api.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, current=Depends(require_user)):
+    """Mark notification as read"""
+    try:
+        result = await db.notifications.update_one(
+            {"id": notification_id, "user_id": current["id"]},
+            {"$set": {"read": True, "read_at": datetime.utcnow()}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"status": "marked_as_read"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking notification as read: {e}")
+        raise HTTPException(status_code=500, detail="Failed to mark as read")
+
+# Advanced Business Profile Features
+@api.post("/business-profile/verify-documents")
+async def verify_business_documents(
+    document_type: str = Query(...),
+    current=Depends(require_user)
+):
+    """Initiate business document verification process"""
+    try:
+        business_profile = await db.business_profiles.find_one({"user_id": current["id"]})
+        if not business_profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        verification_id = str(uuid.uuid4())
+        verification_doc = {
+            "_id": verification_id,
+            "id": verification_id,
+            "user_id": current["id"],
+            "document_type": document_type,
+            "status": "pending",
+            "submitted_at": datetime.utcnow(),
+            "verification_notes": []
+        }
+        
+        await db.document_verifications.insert_one(verification_doc)
+        
+        # Send notification to navigators for review
+        await db.notifications.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": "navigator_queue",  # Special queue for navigators
+            "title": "Document Verification Required",
+            "message": f"Business document verification requested: {document_type}",
+            "notification_type": "verification",
+            "metadata": {"verification_id": verification_id},
+            "read": False,
+            "created_at": datetime.utcnow()
+        })
+        
+        return {
+            "verification_id": verification_id,
+            "status": "submitted",
+            "estimated_review_time": "2-3 business days"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error initiating document verification: {e}")
+        raise HTTPException(status_code=500, detail="Failed to initiate verification")
+
+# Compliance Monitoring
+@api.get("/compliance/monitor")
+async def monitor_compliance_status(current=Depends(require_user)):
+    """Monitor ongoing compliance status"""
+    try:
+        # Get user's assessment and business profile
+        assessment = await db.assessments.find_one({"user_id": current["id"]})
+        business_profile = await db.business_profiles.find_one({"user_id": current["id"]})
+        
+        compliance_status = {
+            "overall_score": 0,
+            "areas": [],
+            "alerts": [],
+            "recommendations": []
+        }
+        
+        if assessment:
+            completion = assessment.get("completion_percentage", 0)
+            compliance_status["overall_score"] = completion
+            
+            # Check for compliance alerts
+            if completion < 50:
+                compliance_status["alerts"].append({
+                    "type": "critical",
+                    "message": "Assessment completion below minimum threshold",
+                    "action_required": "Complete assessment to improve compliance score"
+                })
+            
+            # Add recommendations
+            if completion < 100:
+                compliance_status["recommendations"].append({
+                    "priority": "high",
+                    "title": "Complete Assessment",
+                    "description": "Finish all business area assessments"
+                })
+        
+        if business_profile:
+            # Check business profile completeness
+            required_fields = ["business_name", "business_type", "industry", "employee_count"]
+            missing_fields = [field for field in required_fields if not business_profile.get(field)]
+            
+            if missing_fields:
+                compliance_status["alerts"].append({
+                    "type": "warning",
+                    "message": f"Missing business profile information: {', '.join(missing_fields)}",
+                    "action_required": "Complete business profile"
+                })
+        
+        return compliance_status
+        
+    except Exception as e:
+        logger.error(f"Error monitoring compliance: {e}")
+        raise HTTPException(status_code=500, detail="Failed to monitor compliance")
+
+# ---------------- Quick Wins Phase: Utility Features ----------------
+
+# Data Export
+@api.get("/export/assessment-data")
+async def export_assessment_data(
+    format: str = Query("json", pattern="^(json|csv)$"),
+    current=Depends(require_user)
+):
+    """Export user's assessment data"""
+    try:
+        assessment = await db.assessments.find_one({"user_id": current["id"]})
+        business_profile = await db.business_profiles.find_one({"user_id": current["id"]})
+        
+        if not assessment:
+            raise HTTPException(status_code=404, detail="No assessment data found")
+        
+        export_data = {
+            "user_id": current["id"],
+            "exported_at": datetime.utcnow().isoformat(),
+            "assessment": assessment,
+            "business_profile": business_profile,
+            "export_format": format
+        }
+        
+        if format == "csv":
+            # In production, this would return actual CSV data
+            return {
+                "download_url": f"/api/export/assessment-data/{current['id']}.csv",
+                "format": "csv",
+                "note": "CSV export would be implemented here"
+            }
+        
+        return export_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error exporting assessment data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to export data")
+
+# System Health Check
+@api.get("/system/health")
+async def system_health_check():
+    """System health and status check"""
+    try:
+        # Check database connectivity
+        db_status = "healthy"
+        try:
+            await db.users.count_documents({}, limit=1)
+        except:
+            db_status = "unhealthy"
+        
+        # Check AI integration
+        ai_status = "healthy" if EMERGENT_OK else "unavailable"
+        
+        # Check Stripe integration
+        stripe_status = "healthy" if STRIPE_AVAILABLE else "unavailable"
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "database": db_status,
+                "ai_integration": ai_status,
+                "payment_integration": stripe_status
+            },
+            "version": "1.0.0"
+        }
+        
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+# Bulk Operations
+@api.post("/bulk/update-users")
+async def bulk_update_users(
+    user_ids: List[str],
+    update_data: Dict[str, Any],
+    current=Depends(require_role("navigator"))
+):
+    """Bulk update user data (Navigator only)"""
+    try:
+        if len(user_ids) > 100:
+            raise HTTPException(status_code=400, detail="Cannot update more than 100 users at once")
+        
+        # Sanitize update data - only allow safe fields
+        allowed_fields = ["approval_status", "is_active", "notes"]
+        sanitized_data = {k: v for k, v in update_data.items() if k in allowed_fields}
+        sanitized_data["updated_at"] = datetime.utcnow()
+        sanitized_data["updated_by"] = current["id"]
+        
+        result = await db.users.update_many(
+            {"id": {"$in": user_ids}},
+            {"$set": sanitized_data}
+        )
+        
+        return {
+            "updated_count": result.modified_count,
+            "matched_count": result.matched_count,
+            "operation": "bulk_update_users"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in bulk update: {e}")
+        raise HTTPException(status_code=500, detail="Bulk update failed")
+
+# System Analytics
+@api.get("/analytics/system-overview")
+async def get_system_analytics(
+    days: int = Query(30, le=365),
+    current=Depends(require_role("navigator"))
+):
+    """Get system-wide analytics overview"""
+    try:
+        since_date = datetime.utcnow() - timedelta(days=days)
+        
+        # User registration trends
+        user_registrations = await db.analytics.aggregate([
+            {
+                "$match": {
+                    "action": "user_registered",
+                    "timestamp": {"$gte": since_date}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}}
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.date": 1}}
+        ]).to_list(100)
+        
+        # Assessment completions
+        assessment_completions = await db.assessments.aggregate([
+            {
+                "$match": {
+                    "updated_at": {"$gte": since_date},
+                    "completion_percentage": {"$gte": 80}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$updated_at"}}
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.date": 1}}
+        ]).to_list(100)
+        
+        # Service request volume
+        service_requests = await db.service_requests.aggregate([
+            {
+                "$match": {
+                    "created_at": {"$gte": since_date}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}}
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.date": 1}}
+        ]).to_list(100)
+        
+        # Knowledge base engagement
+        kb_engagement = await db.analytics.count_documents({
+            "action": {"$in": ["kb_article_view", "ai_assistance_request"]},
+            "timestamp": {"$gte": since_date}
+        })
+        
+        return {
+            "period_days": days,
+            "since_date": since_date.isoformat(),
+            "user_registrations": user_registrations,
+            "assessment_completions": assessment_completions,
+            "service_requests": service_requests,
+            "kb_engagement_total": kb_engagement,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting system analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
 # ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
 
 # Include router
