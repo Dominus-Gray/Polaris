@@ -4180,47 +4180,84 @@ async def get_provider_notifications(current=Depends(require_role("provider"))):
     return {"notifications": notifications}
 
 @api.post("/provider/respond-to-request")
-async def respond_to_service_request(response_data: dict, current=Depends(require_role("provider"))):
-    """Provider responds to service request"""
-    request_id = response_data.get("request_id")
-    proposed_fee = response_data.get("proposed_fee")
-    proposal_note = response_data.get("proposal_note", "")
-    estimated_timeline = response_data.get("estimated_timeline", "")
+async def respond_to_service_request(response_data: StandardizedProviderResponse, current=Depends(require_role("provider"))):
+    """Provider responds to service request with standardized data"""
+    if not current:
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
     
-    if not request_id or not proposed_fee:
-        raise HTTPException(status_code=400, detail="Request ID and proposed fee are required")
-    
-    # Check if provider already responded
-    existing_response = await db.provider_responses.find_one({
-        "request_id": request_id,
-        "provider_id": current["id"]
-    })
-    
-    if existing_response:
-        raise HTTPException(status_code=400, detail="Already responded to this request")
-    
-    # Create response
-    response_id = str(uuid.uuid4())
-    response = {
-        "_id": response_id,
-        "request_id": request_id,
-        "provider_id": current["id"],
-        "proposed_fee": float(proposed_fee),
-        "proposal_note": proposal_note,
-        "estimated_timeline": estimated_timeline,
-        "status": "submitted",
-        "created_at": datetime.utcnow()
-    }
-    
-    await db.provider_responses.insert_one(response)
-    
-    # Update notification status
-    await db.provider_notifications.update_one(
-        {"service_request_id": request_id, "provider_id": current["id"]},
-        {"$set": {"status": "responded", "responded_at": datetime.utcnow()}}
-    )
-    
-    return {"message": "Response submitted successfully", "response_id": response_id}
+    try:
+        # Verify service request exists and is active
+        service_request = await db.service_requests.find_one({"request_id": response_data.request_id})
+        if not service_request:
+            raise create_polaris_error("POL-1007", "Service request not found", 404)
+        
+        if service_request.get("status") != "active":
+            raise create_polaris_error("POL-1008", "Service request is no longer active", 400)
+        
+        # Check if provider already responded
+        existing_response = await db.provider_responses.find_one({
+            "request_id": response_data.request_id,
+            "provider_id": current["id"]
+        })
+        
+        if existing_response:
+            raise create_polaris_error("POL-1008", "Provider has already responded to this request", 400)
+        
+        # Create standardized provider response
+        provider_response = EngagementDataProcessor.create_standardized_provider_response(
+            response_data, current["id"]
+        )
+        
+        # Store response in database
+        await db.provider_responses.insert_one(provider_response)
+        
+        # Notify client about new proposal
+        client_notification = {
+            "id": DataValidator.generate_standard_id("notif"),
+            "user_id": service_request["client_id"],
+            "type": "new_proposal",
+            "title": f"New Proposal for {service_request['area_name']}",
+            "message": f"Provider proposed ${provider_response['fee_formatted']} - Timeline: {provider_response['estimated_timeline']}",
+            "data": {
+                "request_id": response_data.request_id,
+                "response_id": provider_response["response_id"],
+                "provider_id": current["id"],
+                "proposed_fee": provider_response["proposed_fee"],
+                "estimated_timeline": provider_response["estimated_timeline"]
+            },
+            "read": False,
+            "created_at": DataValidator.standardize_timestamp(),
+            "data_version": "1.0"
+        }
+        
+        try:
+            await db.notifications.insert_one(client_notification)
+            logger.info(f"Client {service_request['client_id']} notified of new proposal from provider {current['id']}")
+        except Exception as e:
+            logger.error(f"Failed to notify client: {e}")
+        
+        logger.info(f"Provider {current['id']} responded to request {response_data.request_id} with fee ${provider_response['proposed_fee']}")
+        
+        return {
+            "success": True,
+            "response_id": provider_response["response_id"],
+            "request_id": response_data.request_id,
+            "proposed_fee": provider_response["fee_formatted"],
+            "estimated_timeline": provider_response["estimated_timeline"],
+            "status": "submitted",
+            "created_at": provider_response["created_at"],
+            "metadata": {
+                "standardized": True,
+                "data_version": provider_response["data_version"],
+                "client_notified": True
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Provider response creation failed: {e}")
+        raise create_polaris_error("POL-3003", f"Failed to create provider response: {str(e)}", 500)
 
 # ---------------- Knowledge Base Payment Unlock ----------------
 # QA override for knowledge base access for a specific test user
