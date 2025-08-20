@@ -4177,10 +4177,28 @@ async def generate_template_download(area_id: str, template_type: str, current=D
         
         content = await generate_template_content(area_id, template_type)
         
+        # Determine appropriate file format and content type based on template type
+        if template_type in ['template', 'checklist']:
+            # Word document for templates and checklists
+            filename = f"polaris_{area_id}_{template_type}.docx"
+            content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        elif template_type == 'practices':
+            # PowerPoint for best practices presentations
+            filename = f"polaris_{area_id}_{template_type}.pptx"
+            content_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        elif template_type in ['financial', 'budget', 'tracking']:
+            # Excel for financial and tracking templates
+            filename = f"polaris_{area_id}_{template_type}.xlsx"
+            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        else:
+            # Default to Word document
+            filename = f"polaris_{area_id}_{template_type}.docx"
+            content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        
         return {
             "content": content,
-            "filename": f"polaris_{area_id}_{template_type}.md",
-            "content_type": "text/markdown"
+            "filename": filename,
+            "content_type": content_type
         }
         
     except HTTPException:
