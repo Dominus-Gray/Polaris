@@ -170,9 +170,93 @@ body { @apply bg-slate-50 text-slate-900; }
 .toggle .off { @apply bg-rose-600 text-white; }
 
 .upload-box { @apply mt-3 p-3 rounded border bg-slate-50; }
-.btn { @apply inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border bg-white hover:bg-slate-50 active:scale-[.99] transition; }
-.btn-primary { @apply bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700; }
-.badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-slate-100; }
+
+.btn { 
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200;
+  background: linear-gradient(135deg, rgb(255, 255, 255) 0%, rgb(249, 250, 251) 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.btn:hover { 
+  @apply transform -translate-y-0.5;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.btn:active { 
+  @apply transform translate-y-0;
+}
+
+.btn-primary { 
+  @apply text-white border-transparent;
+  background: linear-gradient(135deg, #1B365D 0%, #4A90C2 50%, #5BA3D9 100%);
+  box-shadow: 0 4px 14px 0 rgba(27, 54, 93, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #152c50 0%, #3e7ba8 50%, #4d8bc2 100%);
+  box-shadow: 0 6px 20px 0 rgba(27, 54, 93, 0.4);
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+
+.badge { 
+  @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium;
+  background: linear-gradient(135deg, rgb(241, 245, 249) 0%, rgb(226, 232, 240) 100%);
+}
+
+/* Enhanced Card Styles */
+.card-enhanced {
+  @apply bg-white rounded-xl shadow-sm border transition-all duration-200;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.card-enhanced:hover {
+  @apply shadow-lg;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhanced Input Styles */
+.input-enhanced {
+  @apply border rounded-lg px-4 py-3 text-sm transition-all duration-200;
+  background: linear-gradient(135deg, rgb(255, 255, 255) 0%, rgb(249, 250, 251) 100%);
+  border: 1px solid rgb(226, 232, 240);
+}
+
+.input-enhanced:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-opacity-50 border-blue-300;
+}
+
+/* Enhanced Landing Page Styles */
+.hero-gradient {
+  background: linear-gradient(135deg, #1B365D 0%, #4A90C2 50%, #5BA3D9 100%);
+}
+
+.hero-subtitle {
+  @apply text-lg text-blue-100 font-light tracking-wide;
+}
+
+.hero-cta {
+  background: linear-gradient(135deg, rgb(139, 92, 246) 0%, rgb(124, 58, 237) 100%);
+  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.3);
+}
+
+.hero-cta:hover {
+  background: linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%);
+  box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.4);
+}
+
+/* Progress Indicators */
+.progress-enhanced {
+  @apply w-full bg-slate-200 h-3 rounded-full overflow-hidden;
+}
+
+.progress-bar-enhanced {
+  @apply h-full transition-all duration-500 ease-out;
+  background: linear-gradient(90deg, #1B365D 0%, #4A90C2 50%, #5BA3D9 100%);
+}
+
 .ai-note { @apply mt-2 text-sm text-slate-600; }
 
 .auth { @apply flex items-center gap-2; }
