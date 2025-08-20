@@ -1393,61 +1393,120 @@ function KnowledgeBasePage(){
       )}
 
       {/* Knowledge Base Areas Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        {areas.map((area) => (
-          <div 
-            key={area.id} 
-            className={`bg-white rounded-lg shadow-sm border transition-all hover:shadow-md ${
-              area.locked ? 'opacity-75' : 'cursor-pointer hover:border-blue-300'
-            }`}
-          >
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{area.title}</h3>
-                  <p className="text-sm text-slate-600 mb-3">{area.description}</p>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      {area.resources_count} Resources
-                    </span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {areas.map((area) => {
+          const isUnlocked = userAccess?.has_all_access || userAccess?.unlocked_areas?.includes(area.id);
+          
+          return (
+            <div 
+              key={area.id} 
+              className={`bg-white rounded-xl shadow-sm border hover:shadow-lg transition-all duration-200 ${
+                !isUnlocked ? 'hover:border-blue-200' : 'hover:border-green-200'
+              }`}
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">{area.title}</h3>
+                    <p className="text-sm text-slate-600 leading-relaxed">{area.description}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 ml-4">
+                    {isUnlocked ? (
+                      <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                        Unlocked
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">
+                        $20
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  {area.locked ? (
-                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Locked</span>
-                  ) : (
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Unlocked</span>
-                  )}
-                  {area.locked && (
-                    <span className="text-sm font-medium text-slate-600">$20</span>
-                  )}
-                </div>
-              </div>
 
-              {area.locked ? (
-                <div className="text-center py-4 border-t border-slate-100">
-                  <p className="text-sm text-slate-600 mb-3">
-                    Unlock AI-powered templates, guides, and compliance resources
-                  </p>
-                  <button 
-                    className="btn btn-primary btn-sm"
-                    onClick={() => unlockArea(area.id)}
-                    disabled={paymentLoading}
-                  >
-                    {paymentLoading ? 'Processing...' : `Unlock for $20`}
-                  </button>
+                {/* Resource Count */}
+                <div className="flex items-center gap-4 mb-4 text-xs text-slate-500">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="font-medium">{area.resources || area.resources_count || 12} Resources</span>
+                  </span>
                 </div>
-              ) : (
-                <div className="border-t border-slate-100 pt-4">
-                  <button 
-                    className="btn btn-primary w-full"
-                    onClick={() => loadAreaResources(area.id)}
-                  >
-                    View Resources
-                  </button>
+
+                {/* Action Area */}
+                {!isUnlocked ? (
+                  <div className="text-center py-4 border-t border-slate-100">
+                    <p className="text-sm text-slate-600 mb-4">
+                      🎯 AI-powered templates, guides, and compliance resources
+                    </p>
+                    <button 
+                      className="btn btn-primary bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-2 text-sm font-medium"
+                      onClick={() => unlockArea(area.id)}
+                      disabled={paymentLoading}
+                    >
+                      {paymentLoading ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Processing...
+                        </span>
+                      ) : (
+                        `Unlock for $20`
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-t border-slate-100 pt-4">
+                    <div className="space-y-3 mb-4">
+                      <div className="text-xs font-medium text-slate-700 mb-2">Available Resources:</div>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2 text-sm">
+                          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-slate-700">Templates & Checklists</span>
+                          <button 
+                            className="ml-auto text-blue-600 hover:text-blue-700 text-xs font-medium"
+                            onClick={() => downloadAreaTemplate(area.id, 'template')}
+                          >
+                            Download
+                          </button>
+                        </li>
+                        <li className="flex items-center gap-2 text-sm">
+                          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-slate-700">Compliance Guides</span>
+                          <button 
+                            className="ml-auto text-blue-600 hover:text-blue-700 text-xs font-medium"
+                            onClick={() => downloadAreaTemplate(area.id, 'guide')}
+                          >
+                            Download
+                          </button>
+                        </li>
+                        <li className="flex items-center gap-2 text-sm">
+                          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-slate-700">Best Practices</span>
+                          <button 
+                            className="ml-auto text-blue-600 hover:text-blue-700 text-xs font-medium"
+                            onClick={() => downloadAreaTemplate(area.id, 'practices')}
+                          >
+                            Download
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <button 
+                      className="btn btn-primary w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                      onClick={() => loadAreaResources(area.id)}
+                    >
+                      View All Resources
+                    </button>
+                  </div>
+                )}
                 </div>
               )}
             </div>
