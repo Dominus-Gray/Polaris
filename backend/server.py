@@ -110,6 +110,12 @@ except Exception:
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Prometheus metrics
+REQUEST_COUNT = Counter('polaris_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
+REQUEST_DURATION = Histogram('polaris_request_duration_seconds', 'HTTP request duration', ['method', 'endpoint'])
+AI_REQUEST_DURATION = Histogram('polaris_ai_request_duration_seconds', 'AI request duration', ['feature'])
+ERROR_COUNT = Counter('polaris_errors_total', 'Total errors', ['error_code', 'endpoint'])
+
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
