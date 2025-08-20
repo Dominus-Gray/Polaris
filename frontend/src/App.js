@@ -4524,7 +4524,7 @@ function Landing(){
             </div>
 
             <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Small Business Procurement Readiness</h1>
-            <p className="hero-sub">Transform your business into a government contracting powerhouse with our comprehensive readiness platform.</p>
+            <p className="hero-sub">Prove Readiness. Unlock Opportunity.</p>
             <div className="hero-ctas justify-center">
               <a className="btn btn-primary" href="#role-selection">Start Your Journey</a>
               <a className="btn bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20" href="#auth">Sign In</a>
