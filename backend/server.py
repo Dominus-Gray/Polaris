@@ -6019,53 +6019,75 @@ async def get_subscription_tiers():
         }
     }
 
-@api.get("/agency/subscription-status")
-async def get_agency_subscription_status(current=Depends(require_role("agency"))):
-    """Get current agency subscription status and usage"""
+class AgencyUsage(BaseModel):
+    agency_id: str
+    tier: str
+    assessments_completed: int
+    current_month_charges: float
+    billing_period_start: datetime
+    billing_period_end: datetime
+    business_count: int
+    status: str = Field(..., pattern="^(active|suspended|cancelled)$")
+
+@api.get("/agency/usage-status")
+async def get_agency_usage_status(current=Depends(require_role("agency"))):
+    """Get current agency usage status and charges"""
     try:
-        subscription = await db.agency_subscriptions.find_one({"agency_id": current["id"]})
+        # Get current usage for this billing period
+        current_month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        current_month_end = (current_month_start + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)
         
-        if not subscription:
-            # Default to starter tier for new agencies
-            default_sub = {
+        usage = await db.agency_usage.find_one({
+            "agency_id": current["id"],
+            "billing_period_start": current_month_start
+        })
+        
+        if not usage:
+            # Get agency tier (default to starter)
+            agency_info = await db.users.find_one({"id": current["id"]})
+            tier = agency_info.get("subscription_tier", "starter")
+            
+            # Create new usage record for current month
+            default_usage = {
+                "_id": str(uuid.uuid4()),
                 "agency_id": current["id"],
-                "tier_name": "starter",
-                "tier_details": SUBSCRIPTION_TIERS["starter"].dict(),
-                "current_credits": 25,
-                "credits_used": 0,
-                "billing_period_start": datetime.utcnow(),
-                "billing_period_end": datetime.utcnow() + timedelta(days=30),
-                "status": "active",
-                "overage_charges": 0.0
+                "tier": tier,
+                "assessments_completed": 0,
+                "current_month_charges": 0.0,
+                "billing_period_start": current_month_start,
+                "billing_period_end": current_month_end,
+                "business_count": 0,
+                "status": "active"
             }
             
-            await db.agency_subscriptions.insert_one({
-                "_id": str(uuid.uuid4()),
-                **default_sub
-            })
-            
-            return default_sub
+            await db.agency_usage.insert_one(default_usage)
+            usage = default_usage
         
-        # Calculate usage and overage charges
-        tier_details = SUBSCRIPTION_TIERS[subscription["tier_name"]]
-        credits_remaining = max(0, subscription["current_credits"] - subscription["credits_used"])
-        overage_usage = max(0, subscription["credits_used"] - subscription["current_credits"])
-        overage_charges = overage_usage * tier_details.overage_rate
+        # Get tier details and calculate pricing
+        tier_details = SUBSCRIPTION_TIERS[usage["tier"]]
+        price_per_assessment = tier_details.overage_rate  # Using overage_rate as per-assessment price
+        
+        # Check business limit compliance
+        business_limit_exceeded = (
+            tier_details.businesses_supported != -1 and 
+            usage["business_count"] > tier_details.businesses_supported
+        )
         
         return {
-            **subscription,
+            **usage,
             "tier_details": tier_details.dict(),
-            "credits_remaining": credits_remaining,
-            "overage_usage": overage_usage,
-            "overage_charges": overage_charges,
-            "days_remaining": (subscription["billing_period_end"] - datetime.utcnow()).days
+            "price_per_assessment": price_per_assessment,
+            "business_limit_exceeded": business_limit_exceeded,
+            "projected_monthly_cost": usage["assessments_completed"] * price_per_assessment,
+            "days_remaining_in_period": (usage["billing_period_end"] - datetime.utcnow()).days + 1,
+            "billing_model": "per_assessment_usage"
         }
         
     except Exception as e:
-        logger.error(f"Error getting subscription status: {e}")
+        logger.error(f"Error getting usage status: {e}")
         raise HTTPException(status_code=500, detail=create_error_response(
             PolarisErrorCodes.DATABASE_ERROR, 
-            "Failed to retrieve subscription status"
+            "Failed to retrieve usage status"
         ))
 
 # ---------------- Performance Monitoring System ----------------
