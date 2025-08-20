@@ -2265,7 +2265,7 @@ async def create_payment_session(request: Request, payload: PaymentTransactionIn
         return {"url": session.url, "session_id": session.session_id}
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Payment session creation failed: {str(e)}")
+        raise create_polaris_error("POL-2003", f"Payment session creation failed: {str(e)}", 500)
 
 @api.get("/payments/v1/checkout/status/{session_id}")
 async def get_payment_status(session_id: str, current=Depends(require_user)):
