@@ -1361,11 +1361,26 @@ function KnowledgeBasePage(){
         }
       );
       
-      // Create and download file
+      // Create and download file with proper content type
       const content = response.data.content;
-      const filename = response.data.filename || `polaris_${selectedArea}_${resourceType}.md`;
+      const filename = response.data.filename || `polaris_${selectedArea}_${resourceType}.docx`;
+      const contentType = response.data.content_type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       
-      const blob = new Blob([content], { type: 'text/markdown' });
+      // For Office documents, we need to handle base64 encoding
+      let blob;
+      if (contentType.includes('officedocument')) {
+        // Assume base64 encoded content for Office documents
+        const binaryString = window.atob(content);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        blob = new Blob([bytes], { type: contentType });
+      } else {
+        // Plain text content
+        blob = new Blob([content], { type: contentType });
+      }
+      
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1375,7 +1390,7 @@ function KnowledgeBasePage(){
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       
-      toast.success(`Downloaded ${template.name}`);
+      toast.success(`Downloaded ${template.name || resourceType}`);
     } catch (e) {
       console.error('Download failed:', e);
       toast.error('Download failed', { 
