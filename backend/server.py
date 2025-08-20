@@ -2890,16 +2890,150 @@ async def get_service_tracking(engagement_id: str, current=Depends(require_user)
     if not engagement:
         raise HTTPException(status_code=404, detail="Engagement not found")
     
-    # Check if user is client or provider involved in engagement
-    if current["id"] not in [engagement.get("client_user_id"), engagement.get("provider_user_id")]:
-        raise HTTPException(status_code=403, detail="Unauthorized")
+    # Check access permissions
+    if not (engagement.get("client_id") == current["id"] or 
+            engagement.get("provider_id") == current["id"] or 
+            current.get("role") in ["navigator", "agency"]):
+        raise HTTPException(status_code=403, detail="Access denied")
     
-    tracking = await db.service_tracking.find({"engagement_id": engagement_id}).sort("updated_at", -1).to_list(100)
+    tracking_entries = await db.service_tracking.find({
+        "engagement_id": engagement_id
+    }).sort("timestamp", 1).to_list(100)
     
     return {
-        "engagement": engagement,
-        "tracking_history": tracking
+        "engagement_id": engagement_id,
+        "tracking": tracking_entries
     }
+
+@api.put("/engagements/{engagement_id}/status")
+async def update_engagement_status(
+    engagement_id: str, 
+    update_data: StandardizedEngagementUpdate, 
+    current=Depends(require_user)
+):
+    """Update engagement status with standardized data validation"""
+    if not current:
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
+    
+    try:
+        # Verify engagement exists
+        engagement = await db.engagements.find_one({"engagement_id": engagement_id})
+        if not engagement:
+            raise create_polaris_error("POL-1007", "Engagement not found", 404)
+        
+        # Check access permissions
+        if not (engagement.get("client_id") == current["id"] or 
+                engagement.get("provider_id") == current["id"] or 
+                current.get("role") in ["navigator", "agency"]):
+            raise create_polaris_error("POL-1003", "Insufficient permissions", 403)
+        
+        # Validate status transition
+        current_status = engagement.get("status", "active")
+        new_status = update_data.status
+        
+        # Define valid status transitions
+        valid_transitions = {
+            "active": ["in_progress", "cancelled"],
+            "in_progress": ["under_review", "delivered", "cancelled"],
+            "under_review": ["in_progress", "delivered", "cancelled"],
+            "delivered": ["approved", "disputed", "in_progress"],
+            "approved": ["completed"],
+            "disputed": ["in_progress", "cancelled"],
+            "completed": [],  # Final state
+            "cancelled": []   # Final state
+        }
+        
+        if new_status not in valid_transitions.get(current_status, []):
+            raise create_polaris_error(
+                "POL-1008", 
+                f"Invalid status transition from {current_status} to {new_status}", 
+                400
+            )
+        
+        # Update engagement with standardized data
+        updated_engagement = EngagementDataProcessor.update_engagement_status(
+            engagement, update_data, current["id"]
+        )
+        
+        # Store updated engagement
+        await db.engagements.update_one(
+            {"engagement_id": engagement_id},
+            {"$set": updated_engagement}
+        )
+        
+        # Create standardized tracking entry
+        tracking_entry = {
+            "id": DataValidator.generate_standard_id("track"),
+            "engagement_id": engagement_id,
+            "status": new_status,
+            "previous_status": current_status,
+            "updated_by": current["id"],
+            "user_role": current["role"],
+            "notes": update_data.notes or "",
+            "milestone_completion": update_data.milestone_completion,
+            "deliverables": update_data.deliverables or [],
+            "timestamp": DataValidator.standardize_timestamp(),
+            "data_version": "1.0",
+            "metadata": {
+                "source": "polaris_platform",
+                "standardized": True,
+                "transition_validated": True
+            }
+        }
+        
+        await db.service_tracking.insert_one(tracking_entry)
+        
+        # Notify relevant parties about status change
+        notification_targets = []
+        if current["id"] != engagement["client_id"]:
+            notification_targets.append(engagement["client_id"])
+        if current["id"] != engagement["provider_id"]:
+            notification_targets.append(engagement["provider_id"])
+        
+        for target_id in notification_targets:
+            try:
+                notification = {
+                    "id": DataValidator.generate_standard_id("notif"),
+                    "user_id": target_id,
+                    "type": "engagement_status_update",
+                    "title": f"Engagement Status Updated: {engagement['area_name']}",
+                    "message": f"Status changed to {new_status.replace('_', ' ').title()}",
+                    "data": {
+                        "engagement_id": engagement_id,
+                        "new_status": new_status,
+                        "previous_status": current_status,
+                        "updated_by": current["id"],
+                        "completion_percentage": update_data.milestone_completion
+                    },
+                    "read": False,
+                    "created_at": DataValidator.standardize_timestamp(),
+                    "data_version": "1.0"
+                }
+                await db.notifications.insert_one(notification)
+            except Exception as e:
+                logger.error(f"Failed to notify user {target_id}: {e}")
+        
+        logger.info(f"Engagement {engagement_id} status updated from {current_status} to {new_status} by {current['id']}")
+        
+        return {
+            "success": True,
+            "engagement_id": engagement_id,
+            "status": new_status,
+            "previous_status": current_status,
+            "completion_percentage": update_data.milestone_completion,
+            "updated_at": updated_engagement["updated_at"],
+            "metadata": {
+                "standardized": True,
+                "data_version": updated_engagement["data_version"],
+                "notifications_sent": len(notification_targets)
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Engagement status update failed: {e}")
+        raise create_polaris_error("POL-3003", f"Failed to update engagement status: {str(e)}", 500)
 
 @api.post("/engagements/{engagement_id}/rating")
 async def rate_service(engagement_id: str, rating: ServiceRatingIn, current=Depends(require_role("client"))):
