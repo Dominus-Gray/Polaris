@@ -203,6 +203,15 @@ body { @apply bg-slate-50 text-slate-900; }
   color: inherit !important; /* Ensure text color inheritance */
 }
 
+/* Specific fixes for button text visibility */
+.btn.bg-blue-600, .btn.bg-indigo-600 {
+  color: white !important;
+}
+
+.btn.bg-blue-600 span, .btn.bg-indigo-600 span {
+  color: white !important;
+}
+
 .badge { 
   @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium;
   background: linear-gradient(135deg, rgb(241, 245, 249) 0%, rgb(226, 232, 240) 100%);
