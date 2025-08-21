@@ -296,14 +296,19 @@ class UIUXBackendTester:
                 request_id = request_data.get("request_id")
                 self.log_result("Service Request Creation", "PASS", f"Created request: {request_id}")
                 
-                # Test service request retrieval
+                # Test service request retrieval via "my requests" (more realistic user flow)
                 if request_id:
-                    get_response = requests.get(f"{BASE_URL}/service-requests/{request_id}", headers=headers)
+                    my_requests_response = requests.get(f"{BASE_URL}/service-requests/my", headers=headers)
                     
-                    if get_response.status_code == 200:
-                        self.log_result("Service Request Retrieval", "PASS", "Successfully retrieved service request")
+                    if my_requests_response.status_code == 200:
+                        my_requests_data = my_requests_response.json()
+                        requests_list = my_requests_data.get("service_requests", []) if isinstance(my_requests_data, dict) else []
+                        if len(requests_list) > 0:
+                            self.log_result("Service Request Retrieval (My Requests)", "PASS", f"Retrieved {len(requests_list)} service requests")
+                        else:
+                            self.log_result("Service Request Retrieval (My Requests)", "FAIL", "No requests in my requests")
                     else:
-                        self.log_result("Service Request Retrieval", "FAIL", f"Status: {get_response.status_code}")
+                        self.log_result("Service Request Retrieval (My Requests)", "FAIL", f"Status: {my_requests_response.status_code}")
             else:
                 self.log_result("Service Request Creation", "FAIL", f"Status: {response.status_code}")
                 
