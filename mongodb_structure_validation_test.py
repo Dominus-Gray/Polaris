@@ -216,7 +216,7 @@ class MongoDBStructureValidator:
             schema_data = response.json()
             
             # Create new assessment session
-            response = requests.post(f"{BASE_URL}/assessment/start", headers=headers)
+            response = requests.post(f"{BASE_URL}/assessment/session", headers=headers)
             
             if response.status_code != 200:
                 self.log_result(f"❌ Failed to create assessment session: {response.status_code}")
