@@ -190,6 +190,7 @@ body { @apply bg-slate-50 text-slate-900; }
   @apply text-white border-transparent;
   background: linear-gradient(135deg, #1B365D 0%, #4A90C2 50%, #5BA3D9 100%);
   box-shadow: 0 4px 14px 0 rgba(27, 54, 93, 0.3);
+  color: white !important;
 }
 
 .btn-primary:hover {
