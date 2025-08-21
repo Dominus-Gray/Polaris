@@ -4250,7 +4250,7 @@ async def request_professional_help(request_data: StandardizedEngagementRequest,
 @api.get("/service-requests/my")
 async def list_my_service_requests(current=Depends(require_role("client"))):
     """List current client's service requests with basic info"""
-    requests = await db.service_requests.find({"user_id": current["id"]}).sort("created_at", -1).to_list(100)
+    requests = await db.service_requests.find({"client_id": current["id"]}).sort("created_at", -1).to_list(100)
     return {"service_requests": requests}
 
 @api.get("/service-requests/{request_id}")
