@@ -164,13 +164,12 @@ class UIUXBackendTester:
                         # Test assessment response submission (supports "No, I need help" flow)
                         if self.session_id:
                             response_payload = {
-                                "session_id": self.session_id,
-                                "question_id": "area1_q1",
+                                "question_id": "q1_1",
                                 "answer": "No, I need help"
                             }
                             
                             submit_response = requests.post(
-                                f"{BASE_URL}/assessment/response", 
+                                f"{BASE_URL}/assessment/session/{self.session_id}/response", 
                                 json=response_payload,
                                 headers=headers
                             )
