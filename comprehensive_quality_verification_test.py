@@ -85,21 +85,25 @@ class ComprehensiveQualityVerifier:
         start_time = time.time()
         try:
             if method.upper() == "GET":
-                response = requests.get(url, headers=request_headers, params=data)
+                response = requests.get(url, headers=request_headers, params=data, timeout=10)
             elif method.upper() == "POST":
-                response = requests.post(url, json=data, headers=request_headers)
+                response = requests.post(url, json=data, headers=request_headers, timeout=10)
             elif method.upper() == "PUT":
-                response = requests.put(url, json=data, headers=request_headers)
+                response = requests.put(url, json=data, headers=request_headers, timeout=10)
             elif method.upper() == "DELETE":
-                response = requests.delete(url, headers=request_headers)
+                response = requests.delete(url, headers=request_headers, timeout=10)
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
             response_time = time.time() - start_time
             return response, response_time
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             response_time = time.time() - start_time
             self.log_result(f"Request failed: {e}", "ERROR")
+            return None, response_time
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_result(f"Unexpected error: {e}", "ERROR")
             return None, response_time
 
     # 1. AUTHENTICATION & AUTHORIZATION TESTING (CRITICAL)
