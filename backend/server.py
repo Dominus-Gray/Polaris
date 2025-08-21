@@ -588,6 +588,7 @@ class EngagementDataProcessor:
         fee_info = DataValidator.standardize_currency(data.proposed_fee)
         
         return {
+            "_id": response_id,
             "id": response_id,
             "response_id": response_id,
             "request_id": data.request_id,
