@@ -2386,6 +2386,271 @@ function FreeResourcesPage() {
   );
 }
 
+// ---------------- Area Deliverables Page ----------------
+function AreaDeliverablesPage() {
+  const { areaId } = useParams();
+  const navigate = useNavigate();
+  const [deliverables, setDeliverables] = useState(null);
+  const [areaInfo, setAreaInfo] = useState(null);
+
+  useEffect(() => {
+    loadAreaDeliverables();
+  }, [areaId]);
+
+  const loadAreaDeliverables = () => {
+    const areas = [
+      { id: 'area1', title: 'Business Formation & Registration' },
+      { id: 'area2', title: 'Financial Operations & Management' },
+      { id: 'area3', title: 'Legal & Contracting Compliance' },
+      { id: 'area4', title: 'Quality Management & Standards' },
+      { id: 'area5', title: 'Technology & Security Infrastructure' },
+      { id: 'area6', title: 'Human Resources & Capacity' },
+      { id: 'area7', title: 'Performance Tracking & Reporting' },
+      { id: 'area8', title: 'Risk Management & Business Continuity' }
+    ];
+
+    const AREA_DELIVERABLES = {
+      area1: {
+        templates: [
+          { name: "Business License Application Checklist", type: "PDF", size: "2 pages", description: "Step-by-step checklist for business license applications with required documents" },
+          { name: "Corporate Structure Decision Matrix", type: "Excel", size: "1 page", description: "Decision matrix to choose between LLC, Corporation, Partnership structures" },
+          { name: "Business Registration Timeline Template", type: "Word", size: "1 page", description: "Timeline template with key milestones for business registration process" },
+          { name: "Permit and License Tracking Spreadsheet", type: "Excel", size: "Multi-tab", description: "Comprehensive tracking system for all business permits and renewals" }
+        ],
+        guides: [
+          { name: "Complete Guide to Texas Business Formation", type: "PDF", size: "15 pages", description: "Comprehensive guide covering all aspects of forming a business in Texas" },
+          { name: "San Antonio Business License Requirements", type: "PDF", size: "8 pages", description: "Detailed requirements and processes for San Antonio business licenses" },
+          { name: "Federal Tax ID and Registration Process", type: "PDF", size: "6 pages", description: "Step-by-step guide for EIN application and federal registration" },
+          { name: "Professional License Requirements Guide", type: "PDF", size: "12 pages", description: "Guide for industry-specific professional licensing requirements" }
+        ],
+        bestPractices: [
+          { name: "Choosing the Right Business Structure", type: "PDF", size: "4 pages", description: "Best practices for selecting optimal business entity type" },
+          { name: "Maintaining Good Standing with State Agencies", type: "PDF", size: "3 pages", description: "Ongoing compliance requirements and best practices" },
+          { name: "Annual Filing and Renewal Requirements", type: "PDF", size: "2 pages", description: "Calendar and checklist for annual business requirements" },
+          { name: "Business Name and Trademark Protection", type: "PDF", size: "5 pages", description: "Strategies for protecting business name and intellectual property" }
+        ]
+      },
+      area2: {
+        templates: [
+          { name: "Financial Forecast and Budget Template", type: "Excel", size: "Multi-tab", description: "Comprehensive financial forecasting with 3-year projections" },
+          { name: "Cash Flow Projection Spreadsheet", type: "Excel", size: "12 months", description: "Monthly cash flow tracking and projection template" },
+          { name: "Expense Tracking and Categorization System", type: "Excel", size: "Multi-tab", description: "Complete expense management system with tax categories" },
+          { name: "Financial Controls and Procedures Checklist", type: "Word", size: "3 pages", description: "Internal controls checklist for financial management" }
+        ],
+        guides: [
+          { name: "Small Business Accounting Best Practices", type: "PDF", size: "20 pages", description: "Comprehensive accounting practices for small businesses" },
+          { name: "Understanding Financial Statements", type: "PDF", size: "12 pages", description: "Guide to reading and interpreting financial statements" },
+          { name: "Tax Planning and Compliance Guide", type: "PDF", size: "18 pages", description: "Tax strategies and compliance requirements for small businesses" },
+          { name: "Business Banking and Credit Management", type: "PDF", size: "10 pages", description: "Banking relationships and credit building strategies" }
+        ],
+        bestPractices: [
+          { name: "Monthly Financial Review Process", type: "PDF", size: "3 pages", description: "Monthly financial analysis and review procedures" },
+          { name: "Separating Business and Personal Finances", type: "PDF", size: "2 pages", description: "Best practices for financial separation and record keeping" },
+          { name: "Preparing for Tax Season", type: "PDF", size: "4 pages", description: "Year-end tax preparation and organization strategies" },
+          { name: "Building Business Credit", type: "PDF", size: "6 pages", description: "Strategies for establishing and building business credit" }
+        ]
+      },
+      area3: {
+        templates: [
+          { name: "Standard Service Agreement Template", type: "Word", size: "8 pages", description: "Comprehensive service agreement template with terms and conditions" },
+          { name: "Government Contract Compliance Checklist", type: "PDF", size: "4 pages", description: "Compliance checklist for government contracting requirements" },
+          { name: "Legal Document Review Process", type: "Word", size: "2 pages", description: "Process template for reviewing legal documents and contracts" },
+          { name: "Contract Risk Assessment Matrix", type: "Excel", size: "1 page", description: "Risk assessment tool for contract evaluation" }
+        ],
+        guides: [
+          { name: "Understanding Government Contracting Requirements", type: "PDF", size: "25 pages", description: "Comprehensive guide to government contracting processes" },
+          { name: "Intellectual Property Protection for Small Business", type: "PDF", size: "14 pages", description: "Guide to protecting trademarks, copyrights, and trade secrets" },
+          { name: "Employment Law Compliance Guide", type: "PDF", size: "16 pages", description: "Employment law requirements and compliance strategies" },
+          { name: "Contract Negotiation Strategies", type: "PDF", size: "12 pages", description: "Effective contract negotiation techniques and strategies" }
+        ],
+        bestPractices: [
+          { name: "Due Diligence in Contract Review", type: "PDF", size: "5 pages", description: "Best practices for thorough contract review and analysis" },
+          { name: "Maintaining Legal Compliance", type: "PDF", size: "4 pages", description: "Ongoing legal compliance monitoring and management" },
+          { name: "Working with Legal Counsel Effectively", type: "PDF", size: "3 pages", description: "Maximizing value from legal counsel relationships" },
+          { name: "Document Retention and Management", type: "PDF", size: "4 pages", description: "Legal document retention policies and procedures" }
+        ]
+      }
+    };
+
+    // Add more areas if needed
+    const area = areas.find(a => a.id === areaId);
+    const areaDeliverables = AREA_DELIVERABLES[areaId];
+    
+    if (area && areaDeliverables) {
+      setAreaInfo(area);
+      setDeliverables(areaDeliverables);
+    }
+  };
+
+  const downloadResource = (resourceName, type) => {
+    // Placeholder download function
+    toast.success(`Downloading ${resourceName}...`);
+  };
+
+  if (!areaInfo || !deliverables) {
+    return (
+      <div className="app-shell">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading deliverables...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-shell">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <button 
+              className="btn btn-sm mb-4"
+              onClick={() => navigate('/knowledge-base')}
+            >
+              ← Back to Knowledge Base
+            </button>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              {areaInfo.title} - Resources
+            </h1>
+            <p className="text-slate-600">
+              Comprehensive templates, guides, and best practices for {areaInfo.title.toLowerCase()}
+            </p>
+          </div>
+
+          {/* Deliverables Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Templates */}
+            <div className="bg-white border rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Templates & Checklists</h2>
+                  <p className="text-sm text-slate-600">Ready-to-use templates and checklists</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {deliverables.templates.map((template, idx) => (
+                  <div key={idx} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-slate-900 mb-1">{template.name}</h3>
+                        <p className="text-xs text-slate-600 mb-2">{template.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>{template.type}</span>
+                          <span>•</span>
+                          <span>{template.size}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      className="btn btn-primary btn-sm w-full mt-3"
+                      onClick={() => downloadResource(template.name, 'template')}
+                    >
+                      Download Template
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Guides */}
+            <div className="bg-white border rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Implementation Guides</h2>
+                  <p className="text-sm text-slate-600">Step-by-step implementation guides</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {deliverables.guides.map((guide, idx) => (
+                  <div key={idx} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-slate-900 mb-1">{guide.name}</h3>
+                        <p className="text-xs text-slate-600 mb-2">{guide.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>{guide.type}</span>
+                          <span>•</span>
+                          <span>{guide.size}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      className="btn btn-primary btn-sm w-full mt-3"
+                      onClick={() => downloadResource(guide.name, 'guide')}
+                    >
+                      Download Guide
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Best Practices */}
+            <div className="bg-white border rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Best Practices</h2>
+                  <p className="text-sm text-slate-600">Industry best practices and recommendations</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {deliverables.bestPractices.map((practice, idx) => (
+                  <div key={idx} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-slate-900 mb-1">{practice.name}</h3>
+                        <p className="text-xs text-slate-600 mb-2">{practice.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>{practice.type}</span>
+                          <span>•</span>
+                          <span>{practice.size}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      className="btn btn-primary btn-sm w-full mt-3"
+                      onClick={() => downloadResource(practice.name, 'practice')}
+                    >
+                      Download Guide
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* AI Assistant Section */}
+          <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg">
+            <h3 className="text-lg font-semibold text-indigo-900 mb-2">Need Personalized Guidance?</h3>
+            <p className="text-indigo-700 text-sm mb-4">
+              Get AI-powered recommendations and step-by-step guidance tailored to your specific business needs.
+            </p>
+            <div className="text-center">
+              <button 
+                className="btn bg-indigo-600 text-white hover:bg-indigo-700"
+                onClick={() => navigate(`/knowledge-base?area=${areaId}`)}
+              >
+                <span style={{ color: 'white' }}>Start AI Consultation</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------------- External Resources Page ----------------
 function ExternalResourcesPage() {
   const { areaId } = useParams();
