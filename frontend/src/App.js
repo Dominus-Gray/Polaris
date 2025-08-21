@@ -2403,31 +2403,35 @@ function ExternalResourcesPage() {
         resources: [
           {
             title: "Texas Secretary of State - Business Registration",
-            url: "https://www.sos.state.tx.us/corp/index.shtml",
-            description: "Official state portal for business entity formation and registration",
+            url: "https://www.sos.state.tx.us/corp/sosda/index.shtml",
+            description: "Register your business entity directly with the state of Texas",
             type: "Government",
-            location: "Texas Statewide"
+            location: "Texas Statewide",
+            maturity: "Business License Registration"
           },
           {
-            title: "City of San Antonio Business License Portal", 
-            url: "https://www.sanantonio.gov/Development-Services/Business-Licenses",
-            description: "Local business license applications and permits",
+            title: "City of San Antonio Business License Application", 
+            url: "https://www.sanantonio.gov/Development-Services/Business-Licenses/Apply",
+            description: "Apply for your local business license and permits online",
             type: "Municipal",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Local Business Permits"
           },
           {
-            title: "Small Business Administration (SBA) - Business Guide",
-            url: "https://www.sba.gov/business-guide/10-steps-start-your-business",
-            description: "Comprehensive 10-step business startup guide",
+            title: "SBA Business Registration Assistance",
+            url: "https://www.sba.gov/business-guide/10-steps-start-your-business/register-your-business",
+            description: "Step-by-step federal business registration guidance",
             type: "Federal",
-            location: "National"
+            location: "National",
+            maturity: "Federal Registration Requirements"
           },
           {
-            title: "SCORE San Antonio - Free Business Mentoring",
-            url: "https://sanantonio.score.org/",
-            description: "Free business mentoring and workshops for entrepreneurs",
+            title: "SCORE San Antonio - Free Business Formation Mentoring",
+            url: "https://sanantonio.score.org/content/business-startup-mentoring",
+            description: "Get matched with a volunteer mentor for business formation guidance",
             type: "Nonprofit",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Business Structure Consulting"
           }
         ]
       },
@@ -2435,25 +2439,36 @@ function ExternalResourcesPage() {
         name: "Financial Operations & Management",
         resources: [
           {
-            title: "IRS Small Business Tax Center",
-            url: "https://www.irs.gov/businesses/small-businesses-self-employed",
-            description: "Tax information and resources for small businesses",
+            title: "IRS Business Tax Registration (EIN Application)",
+            url: "https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online",
+            description: "Apply for your federal tax ID number online for free",
             type: "Federal",
-            location: "National"
+            location: "National",
+            maturity: "Tax ID and Registration"
           },
           {
-            title: "San Antonio Economic Development - Financial Resources",
-            url: "https://www.sanantonio.gov/economic-development/BusinessResources",
-            description: "Local financial assistance and loan programs",
+            title: "San Antonio Economic Development - Business Loans",
+            url: "https://www.sanantonio.gov/economic-development/BusinessResources/Access-Capital",
+            description: "Apply for local small business loans and financial assistance",
             type: "Municipal", 
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Financial Systems and Capital"
           },
           {
-            title: "UTSA SBDC - Financial Management Training",
-            url: "https://www.utsa.edu/business/sbdc/services/training/",
-            description: "Free workshops on financial management and accounting",
+            title: "UTSA SBDC - Free Financial Counseling",
+            url: "https://www.utsa.edu/business/sbdc/services/counseling/",
+            description: "Schedule free one-on-one financial management counseling",
             type: "Educational",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Financial Management Systems"
+          },
+          {
+            title: "VITA Tax Preparation Services",
+            url: "https://www.irs.gov/individuals/free-tax-return-preparation-for-qualifying-taxpayers",
+            description: "Free tax preparation assistance for small business owners",
+            type: "Federal",
+            location: "National",
+            maturity: "Tax Compliance and Records"
           }
         ]
       },
@@ -2461,18 +2476,28 @@ function ExternalResourcesPage() {
         name: "Legal & Contracting Compliance",
         resources: [
           {
-            title: "Texas State Bar - LegalLine",
-            url: "https://www.texasbar.com/legalline",
-            description: "Free legal advice hotline for qualifying businesses",
+            title: "Texas State Bar - Free Legal Consultation",
+            url: "https://www.texasbar.com/AM/Template.cfm?Section=Lawyer_Referral_Service",
+            description: "Get connected with attorneys offering free initial consultations",
             type: "Professional",
-            location: "Texas Statewide"
+            location: "Texas Statewide",
+            maturity: "Legal Structure and Contracts"
           },
           {
-            title: "PTAC Texas - Procurement Technical Assistance",
-            url: "https://www.texasptac.org/",
-            description: "Free government contracting assistance and training",
+            title: "PTAC Texas - Government Contracting Training",
+            url: "https://www.texasptac.org/counseling-training/",
+            description: "Register for free government contracting workshops and counseling",
             type: "Nonprofit",
-            location: "Texas Statewide"
+            location: "Texas Statewide",
+            maturity: "Government Contract Compliance"
+          },
+          {
+            title: "City of San Antonio Vendor Registration",
+            url: "https://webapp7.sanantonio.gov/VendorSelfService/",
+            description: "Register as a vendor to do business with the City",
+            type: "Municipal",
+            location: "San Antonio, TX",
+            maturity: "Vendor Certification and Registration"
           }
         ]
       },
@@ -2480,18 +2505,20 @@ function ExternalResourcesPage() {
         name: "Quality Management & Standards", 
         resources: [
           {
-            title: "Texas Manufacturing Assistance Center (TMAC)",
-            url: "https://www.tmac.org/",
-            description: "Free manufacturing and quality system consulting",
+            title: "Texas Manufacturing Assistance Center (TMAC) - Free Consultation",
+            url: "https://www.tmac.org/services/assessment/",
+            description: "Request free quality management system assessment",
             type: "Nonprofit",
-            location: "Texas Statewide"
+            location: "Texas Statewide",
+            maturity: "Quality Management Systems"
           },
           {
-            title: "Better Business Bureau South Central Texas",
-            url: "https://www.bbb.org/south-central-texas",
-            description: "Business accreditation and reputation management",
+            title: "Better Business Bureau - Accreditation Application",
+            url: "https://www.bbb.org/south-central-texas/get-accredited/",
+            description: "Apply for BBB accreditation to build business credibility",
             type: "Nonprofit",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Business Standards and Certification"
           }
         ]
       },
@@ -2499,18 +2526,28 @@ function ExternalResourcesPage() {
         name: "Technology & Security Infrastructure",
         resources: [
           {
-            title: "CISA Cybersecurity Resources for Small Business",
-            url: "https://www.cisa.gov/cybersecurity-small-and-medium-businesses",
-            description: "Federal cybersecurity guidance and tools",
+            title: "CISA Cybersecurity Assessment Tool",
+            url: "https://www.cisa.gov/cyber-essentials-starter-kit",
+            description: "Complete free cybersecurity self-assessment for small businesses",
             type: "Federal",
-            location: "National"
+            location: "National",
+            maturity: "Cybersecurity Assessment"
           },
           {
-            title: "San Antonio CyberSecurity Framework Initiative",
-            url: "https://www.sanantonio.gov/ITServices/Security",
-            description: "Local cybersecurity resources and training",
+            title: "San Antonio CyberSecurity - Free Security Consultation",
+            url: "https://www.sanantonio.gov/ITServices/Security/Business-Resources",
+            description: "Schedule free cybersecurity consultation for local businesses",
             type: "Municipal",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Technology Security Systems"
+          },
+          {
+            title: "TechBloc San Antonio - Technology Resources",
+            url: "https://techbloc.org/membership/",
+            description: "Join local tech community for resources and networking",
+            type: "Nonprofit",
+            location: "San Antonio, TX",
+            maturity: "Technology Infrastructure"
           }
         ]
       },
@@ -2518,18 +2555,20 @@ function ExternalResourcesPage() {
         name: "Human Resources & Capacity",
         resources: [
           {
-            title: "Texas Workforce Commission - Employer Services",
-            url: "https://www.twc.texas.gov/employers",
-            description: "Employment services, training grants, and HR resources",
+            title: "Texas Workforce Commission - Employer Registration",
+            url: "https://www.twc.texas.gov/businesses/employer-registration",
+            description: "Register as an employer and access HR resources",
             type: "State",
-            location: "Texas Statewide"
+            location: "Texas Statewide",
+            maturity: "HR Systems and Compliance"
           },
           {
-            title: "San Antonio WorkForce Development - Business Services",
-            url: "https://www.workforcesolutionsalamo.org/employers/",
-            description: "Local workforce development and training services",
+            title: "WorkForce Solutions Alamo - Business Services Registration",
+            url: "https://www.workforcesolutionsalamo.org/employers/register/",
+            description: "Register for workforce development and training services",
             type: "Local",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Workforce Development"
           }
         ]
       },
@@ -2537,18 +2576,20 @@ function ExternalResourcesPage() {
         name: "Performance Tracking & Reporting",
         resources: [
           {
-            title: "SBA Learning Center - Performance Management",
-            url: "https://www.sba.gov/learning-center/",
-            description: "Business performance measurement and improvement courses",
+            title: "SBA Learning Platform - Performance Management Course",
+            url: "https://www.sba.gov/learning-center/search/results?search=performance%20management",
+            description: "Enroll in free online performance management courses",
             type: "Federal",
-            location: "National"
+            location: "National",
+            maturity: "Performance Measurement Systems"
           },
           {
-            title: "UTSA SBDC - Financial Analysis and Reporting",
-            url: "https://www.utsa.edu/business/sbdc/services/counseling/",
-            description: "Free business analysis and performance tracking counseling",
+            title: "UTSA SBDC - Business Analysis Services",
+            url: "https://www.utsa.edu/business/sbdc/services/counseling/business-analysis.html",
+            description: "Schedule free business performance analysis consultation",
             type: "Educational",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Business Performance Analytics"
           }
         ]
       },
@@ -2556,18 +2597,20 @@ function ExternalResourcesPage() {
         name: "Risk Management & Business Continuity",
         resources: [
           {
-            title: "FEMA Business Emergency Planning",
-            url: "https://www.ready.gov/business",
-            description: "Federal emergency preparedness resources for businesses",
+            title: "FEMA Business Emergency Plan Builder",
+            url: "https://www.ready.gov/business-emergency-planning",
+            description: "Create your business emergency plan using free federal tool",
             type: "Federal",
-            location: "National"
+            location: "National",
+            maturity: "Emergency Preparedness Plans"
           },
           {
-            title: "San Antonio Office of Emergency Management",
-            url: "https://www.sanantonio.gov/OEM/",
-            description: "Local emergency preparedness and business resilience",
+            title: "San Antonio Office of Emergency Management - Business Registration",
+            url: "https://www.sanantonio.gov/OEM/Business-Continuity",
+            description: "Register for local emergency preparedness programs",
             type: "Municipal",
-            location: "San Antonio, TX"
+            location: "San Antonio, TX",
+            maturity: "Local Emergency Response Systems"
           }
         ]
       }
