@@ -200,6 +200,7 @@ body { @apply bg-slate-50 text-slate-900; }
 
 .btn-sm {
   @apply px-3 py-1.5 text-xs;
+  color: inherit !important; /* Ensure text color inheritance */
 }
 
 .badge { 
