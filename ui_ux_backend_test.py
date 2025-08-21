@@ -76,7 +76,8 @@ class UIUXBackendTester:
             response = requests.get(f"{BASE_URL}/knowledge-base/areas", headers=headers)
             
             if response.status_code == 200:
-                areas = response.json()
+                data = response.json()
+                areas = data.get("areas", []) if isinstance(data, dict) else data
                 if isinstance(areas, list) and len(areas) > 0:
                     # Check if areas have proper structure for external resources
                     area_count = len(areas)
