@@ -362,7 +362,7 @@ class MongoDBStructureValidator:
                                    json=request_data, headers=headers)
             
             if response.status_code != 200:
-                self.log_result(f"❌ Failed to create service request: {response.status_code}")
+                self.log_result(f"❌ Failed to create service request: {response.status_code} - {response.text}")
                 self.validation_results["service_requests"]["failed"] += 1
                 return None
             
