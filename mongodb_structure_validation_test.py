@@ -367,10 +367,11 @@ class MongoDBStructureValidator:
                 return None
             
             request_response = response.json()
-            request_id = request_response.get("request_id")
+            request_id = request_response.get("request_id") or request_response.get("id")
             
             if not request_id:
                 self.log_result(f"❌ No request_id in service request creation response")
+                self.log_result(f"Response: {request_response}")
                 self.validation_results["service_requests"]["failed"] += 1
                 return None
             
