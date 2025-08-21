@@ -1180,18 +1180,56 @@ function AssessmentPage(){
 
 
                 
-                {/* Professional Help Option */}
+                {/* Gap Identified - Free Resources and Professional Help */}
                 {answers[question.id] === 'no_help' && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="text-sm font-medium text-red-900 mb-2">Get Professional Help</div>
-                    <p className="text-sm text-red-700 mb-3">
-                      Need expert assistance with {question.text.toLowerCase()}? Get matched with qualified service providers.
-                    </p>
-                    <div className="flex gap-2">
+                  <div className="mt-3 space-y-4">
+                    {/* Free External Resources */}
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-sm font-medium text-green-900">Free Local Resources</div>
+                      </div>
+                      <p className="text-sm text-green-700 mb-3">
+                        Access free external resources from local organizations to address this gap:
+                      </p>
+                      <button 
+                        className="btn btn-sm bg-green-600 text-white hover:bg-green-700"
+                        onClick={() => {
+                          // Mark as pending in assessment
+                          const updatedAnswers = {...answers};
+                          updatedAnswers[question.id] = 'pending';
+                          setAnswers(updatedAnswers);
+                          
+                          // Navigate to external resources for this area
+                          navigate(`/external-resources/${currentAreaData.id}?question=${question.id}`);
+                        }}
+                      >
+                        View Free Resources
+                      </button>
+                    </div>
+                    
+                    {/* Professional Help Option */}
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <div className="text-sm font-medium text-red-900">Get Professional Help</div>
+                      </div>
+                      <p className="text-sm text-red-700 mb-3">
+                        Get matched with qualified service providers for expert assistance.
+                      </p>
                       <select 
-                        className="text-sm border border-red-300 rounded px-2 py-1"
+                        className="text-sm border border-red-300 rounded px-3 py-2 w-full"
                         onChange={(e) => {
                           if (e.target.value) {
+                            // Mark as pending in assessment
+                            const updatedAnswers = {...answers};
+                            updatedAnswers[question.id] = 'pending';
+                            setAnswers(updatedAnswers);
+                            
                             handleProfessionalHelp(question.id, currentAreaData.id, e.target.value);
                           }
                         }}
