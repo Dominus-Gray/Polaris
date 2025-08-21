@@ -202,19 +202,24 @@ class ComprehensiveIntegrationTest:
                                   headers=headers)
             response_time = time.time() - start_time
             
-            print(f"DEBUG: Provider response retrieval status: {response.status_code}")
-            print(f"DEBUG: Provider response retrieval response: {response.text}")
-            
             if response.status_code == 200:
-                responses_data = response.json()
-                if isinstance(responses_data, list) and len(responses_data) > 0:
-                    provider_response = responses_data[0]
+                response_data = response.json()
+                
+                # Handle different response formats
+                responses_list = None
+                if isinstance(response_data, list):
+                    responses_list = response_data
+                elif isinstance(response_data, dict) and "responses" in response_data:
+                    responses_list = response_data["responses"]
+                
+                if responses_list and len(responses_list) > 0:
+                    provider_response = responses_list[0]
                     self.log_result("Provider Response Retrieval", True, 
-                                  f"Retrieved {len(responses_data)} response(s), fee: ${provider_response.get('proposed_fee', 'N/A')}", response_time)
+                                  f"Retrieved {len(responses_list)} response(s), fee: ${provider_response.get('proposed_fee', 'N/A')}", response_time)
                     return True
                 else:
                     self.log_result("Provider Response Retrieval", False, 
-                                  f"No provider responses found - response type: {type(responses_data)}, length: {len(responses_data) if isinstance(responses_data, list) else 'N/A'}", response_time)
+                                  f"No provider responses found in response", response_time)
                     return False
             else:
                 self.log_result("Provider Response Retrieval", False, 
