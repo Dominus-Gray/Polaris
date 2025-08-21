@@ -4097,7 +4097,13 @@ function ClientHome(){
               
               <div className="mt-6 flex gap-3">
                 <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
-                <button className="btn" onClick={()=>navigate('/assessment')}>Continue Assessment</button>
+                <button 
+                  className="btn bg-blue-600 text-white hover:bg-blue-700" 
+                  onClick={()=>navigate('/assessment')}
+                  style={{ color: 'white !important' }}
+                >
+                  <span style={{ color: 'white' }}>Continue Assessment</span>
+                </button>
                 {knowledgeBaseAccess && !knowledgeBaseAccess.has_all_access && (
                   <button className="btn" onClick={() => setActiveTab('knowledge')}>View Knowledge Base</button>
                 )}
