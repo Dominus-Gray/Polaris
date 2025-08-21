@@ -261,7 +261,7 @@ class IntegrationQualityTester:
                         self.test_results.append({
                             "test": "Backend API Validation",
                             "status": "PASS",
-                            "details": f"Deliverables tested for {successful_areas}/{len(service_areas)} areas, AI response: {len(ai_response)} chars",
+                            "details": f"Content tested for {successful_areas}/{len(service_areas)} areas, AI response: {len(ai_response)} chars",
                             "timestamp": datetime.now().isoformat()
                         })
                     else:
