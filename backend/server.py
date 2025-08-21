@@ -2704,7 +2704,7 @@ async def create_service_payment(request: Request, payload: ServiceRequestPaymen
         raise HTTPException(status_code=503, detail="Payment service unavailable")
     
     # Verify service request exists and belongs to user
-    service_request = await db.service_requests.find_one({"_id": payload.request_id, "user_id": current["id"]})
+    service_request = await db.service_requests.find_one({"_id": payload.request_id, "client_id": current["id"]})
     if not service_request:
         raise HTTPException(status_code=404, detail="Service request not found")
     
