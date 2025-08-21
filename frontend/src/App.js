@@ -2644,14 +2644,15 @@ function ExternalResourcesPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="ml-4">
+                  <div className="ml-4 flex justify-center">
                     <a
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-primary btn-sm text-center"
+                      style={{ color: 'white', textAlign: 'center' }}
                     >
-                      Visit Resource
+                      <span style={{ color: 'white' }}>Visit Website</span>
                       <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
