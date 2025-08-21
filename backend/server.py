@@ -4256,7 +4256,7 @@ async def list_my_service_requests(current=Depends(require_role("client"))):
 @api.get("/service-requests/{request_id}")
 async def get_service_request(request_id: str, current=Depends(require_role("client"))):
     """Get a service request with provider responses (client must own it)"""
-    req = await db.service_requests.find_one({"_id": request_id, "user_id": current["id"]})
+    req = await db.service_requests.find_one({"_id": request_id, "client_id": current["id"]})
     if not req:
         raise HTTPException(status_code=404, detail="Service request not found")
     # Get provider responses
