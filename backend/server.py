@@ -557,6 +557,7 @@ class EngagementDataProcessor:
         timestamp = DataValidator.standardize_timestamp()
         
         return {
+            "_id": request_id,
             "id": request_id,
             "request_id": request_id,
             "client_id": client_id,
