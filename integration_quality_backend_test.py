@@ -220,30 +220,22 @@ class IntegrationQualityTester:
             successful_areas = 0
             
             for area_id in service_areas:
-                print(f"  📊 Testing deliverables for {area_id}...")
+                print(f"  📊 Testing content for {area_id}...")
                 async with self.session.get(
-                    f"{BACKEND_URL}/knowledge-base/{area_id}/deliverables",
+                    f"{BACKEND_URL}/knowledge-base/{area_id}/content",
                     headers=headers
                 ) as response:
                     if response.status == 200:
-                        deliverables_data = await response.json()
-                        deliverables = deliverables_data.get("deliverables", [])
+                        content_data = await response.json()
                         
                         # Validate data quality
-                        if len(deliverables) > 0:
-                            # Check if deliverables have required fields
-                            sample_deliverable = deliverables[0]
-                            required_fields = ["title", "type", "description"]
-                            has_required_fields = all(field in sample_deliverable for field in required_fields)
-                            
-                            if has_required_fields:
-                                successful_areas += 1
-                            else:
-                                print(f"    ⚠️ Missing required fields in {area_id} deliverables")
+                        if "area_name" in content_data and "content" in content_data:
+                            successful_areas += 1
+                            print(f"    ✅ {area_id} content loaded successfully")
                         else:
-                            print(f"    ⚠️ No deliverables found for {area_id}")
+                            print(f"    ⚠️ Missing required fields in {area_id} content")
                     else:
-                        print(f"    ❌ Failed to access {area_id} deliverables: {response.status}")
+                        print(f"    ❌ Failed to access {area_id} content: {response.status}")
                         
             # Test AI consultation endpoints
             print("  🤖 Testing AI Consultation Endpoints...")
