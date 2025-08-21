@@ -2554,7 +2554,7 @@ async def create_engagement(payload: EngagementCreateIn, current=Depends(require
     if not resp:
         raise HTTPException(status_code=404, detail="Response not found")
     # Look in service_requests collection (not match_requests)
-    req = await db.service_requests.find_one({"_id": payload.request_id, "user_id": current["id"]})
+    req = await db.service_requests.find_one({"_id": payload.request_id, "client_id": current["id"]})
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
     eid = str(uuid.uuid4())
