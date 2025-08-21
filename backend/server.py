@@ -3076,7 +3076,7 @@ async def get_my_services(current=Depends(require_user)):
     
     if current["role"] == "client":
         # Get service requests created by this client
-        service_requests = await db.service_requests.find({"user_id": current["id"]}).to_list(100)
+        service_requests = await db.service_requests.find({"client_id": current["id"]}).to_list(100)
         for request in service_requests:
             # Get provider responses for this request
             responses = await db.provider_responses.find({"request_id": request["_id"]}).to_list(50)
