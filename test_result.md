@@ -186,11 +186,11 @@ The user has identified multiple critical issues and requirements that need to b
 
   - task: "Assessment system with evidence upload and gap highlighting"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: NA
         agent: "main"
@@ -204,6 +204,9 @@ The user has identified multiple critical issues and requirements that need to b
       - working: true
         agent: "testing"
         comment: "✅ PASS: Comprehensive Phase 3 AI features testing in assessment complete. Assessment system with Phase 3 AI components fully functional: 1) Contextual KB Cards displaying 'Resources for Business Formation & Registration' with multiple AI-generated resource cards ✅, 2) AI Assistant component with chat interface working, opens successfully and accepts questions ✅, 3) Gap identification with 'No, I need help' flow working, proper red highlighting implemented ✅, 4) Cross-integration Assessment → Service Request flow working with proper URL parameters ✅, 5) Evidence upload functionality available for 'Yes' answers ✅. All Phase 3 AI-powered features operational and integrated seamlessly into assessment workflow."
+      - working: false
+        agent: "testing"
+        comment: "❌ REQUIREMENT VERIFICATION: Assessment 'No, I need help' Flow Test FAILED. Successfully tested with QA credentials and found 3 'No, I need help' buttons in assessment. Buttons are clickable and functional with proper red highlighting. However, CRITICAL ISSUE: External resources panel does not appear after clicking 'No, I need help' button as expected. The flow should show external resources with proper navigation but this functionality is not working. Maturity statement update to 'pending' also not detected. The 'No, I need help' flow needs to be fixed to show the expected external resources panel and update assessment status properly."
 
   - task: "Navigator Analytics page implementation and UI testing"
     implemented: true
