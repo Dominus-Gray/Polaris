@@ -221,7 +221,8 @@ class UIUXBackendTester:
             cards_response = requests.get(f"{BASE_URL}/knowledge-base/contextual-cards?area_id=area1&context=assessment", headers=headers)
             
             if cards_response.status_code == 200:
-                cards = cards_response.json()
+                cards_data = cards_response.json()
+                cards = cards_data.get("cards", []) if isinstance(cards_data, dict) else cards_data
                 if isinstance(cards, list) and len(cards) > 0:
                     self.log_result("Contextual Cards API", "PASS", f"Retrieved {len(cards)} contextual cards")
                 else:
