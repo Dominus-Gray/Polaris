@@ -1364,8 +1364,183 @@ function KnowledgeBasePage(){
         headers: { Authorization: `Bearer ${token}` }
       };
       
+      // Load the area-specific content
       const { data } = await axios.get(`${API}/knowledge-base/${areaId}/content`, authHeaders);
-      setResources(data.content || {});
+      
+      // Create comprehensive resources structure for the area
+      const AREA_DELIVERABLES = {
+        area1: {
+          templates: [
+            { name: "Business License Application Checklist", type: "checklist", size: "2 pages" },
+            { name: "Corporate Structure Decision Matrix", type: "worksheet", size: "1 page" },
+            { name: "Business Registration Timeline Template", type: "timeline", size: "1 page" },
+            { name: "Permit and License Tracking Spreadsheet", type: "spreadsheet", size: "Excel file" }
+          ],
+          guides: [
+            { name: "Complete Guide to Texas Business Formation", type: "guide", size: "15 pages" },
+            { name: "San Antonio Business License Requirements", type: "guide", size: "8 pages" },
+            { name: "Federal Tax ID and Registration Process", type: "guide", size: "6 pages" },
+            { name: "Professional License Requirements Guide", type: "guide", size: "12 pages" }
+          ],
+          bestPractices: [
+            { name: "Choosing the Right Business Structure", type: "best-practice", size: "4 pages" },
+            { name: "Maintaining Good Standing with State Agencies", type: "best-practice", size: "3 pages" },
+            { name: "Annual Filing and Renewal Requirements", type: "best-practice", size: "2 pages" },
+            { name: "Business Name and Trademark Protection", type: "best-practice", size: "5 pages" }
+          ]
+        },
+        area2: {
+          templates: [
+            { name: "Financial Forecast and Budget Template", type: "template", size: "Excel file" },
+            { name: "Cash Flow Projection Spreadsheet", type: "spreadsheet", size: "Excel file" },
+            { name: "Expense Tracking and Categorization System", type: "template", size: "Excel file" },
+            { name: "Financial Controls and Procedures Checklist", type: "checklist", size: "3 pages" }
+          ],
+          guides: [
+            { name: "Small Business Accounting Best Practices", type: "guide", size: "20 pages" },
+            { name: "Understanding Financial Statements", type: "guide", size: "12 pages" },
+            { name: "Tax Planning and Compliance Guide", type: "guide", size: "18 pages" },
+            { name: "Business Banking and Credit Management", type: "guide", size: "10 pages" }
+          ],
+          bestPractices: [
+            { name: "Monthly Financial Review Process", type: "best-practice", size: "3 pages" },
+            { name: "Separating Business and Personal Finances", type: "best-practice", size: "2 pages" },
+            { name: "Preparing for Tax Season", type: "best-practice", size: "4 pages" },
+            { name: "Building Business Credit", type: "best-practice", size: "6 pages" }
+          ]
+        },
+        area3: {
+          templates: [
+            { name: "Standard Service Agreement Template", type: "template", size: "Word file" },
+            { name: "Government Contract Compliance Checklist", type: "checklist", size: "4 pages" },
+            { name: "Legal Document Review Process", type: "process", size: "2 pages" },
+            { name: "Contract Risk Assessment Matrix", type: "matrix", size: "1 page" }
+          ],
+          guides: [
+            { name: "Understanding Government Contracting Requirements", type: "guide", size: "25 pages" },
+            { name: "Intellectual Property Protection for Small Business", type: "guide", size: "14 pages" },
+            { name: "Employment Law Compliance Guide", type: "guide", size: "16 pages" },
+            { name: "Contract Negotiation Strategies", type: "guide", size: "12 pages" }
+          ],
+          bestPractices: [
+            { name: "Due Diligence in Contract Review", type: "best-practice", size: "5 pages" },
+            { name: "Maintaining Legal Compliance", type: "best-practice", size: "4 pages" },
+            { name: "Working with Legal Counsel Effectively", type: "best-practice", size: "3 pages" },
+            { name: "Document Retention and Management", type: "best-practice", size: "4 pages" }
+          ]
+        },
+        area4: {
+          templates: [
+            { name: "Quality Management System Framework", type: "framework", size: "Word file" },
+            { name: "Process Documentation Templates", type: "template", size: "Word file" },
+            { name: "Customer Feedback Collection System", type: "system", size: "2 pages" },
+            { name: "Quality Metrics Dashboard Template", type: "template", size: "Excel file" }
+          ],
+          guides: [
+            { name: "ISO 9001 Implementation Guide for Small Business", type: "guide", size: "22 pages" },
+            { name: "Quality Control Process Development", type: "guide", size: "15 pages" },
+            { name: "Customer Satisfaction Measurement", type: "guide", size: "10 pages" },
+            { name: "Continuous Improvement Methodologies", type: "guide", size: "18 pages" }
+          ],
+          bestPractices: [
+            { name: "Building a Quality Culture", type: "best-practice", size: "6 pages" },
+            { name: "Document Control and Version Management", type: "best-practice", size: "4 pages" },
+            { name: "Training and Competency Management", type: "best-practice", size: "5 pages" },
+            { name: "Quality Audit and Review Processes", type: "best-practice", size: "7 pages" }
+          ]
+        },
+        area5: {
+          templates: [
+            { name: "Cybersecurity Policy Template", type: "template", size: "Word file" },
+            { name: "Technology Asset Inventory Spreadsheet", type: "spreadsheet", size: "Excel file" },
+            { name: "Incident Response Plan Template", type: "template", size: "Word file" },
+            { name: "Data Backup and Recovery Checklist", type: "checklist", size: "2 pages" }
+          ],
+          guides: [
+            { name: "Small Business Cybersecurity Framework", type: "guide", size: "20 pages" },
+            { name: "NIST Cybersecurity Implementation Guide", type: "guide", size: "28 pages" },
+            { name: "Cloud Security Best Practices", type: "guide", size: "16 pages" },
+            { name: "Employee Security Training Program", type: "guide", size: "12 pages" }
+          ],
+          bestPractices: [
+            { name: "Multi-Factor Authentication Implementation", type: "best-practice", size: "3 pages" },
+            { name: "Regular Security Assessment Process", type: "best-practice", size: "5 pages" },
+            { name: "Vendor Security Due Diligence", type: "best-practice", size: "4 pages" },
+            { name: "Business Continuity Technology Planning", type: "best-practice", size: "6 pages" }
+          ]
+        },
+        area6: {
+          templates: [
+            { name: "Employee Handbook Template", type: "template", size: "Word file" },
+            { name: "Job Description and Requirements Framework", type: "framework", size: "Word file" },
+            { name: "Performance Review Process Template", type: "template", size: "Word file" },
+            { name: "Training and Development Plan", type: "plan", size: "2 pages" }
+          ],
+          guides: [
+            { name: "Employment Law Compliance for Small Business", type: "guide", size: "24 pages" },
+            { name: "Recruitment and Hiring Best Practices", type: "guide", size: "14 pages" },
+            { name: "Employee Performance Management", type: "guide", size: "16 pages" },
+            { name: "Workplace Safety and Health Requirements", type: "guide", size: "18 pages" }
+          ],
+          bestPractices: [
+            { name: "Creating an Inclusive Workplace Culture", type: "best-practice", size: "7 pages" },
+            { name: "Effective Communication and Feedback", type: "best-practice", size: "4 pages" },
+            { name: "Professional Development Planning", type: "best-practice", size: "5 pages" },
+            { name: "Managing Remote and Hybrid Teams", type: "best-practice", size: "6 pages" }
+          ]
+        },
+        area7: {
+          templates: [
+            { name: "Key Performance Indicators (KPI) Dashboard", type: "template", size: "Excel file" },
+            { name: "Project Status Report Template", type: "template", size: "Word file" },
+            { name: "Financial Performance Tracking Spreadsheet", type: "spreadsheet", size: "Excel file" },
+            { name: "Client Deliverable Checklist", type: "checklist", size: "2 pages" }
+          ],
+          guides: [
+            { name: "Performance Measurement Framework Development", type: "guide", size: "18 pages" },
+            { name: "Project Management for Small Business", type: "guide", size: "22 pages" },
+            { name: "Client Reporting and Communication", type: "guide", size: "12 pages" },
+            { name: "Data Analysis and Business Intelligence", type: "guide", size: "16 pages" }
+          ],
+          bestPractices: [
+            { name: "Regular Performance Review Cycles", type: "best-practice", size: "4 pages" },
+            { name: "Transparent Client Communication", type: "best-practice", size: "3 pages" },
+            { name: "Proactive Issue Identification and Resolution", type: "best-practice", size: "5 pages" },
+            { name: "Continuous Improvement Integration", type: "best-practice", size: "4 pages" }
+          ]
+        },
+        area8: {
+          templates: [
+            { name: "Business Continuity Plan Template", type: "template", size: "Word file" },
+            { name: "Risk Assessment Matrix", type: "matrix", size: "Excel file" },
+            { name: "Emergency Contact and Procedures List", type: "list", size: "1 page" },
+            { name: "Insurance Coverage Review Checklist", type: "checklist", size: "3 pages" }
+          ],
+          guides: [
+            { name: "Business Risk Management Framework", type: "guide", size: "20 pages" },
+            { name: "Emergency Preparedness Planning", type: "guide", size: "16 pages" },
+            { name: "Insurance Requirements for Government Contracting", type: "guide", size: "12 pages" },
+            { name: "Crisis Communication Planning", type: "guide", size: "10 pages" }
+          ],
+          bestPractices: [
+            { name: "Regular Risk Assessment and Review", type: "best-practice", size: "5 pages" },
+            { name: "Building Organizational Resilience", type: "best-practice", size: "6 pages" },
+            { name: "Supplier and Vendor Risk Management", type: "best-practice", size: "4 pages" },
+            { name: "Recovery and Lessons Learned Process", type: "best-practice", size: "4 pages" }
+          ]
+        }
+      };
+
+      // Get area deliverables
+      const areaDeliverables = AREA_DELIVERABLES[areaId] || { templates: [], guides: [], bestPractices: [] };
+      
+      // Combine API data with structured deliverables
+      const combinedResources = {
+        ...data.content,
+        deliverables: areaDeliverables
+      };
+      
+      setResources(combinedResources);
       setSelectedArea(areaId);
     } catch (e) {
       console.error('Failed to load area resources:', e);
