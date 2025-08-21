@@ -1985,7 +1985,7 @@ function KnowledgeBasePage(){
 }
 
 // External Resources Page Component
-function ExternalResourcesPage() {
+function FreeResourcesPage() {
   const { areaId } = useParams();
   const navigate = useNavigate();
   const [resources, setResources] = useState([]);
