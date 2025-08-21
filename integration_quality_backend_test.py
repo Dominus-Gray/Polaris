@@ -109,13 +109,12 @@ class IntegrationQualityTester:
                     # Submit assessment response with "pending" status
                     print("  📝 Testing Assessment Response Submission...")
                     response_payload = {
-                        "session_id": session_id,
                         "question_id": "q1_business_formation",
                         "answer": "No, I need help"
                     }
                     
                     async with self.session.post(
-                        f"{BACKEND_URL}/assessment/response",
+                        f"{BACKEND_URL}/assessment/session/{session_id}/response",
                         json=response_payload,
                         headers=headers
                     ) as resp:
