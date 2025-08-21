@@ -1639,9 +1639,10 @@ function KnowledgeBasePage(){
                       🎯 AI-powered templates, guides, and compliance resources
                     </p>
                     <button 
-                      className="btn btn-primary bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-2 text-sm font-medium"
+                      className="btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-2 text-sm font-medium text-white border-none"
                       onClick={() => unlockArea(area.id)}
                       disabled={paymentLoading}
+                      style={{ color: 'white !important' }}
                     >
                       {paymentLoading ? (
                         <span className="flex items-center gap-2">
