@@ -109,12 +109,11 @@ class ReviewBackendTester:
         # Test 1.3: Submit "No, I need help" response
         try:
             response_payload = {
-                "session_id": self.session_id,
                 "question_id": "q1_1",
                 "response": "no_need_help",
                 "area_id": "area1"
             }
-            response = requests.post(f"{BASE_URL}/assessment/response", json=response_payload, headers=headers)
+            response = requests.post(f"{BASE_URL}/assessment/session/{self.session_id}/response", json=response_payload, headers=headers)
             if response.status_code == 200:
                 response_data = response.json()
                 maturity_status = response_data.get("maturity_statement", "")
