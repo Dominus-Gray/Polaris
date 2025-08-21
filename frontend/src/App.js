@@ -4617,13 +4617,9 @@ function ServiceRequestPage(){
               )}
             </div>
           ))}
-          
-          {myServices.filter(s => ['payment_completed', 'active', 'in_progress'].includes(s.status)).length === 0 && (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-slate-900 mb-2">No Active Services</h3>
-              <p className="text-slate-600">You don't have any active services at the moment.</p>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
