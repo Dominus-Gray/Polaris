@@ -1055,10 +1055,11 @@ function AssessmentPage(){
 
           <div className="mt-6 flex justify-center">
             <button 
-              className="btn" 
+              className="btn bg-blue-600 text-white hover:bg-blue-700" 
               onClick={() => setShowResources(false)}
+              style={{ color: 'white !important' }}
             >
-              Continue Assessment
+              <span style={{ color: 'white' }}>Continue Assessment</span>
             </button>
           </div>
         </div>
