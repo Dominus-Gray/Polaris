@@ -148,7 +148,8 @@ class UIUXBackendTester:
             response = requests.get(f"{BASE_URL}/assessment/schema", headers=headers)
             
             if response.status_code == 200:
-                schema = response.json()
+                data = response.json()
+                schema = data.get("schema", {}) if isinstance(data, dict) else data
                 if "areas" in schema:
                     self.log_result("Assessment Schema API", "PASS", f"Retrieved schema with {len(schema['areas'])} areas")
                     
