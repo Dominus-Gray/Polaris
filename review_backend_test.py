@@ -234,7 +234,7 @@ class ReviewBackendTester:
             }
             # Notably missing "describe_your_services" field
             
-            response = requests.post(f"{BASE_URL}/business-profile", json=profile_payload, headers=headers)
+            response = requests.post(f"{BASE_URL}/business/profile", json=profile_payload, headers=headers)
             if response.status_code == 200:
                 profile_data = response.json()
                 self.log_result("Business Profile Creation (Simplified)", "PASS", f"Profile created without services description field")
