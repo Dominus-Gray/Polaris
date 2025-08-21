@@ -2385,6 +2385,311 @@ function FreeResourcesPage() {
   );
 }
 
+// ---------------- External Resources Page ----------------
+function ExternalResourcesPage() {
+  const { areaId } = useParams();
+  const navigate = useNavigate();
+  const [resources, setResources] = useState([]);
+  const [areaInfo, setAreaInfo] = useState(null);
+
+  useEffect(() => {
+    loadExternalResources();
+  }, [areaId]);
+
+  const loadExternalResources = () => {
+    const EXTERNAL_RESOURCES = {
+      area1: {
+        name: "Business Formation & Registration",
+        resources: [
+          {
+            title: "Texas Secretary of State - Business Registration",
+            url: "https://www.sos.state.tx.us/corp/index.shtml",
+            description: "Official state portal for business entity formation and registration",
+            type: "Government",
+            location: "Texas Statewide"
+          },
+          {
+            title: "City of San Antonio Business License Portal", 
+            url: "https://www.sanantonio.gov/Development-Services/Business-Licenses",
+            description: "Local business license applications and permits",
+            type: "Municipal",
+            location: "San Antonio, TX"
+          },
+          {
+            title: "Small Business Administration (SBA) - Business Guide",
+            url: "https://www.sba.gov/business-guide/10-steps-start-your-business",
+            description: "Comprehensive 10-step business startup guide",
+            type: "Federal",
+            location: "National"
+          },
+          {
+            title: "SCORE San Antonio - Free Business Mentoring",
+            url: "https://sanantonio.score.org/",
+            description: "Free business mentoring and workshops for entrepreneurs",
+            type: "Nonprofit",
+            location: "San Antonio, TX"
+          }
+        ]
+      },
+      area2: {
+        name: "Financial Operations & Management",
+        resources: [
+          {
+            title: "IRS Small Business Tax Center",
+            url: "https://www.irs.gov/businesses/small-businesses-self-employed",
+            description: "Tax information and resources for small businesses",
+            type: "Federal",
+            location: "National"
+          },
+          {
+            title: "San Antonio Economic Development - Financial Resources",
+            url: "https://www.sanantonio.gov/economic-development/BusinessResources",
+            description: "Local financial assistance and loan programs",
+            type: "Municipal", 
+            location: "San Antonio, TX"
+          },
+          {
+            title: "UTSA SBDC - Financial Management Training",
+            url: "https://www.utsa.edu/business/sbdc/services/training/",
+            description: "Free workshops on financial management and accounting",
+            type: "Educational",
+            location: "San Antonio, TX"
+          }
+        ]
+      },
+      area3: {
+        name: "Legal & Contracting Compliance",
+        resources: [
+          {
+            title: "Texas State Bar - LegalLine",
+            url: "https://www.texasbar.com/legalline",
+            description: "Free legal advice hotline for qualifying businesses",
+            type: "Professional",
+            location: "Texas Statewide"
+          },
+          {
+            title: "PTAC Texas - Procurement Technical Assistance",
+            url: "https://www.texasptac.org/",
+            description: "Free government contracting assistance and training",
+            type: "Nonprofit",
+            location: "Texas Statewide"
+          }
+        ]
+      },
+      area4: {
+        name: "Quality Management & Standards", 
+        resources: [
+          {
+            title: "Texas Manufacturing Assistance Center (TMAC)",
+            url: "https://www.tmac.org/",
+            description: "Free manufacturing and quality system consulting",
+            type: "Nonprofit",
+            location: "Texas Statewide"
+          },
+          {
+            title: "Better Business Bureau South Central Texas",
+            url: "https://www.bbb.org/south-central-texas",
+            description: "Business accreditation and reputation management",
+            type: "Nonprofit",
+            location: "San Antonio, TX"
+          }
+        ]
+      },
+      area5: {
+        name: "Technology & Security Infrastructure",
+        resources: [
+          {
+            title: "CISA Cybersecurity Resources for Small Business",
+            url: "https://www.cisa.gov/cybersecurity-small-and-medium-businesses",
+            description: "Federal cybersecurity guidance and tools",
+            type: "Federal",
+            location: "National"
+          },
+          {
+            title: "San Antonio CyberSecurity Framework Initiative",
+            url: "https://www.sanantonio.gov/ITServices/Security",
+            description: "Local cybersecurity resources and training",
+            type: "Municipal",
+            location: "San Antonio, TX"
+          }
+        ]
+      },
+      area6: {
+        name: "Human Resources & Capacity",
+        resources: [
+          {
+            title: "Texas Workforce Commission - Employer Services",
+            url: "https://www.twc.texas.gov/employers",
+            description: "Employment services, training grants, and HR resources",
+            type: "State",
+            location: "Texas Statewide"
+          },
+          {
+            title: "San Antonio WorkForce Development - Business Services",
+            url: "https://www.workforcesolutionsalamo.org/employers/",
+            description: "Local workforce development and training services",
+            type: "Local",
+            location: "San Antonio, TX"
+          }
+        ]
+      },
+      area7: {
+        name: "Performance Tracking & Reporting",
+        resources: [
+          {
+            title: "SBA Learning Center - Performance Management",
+            url: "https://www.sba.gov/learning-center/",
+            description: "Business performance measurement and improvement courses",
+            type: "Federal",
+            location: "National"
+          },
+          {
+            title: "UTSA SBDC - Financial Analysis and Reporting",
+            url: "https://www.utsa.edu/business/sbdc/services/counseling/",
+            description: "Free business analysis and performance tracking counseling",
+            type: "Educational",
+            location: "San Antonio, TX"
+          }
+        ]
+      },
+      area8: {
+        name: "Risk Management & Business Continuity",
+        resources: [
+          {
+            title: "FEMA Business Emergency Planning",
+            url: "https://www.ready.gov/business",
+            description: "Federal emergency preparedness resources for businesses",
+            type: "Federal",
+            location: "National"
+          },
+          {
+            title: "San Antonio Office of Emergency Management",
+            url: "https://www.sanantonio.gov/OEM/",
+            description: "Local emergency preparedness and business resilience",
+            type: "Municipal",
+            location: "San Antonio, TX"
+          }
+        ]
+      }
+    };
+
+    const areaData = EXTERNAL_RESOURCES[areaId];
+    if (areaData) {
+      setAreaInfo({ name: areaData.name });
+      setResources(areaData.resources);
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    const icons = {
+      Government: '🏛️',
+      Federal: '🇺🇸',
+      State: '🏢',
+      Municipal: '🏛️',
+      Educational: '🎓',
+      Nonprofit: '🤝',
+      Professional: '👩‍💼',
+      Local: '📍',
+      Chamber: '🏪',
+      Association: '👥'
+    };
+    return icons[type] || '📋';
+  };
+
+  return (
+    <div className="app-shell">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <button 
+              className="btn btn-sm mb-4"
+              onClick={() => navigate('/assessment')}
+            >
+              ← Back to Assessment
+            </button>
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              Free Local Resources
+            </h1>
+            {areaInfo && (
+              <p className="text-slate-600">
+                External resources for {areaInfo.name} from local and government organizations
+              </p>
+            )}
+          </div>
+
+          {/* Resources Grid */}
+          <div className="space-y-4">
+            {resources.map((resource, index) => (
+              <div key={index} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-xl">{getTypeIcon(resource.type)}</span>
+                      <div>
+                        <h3 className="font-semibold text-slate-900">{resource.title}</h3>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          {resource.type}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-slate-600 text-sm mb-3">{resource.description}</p>
+                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                      <div className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
+                        {resource.location}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary btn-sm"
+                    >
+                      Visit Resource
+                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Call to Action */}
+          <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">Need More Help?</h3>
+            <p className="text-blue-700 text-sm mb-4">
+              If these free resources don't fully address your needs, consider our premium Knowledge Base 
+              with templates, guides, and AI assistance, or get matched with professional service providers.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                className="btn btn-primary"
+                onClick={() => navigate('/knowledge-base')}
+              >
+                View Knowledge Base
+              </button>
+              <button 
+                className="btn"
+                onClick={() => navigate('/service-request')}
+              >
+                Get Professional Help
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------------- Business Profile Form ----------------
 function BusinessProfileForm(){
   const navigate = useNavigate();
