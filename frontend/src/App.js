@@ -6197,6 +6197,7 @@ function AppShell(){
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<ProfileSettings />} />
           <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+          <Route path="/area-deliverables/:areaId" element={<AreaDeliverablesPage />} />
           <Route path="/external-resources/:areaId" element={<ExternalResourcesPage />} />
           <Route path="/free-resources" element={<FreeResourcesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
