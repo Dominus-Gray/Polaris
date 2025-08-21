@@ -185,7 +185,7 @@ class CorrectedReviewTester:
             provider_response_payload = {
                 "request_id": self.service_request_id,
                 "proposed_fee": 2500.00,
-                "estimated_timeline": "3 weeks",
+                "estimated_timeline": "2-4 weeks",  # Fixed: using correct format from DATA_STANDARDS
                 "proposal_note": "I can help with comprehensive cybersecurity assessment including vulnerability scanning, policy development, and staff training."
             }
             
