@@ -4544,10 +4544,26 @@ function ServiceRequestPage(){
         </>
       )}
 
-      {/* Active Services Tab */}
+      {/* Engagements & Tracking Tab */}
       {activeTab === 'tracking' && (
         <div className="space-y-6">
-          {myServices.filter(s => ['payment_completed', 'active', 'in_progress'].includes(s.status)).map(service => (
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-semibold mb-4">Active Engagements & Service Tracking</h3>
+            <p className="text-sm text-slate-600 mb-6">
+              Track your ongoing service engagements, monitor progress, and manage milestone-based deliverables with your selected providers.
+            </p>
+            
+            {myServices.filter(s => ['payment_completed', 'active', 'in_progress'].includes(s.status)).length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <svg className="w-12 h-12 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M7 8h10M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                </svg>
+                <p className="text-lg font-medium mb-2">No Active Engagements</p>
+                <p className="text-sm">Create a service request to start working with qualified providers.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {myServices.filter(s => ['payment_completed', 'active', 'in_progress'].includes(s.status)).map(service => (
             <div key={service._id} className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
