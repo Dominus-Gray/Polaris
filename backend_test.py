@@ -195,9 +195,15 @@ class ComprehensiveIntegrationTest:
                 self.log_result("Provider Response Retrieval", False, "No service request ID available")
                 return False
             
+            # Add a small delay to ensure provider response is processed
+            time.sleep(1)
+            
             response = requests.get(f"{BACKEND_URL}/service-requests/{self.test_data['service_request_id']}/responses", 
                                   headers=headers)
             response_time = time.time() - start_time
+            
+            print(f"DEBUG: Provider response retrieval status: {response.status_code}")
+            print(f"DEBUG: Provider response retrieval response: {response.text}")
             
             if response.status_code == 200:
                 responses_data = response.json()
@@ -208,7 +214,7 @@ class ComprehensiveIntegrationTest:
                     return True
                 else:
                     self.log_result("Provider Response Retrieval", False, 
-                                  "No provider responses found", response_time)
+                                  f"No provider responses found - response type: {type(responses_data)}, length: {len(responses_data) if isinstance(responses_data, list) else 'N/A'}", response_time)
                     return False
             else:
                 self.log_result("Provider Response Retrieval", False, 
