@@ -149,7 +149,7 @@ class ReviewBackendTester:
                 
                 # Test accessing resources for area1
                 if areas_count > 0:
-                    area_response = requests.get(f"{BASE_URL}/knowledge-base/area1/resources", headers=headers)
+                    area_response = requests.get(f"{BASE_URL}/knowledge-base/area1/content", headers=headers)
                     if area_response.status_code == 200:
                         resources = area_response.json()
                         deliverables_count = len(resources.get("deliverables", []))
