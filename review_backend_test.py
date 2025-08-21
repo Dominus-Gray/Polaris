@@ -341,7 +341,7 @@ class ReviewBackendTester:
         # Test 5.1: External resources page for different business areas
         try:
             for area_id in ["area1", "area2", "area5"]:
-                response = requests.get(f"{BASE_URL}/external-resources/{area_id}", headers=headers)
+                response = requests.get(f"{BASE_URL}/knowledge-base/{area_id}/content", headers=headers)
                 if response.status_code == 200:
                     resources_data = response.json()
                     resources_count = len(resources_data.get("resources", []))
