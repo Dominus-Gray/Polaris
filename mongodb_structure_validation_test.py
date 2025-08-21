@@ -96,10 +96,16 @@ class MongoDBStructureValidator:
             return False
     
     def validate_uuid_format(self, value: str, field_name: str) -> bool:
-        """Validate UUID4 format"""
+        """Validate UUID4 format (with or without prefix)"""
         try:
-            uuid_obj = uuid.UUID(value, version=4)
-            return str(uuid_obj) == value
+            # Handle prefixed UUIDs like "req_uuid", "sess_uuid", etc.
+            if "_" in value:
+                uuid_part = value.split("_", 1)[1]  # Get part after first underscore
+            else:
+                uuid_part = value
+            
+            uuid_obj = uuid.UUID(uuid_part, version=4)
+            return str(uuid_obj) == uuid_part
         except (ValueError, TypeError):
             self.log_result(f"❌ Invalid UUID4 format for {field_name}: {value}")
             return False
