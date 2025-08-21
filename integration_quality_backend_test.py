@@ -242,7 +242,10 @@ class IntegrationQualityTester:
             ai_payload = {
                 "area_id": "area1",
                 "question": "How do I register my business?",
-                "context": "small business formation"
+                "context": {
+                    "business_type": "small business",
+                    "location": "general"
+                }
             }
             
             async with self.session.post(
