@@ -4282,7 +4282,7 @@ async def get_service_request(request_id: str, current=Depends(require_role("cli
 @api.get("/service-requests/{request_id}/responses")
 async def get_service_request_responses(request_id: str, current=Depends(require_role("client"))):
     """List provider responses for a service request (client must own it)"""
-    req = await db.service_requests.find_one({"_id": request_id, "user_id": current["id"]})
+    req = await db.service_requests.find_one({"_id": request_id, "client_id": current["id"]})
     if not req:
         raise HTTPException(status_code=404, detail="Service request not found")
     responses = await db.provider_responses.find({"request_id": request_id}).sort("created_at", -1).to_list(100)
