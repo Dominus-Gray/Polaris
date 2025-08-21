@@ -277,7 +277,7 @@ body { @apply bg-slate-50 text-slate-900; }
 .hero-bg { @apply absolute inset-0 opacity-20; background-image: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.3) 0, transparent 40%), radial-gradient(circle at 80% 30%, rgba(255,255,255,0.25) 0, transparent 40%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.2) 0, transparent 40%); }
 .hero-inner { @apply relative max-w-6xl mx-auto px-4 py-14 lg:py-20 flex items-center gap-10; }
 
-.hero-sub { @apply text-white/90 text-base lg:text-lg mt-3 max-w-2xl text-center; }
+.hero-sub { @apply text-white/90 text-base lg:text-lg mt-3 text-center mx-auto; }
 .hero-ctas { @apply mt-6 flex items-center gap-3; }
 .hero-ctas .btn { @apply text-[#1B365D]; }
 .hero-ctas .btn.btn-primary { @apply text-white; }
