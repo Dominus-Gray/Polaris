@@ -239,7 +239,7 @@ class PolarisBackendTester:
         additional_response_data = {
             "request_id": request_id,
             "proposed_fee": 3200.00,
-            "estimated_timeline": "2-3 weeks",
+            "estimated_timeline": "1-2 months",
             "proposal_note": "Alternative approach with faster timeline and premium service level. Includes 24/7 monitoring and dedicated support team."
         }
         
