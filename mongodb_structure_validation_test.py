@@ -290,7 +290,7 @@ class MongoDBStructureValidator:
             ]
             
             for response_data in test_responses:
-                response = requests.post(f"{BASE_URL}/assessment/submit-response", 
+                response = requests.post(f"{BASE_URL}/assessment/session/{session_id}/response", 
                                        json=response_data, headers=headers)
                 
                 if response.status_code != 200:
