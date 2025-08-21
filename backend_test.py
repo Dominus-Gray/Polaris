@@ -456,7 +456,7 @@ class ComprehensiveIntegrationTest:
         
         if not auth_success:
             print("❌ Authentication failed - cannot proceed with integration tests")
-            return
+            return 0
         
         # Phase 2: Core Provider Response Workflow
         print("\n📋 PHASE 2: PROVIDER RESPONSE WORKFLOW VALIDATION")
@@ -483,7 +483,7 @@ class ComprehensiveIntegrationTest:
         self.test_security_and_access_control()
         
         # Generate final report
-        self.generate_final_report()
+        return self.generate_final_report()
     
     def generate_final_report(self):
         """Generate comprehensive final assessment report"""
