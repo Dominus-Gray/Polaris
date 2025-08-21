@@ -1919,22 +1919,35 @@ function KnowledgeBasePage(){
                       View All Resources
                     </button>
                     
-                    {/* Start AI Consultation Button */}
+                    {/* Start AI Consultation Button - Always visible */}
                     <div className="mt-3 text-center">
-                      <button 
-                        className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full inline-flex items-center justify-center"
-                        onClick={() => {
-                          setSelectedArea(area.id);
-                          loadAreaResources(area.id);
-                          setTimeout(() => setShowAIChat(true), 100);
-                        }}
-                        style={{ color: 'white !important' }}
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span style={{ color: 'white' }}>Start AI Consultation</span>
-                      </button>
+                      {isUnlocked ? (
+                        <button 
+                          className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full inline-flex items-center justify-center"
+                          onClick={() => {
+                            setSelectedArea(area.id);
+                            loadAreaResources(area.id);
+                            setTimeout(() => setShowAIChat(true), 100);
+                          }}
+                          style={{ color: 'white !important' }}
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          <span style={{ color: 'white' }}>Start AI Consultation</span>
+                        </button>
+                      ) : (
+                        <button 
+                          className="btn bg-gray-400 text-white w-full inline-flex items-center justify-center"
+                          onClick={() => unlockArea(area.id)}
+                          style={{ color: 'white !important' }}
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          <span style={{ color: 'white' }}>Unlock AI Consultation - $20</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
