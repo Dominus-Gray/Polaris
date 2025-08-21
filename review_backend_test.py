@@ -247,7 +247,7 @@ class ReviewBackendTester:
         
         # Test 3.2: Verify profile completion and validation
         try:
-            response = requests.get(f"{BASE_URL}/business-profile/me", headers=headers)
+            response = requests.get(f"{BASE_URL}/business/profile/me", headers=headers)
             if response.status_code == 200:
                 profile_data = response.json()
                 is_complete = profile_data.get("profile_complete", False)
