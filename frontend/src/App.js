@@ -2750,21 +2750,6 @@ function BusinessProfileForm(){
           {errors.business_type && <div className="error-message">{errors.business_type}</div>}
         </div>
 
-        {/* Business Description */}
-        <div className="md:col-span-2">
-          <textarea 
-            className={`input ${errors.business_description ? 'border-red-500' : ''}`} 
-            placeholder={`Describe your ${form.business_type === 'product' ? 'products' : 'services'} in detail *`}
-            value={form.business_description} 
-            onChange={e=>handleFieldChange('business_description', e.target.value)}
-            rows="3"
-          />
-          {errors.business_description && <div className="error-message">{errors.business_description}</div>}
-          <div className="text-xs text-slate-500 mt-1">
-            Provide a detailed description of what your business offers (10-500 characters)
-          </div>
-        </div>
-
         {/* Revenue Range */}
         <div>
           <select 
