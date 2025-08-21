@@ -267,21 +267,18 @@ class MongoDBStructureValidator:
             # Submit some test responses
             test_responses = [
                 {
-                    "session_id": session_id,
                     "question_id": "q1_1",
                     "answer": "yes",
                     "confidence_level": "high",
                     "notes": "Business license is current and valid"
                 },
                 {
-                    "session_id": session_id,
                     "question_id": "q1_2", 
                     "answer": "no_need_help",
                     "confidence_level": "medium",
                     "notes": "Need help with insurance requirements"
                 },
                 {
-                    "session_id": session_id,
                     "question_id": "q2_1",
                     "answer": "yes",
                     "confidence_level": "high",
