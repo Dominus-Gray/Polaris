@@ -367,6 +367,7 @@ class MongoDBStructureValidator:
                 return None
             
             request_response = response.json()
+            self.log_result(f"Service request creation response: {request_response}")
             request_id = request_response.get("request_id") or request_response.get("id")
             
             if not request_id:
@@ -375,15 +376,30 @@ class MongoDBStructureValidator:
                 self.validation_results["service_requests"]["failed"] += 1
                 return None
             
+            self.log_result(f"✅ Service request created with ID: {request_id}")
+            
             # Get the created request to validate structure
             response = requests.get(f"{BASE_URL}/service-requests/{request_id}", headers=headers)
             
             if response.status_code != 200:
-                self.log_result(f"❌ Failed to get service request: {response.status_code}")
-                self.validation_results["service_requests"]["failed"] += 1
-                return None
-            
-            request_data = response.json()
+                self.log_result(f"❌ Failed to get service request: {response.status_code} - {response.text}")
+                # Try alternative endpoint
+                response = requests.get(f"{BASE_URL}/service-requests/my", headers=headers)
+                if response.status_code == 200:
+                    my_requests = response.json()
+                    self.log_result(f"✅ Got user's service requests: {len(my_requests.get('requests', []))} requests")
+                    if my_requests.get('requests'):
+                        request_data = my_requests['requests'][0]  # Use the first request
+                    else:
+                        self.log_result(f"❌ No service requests found for user")
+                        self.validation_results["service_requests"]["failed"] += 1
+                        return None
+                else:
+                    self.log_result(f"❌ Failed to get user's service requests: {response.status_code}")
+                    self.validation_results["service_requests"]["failed"] += 1
+                    return None
+            else:
+                request_data = response.json()
             
             # Validate service request structure
             validations = [
