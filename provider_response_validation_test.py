@@ -139,7 +139,7 @@ class PolarisBackendTester:
         provider_response_data = {
             "request_id": request_id,
             "proposed_fee": 2500.00,
-            "estimated_timeline": "3-4 weeks", 
+            "estimated_timeline": "2-4 weeks", 
             "proposal_note": "I have extensive experience in cybersecurity infrastructure implementation. My approach includes comprehensive security audit, risk assessment, implementation of multi-layered security protocols, staff training, and ongoing monitoring. I can provide detailed compliance documentation and ensure your business meets all industry standards."
         }
         
