@@ -203,7 +203,7 @@ class UIUXBackendTester:
             ai_payload = {
                 "area_id": "area1",
                 "question": "How do I get started with business formation?",
-                "context": "assessment"
+                "context": {"source": "assessment", "user_type": "client"}
             }
             
             response = requests.post(f"{BASE_URL}/knowledge-base/ai-assistance", json=ai_payload, headers=headers)
