@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://agency-connect-4.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sbap-platform.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing Phase 3 backend updates at: {API_BASE}")

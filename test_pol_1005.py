@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BASE_URL = "https://agency-connect-4.preview.emergentagent.com/api"
+BASE_URL = "https://sbap-platform.preview.emergentagent.com/api"
 
 def test_pol_1005():
     """Test POL-1005 error code for Knowledge Base access control"""

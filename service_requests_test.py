@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://agency-connect-4.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sbap-platform.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing service requests backend at: {API_BASE}")
@@ -387,7 +387,7 @@ def test_payment_service_request(client_token, request_id):
             "request_id": request_id,
             "provider_id": str(uuid.uuid4()),  # Mock provider ID
             "amount": 1500,
-            "origin_url": "https://agency-connect-4.preview.emergentagent.com"
+            "origin_url": "https://sbap-platform.preview.emergentagent.com"
         }
         
         response = requests.post(
