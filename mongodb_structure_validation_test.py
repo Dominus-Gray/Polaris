@@ -299,7 +299,7 @@ class MongoDBStructureValidator:
                     return False
             
             # Get session progress to validate response structure
-            response = requests.get(f"{BASE_URL}/assessment/session/{session_id}", headers=headers)
+            response = requests.get(f"{BASE_URL}/assessment/session/{session_id}/progress", headers=headers)
             
             if response.status_code != 200:
                 self.log_result(f"❌ Failed to get assessment session: {response.status_code}")
