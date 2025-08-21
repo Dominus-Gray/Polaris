@@ -1914,7 +1914,7 @@ function KnowledgeBasePage(){
                     
                     <button 
                       className="btn btn-primary w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                      onClick={() => loadAreaResources(area.id)}
+                      onClick={() => navigate(`/area-deliverables/${area.id}`)}
                     >
                       View All Resources
                     </button>
