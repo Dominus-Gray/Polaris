@@ -3267,6 +3267,120 @@ class NextBestActionRequest(BaseModel):
     completed_areas: List[str] = []
     business_profile: Optional[Dict[str, Any]] = None
 
+# Agency Subscription Models
+class SubscriptionTier(BaseModel):
+    tier_id: str  # starter, professional, enterprise, enterprise_plus
+    name: str
+    monthly_price: int  # in cents
+    annual_price: int  # in cents
+    client_limit: int  # max active clients
+    license_codes_per_month: int
+    features: List[str]
+    support_level: str
+
+class AgencySubscription(BaseModel):
+    subscription_id: str
+    agency_user_id: str
+    tier_id: str
+    status: str  # active, past_due, canceled, trial
+    billing_cycle: str  # monthly, annual
+    current_period_start: datetime
+    current_period_end: datetime
+    client_count: int
+    license_codes_used_this_month: int
+    stripe_subscription_id: Optional[str] = None
+    trial_end: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+class UpdateSubscriptionRequest(BaseModel):
+    tier_id: str
+    billing_cycle: str = "monthly"
+
+class SubscriptionUsage(BaseModel):
+    agency_user_id: str
+    month: str  # YYYY-MM format
+    clients_active: int
+    license_codes_generated: int
+    api_calls: int = 0
+    storage_used_mb: int = 0
+
+# Subscription Configuration
+SUBSCRIPTION_TIERS = {
+    "starter": {
+        "tier_id": "starter",
+        "name": "Starter",
+        "monthly_price": 14900,  # $149.00
+        "annual_price": 119200,  # $1,192 (20% discount)
+        "client_limit": 50,
+        "license_codes_per_month": 100,
+        "features": [
+            "basic_analytics",
+            "email_support",
+            "logo_branding",
+            "standard_assessments",
+            "monthly_reports"
+        ],
+        "support_level": "email"
+    },
+    "professional": {
+        "tier_id": "professional", 
+        "name": "Professional",
+        "monthly_price": 29900,  # $299.00
+        "annual_price": 239200,  # $2,392 (20% discount)
+        "client_limit": 200,
+        "license_codes_per_month": 500,
+        "features": [
+            "advanced_analytics",
+            "priority_support",
+            "full_theme_customization",
+            "bulk_management",
+            "weekly_reports",
+            "custom_subdomain",
+            "api_access_limited"
+        ],
+        "support_level": "email_chat"
+    },
+    "enterprise": {
+        "tier_id": "enterprise",
+        "name": "Enterprise", 
+        "monthly_price": 59900,  # $599.00
+        "annual_price": 479200,  # $4,792 (20% discount)
+        "client_limit": 1000,
+        "license_codes_per_month": -1,  # unlimited
+        "features": [
+            "realtime_analytics",
+            "dedicated_account_manager", 
+            "complete_whitelabel",
+            "custom_domain",
+            "phone_support",
+            "api_access_full",
+            "sso_integration",
+            "multi_location"
+        ],
+        "support_level": "phone_dedicated"
+    },
+    "enterprise_plus": {
+        "tier_id": "enterprise_plus",
+        "name": "Enterprise Plus",
+        "monthly_price": 99900,  # $999.00  
+        "annual_price": 799200,  # $7,992 (20% discount)
+        "client_limit": -1,  # unlimited
+        "license_codes_per_month": -1,  # unlimited
+        "features": [
+            "ai_powered_analytics",
+            "dedicated_success_manager",
+            "custom_feature_development", 
+            "dedicated_infrastructure",
+            "24_7_support",
+            "custom_apis",
+            "multi_tenant_management",
+            "compliance_certifications"
+        ],
+        "support_level": "24_7_dedicated"
+    }
+}
+
 # AI-Powered Content Generation Helper
 async def generate_ai_content(prompt: str, content_type: str = "guide") -> str:
     """Generate AI content using emergentintegrations"""
