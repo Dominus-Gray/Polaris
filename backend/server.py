@@ -5022,7 +5022,7 @@ async def generate_template_download(area_id: str, template_type: str, current=D
     """Generate and download specific template types"""
     try:
         # Check access
-        has_access = current["email"].endswith("@polaris.example.com")
+        has_access = current["email"].endswith("@polaris.example.com") and current["role"] != "provider"
         if not has_access:
             access = await db.user_access.find_one({"user_id": current["id"]})
             if access:
