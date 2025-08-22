@@ -3844,6 +3844,10 @@ async def generate_kb_content(
 async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(require_user)):
     """Get AI-powered assistance and guidance - Premium feature"""
     try:
+        # CRITICAL: Providers should NEVER have Knowledge Base access
+        if current["role"] == "provider":
+            raise create_polaris_error("POL-1005", "Service providers do not have access to Knowledge Base features", 403)
+        
         # Check if user has Knowledge Base access
         access_data = await db.knowledge_base_access.find_one({"user_id": current["id"]})
         
