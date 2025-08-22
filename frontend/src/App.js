@@ -8888,7 +8888,7 @@ function ServiceCreatePage() {
 
   const addRequirement = () => {
     if (newRequirement.trim()) {
-      setGigData(prev => ({
+      setServiceData(prev => ({
         ...prev,
         requirements: [...prev.requirements, newRequirement.trim()]
       }));
