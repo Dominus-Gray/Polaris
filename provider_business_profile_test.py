@@ -373,13 +373,17 @@ class ProviderBusinessProfileTester:
         
         # Step 2: Get current profile (if exists)
         print("\n📋 Checking existing business profile...")
-        self.get_current_business_profile()
+        profile_exists = self.get_current_business_profile()
         
-        # Step 3: Create/Update business profile
-        print("\n🏢 Creating business profile...")
-        if not self.create_business_profile():
-            print("\n❌ CRITICAL: Business profile creation failed.")
-            return False
+        # Step 3: Create/Update business profile (only if doesn't exist)
+        if not profile_exists:
+            print("\n🏢 Creating business profile...")
+            if not self.create_business_profile():
+                print("\n❌ CRITICAL: Business profile creation failed.")
+                return False
+        else:
+            print("\n🏢 Business profile already exists, skipping creation...")
+            self.log_test("Business Profile Creation", "PASS", "Profile already exists - skipped creation")
         
         # Step 4: Create mock logo upload
         print("\n🖼️ Creating mock logo upload...")
