@@ -5050,22 +5050,206 @@ function ProviderHome(){
             </div>
           )}
 
-          {/* Other tabs would be implemented similarly */}
-          {activeTab === 'engagements' && (
-            <div className="text-center py-12 text-slate-500">
-              <p>Active Engagements management coming soon...</p>
-            </div>
-          )}
-
+          {/* Earnings Tab */}
           {activeTab === 'earnings' && (
-            <div className="text-center py-12 text-slate-500">
-              <p>Earnings analytics coming soon...</p>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">Earnings Overview</h3>
+                <div className="text-sm text-slate-600">
+                  Last updated: {new Date().toLocaleDateString()}
+                </div>
+              </div>
+
+              {/* Earnings Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-semibold text-green-900">This Month</h4>
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                  </div>
+                  <div className="text-3xl font-bold text-green-900 mb-1">
+                    ${data.monthly_revenue ? data.monthly_revenue.toLocaleString() : '0'}
+                  </div>
+                  <div className="text-sm text-green-700">Gross earnings</div>
+                </div>
+
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-semibold text-blue-900">Available</h4>
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                    </svg>
+                  </div>
+                  <div className="text-3xl font-bold text-blue-900 mb-1">
+                    ${data.available_balance ? data.available_balance.toLocaleString() : '0'}
+                  </div>
+                  <div className="text-sm text-blue-700">Ready for withdrawal</div>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-semibold text-purple-900">Total Earned</h4>
+                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div className="text-3xl font-bold text-purple-900 mb-1">
+                    ${data.total_earned ? data.total_earned.toLocaleString() : '0'}
+                  </div>
+                  <div className="text-sm text-purple-700">All time</div>
+                </div>
+              </div>
+
+              {/* Recent Transactions */}
+              <div className="bg-white border rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Recent Transactions</h4>
+                <div className="space-y-3">
+                  {/* Sample transaction - in real app, load from API */}
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium text-slate-900">Order Completed</div>
+                      <div className="text-sm text-slate-600">Business Formation Consultation</div>
+                      <div className="text-xs text-slate-500">Jan 15, 2025</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-green-600">+$250.00</div>
+                      <div className="text-xs text-slate-500">Completed</div>
+                    </div>
+                  </div>
+                  {/* More transactions would be loaded here */}
+                </div>
+              </div>
+
+              {/* Withdrawal Options */}
+              <div className="bg-white border rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Withdraw Earnings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button className="btn btn-primary">
+                    Withdraw to Bank Account
+                  </button>
+                  <button className="btn btn-secondary">
+                    Payment History
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
+          {/* Profile & Portfolio Tab */}
           {activeTab === 'profile' && (
-            <div className="text-center py-12 text-slate-500">
-              <p>Portfolio management coming soon...</p>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">Profile & Portfolio</h3>
+                <button className="btn btn-primary">
+                  Save Changes
+                </button>
+              </div>
+
+              {/* Provider Profile */}
+              <div className="bg-white border rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Professional Profile</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Professional Title
+                    </label>
+                    <input 
+                      type="text"
+                      className="input w-full"
+                      placeholder="e.g., Business Formation Specialist"
+                      defaultValue={data.professional_title || ''}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Years of Experience
+                    </label>
+                    <select className="input w-full">
+                      <option value="">Select experience</option>
+                      <option value="1-2">1-2 years</option>
+                      <option value="3-5">3-5 years</option>
+                      <option value="6-10">6-10 years</option>
+                      <option value="10+">10+ years</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Professional Bio
+                  </label>
+                  <textarea 
+                    className="input w-full h-32"
+                    placeholder="Describe your expertise, experience, and what makes you unique..."
+                    defaultValue={data.bio || ''}
+                  />
+                </div>
+              </div>
+
+              {/* Skills & Expertise */}
+              <div className="bg-white border rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Skills & Expertise</h4>
+                <div className="space-y-4">
+                  {[
+                    'Business Formation & Registration',
+                    'Financial Operations & Management',
+                    'Legal & Contracting Compliance',
+                    'Quality Management & Standards',
+                    'Technology & Security Infrastructure',
+                    'Human Resources & Capacity',
+                    'Performance Tracking & Reporting',
+                    'Risk Management & Business Continuity',
+                    'Supply Chain Management & Vendor Relations'
+                  ].map((skill, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <label className="flex items-center gap-2">
+                        <input type="checkbox" className="rounded" />
+                        <span className="text-sm text-slate-700">{skill}</span>
+                      </label>
+                      <select className="text-xs border rounded px-2 py-1">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="expert">Expert</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Portfolio */}
+              <div className="bg-white border rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Portfolio & Certifications</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Portfolio Images
+                    </label>
+                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
+                      <svg className="w-8 h-8 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <p className="text-sm text-slate-600">Upload portfolio images</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Certifications
+                    </label>
+                    <div className="space-y-2">
+                      <input 
+                        type="text"
+                        className="input w-full"
+                        placeholder="Certification name"
+                      />
+                      <button className="btn btn-sm btn-secondary w-full">
+                        Add Certification
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
