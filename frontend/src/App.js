@@ -8930,8 +8930,8 @@ function ServiceCreatePage() {
   };
 
   const removePackage = (index) => {
-    if (gigData.packages.length > 1) {
-      setGigData(prev => ({
+    if (serviceData.packages.length > 1) {
+      setServiceData(prev => ({
         ...prev,
         packages: prev.packages.filter((_, i) => i !== index)
       }));
