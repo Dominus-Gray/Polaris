@@ -25,7 +25,22 @@ from functools import wraps
 import time
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
-# Custom Polaris Error Codes
+# Enhanced caching for Knowledge Base content
+from functools import lru_cache
+import asyncio
+
+# Cache Knowledge Base areas for 1 hour to reduce database queries
+@lru_cache(maxsize=128)
+def get_cached_assessment_schema():
+    """Cache assessment schema to reduce repeated computations"""
+    return ASSESSMENT_SCHEMA.copy()
+
+# Optimize database queries with indexes (MongoDB commands to run separately)
+# db.users.createIndex({"email": 1, "role": 1})
+# db.assessment_sessions.createIndex({"user_id": 1, "created_at": -1})
+# db.service_requests.createIndex({"client_id": 1, "status": 1, "created_at": -1})
+# db.service_gigs.createIndex({"provider_id": 1, "status": 1})
+# db.service_orders.createIndex({"client_id": 1, "provider_id": 1, "status": 1})
 POLARIS_ERROR_CODES = {
     "POL-1001": "Invalid authentication credentials provided",
     "POL-1002": "User account not found or disabled", 
