@@ -1912,12 +1912,15 @@ function KnowledgeBasePage(){
                       </ul>
                     </div>
                     
-                    <button 
-                      className="btn btn-primary w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                      onClick={() => navigate(`/area-deliverables/${area.id}`)}
-                    >
-                      View All Resources
-                    </button>
+                    <div className="text-center">
+                      <button 
+                        className="btn btn-primary btn-view-all-resources bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                        onClick={() => navigate(`/area-deliverables/${area.id}`)}
+                        style={{ color: 'white !important' }}
+                      >
+                        <span style={{ color: 'white' }}>View All Resources</span>
+                      </button>
+                    </div>
                     
                     {/* Start AI Consultation Button - Always visible */}
                     <div className="mt-3 text-center">
