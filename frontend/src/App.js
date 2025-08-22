@@ -7019,10 +7019,18 @@ function AIAssistantCard({ areaId, context }) {
         context: { page: context, area: areaId },
         user_assessment_data: { gaps: [areaId] }
       });
-
-      setResponse(data.response || 'Sorry, I couldn\'t provide an answer right now.');
+      
+      setResponse(data.response);
+      setQuestion('');
     } catch (e) {
-      setResponse('I\'m having trouble right now. Please try again or contact support.');
+      console.error('AI assistance failed:', e);
+      
+      // Handle paywall error specifically
+      if (e.response?.status === 402) {
+        setResponse("💰 **AI Assistant Premium Feature**\n\nThis feature requires Knowledge Base access. Click 'Unlock Area Access' below to get personalized AI guidance for this business area.");
+      } else {
+        setResponse("I'm currently unavailable. Please try again later or contact a Digital Navigator for assistance.");
+      }
     } finally {
       setLoading(false);
     }
