@@ -2549,6 +2549,26 @@ function AreaDeliverablesPage() {
           { name: "Working with Legal Counsel Effectively", type: "PDF", size: "3 pages", description: "Maximizing value from legal counsel relationships" },
           { name: "Document Retention and Management", type: "PDF", size: "4 pages", description: "Legal document retention policies and procedures" }
         ]
+      },
+      area9: {
+        templates: [
+          { name: "Vendor Qualification Matrix", type: "Excel", size: "Multi-tab", description: "Comprehensive vendor evaluation and scoring system with qualification criteria" },
+          { name: "Supply Chain Risk Assessment Template", type: "Word", size: "6 pages", description: "Risk assessment framework for supply chain vulnerabilities and mitigation strategies" },
+          { name: "Vendor Performance Scorecard", type: "Excel", size: "2 pages", description: "Performance tracking dashboard for vendor management and KPI monitoring" },
+          { name: "Supplier Diversity Plan Template", type: "Word", size: "4 pages", description: "Strategic plan template for implementing supplier diversity initiatives" }
+        ],
+        guides: [
+          { name: "Strategic Vendor Management for Government Contracting", type: "PDF", size: "22 pages", description: "Comprehensive guide to building robust vendor relationships for procurement success" },
+          { name: "Supply Chain Resilience and Risk Mitigation", type: "PDF", size: "18 pages", description: "Enterprise-level strategies for supply chain continuity and risk management" },
+          { name: "Contract Management and Vendor Relations Best Practices", type: "PDF", size: "16 pages", description: "Professional contract administration and vendor relationship optimization" },
+          { name: "Due Diligence Framework for Vendor Selection", type: "PDF", size: "14 pages", description: "Systematic approach to vendor evaluation and selection processes" }
+        ],
+        bestPractices: [
+          { name: "Building Strategic Vendor Partnerships", type: "PDF", size: "8 pages", description: "Executive strategies for developing long-term vendor relationships and partnerships" },
+          { name: "Supply Chain Performance Optimization", type: "PDF", size: "6 pages", description: "Operational excellence practices for supply chain efficiency and cost management" },
+          { name: "Vendor Risk Management and Compliance", type: "PDF", size: "7 pages", description: "Enterprise risk management practices for vendor oversight and compliance monitoring" },
+          { name: "Contract Negotiation and Management Excellence", type: "PDF", size: "9 pages", description: "Advanced contract negotiation strategies and lifecycle management practices" }
+        ]
       }
     };
 
