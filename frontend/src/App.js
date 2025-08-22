@@ -3700,7 +3700,7 @@ function ClientHome(){
         setMatchedServices(services.data.services || []);
 
         // Load marketplace gigs for client discovery
-        const marketplaceRes = await axios.get(`${API}/marketplace/gigs/search?limit=10`);
+        const marketplaceRes = await axios.get(`${API}/marketplace/gigs/search?limit=12`);
         setMarketplaceGigs(marketplaceRes.data.gigs || []);
 
         // Load assessment data and gaps
