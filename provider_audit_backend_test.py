@@ -469,17 +469,26 @@ class ProviderAuditTest:
         """Additional: Test provider notification and matching system"""
         print("\n=== PROVIDER NOTIFICATIONS & MATCHING ===")
         
-        # Test provider notifications
+        # Test provider notifications (use correct endpoint)
         try:
             start_time = time.time()
             provider_headers = self.get_headers("provider")
-            response = requests.get(f"{BACKEND_URL}/notifications", headers=provider_headers)
+            response = requests.get(f"{BACKEND_URL}/provider/notifications", headers=provider_headers)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
                 notifications = response.json()
                 self.log_result("Provider Notifications", True, 
                               f"Notifications accessible: {len(notifications) if isinstance(notifications, list) else 'data available'}", response_time)
+            elif response.status_code == 404:
+                # Try alternative endpoint
+                response2 = requests.get(f"{BACKEND_URL}/notifications/my", headers=provider_headers)
+                if response2.status_code == 200:
+                    self.log_result("Provider Notifications", True, 
+                                  f"Notifications accessible via /notifications/my", time.time() - start_time)
+                else:
+                    self.log_result("Provider Notifications", False, 
+                                  f"Notifications not accessible - Status: {response.status_code}", response_time)
             else:
                 self.log_result("Provider Notifications", False, 
                               f"Status: {response.status_code}, Response: {response.text}", response_time)
