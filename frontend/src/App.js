@@ -9241,9 +9241,9 @@ function ServiceCreatePage() {
               </button>
             </div>
 
-            {gigData.requirements.length > 0 && (
+            {serviceData.requirements.length > 0 && (
               <div className="space-y-2">
-                {gigData.requirements.map((req, index) => (
+                {serviceData.requirements.map((req, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <span className="text-sm text-slate-700">{req}</span>
                     <button
