@@ -89,6 +89,28 @@ function useAuthHeader(){
 
 function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
   const navigate = useNavigate();
+
+  const searchMarketplace = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('q', searchQuery);
+      if (selectedCategory) params.append('category', selectedCategory);
+      params.append('limit', '20');
+      
+      const response = await axios.get(`${API}/marketplace/gigs/search?${params}`);
+      setMarketplaceGigs(response.data.gigs || []);
+    } catch (error) {
+      console.error('Marketplace search error:', error);
+    }
+  };
+
+  // Search when query or category changes
+  useEffect(() => {
+    if (activeTab === 'marketplace') {
+      searchMarketplace();
+    }
+  }, [searchQuery, selectedCategory, activeTab]);
+
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
