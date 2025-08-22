@@ -9205,7 +9205,7 @@ function ServiceCreatePage() {
                   Add Standard Package
                 </button>
               )}
-              {!gigData.packages.find(p => p.package_type === 'premium') && (
+              {!serviceData.packages.find(p => p.package_type === 'premium') && (
                 <button
                   type="button"
                   onClick={() => addPackage('premium')}
