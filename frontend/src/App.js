@@ -9009,8 +9009,8 @@ function ServiceCreatePage() {
               <textarea
                 className="input w-full h-32"
                 placeholder="Describe your service in detail. What will you deliver? What makes you qualified?"
-                value={gigData.description}
-                onChange={(e) => setGigData(prev => ({ ...prev, description: e.target.value }))}
+                value={serviceData.description}
+                onChange={(e) => setServiceData(prev => ({ ...prev, description: e.target.value }))}
                 required
               />
             </div>
