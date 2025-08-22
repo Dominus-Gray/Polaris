@@ -3653,7 +3653,7 @@ async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(requir
         chat = LlmChat(
             api_key=os.environ.get('EMERGENT_LLM_KEY'),
             session_id=f"ai_assistance_{current['id']}_{str(uuid.uuid4())[:8]}",
-            system_message="You are an expert business consultant for small business procurement readiness."
+            system_message="You are an expert business consultant for small business procurement readiness. Provide concise, actionable advice in under 200 words with clear next steps."
         ).with_model("openai", "gpt-4o-mini")
         
         user_message = UserMessage(text=prompt)
