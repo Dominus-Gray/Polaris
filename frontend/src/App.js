@@ -4794,9 +4794,7 @@ function ProviderHome(){
           </div>
         </div>
       )}
-  
-  return (
-    <div className="container mt-6 max-w-7xl">
+
       {/* Enhanced Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-sm p-6 text-white mb-6">
         <div className="flex items-center justify-between">
