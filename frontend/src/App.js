@@ -7048,15 +7048,26 @@ function AIAssistantCard({ areaId, context }) {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-slate-900">AI Business Assistant</h4>
-              <p className="text-xs text-slate-600">Get personalized guidance and next steps</p>
+              <p className="text-xs text-slate-600">
+                {hasAccess ? "Get personalized guidance and next steps" : "Premium feature - unlock for personalized guidance"}
+              </p>
             </div>
           </div>
-          <button 
-            className="btn btn-sm btn-primary"
-            onClick={() => setIsOpen(true)}
-          >
-            Get AI Help
-          </button>
+          {hasAccess ? (
+            <button 
+              className="btn btn-sm btn-primary"
+              onClick={() => setIsOpen(true)}
+            >
+              Get AI Help
+            </button>
+          ) : (
+            <button 
+              className="btn btn-sm btn-secondary"
+              onClick={unlockArea}
+            >
+              Unlock $20
+            </button>
+          )}
         </div>
       </div>
     );
