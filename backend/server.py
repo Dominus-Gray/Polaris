@@ -3952,6 +3952,8 @@ async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(requir
             "source": "ai_assistant",
             "area_id": request.area_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting AI assistance: {e}")
         return {
