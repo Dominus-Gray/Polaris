@@ -2658,10 +2658,15 @@ function AreaDeliverablesPage() {
                       </div>
                     </div>
                     <button 
-                      className="btn btn-primary btn-sm w-full mt-3"
+                      className="btn btn-primary btn-sm btn-download-template w-full mt-3"
                       onClick={() => downloadResource(guide.name, 'guide')}
+                      style={{ 
+                        background: 'linear-gradient(135deg, rgb(34, 197, 94), rgb(22, 163, 74))',
+                        color: 'white',
+                        border: 'none'
+                      }}
                     >
-                      Download Guide
+                      <span style={{ color: 'white' }}>Download Guide</span>
                     </button>
                   </div>
                 ))}
