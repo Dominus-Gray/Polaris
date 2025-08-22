@@ -9196,7 +9196,7 @@ function ServiceCreatePage() {
             ))}
 
             <div className="flex gap-2">
-              {!gigData.packages.find(p => p.package_type === 'standard') && (
+              {!serviceData.packages.find(p => p.package_type === 'standard') && (
                 <button
                   type="button"
                   onClick={() => addPackage('standard')}
