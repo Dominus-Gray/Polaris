@@ -8666,4 +8666,456 @@ function CertificateVerification({ certificateId }) {
   );
 }
 
+// ================= GIG CREATION COMPONENT =================
+function GigCreatePage() {
+  const [gigData, setGigData] = useState({
+    title: '',
+    description: '',
+    category: 'business_formation',
+    subcategory: '',
+    tags: [],
+    packages: [
+      {
+        package_type: 'basic',
+        title: '',
+        description: '',
+        price: 0,
+        delivery_days: 7,
+        revisions_included: 1,
+        features: []
+      }
+    ],
+    requirements: [],
+    faq: []
+  });
+  const [loading, setLoading] = useState(false);
+  const [newTag, setNewTag] = useState('');
+  const [newRequirement, setNewRequirement] = useState('');
+  const navigate = useNavigate();
+
+  const categories = {
+    'business_formation': 'Business Formation & Registration',
+    'financial_operations': 'Financial Operations & Management',
+    'legal_compliance': 'Legal & Contracting Compliance',
+    'quality_management': 'Quality Management & Standards',
+    'technology_security': 'Technology & Security Infrastructure',
+    'human_resources': 'Human Resources & Capacity',
+    'performance_tracking': 'Performance Tracking & Reporting',
+    'risk_management': 'Risk Management & Business Continuity',
+    'supply_chain': 'Supply Chain Management & Vendor Relations'
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !gigData.tags.includes(newTag.trim())) {
+      setGigData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()]
+      }));
+      setNewTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setGigData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const addRequirement = () => {
+    if (newRequirement.trim()) {
+      setGigData(prev => ({
+        ...prev,
+        requirements: [...prev.requirements, newRequirement.trim()]
+      }));
+      setNewRequirement('');
+    }
+  };
+
+  const removeRequirement = (index) => {
+    setGigData(prev => ({
+      ...prev,
+      requirements: prev.requirements.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updatePackage = (index, field, value) => {
+    setGigData(prev => ({
+      ...prev,
+      packages: prev.packages.map((pkg, i) => 
+        i === index ? { ...pkg, [field]: value } : pkg
+      )
+    }));
+  };
+
+  const addPackage = (type) => {
+    const newPackage = {
+      package_type: type,
+      title: '',
+      description: '',
+      price: 0,
+      delivery_days: 7,
+      revisions_included: type === 'basic' ? 1 : type === 'standard' ? 2 : 3,
+      features: []
+    };
+    
+    setGigData(prev => ({
+      ...prev,
+      packages: [...prev.packages, newPackage]
+    }));
+  };
+
+  const removePackage = (index) => {
+    if (gigData.packages.length > 1) {
+      setGigData(prev => ({
+        ...prev,
+        packages: prev.packages.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API}/marketplace/gig/create`, {
+        ...gigData,
+        packages: gigData.packages.map(pkg => ({
+          ...pkg,
+          price: Math.round(pkg.price * 100), // Convert to cents
+        }))
+      });
+
+      if (response.data.success) {
+        toast.success('Gig created successfully!');
+        navigate('/provider');
+      } else {
+        toast.error('Failed to create gig');
+      }
+    } catch (error) {
+      console.error('Gig creation error:', error);
+      toast.error('Failed to create gig', { 
+        description: error.response?.data?.detail || error.message 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mt-6 max-w-4xl">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Create New Service Gig</h1>
+          <p className="text-slate-600">Create a professional service listing to attract clients</p>
+        </div>
+        <button 
+          className="btn btn-secondary"
+          onClick={() => navigate('/provider')}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Basic Information */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Basic Information</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Gig Title *
+              </label>
+              <input
+                type="text"
+                className="input w-full"
+                placeholder="I will help you with business formation and legal setup"
+                value={gigData.title}
+                onChange={(e) => setGigData(prev => ({ ...prev, title: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Description *
+              </label>
+              <textarea
+                className="input w-full h-32"
+                placeholder="Describe your service in detail. What will you deliver? What makes you qualified?"
+                value={gigData.description}
+                onChange={(e) => setGigData(prev => ({ ...prev, description: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Category *
+                </label>
+                <select
+                  className="input w-full"
+                  value={gigData.category}
+                  onChange={(e) => setGigData(prev => ({ ...prev, category: e.target.value }))}
+                  required
+                >
+                  {Object.entries(categories).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Subcategory
+                </label>
+                <input
+                  type="text"
+                  className="input w-full"
+                  placeholder="e.g., LLC Formation, Legal Documentation"
+                  value={gigData.subcategory}
+                  onChange={(e) => setGigData(prev => ({ ...prev, subcategory: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Tags (Help clients find your gig)
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  className="input flex-1"
+                  placeholder="Add a tag"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={addTag}
+                >
+                  Add Tag
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {gigData.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Service Packages */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Service Packages</h2>
+          
+          <div className="space-y-6">
+            {gigData.packages.map((pkg, index) => (
+              <div key={index} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium text-slate-900 capitalize">
+                    {pkg.package_type} Package
+                  </h3>
+                  {gigData.packages.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePackage(index)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Package Title *
+                    </label>
+                    <input
+                      type="text"
+                      className="input w-full"
+                      placeholder={`${pkg.package_type} business setup`}
+                      value={pkg.title}
+                      onChange={(e) => updatePackage(index, 'title', e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Price (USD) *
+                    </label>
+                    <input
+                      type="number"
+                      className="input w-full"
+                      placeholder="299"
+                      min="5"
+                      value={pkg.price}
+                      onChange={(e) => updatePackage(index, 'price', parseFloat(e.target.value) || 0)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Delivery Time (Days) *
+                    </label>
+                    <select
+                      className="input w-full"
+                      value={pkg.delivery_days}
+                      onChange={(e) => updatePackage(index, 'delivery_days', parseInt(e.target.value))}
+                      required
+                    >
+                      <option value={1}>1 day</option>
+                      <option value={3}>3 days</option>
+                      <option value={7}>1 week</option>
+                      <option value={14}>2 weeks</option>
+                      <option value={21}>3 weeks</option>
+                      <option value={30}>1 month</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Revisions Included *
+                    </label>
+                    <select
+                      className="input w-full"
+                      value={pkg.revisions_included}
+                      onChange={(e) => updatePackage(index, 'revisions_included', parseInt(e.target.value))}
+                      required
+                    >
+                      <option value={0}>No revisions</option>
+                      <option value={1}>1 revision</option>
+                      <option value={2}>2 revisions</option>
+                      <option value={3}>3 revisions</option>
+                      <option value={5}>5 revisions</option>
+                      <option value={-1}>Unlimited revisions</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Package Description *
+                  </label>
+                  <textarea
+                    className="input w-full h-20"
+                    placeholder="Describe what's included in this package"
+                    value={pkg.description}
+                    onChange={(e) => updatePackage(index, 'description', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            ))}
+
+            <div className="flex gap-2">
+              {!gigData.packages.find(p => p.package_type === 'standard') && (
+                <button
+                  type="button"
+                  onClick={() => addPackage('standard')}
+                  className="btn btn-secondary"
+                >
+                  Add Standard Package
+                </button>
+              )}
+              {!gigData.packages.find(p => p.package_type === 'premium') && (
+                <button
+                  type="button"
+                  onClick={() => addPackage('premium')}
+                  className="btn btn-secondary"
+                >
+                  Add Premium Package
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Requirements */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Requirements from Buyer</h2>
+          
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="input flex-1"
+                placeholder="What do you need from the buyer to get started?"
+                value={newRequirement}
+                onChange={(e) => setNewRequirement(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
+              />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={addRequirement}
+              >
+                Add Requirement
+              </button>
+            </div>
+
+            {gigData.requirements.length > 0 && (
+              <div className="space-y-2">
+                {gigData.requirements.map((req, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <span className="text-sm text-slate-700">{req}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeRequirement(index)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Submit */}
+        <div className="flex justify-end gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/provider')}
+            className="btn btn-secondary"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+          >
+            {loading ? 'Creating Gig...' : 'Create Gig'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default function App(){ return (<BrowserRouter><AppShell /></BrowserRouter>); }
