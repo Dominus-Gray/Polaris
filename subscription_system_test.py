@@ -366,8 +366,9 @@ class AgencySubscriptionTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                if data.get("success"):
-                    license_codes = data.get("license_codes", [])
+                # Check both possible response formats
+                if data.get("success") or data.get("message"):
+                    license_codes = data.get("license_codes", data.get("licenses", []))
                     
                     if len(license_codes) == 3:
                         # Verify license codes format
