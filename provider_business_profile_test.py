@@ -341,17 +341,21 @@ class ProviderBusinessProfileTester:
             print("\n❌ CRITICAL: Business profile creation failed.")
             return False
         
-        # Step 4: Verify profile completion
-        print("\n✅ Verifying profile completion...")
-        if not self.verify_profile_completion():
-            print("\n❌ CRITICAL: Profile completion verification failed.")
-            return False
+        # Step 4: Create mock logo upload
+        print("\n🖼️ Creating mock logo upload...")
+        self.create_mock_logo_upload()
         
-        # Step 5: Test provider home endpoint
+        # Step 5: Create provider profile if needed
+        print("\n👤 Creating provider profile...")
+        self.create_provider_profile()
+        
+        # Step 6: Verify profile completion
+        print("\n✅ Verifying profile completion...")
+        completion_success = self.verify_profile_completion()
+        
+        # Step 7: Test provider home endpoint
         print("\n🏠 Testing provider home endpoint...")
-        if not self.test_provider_home():
-            print("\n❌ CRITICAL: Provider home test failed.")
-            return False
+        home_success = self.test_provider_home()
         
         # Summary
         print("\n" + "=" * 60)
