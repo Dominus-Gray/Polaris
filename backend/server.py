@@ -93,6 +93,9 @@ DATA_STANDARDS = {
     "id_format": "UUID4"
 }
 
+# Area names mapping for backward compatibility
+AREA_NAMES = DATA_STANDARDS["service_areas"]
+
 def create_polaris_error(code: str, detail: str = None, status_code: int = 400):
     """Create a standardized Polaris error response"""
     error_message = POLARIS_ERROR_CODES.get(code, "Unknown error")
