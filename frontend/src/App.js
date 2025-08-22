@@ -863,6 +863,15 @@ function AssessmentPage(){
         { id: 'q8_2', text: 'Are you prepared for emergency situations and disruptions?', deliverable: 'Emergency response procedures', alternatives: 'Crisis management plan, emergency contacts, backup procedures' },
         { id: 'q8_3', text: 'Do you have appropriate liability and professional insurance?', deliverable: 'Professional liability insurance certificates', alternatives: 'Comprehensive business insurance, bonding capacity, risk coverage' }
       ]
+    },
+    { 
+      id: 'area9',
+      title: 'Supply Chain Management & Vendor Relations', 
+      questions: [
+        { id: 'q9_1', text: 'Do you have documented vendor qualification and selection processes?', deliverable: 'Vendor selection criteria and qualification matrix', alternatives: 'Supplier evaluation forms, vendor scorecards, due diligence checklists' },
+        { id: 'q9_2', text: 'Can you demonstrate supply chain resilience and risk mitigation strategies?', deliverable: 'Supply chain risk assessment and mitigation plan', alternatives: 'Supplier diversity plan, backup vendor relationships, contingency sourcing' },
+        { id: 'q9_3', text: 'Do you maintain proper vendor contracts and performance monitoring?', deliverable: 'Vendor management system and performance metrics', alternatives: 'Contract templates, SLA monitoring, vendor scorecards' }
+      ]
     }
   ];
 
