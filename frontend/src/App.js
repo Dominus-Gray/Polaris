@@ -1183,65 +1183,101 @@ function AssessmentPage(){
                 
                 {/* Gap Identified - Free Resources and Professional Help */}
                 {answers[question.id] === 'no_help' && (
-                  <div className="mt-3 space-y-4">
-                    {/* Free External Resources */}
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-sm font-medium text-green-900">Free Local Resources</div>
-                      </div>
-                      <p className="text-sm text-green-700 mb-3">
-                        Access free external resources from local organizations to address this gap:
-                      </p>
-                      <button 
-                        className="btn btn-sm bg-green-600 text-white hover:bg-green-700"
-                        onClick={() => {
-                          // Mark as pending in assessment
-                          const updatedAnswers = {...answers};
-                          updatedAnswers[question.id] = 'pending';
-                          setAnswers(updatedAnswers);
-                          
-                          // Navigate to external resources for this area
-                          navigate(`/external-resources/${currentAreaData.id}?question=${question.id}`);
-                        }}
-                      >
-                        View Free Resources
-                      </button>
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <div className="text-sm font-medium text-amber-900">Gap Identified - Select Your Next Step</div>
                     </div>
                     
-                    {/* Professional Help Option */}
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <div className="text-sm font-medium text-red-900">Get Professional Help</div>
-                      </div>
-                      <p className="text-sm text-red-700 mb-3">
-                        Get matched with qualified service providers for expert assistance.
-                      </p>
-                      <select 
-                        className="text-sm border border-red-300 rounded px-3 py-2 w-full"
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            // Mark as pending in assessment
+                    <div className="space-y-3">
+                      {/* Free Local Resources */}
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div className="text-sm font-medium text-green-900">Free Local Resources</div>
+                        </div>
+                        <p className="text-sm text-green-700 mb-3">
+                          Access free external resources from local organizations to address this gap:
+                        </p>
+                        <button 
+                          className="btn btn-sm w-full"
+                          style={{ backgroundColor: 'rgb(22, 163, 74)', color: 'white' }}
+                          onClick={() => {
+                            // Mark as pending with free resources selected
                             const updatedAnswers = {...answers};
-                            updatedAnswers[question.id] = 'pending';
+                            updatedAnswers[question.id] = 'pending_free_resources';
                             setAnswers(updatedAnswers);
                             
-                            handleProfessionalHelp(question.id, currentAreaData.id, e.target.value);
-                          }
+                            // Navigate to external resources for this area
+                            navigate(`/external-resources/${currentAreaData.id}?question=${question.id}`);
+                          }}
+                        >
+                          <span style={{ color: 'white' }}>View Free Resources</span>
+                        </button>
+                      </div>
+                      
+                      {/* Professional Help Option */}
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <div className="text-sm font-medium text-blue-900">Get Professional Help</div>
+                        </div>
+                        <p className="text-sm text-blue-700 mb-3">
+                          Get matched with qualified service providers for expert assistance.
+                        </p>
+                        <select 
+                          className="text-sm border border-blue-300 rounded px-3 py-2 w-full mb-2"
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              // Mark as pending with professional help selected
+                              const updatedAnswers = {...answers};
+                              updatedAnswers[question.id] = `pending_professional_${e.target.value}`;
+                              setAnswers(updatedAnswers);
+                              
+                              handleProfessionalHelp(question.id, currentAreaData.id, e.target.value);
+                            }
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="">Select Budget Range</option>
+                          <option value="500-1000">$500 - $1,000</option>
+                          <option value="1000-2500">$1,000 - $2,500</option>
+                          <option value="2500-5000">$2,500 - $5,000</option>
+                          <option value="5000+">$5,000+</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show pending status for questions with pending answers */}
+                {answers[question.id]?.startsWith('pending_') && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm font-medium text-yellow-900">
+                          Status: Pending - {answers[question.id].includes('free') ? 'Using Free Resources' : 'Seeking Professional Help'}
+                        </span>
+                      </div>
+                      <button 
+                        className="text-xs text-yellow-700 hover:text-yellow-800 underline"
+                        onClick={() => {
+                          const updatedAnswers = {...answers};
+                          updatedAnswers[question.id] = 'no_help';
+                          setAnswers(updatedAnswers);
                         }}
-                        defaultValue=""
                       >
-                        <option value="">Select Budget Range</option>
-                        <option value="$500-$1,000">$500 - $1,000</option>
-                        <option value="$1,000-$2,500">$1,000 - $2,500</option>
-                        <option value="$2,500-$5,000">$2,500 - $5,000</option>
-                        <option value="$5,000+">$5,000+</option>
-                      </select>
+                        Change Selection
+                      </button>
                     </div>
                   </div>
                 )}
