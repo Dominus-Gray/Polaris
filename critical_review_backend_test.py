@@ -82,13 +82,14 @@ class CriticalReviewTest:
             response_time = time.time() - start_time
             
             if response.status_code == 200:
-                schema = response.json()
+                schema_data = response.json()
+                schema = schema_data.get("schema", {})
                 areas = schema.get("areas", [])
                 area9_found = any(area.get("id") == "area9" for area in areas)
                 area9_name_correct = any(
                     area.get("id") == "area9" and 
-                    "Supply Chain Management" in area.get("name", "") and
-                    "Vendor Relations" in area.get("name", "")
+                    "Supply Chain Management" in area.get("title", "") and
+                    "Vendor Relations" in area.get("title", "")
                     for area in areas
                 )
                 
@@ -103,7 +104,7 @@ class CriticalReviewTest:
                                   response_time)
                 else:
                     self.log_result("Assessment Schema - Area9 Support", False,
-                                  f"Area9 not found or incorrect name. Found {len(areas)} areas total",
+                                  f"Area9 not found. Found {len(areas)} areas (area1-area8). Missing area9 'Supply Chain Management & Vendor Relations'",
                                   response_time)
             else:
                 self.log_result("Assessment Schema - Area9 Support", False,
