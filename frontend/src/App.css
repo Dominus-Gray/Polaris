@@ -206,10 +206,50 @@ body { @apply bg-slate-50 text-slate-900; }
 /* Specific fixes for button text visibility */
 .btn.bg-blue-600, .btn.bg-indigo-600 {
   color: white !important;
+  background-color: rgb(37 99 235) !important; /* Ensure blue background */
 }
 
 .btn.bg-blue-600 span, .btn.bg-indigo-600 span {
   color: white !important;
+}
+
+.btn.bg-gray-400 {
+  color: white !important;
+  background-color: rgb(156 163 175) !important;
+}
+
+.btn.bg-gray-400 span {
+  color: white !important;
+}
+
+/* Improve button contrast and styling */
+.btn.bg-green-600 {
+  color: white !important;
+  background-color: rgb(22 163 74) !important;
+}
+
+.btn.bg-green-700 {
+  background-color: rgb(21 128 61) !important;
+}
+
+/* Fix download button colors - use better contrast */
+.btn-download-template {
+  background: linear-gradient(135deg, rgb(59 130 246), rgb(37 99 235)) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-download-template:hover {
+  background: linear-gradient(135deg, rgb(37 99 235), rgb(29 78 216)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Center View All Resources button */
+.btn-view-all-resources {
+  display: block !important;
+  margin: 0 auto !important;
+  text-align: center !important;
 }
 
 .badge { 
