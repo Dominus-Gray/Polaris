@@ -5407,6 +5407,256 @@ async def list_client_certificates(current=Depends(require_role("client"))):
     certs = await db.certificates.find({"client_user_id": current["id"]}).to_list(1000)
     return {"certificates": certs}
 
+# ================== AGENCY SUBSCRIPTION MANAGEMENT ==================
+
+@api.get("/agency/subscription/tiers")
+async def get_subscription_tiers():
+    """Get all available subscription tiers with pricing and features"""
+    return {"tiers": list(SUBSCRIPTION_TIERS.values())}
+
+@api.get("/agency/subscription/current")
+async def get_current_subscription(current=Depends(require_role("agency"))):
+    """Get current agency subscription details"""
+    try:
+        subscription = await db.agency_subscriptions.find_one({"agency_user_id": current["id"]})
+        
+        if not subscription:
+            # Return default/trial subscription
+            return {
+                "subscription": {
+                    "tier_id": "starter",
+                    "tier_name": "Starter (Trial)",
+                    "status": "trial",
+                    "client_limit": 5,  # Trial limit
+                    "license_codes_per_month": 10,  # Trial limit
+                    "trial_days_remaining": 14,
+                    "current_usage": {
+                        "clients_active": 0,
+                        "license_codes_used_this_month": 0
+                    }
+                },
+                "tier_details": SUBSCRIPTION_TIERS["starter"]
+            }
+        
+        # Get current usage
+        current_month = datetime.utcnow().strftime("%Y-%m")
+        usage = await db.subscription_usage.find_one({
+            "agency_user_id": current["id"],
+            "month": current_month
+        }) or {"clients_active": 0, "license_codes_generated": 0}
+        
+        tier_details = SUBSCRIPTION_TIERS.get(subscription["tier_id"], SUBSCRIPTION_TIERS["starter"])
+        
+        return {
+            "subscription": {
+                **subscription,
+                "tier_name": tier_details["name"],
+                "current_usage": {
+                    "clients_active": usage["clients_active"],
+                    "license_codes_used_this_month": usage["license_codes_generated"]
+                }
+            },
+            "tier_details": tier_details
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting subscription: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get subscription details")
+
+@api.post("/agency/subscription/upgrade")
+async def upgrade_subscription(request: UpdateSubscriptionRequest, current=Depends(require_role("agency"))):
+    """Upgrade or change agency subscription tier"""
+    try:
+        if request.tier_id not in SUBSCRIPTION_TIERS:
+            raise HTTPException(status_code=400, detail="Invalid subscription tier")
+        
+        tier = SUBSCRIPTION_TIERS[request.tier_id]
+        
+        # Calculate price based on billing cycle
+        price = tier["annual_price"] if request.billing_cycle == "annual" else tier["monthly_price"]
+        
+        # Create Stripe checkout session
+        checkout_data = {
+            "tier_id": request.tier_id,
+            "billing_cycle": request.billing_cycle,
+            "price": price,
+            "agency_user_id": current["id"],
+            "success_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/agency/subscription/success",
+            "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/agency/subscription"
+        }
+        
+        # For now, simulate successful upgrade (in production, integrate with Stripe)
+        subscription_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        period_end = now.replace(year=now.year + 1) if request.billing_cycle == "annual" else now.replace(month=now.month + 1)
+        
+        subscription_doc = {
+            "_id": subscription_id,
+            "subscription_id": subscription_id,
+            "agency_user_id": current["id"],
+            "tier_id": request.tier_id,
+            "status": "active",
+            "billing_cycle": request.billing_cycle,
+            "current_period_start": now,
+            "current_period_end": period_end,
+            "client_count": 0,
+            "license_codes_used_this_month": 0,
+            "stripe_subscription_id": f"sub_mock_{subscription_id[:8]}",
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        # Upsert subscription
+        await db.agency_subscriptions.replace_one(
+            {"agency_user_id": current["id"]},
+            subscription_doc,
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "subscription": subscription_doc,
+            "tier_details": tier,
+            "message": f"Successfully upgraded to {tier['name']} plan"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error upgrading subscription: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upgrade subscription")
+
+@api.get("/agency/subscription/usage")
+async def get_subscription_usage(current=Depends(require_role("agency")), months: int = 6):
+    """Get subscription usage analytics over time"""
+    try:
+        # Get usage for last X months
+        usage_data = []
+        current_date = datetime.utcnow()
+        
+        for i in range(months):
+            month_date = current_date.replace(day=1) - timedelta(days=30 * i)
+            month_str = month_date.strftime("%Y-%m")
+            
+            usage = await db.subscription_usage.find_one({
+                "agency_user_id": current["id"],
+                "month": month_str
+            })
+            
+            if usage:
+                usage_data.append({
+                    "month": month_str,
+                    "clients_active": usage["clients_active"],
+                    "license_codes_generated": usage["license_codes_generated"],
+                    "api_calls": usage.get("api_calls", 0)
+                })
+            else:
+                usage_data.append({
+                    "month": month_str,
+                    "clients_active": 0,
+                    "license_codes_generated": 0,
+                    "api_calls": 0
+                })
+        
+        # Get current subscription limits
+        subscription = await db.agency_subscriptions.find_one({"agency_user_id": current["id"]})
+        tier_limits = SUBSCRIPTION_TIERS.get(subscription["tier_id"] if subscription else "starter", SUBSCRIPTION_TIERS["starter"])
+        
+        return {
+            "usage_history": list(reversed(usage_data)),
+            "current_limits": {
+                "client_limit": tier_limits["client_limit"],
+                "license_codes_per_month": tier_limits["license_codes_per_month"]
+            },
+            "current_tier": subscription["tier_id"] if subscription else "trial"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting usage: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get usage data")
+
+@api.post("/agency/subscription/usage/track")
+async def track_usage(usage_type: str, current=Depends(require_role("agency"))):
+    """Track usage events (called internally by other endpoints)"""
+    try:
+        current_month = datetime.utcnow().strftime("%Y-%m")
+        
+        # Get or create usage record for current month
+        usage_doc = await db.subscription_usage.find_one({
+            "agency_user_id": current["id"],
+            "month": current_month
+        })
+        
+        if not usage_doc:
+            usage_doc = {
+                "_id": str(uuid.uuid4()),
+                "agency_user_id": current["id"],
+                "month": current_month,
+                "clients_active": 0,
+                "license_codes_generated": 0,
+                "api_calls": 0,
+                "storage_used_mb": 0
+            }
+        
+        # Update usage based on type
+        if usage_type == "license_code":
+            usage_doc["license_codes_generated"] += 1
+        elif usage_type == "api_call":
+            usage_doc["api_calls"] += 1
+        
+        # Update or insert usage record
+        await db.subscription_usage.replace_one(
+            {"agency_user_id": current["id"], "month": current_month},
+            usage_doc,
+            upsert=True
+        )
+        
+        return {"success": True, "updated_usage": usage_doc}
+        
+    except Exception as e:
+        logger.error(f"Error tracking usage: {e}")
+        raise HTTPException(status_code=500, detail="Failed to track usage")
+
+# Helper function to check subscription limits
+async def check_subscription_limits(agency_user_id: str, action_type: str) -> bool:
+    """Check if agency can perform action based on subscription limits"""
+    try:
+        subscription = await db.agency_subscriptions.find_one({"agency_user_id": agency_user_id})
+        
+        if not subscription:
+            # Trial limits
+            if action_type == "license_code":
+                current_month = datetime.utcnow().strftime("%Y-%m")
+                usage = await db.subscription_usage.find_one({
+                    "agency_user_id": agency_user_id,
+                    "month": current_month
+                })
+                return (usage.get("license_codes_generated", 0) if usage else 0) < 10  # Trial limit
+            return True
+        
+        tier = SUBSCRIPTION_TIERS.get(subscription["tier_id"])
+        if not tier:
+            return False
+        
+        current_month = datetime.utcnow().strftime("%Y-%m")
+        usage = await db.subscription_usage.find_one({
+            "agency_user_id": agency_user_id,
+            "month": current_month
+        }) or {"license_codes_generated": 0, "clients_active": 0}
+        
+        if action_type == "license_code":
+            if tier["license_codes_per_month"] == -1:  # Unlimited
+                return True
+            return usage["license_codes_generated"] < tier["license_codes_per_month"]
+        elif action_type == "client":
+            if tier["client_limit"] == -1:  # Unlimited
+                return True
+            return usage["clients_active"] < tier["client_limit"]
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error checking limits: {e}")
+        return False
+
 
 @api.get("/health")
 async def api_health():
