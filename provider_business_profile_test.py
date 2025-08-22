@@ -79,6 +79,7 @@ class ProviderBusinessProfileTester:
             return False
             
         # Complete business profile data as specified in review request
+        # Including all REQUIRED_BUSINESS_FIELDS from backend
         business_profile_data = {
             "company_name": "QA Test Provider Company",
             "tax_id": "12-3456789",
@@ -95,7 +96,11 @@ class ProviderBusinessProfileTester:
             "employees_count": "1-10",
             "year_founded": 2020,
             "ownership_structure": "Single Owner",
-            "contact_title": "CEO"
+            "contact_title": "CEO",
+            # Additional required fields
+            "payment_methods": "Credit Card, Bank Transfer",
+            "subscription_plan": "Professional",
+            "billing_frequency": "Monthly"
         }
         
         try:
