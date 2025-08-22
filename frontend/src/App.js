@@ -4906,7 +4906,7 @@ function ProviderHome(){
                     </svg>
                     Active Gigs
                   </div>
-                  <div className="tile-num">{myGigs.filter(g => g.status === 'active').length}</div>
+                  <div className="tile-num">{myServices.filter(s => s.status === 'active').length}</div>
                   <div className="tile-sub">published services</div>
                 </div>
                 
