@@ -4783,7 +4783,7 @@ function ProviderHome(){
       try {
         const [homeRes, gigsRes, ordersRes] = await Promise.all([
           axios.get(`${API}/home/provider`),
-          axios.get(`${API}/marketplace/gigs/my`),
+          axios.get(`${API}/marketplace/services/my`),
           axios.get(`${API}/marketplace/orders/my?role_filter=provider`)
         ]);
         
