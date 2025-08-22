@@ -4556,7 +4556,8 @@ async def get_knowledge_base_content(area_id: str, current=Depends(require_user)
         "area5": "Technology & Security Infrastructure",
         "area6": "Human Resources & Capacity",
         "area7": "Performance Tracking & Reporting",
-        "area8": "Risk Management & Business Continuity"
+        "area8": "Risk Management & Business Continuity",
+        "area9": "Supply Chain Management & Vendor Relations"
     }
     
     # Check access - only test accounts get free access
