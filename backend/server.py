@@ -4790,10 +4790,10 @@ async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn,
 
 @api.get("/knowledge-base/access")
 async def get_knowledge_base_access(current=Depends(require_user)):
-    """Get user's knowledge base access status (QA: auto-unlock for polaris.example.com)"""
-    # QA auto-unlock: grant full access for users on polaris.example.com domain
+    """Get user's knowledge base access status (QA: auto-unlock for polaris.example.com except providers)"""
+    # QA auto-unlock: grant full access for users on polaris.example.com domain (except providers)
     email = current.get("email", "")
-    if email.endswith("@polaris.example.com"):
+    if email.endswith("@polaris.example.com") and current["role"] != "provider":
         # Upsert full access
         existing = await db.user_access.find_one({"user_id": current["id"]})
         if not existing:
