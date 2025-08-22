@@ -3605,14 +3605,18 @@ async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(requir
         
         User Question: {request.question}
         
-        Provide specific, actionable guidance that:
-        1. Directly addresses their question
-        2. Considers their current assessment status and gaps
-        3. Provides step-by-step recommendations
-        4. Suggests specific resources or documentation needed
-        5. Includes compliance considerations for government contracting
+        Provide CONCISE, actionable guidance (max 200 words) that:
+        1. Directly addresses their question with specific recommendations
+        2. Lists 2-3 immediate action steps they can take
+        3. Mentions key compliance requirements if relevant
+        4. Suggests 1-2 specific resources or documents needed
         
-        Keep your response practical and focused on helping them achieve procurement readiness.
+        Format your response with:
+        - Brief direct answer (1-2 sentences)
+        - "Next Steps:" with numbered action items
+        - "Key Requirements:" if compliance-related
+        
+        Keep it practical, focused, and easy to implement.
         """
         
         if not EMERGENT_OK:
