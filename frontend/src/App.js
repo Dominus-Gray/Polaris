@@ -8913,7 +8913,7 @@ function ServiceCreatePage() {
       features: []
     };
     
-    setGigData(prev => ({
+    setServiceData(prev => ({
       ...prev,
       packages: [...prev.packages, newPackage]
     }));
