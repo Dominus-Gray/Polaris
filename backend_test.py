@@ -198,17 +198,17 @@ class FinalVerificationTester:
             except Exception as e:
                 self.log_test("Provider Service Response", "FAIL", f"Exception: {str(e)}")
         
-        # Test 2.5: Provider can view their responses/gigs
+        # Test 2.5: Provider can view their services/engagements
         try:
-            response = self.session.get(f"{BACKEND_URL}/provider/my-responses", headers=provider_headers)
+            response = self.session.get(f"{BACKEND_URL}/engagements/my-services", headers=provider_headers)
             if response.status_code == 200:
-                responses_data = response.json()
-                response_count = len(responses_data.get("responses", []))
-                self.log_test("Provider View My Responses", "PASS", f"Found {response_count} provider responses")
+                services_data = response.json()
+                service_count = len(services_data.get("services", []))
+                self.log_test("Provider View My Services", "PASS", f"Found {service_count} services")
             else:
-                self.log_test("Provider View My Responses", "FAIL", f"Status: {response.status_code}")
+                self.log_test("Provider View My Services", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
-            self.log_test("Provider View My Responses", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Provider View My Services", "FAIL", f"Exception: {str(e)}")
     
     def test_complete_marketplace_workflow(self, request_id=None):
         """Test complete client-provider marketplace workflow"""
