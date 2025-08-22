@@ -269,7 +269,7 @@ class FinalAuditTest:
                 provider_response_data = {
                     "request_id": self.test_data["service_request_id"],
                     "proposed_fee": 2500.00,
-                    "estimated_timeline": "3 weeks",
+                    "estimated_timeline": "2-4 weeks",
                     "proposal_note": "Comprehensive cybersecurity assessment including vulnerability scanning, policy review, and compliance recommendations."
                 }
                 response = requests.post(f"{BACKEND_URL}/provider/respond-to-request", 
