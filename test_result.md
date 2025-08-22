@@ -411,7 +411,7 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "AI Assistant Improvements Testing"
+    - "Agency Subscription System Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "critical_first"
