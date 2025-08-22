@@ -3849,9 +3849,9 @@ function ClientHome(){
         const services = await axios.get(`${API}/client/matched-services`, authHeaders);
         setMatchedServices(services.data.services || []);
 
-        // Load marketplace gigs for client discovery
-        const marketplaceRes = await axios.get(`${API}/marketplace/gigs/search?limit=12`);
-        setMarketplaceGigs(marketplaceRes.data.gigs || []);
+        // Load available services for client discovery
+        const servicesRes = await axios.get(`${API}/marketplace/services/search?limit=12`);
+        setAvailableServices(servicesRes.data.services || []);
 
         // Load assessment data and gaps
         const userId = meLocal?.id;
