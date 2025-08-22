@@ -5022,7 +5022,7 @@ function ProviderHome(){
                 <h3 className="text-lg font-semibold text-slate-900">My Service Gigs</h3>
                 <button 
                   className="btn btn-primary"
-                  onClick={createNewGig}
+                  onClick={createNewService}
                 >
                   Create New Gig
                 </button>
