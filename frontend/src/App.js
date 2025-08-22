@@ -3668,15 +3668,60 @@ function BusinessProfileForm(){
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="mt-8 flex justify-end">
-        <button 
-          className="btn btn-primary px-8"
-          onClick={save}
-          disabled={isValidating}
-        >
-          {isValidating ? 'Saving...' : 'Save Profile'}
-        </button>
+      {/* Enhanced Save Section */}
+      <div className="mt-8 bg-slate-50 rounded-lg p-6 border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-slate-900">Ready to Continue?</h3>
+            <p className="text-sm text-slate-600">Complete your profile to access the full Provider Dashboard</p>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => navigate('/')}
+              disabled={isValidating}
+            >
+              Save for Later
+            </button>
+            <button 
+              className="btn btn-primary px-8 flex items-center gap-2"
+              onClick={save}
+              disabled={isValidating}
+            >
+              {isValidating ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Complete Profile
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Validation Summary */}
+        {Object.keys(errors).filter(key => errors[key]).length > 0 && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <h4 className="text-sm font-medium text-red-800 mb-2">Please fix the following issues:</h4>
+            <ul className="text-xs text-red-700 space-y-1">
+              {Object.keys(errors).filter(key => errors[key]).map(key => (
+                <li key={key} className="flex items-start gap-2">
+                  <span className="text-red-500">•</span>
+                  <span className="capitalize">{key.replace(/_/g, ' ')}: {errors[key]}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
