@@ -9022,8 +9022,8 @@ function ServiceCreatePage() {
                 </label>
                 <select
                   className="input w-full"
-                  value={gigData.category}
-                  onChange={(e) => setGigData(prev => ({ ...prev, category: e.target.value }))}
+                  value={serviceData.category}
+                  onChange={(e) => setServiceData(prev => ({ ...prev, category: e.target.value }))}
                   required
                 >
                   {Object.entries(categories).map(([key, label]) => (
