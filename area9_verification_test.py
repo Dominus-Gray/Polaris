@@ -70,47 +70,62 @@ class Area9VerificationTest:
             if response.status_code == 200:
                 schema_data = response.json()
                 
-                # Check if area9 exists
-                if "area9" in schema_data:
-                    area9_data = schema_data["area9"]
+                # Check if schema has areas
+                if "schema" in schema_data and "areas" in schema_data["schema"]:
+                    areas = schema_data["schema"]["areas"]
                     
-                    # Check area9 title
-                    expected_title = "Supply Chain Management & Vendor Relations"
-                    actual_title = area9_data.get("title", "")
+                    # Find area9
+                    area9_data = None
+                    for area in areas:
+                        if area.get("id") == "area9":
+                            area9_data = area
+                            break
                     
-                    if expected_title in actual_title:
-                        # Check for required questions
-                        questions = area9_data.get("questions", {})
-                        required_questions = ["q9_1", "q9_2", "q9_3"]
-                        found_questions = []
+                    if area9_data:
+                        # Check area9 title
+                        expected_title = "Supply Chain Management & Vendor Relations"
+                        actual_title = area9_data.get("title", "")
                         
-                        for q_id in required_questions:
-                            if q_id in questions:
-                                found_questions.append(q_id)
-                        
-                        if len(found_questions) == 3:
-                            self.log_result(
-                                "Assessment Schema Area9", 
-                                True, 
-                                f"Found area9 '{actual_title}' with all required questions: {found_questions}"
-                            )
+                        if expected_title == actual_title:
+                            # Check for required questions
+                            questions = area9_data.get("questions", [])
+                            required_questions = ["q9_1", "q9_2", "q9_3"]
+                            found_questions = []
+                            
+                            for question in questions:
+                                q_id = question.get("id", "")
+                                if q_id in required_questions:
+                                    found_questions.append(q_id)
+                            
+                            if len(found_questions) == 3:
+                                self.log_result(
+                                    "Assessment Schema Area9", 
+                                    True, 
+                                    f"Found area9 '{actual_title}' with all required questions: {found_questions}"
+                                )
+                            else:
+                                self.log_result(
+                                    "Assessment Schema Area9", 
+                                    False, 
+                                    f"Missing questions. Found: {found_questions}, Required: {required_questions}"
+                                )
                         else:
                             self.log_result(
                                 "Assessment Schema Area9", 
                                 False, 
-                                f"Missing questions. Found: {found_questions}, Required: {required_questions}"
+                                f"Area9 title mismatch. Expected: '{expected_title}', Found: '{actual_title}'"
                             )
                     else:
                         self.log_result(
                             "Assessment Schema Area9", 
                             False, 
-                            f"Area9 title mismatch. Expected: '{expected_title}', Found: '{actual_title}'"
+                            "Area9 not found in assessment schema areas list"
                         )
                 else:
                     self.log_result(
                         "Assessment Schema Area9", 
                         False, 
-                        "Area9 not found in assessment schema",
+                        "Invalid schema structure - missing 'schema.areas'",
                         list(schema_data.keys())
                     )
             else:
