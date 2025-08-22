@@ -151,7 +151,15 @@ class Area9VerificationTest:
                 area9_found = False
                 area9_info = None
                 
-                if isinstance(areas_data, list):
+                # Check if response has 'areas' key
+                if "areas" in areas_data:
+                    areas_list = areas_data["areas"]
+                    for area in areas_list:
+                        if area.get("id") == "area9":
+                            area9_found = True
+                            area9_info = area
+                            break
+                elif isinstance(areas_data, list):
                     for area in areas_data:
                         if area.get("id") == "area9" or "area9" in str(area):
                             area9_found = True
@@ -167,11 +175,19 @@ class Area9VerificationTest:
                     if isinstance(area9_info, dict):
                         title = area9_info.get("title", area9_info.get("name", ""))
                     
-                    self.log_result(
-                        "Knowledge Base Areas Area9", 
-                        True, 
-                        f"Found area9 in knowledge base areas list. Title: '{title}'"
-                    )
+                    expected_title = "Supply Chain Management & Vendor Relations"
+                    if title == expected_title:
+                        self.log_result(
+                            "Knowledge Base Areas Area9", 
+                            True, 
+                            f"Found area9 in knowledge base areas list. Title: '{title}'"
+                        )
+                    else:
+                        self.log_result(
+                            "Knowledge Base Areas Area9", 
+                            False, 
+                            f"Area9 found but title mismatch. Expected: '{expected_title}', Found: '{title}'"
+                        )
                 else:
                     self.log_result(
                         "Knowledge Base Areas Area9", 
