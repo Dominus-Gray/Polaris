@@ -4684,6 +4684,8 @@ function ProviderHome(){
   const [opportunities, setOpportunities] = useState([]);
   const [activeEngagements, setActiveEngagements] = useState([]);
   const [earnings, setEarnings] = useState(null);
+  const [myGigs, setMyGigs] = useState([]);
+  const [myOrders, setMyOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
@@ -4691,35 +4693,42 @@ function ProviderHome(){
   useEffect(()=>{ 
     const load = async()=>{ 
       try {
-        const [homeRes, opportunitiesRes, engagementsRes, earningsRes, notificationsRes] = await Promise.all([
+        const [homeRes, gigsRes, ordersRes] = await Promise.all([
           axios.get(`${API}/home/provider`),
-          axios.get(`${API}/provider/opportunities`),
-          axios.get(`${API}/provider/engagements`),
-          axios.get(`${API}/provider/earnings`),
-          axios.get(`${API}/provider/notifications`)
+          axios.get(`${API}/marketplace/gigs/my`),
+          axios.get(`${API}/marketplace/orders/my?role_filter=provider`)
         ]);
         
         setData(homeRes.data);
-        setOpportunities(opportunitiesRes.data.opportunities || []);
-        setActiveEngagements(engagementsRes.data.engagements || []);
-        setEarnings(earningsRes.data);
-        setNotifications(notificationsRes.data.notifications || []);
+        setMyGigs(gigsRes.data.gigs || []);
+        setMyOrders(ordersRes.data.orders || []);
+        
+        // Set derived data
+        setActiveEngagements(ordersRes.data.orders?.filter(o => o.status === 'in_progress') || []);
       } catch(e) {
         console.error('Provider dashboard load error:', e);
         // Fallback to basic home data
-        const {data} = await axios.get(`${API}/home/provider`);
-        setData(data);
+        try {
+          const {data} = await axios.get(`${API}/home/provider`);
+          setData(data);
+        } catch(fallbackError) {
+          console.error('Fallback load error:', fallbackError);
+        }
       }
     }; 
     load(); 
   },[]);
 
-  const respondToOpportunity = (opportunityId) => {
-    navigate(`/provider/proposals?opportunity=${opportunityId}`);
+  const createNewGig = () => {
+    navigate('/provider/gigs/create');
   };
 
-  const viewEngagement = (engagementId) => {
-    navigate(`/provider/engagements/${engagementId}`);
+  const editGig = (gigId) => {
+    navigate(`/provider/gigs/edit/${gigId}`);
+  };
+
+  const viewOrder = (orderId) => {
+    navigate(`/provider/orders/${orderId}`);
   };
 
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
