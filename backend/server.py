@@ -3580,8 +3580,8 @@ async def get_knowledge_base_areas(current=Depends(require_user)):
                 knowledge_access.get(area_id, False)
             )
         
-        # Auto-grant access for @polaris.example.com test accounts
-        if current["email"].endswith("@polaris.example.com"):
+        # Auto-grant access for @polaris.example.com test accounts (except providers)
+        if current["email"].endswith("@polaris.example.com") and current["role"] != "provider":
             has_access = True
     
     area_titles = {
