@@ -301,8 +301,9 @@ class AIAssistantImprovementsTest:
                 if areas_response.status_code == 200:
                     areas_data = areas_response.json()
                     
-                    # Check if areas are returned
-                    if isinstance(areas_data, list) and len(areas_data) > 0:
+                    # Check if areas are returned (should be in "areas" key)
+                    areas_list = areas_data.get("areas", [])
+                    if isinstance(areas_list, list) and len(areas_list) > 0:
                         # Test AI assistance access for this role
                         ai_start_time = time.time()
                         payload = {
