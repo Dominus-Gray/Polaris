@@ -4730,7 +4730,7 @@ function ClientHome(){
                           </button>
                         </div>
                         <div className="text-xs text-slate-500 mt-1">
-                          {Math.min(...gig.packages.map(p => p.delivery_days))} day delivery
+                          {Math.min(...service.packages.map(p => p.delivery_days))} day delivery
                         </div>
                       </div>
                     )}
