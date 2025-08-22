@@ -7064,6 +7064,262 @@ async def system_health_check():
             "timestamp": datetime.utcnow().isoformat()
         }
 
+# Assessment Results and Analytics Endpoints
+@api.get("/assessment/results/{session_id}")
+async def get_assessment_results(session_id: str, current=Depends(get_current_user)):
+    """Get comprehensive assessment results with analysis"""
+    try:
+        # Get assessment session
+        session = await db.assessment_sessions.find_one({"session_id": session_id, "user_id": current["user_id"]})
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        if not session.get("completed_at"):
+            raise HTTPException(status_code=400, detail="Assessment not completed")
+        
+        # Calculate scores and analysis
+        assessment_data = session.get("assessment_data", [])
+        area_scores = []
+        total_score = 0
+        
+        for area_data in assessment_data:
+            area_name = area_data.get("area", "Unknown")
+            responses = area_data.get("responses", [])
+            
+            if responses:
+                # Calculate score for this area (example scoring logic)
+                positive_responses = sum(1 for r in responses if r.get("selected_option") in ["yes", "always", "excellent"])
+                area_score = int((positive_responses / len(responses)) * 100)
+                
+                area_scores.append({
+                    "area_name": AREA_NAMES.get(area_name, area_name),
+                    "area": area_name,
+                    "score": area_score,
+                    "description": f"Assessment of {AREA_NAMES.get(area_name, area_name)} capabilities",
+                    "key_findings": [
+                        f"Completed {len(responses)} questions in this area",
+                        f"Score indicates {'strong' if area_score >= 80 else 'moderate' if area_score >= 60 else 'improvement needed'} performance"
+                    ]
+                })
+                total_score += area_score
+        
+        overall_score = int(total_score / len(area_scores)) if area_scores else 0
+        
+        # Generate strengths and improvement areas
+        strengths = []
+        improvement_areas = []
+        
+        for area in area_scores:
+            if area["score"] >= 80:
+                strengths.append(f"Strong {area['area_name']} capabilities")
+            elif area["score"] < 60:
+                improvement_areas.append(f"Enhance {area['area_name']} processes")
+        
+        return {
+            "session_id": session_id,
+            "overall_score": overall_score,
+            "completed_at": session["completed_at"],
+            "area_scores": area_scores,
+            "strengths": strengths[:5],  # Top 5 strengths
+            "improvement_areas": improvement_areas[:5],  # Top 5 improvement areas
+            "total_questions": sum(len(area.get("responses", [])) for area in assessment_data),
+            "completion_time": "45 minutes"  # Could calculate actual time
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting assessment results: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve assessment results")
+
+@api.get("/readiness/dashboard")
+async def get_readiness_dashboard(
+    timeframe: str = Query("6months", regex="^(3months|6months|1year|all)$"),
+    current=Depends(get_current_user)
+):
+    """Get procurement readiness dashboard data"""
+    try:
+        # Get user's assessment history
+        cutoff_date = datetime.utcnow()
+        if timeframe == "3months":
+            cutoff_date = cutoff_date - timedelta(days=90)
+        elif timeframe == "6months":
+            cutoff_date = cutoff_date - timedelta(days=180)
+        elif timeframe == "1year":
+            cutoff_date = cutoff_date - timedelta(days=365)
+        
+        assessments = await db.assessment_sessions.find({
+            "user_id": current["user_id"],
+            "completed_at": {"$exists": True, "$gte": cutoff_date}
+        }).sort("completed_at", -1).to_list(length=None)
+        
+        if not assessments:
+            # Return empty dashboard with default structure
+            return {
+                "current_score": 0,
+                "previous_score": 0,
+                "score_trend": "stable",
+                "assessments_completed": 0,
+                "last_assessment": None,
+                "area_scores": [],
+                "goals": [],
+                "recent_activities": [],
+                "certifications": [],
+                "benchmarks": {"industry_average": 62, "similar_businesses": 59, "top_performers": 88}
+            }
+        
+        latest_assessment = assessments[0]
+        previous_assessment = assessments[1] if len(assessments) > 1 else None
+        
+        # Calculate current scores (simplified logic)
+        current_score = 65  # Mock calculation
+        previous_score = 50 if previous_assessment else current_score
+        
+        score_trend = "stable"
+        if current_score > previous_score:
+            score_trend = "increasing"
+        elif current_score < previous_score:
+            score_trend = "decreasing"
+        
+        return {
+            "current_score": current_score,
+            "previous_score": previous_score,
+            "score_trend": score_trend,
+            "assessments_completed": len(assessments),
+            "last_assessment": latest_assessment["completed_at"].isoformat(),
+            "next_recommended": (datetime.utcnow() + timedelta(days=90)).isoformat(),
+            "area_scores": [
+                {"area": "Business Formation", "score": 85, "trend": "stable", "last_updated": "2025-01-20"},
+                {"area": "Financial Operations", "score": 72, "trend": "increasing", "last_updated": "2025-01-18"},
+                {"area": "Legal Compliance", "score": 45, "trend": "decreasing", "last_updated": "2025-01-15"},
+                # Add more areas as needed
+            ],
+            "goals": [],
+            "recent_activities": [
+                {"date": datetime.utcnow().isoformat(), "type": "assessment", "description": "Completed assessment"},
+            ],
+            "certifications": [],
+            "benchmarks": {"industry_average": 62, "similar_businesses": 59, "top_performers": 88}
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting readiness dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve dashboard data")
+
+# Capability Statement Builder Endpoints
+@api.post("/tools/capability-statement/generate")
+async def generate_capability_content(
+    request_data: Dict[str, Any],
+    current=Depends(get_current_user)
+):
+    """Generate AI-powered capability statement content"""
+    try:
+        section = request_data.get("section")
+        assessment_data = request_data.get("assessment_data", {})
+        company_info = request_data.get("company_info", {})
+        
+        if not EMERGENT_OK:
+            raise HTTPException(status_code=503, detail="AI service unavailable")
+        
+        # Generate content based on section
+        if section == "company_overview":
+            prompt = f"""
+            Generate a professional company overview for a capability statement based on:
+            Company: {company_info.get('company_name', 'the company')}
+            Assessment strengths: {assessment_data.get('strengths', [])}
+            
+            Create a compelling 150-250 word overview that highlights the company's mission, 
+            experience, and unique value proposition for government contracting.
+            """
+        elif section == "core_competencies":
+            prompt = f"""
+            Based on the assessment results, generate 5-8 core competencies for:
+            Company: {company_info.get('company_name', 'the company')}
+            Strengths: {assessment_data.get('strengths', [])}
+            
+            Return a list of specific, measurable competencies relevant to government contracting.
+            """
+        else:
+            prompt = f"Generate professional {section} content for a capability statement."
+        
+        # Call LLM (mocked response for now)
+        generated_content = "Professional content generated based on your assessment results and company information."
+        
+        if section == "core_competencies":
+            return {
+                "competencies": [
+                    "Project Management and Execution",
+                    "Financial Analysis and Reporting", 
+                    "Strategic Planning and Implementation",
+                    "Risk Management and Compliance",
+                    "Quality Assurance and Control"
+                ]
+            }
+        elif section == "differentiators":
+            return {
+                "differentiators": [
+                    "Proven track record of on-time, on-budget delivery",
+                    "Industry-leading expertise in specialized domains",
+                    "Certified quality management systems"
+                ]
+            }
+        else:
+            return {"content": generated_content}
+        
+    except Exception as e:
+        logger.error(f"Error generating capability statement content: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate content")
+
+@api.post("/tools/capability-statement/save")
+async def save_capability_statement(
+    capability_data: Dict[str, Any],
+    current=Depends(get_current_user)
+):
+    """Save capability statement data"""
+    try:
+        capability_statement = {
+            "user_id": current["user_id"],
+            "capability_data": capability_data,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Upsert capability statement
+        await db.capability_statements.update_one(
+            {"user_id": current["user_id"]},
+            {"$set": capability_statement},
+            upsert=True
+        )
+        
+        return {"status": "success", "message": "Capability statement saved successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error saving capability statement: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save capability statement")
+
+@api.post("/tools/capability-statement/export")
+async def export_capability_statement_pdf(
+    capability_data: Dict[str, Any],
+    current=Depends(get_current_user)
+):
+    """Export capability statement as PDF"""
+    try:
+        # This would integrate with a PDF generation service
+        # For now, return a mock PDF response
+        
+        from fastapi.responses import Response
+        
+        # Mock PDF content
+        pdf_content = b"Mock PDF content for capability statement"
+        
+        return Response(
+            content=pdf_content,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=capability-statement.pdf"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Error exporting capability statement: {e}")
+        raise HTTPException(status_code=500, detail="Failed to export PDF")
+
 # Performance Metrics Endpoint
 @api.get("/system/metrics")
 async def system_performance_metrics():
