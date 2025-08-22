@@ -118,8 +118,8 @@ class ProviderAuditTest:
             if response.status_code == 200:
                 dashboard_data = response.json()
                 
-                # Check for expected dashboard components
-                expected_fields = ["active_requests", "earnings", "profile_completion", "recent_activity"]
+                # Check for expected dashboard components (based on actual provider dashboard)
+                expected_fields = ["profile_complete", "total_gigs", "active_gigs", "total_earned", "monthly_revenue", "rating"]
                 found_fields = []
                 missing_fields = []
                 
@@ -129,9 +129,9 @@ class ProviderAuditTest:
                     else:
                         missing_fields.append(field)
                 
-                if len(found_fields) >= 2:  # At least 2 key fields present
+                if len(found_fields) >= 4:  # At least 4 key fields present
                     self.log_result("Provider Dashboard Depth", True, 
-                                  f"Found fields: {found_fields}, Data keys: {list(dashboard_data.keys())}", response_time)
+                                  f"Found fields: {found_fields}, Dashboard comprehensive with {len(dashboard_data)} total fields", response_time)
                     self.test_data["provider_dashboard"] = dashboard_data
                     return True
                 else:
