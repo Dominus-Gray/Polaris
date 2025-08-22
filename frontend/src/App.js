@@ -7135,74 +7135,78 @@ function AIAssistantCard({ areaId, context }) {
       ) : (
         /* Full AI Assistant Interface */
         <div>
-        <div className="mb-6">
-          <h5 className="text-sm font-semibold text-slate-900 mb-3">💡 Next Best Actions</h5>
-          <div className="space-y-2">
-            {nextActions.map((action, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                <div className={`w-2 h-2 rounded-full mt-2 ${
-                  action.priority === 'high' ? 'bg-red-500' :
-                  action.priority === 'medium' ? 'bg-yellow-500' :
-                  'bg-green-500'
-                }`}></div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h6 className="text-sm font-medium text-slate-900">{action.title}</h6>
-                    <span className="text-xs text-slate-500">({action.estimated_time})</span>
+          {/* Next Best Actions */}
+          {nextActions.length > 0 && (
+            <div className="mb-6">
+              <h5 className="text-sm font-semibold text-slate-900 mb-3">💡 Next Best Actions</h5>
+              <div className="space-y-2">
+                {nextActions.map((action, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      action.priority === 'high' ? 'bg-red-500' :
+                      action.priority === 'medium' ? 'bg-yellow-500' :
+                      'bg-green-500'
+                    }`}></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h6 className="text-sm font-medium text-slate-900">{action.title}</h6>
+                        <span className="text-xs text-slate-500">({action.estimated_time})</span>
+                      </div>
+                      <p className="text-xs text-slate-600">{action.description}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-600">{action.description}</p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI Chat Interface */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Ask me anything about this business area:
+              </label>
+              <div className="flex gap-2">
+                <input 
+                  type="text"
+                  className="input flex-1"
+                  placeholder="e.g., How do I get started with business licensing?"
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && askAI()}
+                />
+                <button 
+                  className="btn btn-primary"
+                  onClick={askAI}
+                  disabled={loading || !question.trim()}
+                >
+                  {loading ? 'Thinking...' : 'Ask'}
+                </button>
+              </div>
+            </div>
+
+            {response && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="text-sm text-blue-900">
+                    <strong>AI Assistant:</strong>
+                    <div className="mt-1 whitespace-pre-wrap">{response}</div>
+                  </div>
                 </div>
               </div>
-            ))}
+            )}
+
+            <div className="flex justify-center pt-2">
+              <p className="text-xs text-slate-500">
+                Powered by AI • For complex issues, consider getting professional help
+              </p>
+            </div>
           </div>
         </div>
       )}
-
-      {/* AI Chat Interface */}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            Ask me anything about this business area:
-          </label>
-          <div className="flex gap-2">
-            <input 
-              type="text"
-              className="input flex-1"
-              placeholder="e.g., How do I get started with business licensing?"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && askAI()}
-            />
-            <button 
-              className="btn btn-primary"
-              onClick={askAI}
-              disabled={loading || !question.trim()}
-            >
-              {loading ? 'Thinking...' : 'Ask'}
-            </button>
-          </div>
-        </div>
-
-        {response && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-2">
-              <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div className="text-sm text-blue-900">
-                <strong>AI Assistant:</strong>
-                <div className="mt-1 whitespace-pre-wrap">{response}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-center pt-2">
-          <p className="text-xs text-slate-500">
-            Powered by AI • For complex issues, consider getting professional help
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
