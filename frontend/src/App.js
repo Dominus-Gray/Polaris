@@ -9040,8 +9040,8 @@ function ServiceCreatePage() {
                   type="text"
                   className="input w-full"
                   placeholder="e.g., LLC Formation, Legal Documentation"
-                  value={gigData.subcategory}
-                  onChange={(e) => setGigData(prev => ({ ...prev, subcategory: e.target.value }))}
+                  value={serviceData.subcategory}
+                  onChange={(e) => setServiceData(prev => ({ ...prev, subcategory: e.target.value }))}
                 />
               </div>
             </div>
