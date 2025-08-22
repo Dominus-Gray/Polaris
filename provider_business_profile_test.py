@@ -131,7 +131,7 @@ class ProviderBusinessProfileTester:
                 return False
                 
         except Exception as e:
-            self.log_test("Business Profile Creation", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Business Profile Creation", "FAIL", f"Exception: {str(e)} - Response: {response.text[:200] if 'response' in locals() else 'No response'}")
             return False
     
     def verify_profile_completion(self):
