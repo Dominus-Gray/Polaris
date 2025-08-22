@@ -6075,8 +6075,8 @@ async def get_contextual_kb_cards(
                 for area in article.get("area_ids", []):
                     knowledge_access = access.get("knowledge_base_access", {})
                     if not (knowledge_access.get("all_areas", False) or knowledge_access.get(area, False)):
-                        # Auto-grant access for @polaris.example.com test accounts
-                        if not current["email"].endswith("@polaris.example.com"):
+                        # Auto-grant access for @polaris.example.com test accounts (except providers)
+                        if not (current["email"].endswith("@polaris.example.com") and current["role"] != "provider"):
                             has_access = False
                             break
             
