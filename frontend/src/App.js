@@ -1384,7 +1384,8 @@ function KnowledgeBasePage(){
         { id: 'area5', title: 'Technology & Security Infrastructure', description: 'IT systems, cybersecurity protocols, and technology management', resources: 20 },
         { id: 'area6', title: 'Human Resources & Capacity', description: 'HR policies, workforce management, and organizational capacity', resources: 14 },
         { id: 'area7', title: 'Performance Tracking & Reporting', description: 'Metrics, KPIs, performance monitoring, and reporting systems', resources: 16 },
-        { id: 'area8', title: 'Risk Management & Business Continuity', description: 'Risk assessment, mitigation strategies, and business continuity planning', resources: 13 }
+        { id: 'area8', title: 'Risk Management & Business Continuity', description: 'Risk assessment, mitigation strategies, and business continuity planning', resources: 13 },
+        { id: 'area9', title: 'Supply Chain Management & Vendor Relations', description: 'Vendor management, supply chain resilience, and strategic procurement processes', resources: 18 }
       ]);
     }
   };
