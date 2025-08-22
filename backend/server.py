@@ -4801,6 +4801,7 @@ async def get_knowledge_base_access(current=Depends(require_user)):
     if current["role"] == "provider":
         # Clear any existing access records for providers (cleanup from before role restrictions)
         await db.knowledge_base_access.delete_many({"user_id": current["id"]})
+        await db.user_access.delete_many({"user_id": current["id"]})
         return {
             "has_all_access": False,
             "unlocked_areas": [],
