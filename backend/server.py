@@ -3342,17 +3342,105 @@ class AgencySubscription(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-class UpdateSubscriptionRequest(BaseModel):
-    tier_id: str
-    billing_cycle: str = "monthly"
+# Marketplace Service Provider System - Based on Fiverr Model
+class ServicePackage(BaseModel):
+    package_type: str  # basic, standard, premium
+    title: str
+    description: str
+    price: int  # in cents
+    delivery_days: int
+    revisions_included: int
+    features: List[str]
 
-class SubscriptionUsage(BaseModel):
-    agency_user_id: str
-    month: str  # YYYY-MM format
-    clients_active: int
-    license_codes_generated: int
-    api_calls: int = 0
-    storage_used_mb: int = 0
+class ServiceGig(BaseModel):
+    gig_id: str
+    provider_user_id: str
+    title: str
+    description: str
+    category: str  # business_formation, financial_operations, etc.
+    subcategory: str
+    tags: List[str]
+    packages: List[ServicePackage]  # Basic, Standard, Premium packages
+    requirements: List[str]  # What the provider needs from client
+    gallery_images: List[str]  # URLs to portfolio images
+    faq: List[Dict[str, str]]  # Frequently asked questions
+    status: str  # active, paused, draft, under_review
+    rating: Optional[float] = None
+    review_count: int = 0
+    orders_completed: int = 0
+    response_time_hours: int = 24
+    created_at: datetime
+    updated_at: datetime
+
+class ServiceOrder(BaseModel):
+    order_id: str
+    gig_id: str
+    package_type: str  # basic, standard, premium
+    client_user_id: str
+    provider_user_id: str
+    title: str
+    description: str
+    price: int  # in cents
+    delivery_deadline: datetime
+    requirements_answered: Dict[str, Any]  # Client's answers to gig requirements
+    status: str  # pending, in_progress, delivered, revision_requested, completed, cancelled, disputed
+    escrow_status: str  # pending, held, released, refunded
+    revisions_remaining: int
+    created_at: datetime
+    updated_at: datetime
+
+class OrderDelivery(BaseModel):
+    delivery_id: str
+    order_id: str
+    version: int  # 1, 2, 3 (for revisions)
+    message: str
+    attachments: List[str]  # URLs to delivered files
+    delivered_at: datetime
+
+class OrderMessage(BaseModel):
+    message_id: str
+    order_id: str
+    sender_user_id: str
+    content: str
+    attachments: List[str]
+    timestamp: datetime
+    is_read: bool = False
+
+class ServiceReview(BaseModel):
+    review_id: str
+    order_id: str
+    gig_id: str
+    client_user_id: str
+    provider_user_id: str
+    rating: int  # 1-5
+    comment: str
+    created_at: datetime
+
+class CreateGigRequest(BaseModel):
+    title: str
+    description: str
+    category: str
+    subcategory: str
+    tags: List[str]
+    packages: List[ServicePackage]
+    requirements: List[str]
+    faq: List[Dict[str, str]] = []
+
+class PlaceOrderRequest(BaseModel):
+    gig_id: str
+    package_type: str  # basic, standard, premium
+    requirements_answers: Dict[str, Any]
+    special_instructions: str = ""
+
+class DeliverOrderRequest(BaseModel):
+    order_id: str
+    message: str
+    attachment_urls: List[str] = []
+
+class ReviewOrderRequest(BaseModel):
+    order_id: str
+    rating: int
+    comment: str
 
 # Agency Per-Assessment Pricing Configuration
 ASSESSMENT_PRICING_TIERS = {
