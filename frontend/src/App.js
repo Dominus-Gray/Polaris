@@ -4505,165 +4505,110 @@ function ClientHome(){
             </div>
           )}
 
-          {activeTab === 'knowledge' && (
-            <div>
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Knowledge Base</h3>
-                    <p className="text-slate-600">AI-powered templates and guidance for procurement readiness compliance</p>
-                  </div>
-                  <div className="bg-purple-100 border border-purple-300 rounded-lg px-4 py-2">
-                    <div className="text-sm font-medium text-purple-900">Premium Feature</div>
-                    <div className="text-xs text-purple-700">$20/area or $100 all areas</div>
-                  </div>
+          {/* Marketplace Tab - Browse and Hire Service Providers */}
+          {activeTab === 'marketplace' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Professional Service Providers</h3>
+                  <p className="text-slate-600">Find qualified providers to help with your business needs</p>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Search services..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <select
+                    className="input"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    <option value="">All Categories</option>
+                    <option value="business_formation">Business Formation</option>
+                    <option value="financial_operations">Financial Operations</option>
+                    <option value="legal_compliance">Legal Compliance</option>
+                    <option value="technology_security">Technology & Security</option>
+                    <option value="human_resources">Human Resources</option>
+                  </select>
                 </div>
               </div>
 
-              {knowledgeBaseAccess && (
-                <div className="mb-6">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="font-medium text-blue-900">
-                        {knowledgeBaseAccess.has_all_access 
-                          ? 'All Areas Unlocked' 
-                          : `${knowledgeBaseAccess.unlocked_areas.length}/8 Areas Unlocked`}
-                      </span>
-                    </div>
-                    {!knowledgeBaseAccess.has_all_access && (
-                      <p className="text-sm text-blue-700">
-                        You have access to {knowledgeBaseAccess.unlocked_areas.length} business areas. 
-                        Unlock more areas to access additional templates and AI guidance.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Knowledge Base Areas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { id: 'area1', title: 'Business Formation & Registration' },
-                  { id: 'area2', title: 'Financial Operations & Management' },
-                  { id: 'area3', title: 'Legal & Contracting Compliance' },
-                  { id: 'area4', title: 'Quality Management & Standards' },
-                  { id: 'area5', title: 'Technology & Security Infrastructure' },
-                  { id: 'area6', title: 'Human Resources & Capacity' },
-                  { id: 'area7', title: 'Performance Tracking & Reporting' },
-                  { id: 'area8', title: 'Risk Management & Business Continuity' }
-                ].map((area) => {
-                  const isUnlocked = knowledgeBaseAccess?.has_all_access || 
-                                   knowledgeBaseAccess?.unlocked_areas.includes(area.id);
-                  
-                  return (
-                    <div key={area.id} className={`border rounded-lg p-6 ${isUnlocked ? 'bg-white' : 'bg-slate-50 opacity-75'}`}>
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-semibold text-slate-900">{area.title}</h4>
-                        {isUnlocked ? (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Unlocked</span>
-                        ) : (
-                          <span className="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-full">$20</span>
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-slate-600 mb-4">
-                        AI-powered templates, guides, and compliance resources for {area.title.toLowerCase()}
-                      </p>
-                      
-                      {isUnlocked ? (
-                        <div className="space-y-3">
-                          <div>
-                            <div className="text-xs font-medium text-slate-700 mb-2">Available Resources:</div>
-                            <ul className="space-y-1">
-                              <li className="flex items-center gap-2 text-sm">
-                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                <span className="text-slate-700">Templates & Checklists</span>
-                                <button 
-                                  className="ml-auto text-blue-600 hover:text-blue-700 text-xs"
-                                  onClick={() => downloadAreaTemplate(area.id, 'template')}
-                                >
-                                  Download
-                                </button>
-                              </li>
-                              <li className="flex items-center gap-2 text-sm">
-                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                <span className="text-slate-700">Compliance Guides</span>
-                                <button 
-                                  className="ml-auto text-blue-600 hover:text-blue-700 text-xs"
-                                  onClick={() => downloadAreaTemplate(area.id, 'guide')}
-                                >
-                                  Download
-                                </button>
-                              </li>
-                              <li className="flex items-center gap-2 text-sm">
-                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                <span className="text-slate-700">Best Practices</span>
-                                <button 
-                                  className="ml-auto text-blue-600 hover:text-blue-700 text-xs"
-                                  onClick={() => downloadAreaTemplate(area.id, 'practices')}
-                                >
-                                  Download
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                          
-                          <div className="flex gap-2 pt-2">
-                            <button className="btn btn-sm btn-primary flex-1">
-                              AI Guidance
-                            </button>
-                            <button className="btn btn-sm flex-1">
-                              View All Resources
-                            </button>
-                          </div>
+              {/* Provider Gigs Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {marketplaceGigs.length > 0 ? marketplaceGigs.map((gig, idx) => (
+                  <div key={idx} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{gig.title}</h4>
+                        <p className="text-sm text-slate-600 mb-3 line-clamp-3">{gig.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-3">
+                          <span>📂 {gig.category}</span>
+                          {gig.rating && <span>⭐ {gig.rating}/5 ({gig.review_count} reviews)</span>}
                         </div>
-                      ) : (
-                        <div className="text-center py-4">
-                          <div className="text-sm text-slate-600 mb-3">Unlock AI-powered templates and guidance</div>
+                      </div>
+                    </div>
+                    
+                    {/* Provider Info */}
+                    <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-lg">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 font-medium text-sm">
+                          {gig.provider_name?.charAt(0) || 'P'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-slate-900">{gig.provider_name || 'Professional Provider'}</div>
+                        <div className="text-xs text-slate-500">{gig.provider_level || 'Verified Provider'}</div>
+                      </div>
+                    </div>
+
+                    {/* Package Pricing */}
+                    {gig.packages && gig.packages.length > 0 && (
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium text-slate-900 mb-2">Starting at:</div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-2xl font-bold text-green-600">
+                            ${Math.min(...gig.packages.map(p => p.price / 100))}
+                          </div>
                           <button 
                             className="btn btn-primary btn-sm"
-                            onClick={() => unlockKnowledgeBase('knowledge_base_single', area.id)}
-                            disabled={paymentLoading}
+                            onClick={() => navigate(`/marketplace/gig/${gig.gig_id}`)}
                           >
-                            {paymentLoading ? 'Processing...' : 'Unlock for $20'}
+                            View Details
                           </button>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              
-              {/* Bulk Purchase Option */}
-              {knowledgeBaseAccess && !knowledgeBaseAccess.has_all_access && (
-                <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
-                  <div className="text-center">
-                    <h4 className="font-semibold text-purple-900 mb-2">Unlock All Areas</h4>
-                    <p className="text-purple-700 mb-4">Get complete access to all 8 business areas with AI guidance and templates</p>
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                      <span className="text-sm text-slate-500 line-through">$160 individual</span>
-                      <span className="text-2xl font-bold text-purple-900">$100</span>
-                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">38% OFF</span>
-                    </div>
-                    <button 
-                      className="btn btn-primary px-8"
-                      onClick={() => unlockKnowledgeBase('knowledge_base_all')}
-                      disabled={paymentLoading}
-                    >
-                      {paymentLoading ? 'Processing...' : 'Unlock All Areas - $100'}
-                    </button>
+                        <div className="text-xs text-slate-500 mt-1">
+                          {Math.min(...gig.packages.map(p => p.delivery_days))} day delivery
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                )) : (
+                  <div className="col-span-full text-center py-12 text-slate-500">
+                    <svg className="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <p className="text-lg font-medium">No service providers available</p>
+                    <p className="text-sm">Check back later for professional services</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Call to Action */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                <h4 className="font-semibold text-blue-900 mb-2">Need Help Finding the Right Provider?</h4>
+                <p className="text-blue-700 text-sm mb-4">
+                  Our service request system can match you with qualified providers based on your specific needs.
+                </p>
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => setActiveTab('services')}
+                >
+                  Create Service Request
+                </button>
+              </div>
             </div>
           )}
         </div>
