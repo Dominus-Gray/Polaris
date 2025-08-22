@@ -504,7 +504,7 @@ class AgencySubscriptionTester:
         # Authenticate first
         if not self.authenticate():
             print("❌ Authentication failed. Cannot proceed with tests.")
-            return
+            return 0, 1
         
         # Run all tests
         self.test_subscription_tiers()
