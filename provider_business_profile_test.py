@@ -122,7 +122,10 @@ class ProviderBusinessProfileTester:
                                 f"Invalid response data: {data}")
                     return False
             else:
-                error_detail = response.json().get("detail", "Unknown error") if response.content else "No response content"
+                try:
+                    error_detail = response.json().get("detail", "Unknown error") if response.content else "No response content"
+                except:
+                    error_detail = f"Raw response: {response.text[:200]}"
                 self.log_test("Business Profile Creation", "FAIL", 
                             f"Status {response.status_code}: {error_detail}")
                 return False
