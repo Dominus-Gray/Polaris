@@ -5582,8 +5582,15 @@ async def get_subscription_usage(current=Depends(require_role("agency")), months
         current_date = datetime.utcnow()
         
         for i in range(months):
-            month_date = current_date.replace(day=1) - timedelta(days=30 * i)
-            month_str = month_date.strftime("%Y-%m")
+            # Calculate month properly
+            if current_date.month - i <= 0:
+                year = current_date.year - 1
+                month = 12 + (current_date.month - i)
+            else:
+                year = current_date.year
+                month = current_date.month - i
+            
+            month_str = f"{year:04d}-{month:02d}"
             
             usage = await db.subscription_usage.find_one({
                 "agency_user_id": current["id"],
@@ -5593,8 +5600,8 @@ async def get_subscription_usage(current=Depends(require_role("agency")), months
             if usage:
                 usage_data.append({
                     "month": month_str,
-                    "clients_active": usage["clients_active"],
-                    "license_codes_generated": usage["license_codes_generated"],
+                    "clients_active": usage.get("clients_active", 0),
+                    "license_codes_generated": usage.get("license_codes_generated", 0),
                     "api_calls": usage.get("api_calls", 0)
                 })
             else:
