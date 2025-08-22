@@ -8897,7 +8897,7 @@ function ServiceCreatePage() {
   };
 
   const removeRequirement = (index) => {
-    setGigData(prev => ({
+    setServiceData(prev => ({
       ...prev,
       requirements: prev.requirements.filter((_, i) => i !== index)
     }));
