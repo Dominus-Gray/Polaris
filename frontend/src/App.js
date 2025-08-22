@@ -4971,7 +4971,11 @@ function ProviderHome(){
 function NavigatorHome(){
   const [data, setData] = useState(null);
   const [pendingProviders, setPendingProviders] = useState([]);
+  const [pendingAgencies, setPendingAgencies] = useState([]);
   const [resourceStats, setResourceStats] = useState(null);
+  const [systemHealth, setSystemHealth] = useState(null);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [sinceDays, setSinceDays] = useState(30);
   const navigate = useNavigate();
   
