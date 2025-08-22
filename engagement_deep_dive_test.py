@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://sbap-platform.preview.emergentagent.com/api"
+BASE_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
 
 # QA Credentials
 CLIENT_CREDENTIALS = {

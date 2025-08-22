@@ -6,7 +6,7 @@ Debug the 3 failing tests to understand the exact error messages
 import requests
 import json
 
-BASE_URL = "https://sbap-platform.preview.emergentagent.com/api"
+BASE_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
 QA_CREDENTIALS = {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"}
 
 def get_auth_token():

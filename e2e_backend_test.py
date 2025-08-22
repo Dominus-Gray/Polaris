@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sbap-platform.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://readiness-hub-2.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"🚀 Starting E2E Backend QA Test")
@@ -499,7 +499,7 @@ def step_10_payment_attempt() -> bool:
         'request_id': test_data['service_request_id'],
         'provider_id': test_data['user_ids']['provider'],
         'agreed_fee': 1500,
-        'origin_url': 'https://sbap-platform.preview.emergentagent.com'
+        'origin_url': 'https://readiness-hub-2.preview.emergentagent.com'
     }
     
     response = make_request('POST', '/payments/service-request', payment_payload, headers=get_auth_headers('client'))
@@ -596,7 +596,7 @@ def step_12_knowledge_base_payment() -> bool:
     
     payload = {
         'package_id': 'knowledge_base_all',
-        'origin_url': 'https://sbap-platform.preview.emergentagent.com'
+        'origin_url': 'https://readiness-hub-2.preview.emergentagent.com'
     }
     
     response = make_request('POST', '/payments/knowledge-base', payload, headers=get_auth_headers('client'))
