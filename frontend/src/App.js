@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, Navigate,
 import AssessmentResultsPage from './pages/AssessmentResultsPage';
 import ReadinessDashboard from './pages/ReadinessDashboard';
 import CapabilityStatementBuilder from './pages/CapabilityStatementBuilder';
+import ProviderVerification from './pages/ProviderVerification';
+import RevenueOptimization from './pages/RevenueOptimization';
 
 // Enhanced error boundary for production stability
 class PolarisErrorBoundary extends React.Component {
