@@ -123,9 +123,9 @@ class FinalVerificationTester:
         
         client_headers = {"Authorization": f"Bearer {self.client_token}"}
         
-        # Test 2.1: Client can access marketplace (service requests)
+        # Test 2.1: Client can access marketplace (my service requests)
         try:
-            response = self.session.get(f"{BACKEND_URL}/service-requests", headers=client_headers)
+            response = self.session.get(f"{BACKEND_URL}/service-requests/my", headers=client_headers)
             if response.status_code == 200:
                 self.log_test("Client Marketplace Access", "PASS", "Client can access service requests")
             else:
