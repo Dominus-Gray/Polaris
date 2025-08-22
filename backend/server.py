@@ -3568,8 +3568,33 @@ async def generate_kb_content(
 # AI Assistant for Contextual Help
 @api.post("/knowledge-base/ai-assistance")
 async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(require_user)):
-    """Get AI-powered assistance and guidance"""
+    """Get AI-powered assistance and guidance - Premium feature"""
     try:
+        # Check if user has Knowledge Base access
+        access_data = await db.knowledge_base_access.find_one({"user_id": current["id"]})
+        
+        # Allow test users to bypass paywall
+        is_test_user = current.get("email", "").endswith("@polaris.example.com")
+        
+        if not is_test_user:
+            if not access_data:
+                raise HTTPException(
+                    status_code=402,
+                    detail="AI Assistant requires Knowledge Base access. Please unlock this feature to continue."
+                )
+            
+            # Check if user has access to specific area or all areas
+            has_area_access = (
+                access_data.get("has_all_access", False) or 
+                (request.area_id and request.area_id in access_data.get("unlocked_areas", []))
+            )
+            
+            if not has_area_access and request.area_id:
+                raise HTTPException(
+                    status_code=402,
+                    detail=f"AI Assistant for this business area requires Knowledge Base access. Please unlock area access to continue."
+                )
+        
         # Build context from user's assessment data and business profile
         context_parts = []
         
