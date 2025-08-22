@@ -3662,7 +3662,9 @@ function ClientHome(){
   const [certificates, setCertificates] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [matchedServices, setMatchedServices] = useState([]);
-  const [knowledgeBaseAccess, setKnowledgeBaseAccess] = useState(null);
+  const [marketplaceGigs, setMarketplaceGigs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [assessmentData, setAssessmentData] = useState(null);
   const [serviceRequests, setServiceRequests] = useState([]);
