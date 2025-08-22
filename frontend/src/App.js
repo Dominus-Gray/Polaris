@@ -4980,20 +4980,28 @@ function NavigatorHome(){
   const navigate = useNavigate();
   
   useEffect(()=>{ 
-    const load=async()=>{ 
+    const load = async()=>{ 
       try{
-        const {data} = await axios.get(`${API}/home/navigator`); 
-        setData(data);
+        const [homeRes, providersRes, agenciesRes, statsRes, healthRes, activityRes] = await Promise.all([
+          axios.get(`${API}/home/navigator`),
+          axios.get(`${API}/navigator/providers/pending`),
+          axios.get(`${API}/navigator/agencies/pending`),
+          axios.get(`${API}/navigator/analytics/resources`, { params: { since_days: sinceDays }}),
+          axios.get(`${API}/system/health`),
+          axios.get(`${API}/navigator/recent-activity`)
+        ]);
         
-        // Load pending providers for approval
-        const providersRes = await axios.get(`${API}/navigator/providers/pending`);
+        setData(homeRes.data);
         setPendingProviders(providersRes.data.providers || []);
-        
-        // Load resource analytics
-        const statsRes = await axios.get(`${API}/navigator/analytics/resources`, { params: { since_days: sinceDays }});
+        setPendingAgencies(agenciesRes.data.agencies || []);
         setResourceStats(statsRes.data);
+        setSystemHealth(healthRes.data);
+        setRecentActivity(activityRes.data.activities || []);
       }catch(e){
         console.error('Navigator home load error:', e);
+        // Fallback to basic data
+        const {data} = await axios.get(`${API}/home/navigator`);
+        setData(data);
       }
     }; 
     load(); 
