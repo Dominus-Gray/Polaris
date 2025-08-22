@@ -9273,7 +9273,7 @@ function ServiceCreatePage() {
 }
 
 // ================= ADDITIONAL PROVIDER COMPONENTS =================
-function GigEditPage() {
+function ServiceEditPage() {
   const { gigId } = useParams();
   const navigate = useNavigate();
   
