@@ -4788,7 +4788,7 @@ function ProviderHome(){
         ]);
         
         setData(homeRes.data);
-        setMyGigs(gigsRes.data.gigs || []);
+        setMyServices(gigsRes.data.services || []);
         setMyOrders(ordersRes.data.orders || []);
         
         // Set derived data
