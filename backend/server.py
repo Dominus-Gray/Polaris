@@ -4791,6 +4791,17 @@ async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn,
 @api.get("/knowledge-base/access")
 async def get_knowledge_base_access(current=Depends(require_user)):
     """Get user's knowledge base access status (QA: auto-unlock for polaris.example.com except providers)"""
+    
+    # CRITICAL: Providers should NEVER have Knowledge Base access
+    if current["role"] == "provider":
+        # Clear any existing access records for providers (cleanup from before role restrictions)
+        await db.knowledge_base_access.delete_many({"user_id": current["id"]})
+        return {
+            "has_all_access": False,
+            "unlocked_areas": [],
+            "message": "Service providers do not have access to Knowledge Base features"
+        }
+    
     # QA auto-unlock: grant full access for users on polaris.example.com domain (except providers)
     email = current.get("email", "")
     if email.endswith("@polaris.example.com") and current["role"] != "provider":
