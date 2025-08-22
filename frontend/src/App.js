@@ -5057,7 +5057,7 @@ function ProviderHome(){
                         </button>
                         <button 
                           className="btn btn-sm btn-primary"
-                          onClick={() => navigate(`/marketplace/gig/${gig.gig_id}`)}
+                          onClick={() => navigate(`/marketplace/service/${service.service_id}`)}
                         >
                           View Public
                         </button>
