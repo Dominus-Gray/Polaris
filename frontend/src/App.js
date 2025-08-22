@@ -9122,4 +9122,89 @@ function GigCreatePage() {
   );
 }
 
+// ================= ADDITIONAL PROVIDER COMPONENTS =================
+function GigEditPage() {
+  const { gigId } = useParams();
+  const navigate = useNavigate();
+  
+  return (
+    <div className="container mt-6 max-w-4xl">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Edit Service Gig</h1>
+          <p className="text-slate-600">Update your service listing</p>
+        </div>
+        <button 
+          className="btn btn-secondary"
+          onClick={() => navigate('/provider')}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+        <h3 className="text-lg font-medium text-slate-900 mb-2">Gig Editor</h3>
+        <p className="text-slate-600 mb-4">Gig ID: {gigId}</p>
+        <p className="text-slate-500">This feature will allow editing existing gigs with the same interface as creation.</p>
+      </div>
+    </div>
+  );
+}
+
+function OrderManagementPage() {
+  const { orderId } = useParams();
+  const navigate = useNavigate();
+  
+  return (
+    <div className="container mt-6 max-w-4xl">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Order Management</h1>
+          <p className="text-slate-600">Manage your active order</p>
+        </div>
+        <button 
+          className="btn btn-secondary"
+          onClick={() => navigate('/provider')}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+        <h3 className="text-lg font-medium text-slate-900 mb-2">Order Details</h3>
+        <p className="text-slate-600 mb-4">Order ID: {orderId}</p>
+        <p className="text-slate-500">This feature will show detailed order management including delivery, communication, and revisions.</p>
+      </div>
+    </div>
+  );
+}
+
+function GigDetailsPage() {
+  const { gigId } = useParams();
+  const navigate = useNavigate();
+  
+  return (
+    <div className="container mt-6 max-w-4xl">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Service Gig Details</h1>
+          <p className="text-slate-600">Public view of your service listing</p>
+        </div>
+        <button 
+          className="btn btn-secondary"
+          onClick={() => navigate('/provider')}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+        <h3 className="text-lg font-medium text-slate-900 mb-2">Gig Public View</h3>
+        <p className="text-slate-600 mb-4">Gig ID: {gigId}</p>
+        <p className="text-slate-500">This is how clients will see your service listing with packages, reviews, and ordering options.</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){ return (<BrowserRouter><AppShell /></BrowserRouter>); }
