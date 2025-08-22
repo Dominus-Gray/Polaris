@@ -3354,81 +3354,99 @@ class SubscriptionUsage(BaseModel):
     api_calls: int = 0
     storage_used_mb: int = 0
 
-# Subscription Configuration
-SUBSCRIPTION_TIERS = {
-    "starter": {
-        "tier_id": "starter",
-        "name": "Starter",
-        "monthly_price": 14900,  # $149.00
-        "annual_price": 119200,  # $1,192 (20% discount)
-        "client_limit": 50,
-        "license_codes_per_month": 100,
+# Agency Per-Assessment Pricing Configuration
+ASSESSMENT_PRICING_TIERS = {
+    "basic": {
+        "tier_id": "basic",
+        "name": "Basic",
+        "per_assessment_price": 7500,  # $75.00 per assessment
+        "volume_threshold": 0,  # No minimum
+        "monthly_minimum": 0,
         "features": [
-            "basic_analytics",
-            "email_support",
-            "logo_branding",
             "standard_assessments",
+            "email_support",
+            "basic_branding",
+            "pdf_certificates",
             "monthly_reports"
         ],
-        "support_level": "email"
+        "support_level": "email",
+        "description": "Perfect for small agencies getting started"
     },
-    "professional": {
-        "tier_id": "professional", 
-        "name": "Professional",
-        "monthly_price": 29900,  # $299.00
-        "annual_price": 239200,  # $2,392 (20% discount)
-        "client_limit": 200,
-        "license_codes_per_month": 500,
+    "volume": {
+        "tier_id": "volume", 
+        "name": "Volume",
+        "per_assessment_price": 6000,  # $60.00 per assessment (20% discount)
+        "volume_threshold": 25,  # 25+ assessments/month
+        "monthly_minimum": 25,
         "features": [
-            "advanced_analytics",
+            "standard_assessments",
             "priority_support",
-            "full_theme_customization",
-            "bulk_management",
+            "custom_branding",
+            "pdf_certificates", 
             "weekly_reports",
-            "custom_subdomain",
-            "api_access_limited"
+            "bulk_management",
+            "api_access_basic"
         ],
-        "support_level": "email_chat"
+        "support_level": "email_chat",
+        "description": "Ideal for growing agencies with regular volume"
     },
     "enterprise": {
         "tier_id": "enterprise",
-        "name": "Enterprise", 
-        "monthly_price": 59900,  # $599.00
-        "annual_price": 479200,  # $4,792 (20% discount)
-        "client_limit": 1000,
-        "license_codes_per_month": -1,  # unlimited
+        "name": "Enterprise",
+        "per_assessment_price": 4500,  # $45.00 per assessment (40% discount)
+        "volume_threshold": 100,  # 100+ assessments/month
+        "monthly_minimum": 100,
         "features": [
-            "realtime_analytics",
-            "dedicated_account_manager", 
+            "advanced_assessments",
+            "dedicated_support",
             "complete_whitelabel",
-            "custom_domain",
-            "phone_support",
+            "custom_certificates",
+            "realtime_analytics",
             "api_access_full",
-            "sso_integration",
-            "multi_location"
+            "custom_integrations",
+            "priority_processing"
         ],
-        "support_level": "phone_dedicated"
+        "support_level": "phone_dedicated",
+        "description": "For large agencies and state-wide programs"
     },
-    "enterprise_plus": {
-        "tier_id": "enterprise_plus",
-        "name": "Enterprise Plus",
-        "monthly_price": 99900,  # $999.00  
-        "annual_price": 799200,  # $7,992 (20% discount)
-        "client_limit": -1,  # unlimited
-        "license_codes_per_month": -1,  # unlimited
+    "government": {
+        "tier_id": "government",
+        "name": "Government Enterprise",
+        "per_assessment_price": 3500,  # $35.00 per assessment (53% discount)
+        "volume_threshold": 500,  # 500+ assessments/month
+        "monthly_minimum": 500,
         "features": [
-            "ai_powered_analytics",
-            "dedicated_success_manager",
-            "custom_feature_development", 
-            "dedicated_infrastructure",
+            "government_compliance",
             "24_7_support",
-            "custom_apis",
-            "multi_tenant_management",
-            "compliance_certifications"
+            "complete_whitelabel",
+            "custom_certificates",
+            "advanced_analytics",
+            "full_api_access",
+            "custom_development",
+            "dedicated_infrastructure",
+            "compliance_reporting",
+            "audit_trails"
         ],
-        "support_level": "24_7_dedicated"
+        "support_level": "24_7_dedicated",
+        "description": "For government agencies and large-scale programs"
     }
 }
+
+# Assessment Credit System
+class AssessmentCredit(BaseModel):
+    credit_id: str
+    agency_user_id: str
+    purchased_amount: int  # Number of credits purchased
+    remaining_amount: int  # Credits remaining
+    tier_id: str  # Pricing tier when purchased
+    price_per_credit: int  # Price paid per credit in cents
+    purchase_date: datetime
+    expiry_date: Optional[datetime] = None  # Credits can expire
+    status: str  # active, expired, used
+
+class PurchaseCreditsRequest(BaseModel):
+    credit_amount: int  # Number of assessment credits to purchase
+    tier_id: str = "basic"  # Pricing tier to use
 
 # AI-Powered Content Generation Helper
 async def generate_ai_content(prompt: str, content_type: str = "guide") -> str:
