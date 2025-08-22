@@ -7968,6 +7968,64 @@ async def get_my_orders(current=Depends(require_user), role_filter: str = ""):
         logger.error(f"Error getting orders: {e}")
         raise HTTPException(status_code=500, detail="Failed to get orders")
 
+@api.get("/marketplace/gigs/my")
+async def get_my_gigs(current=Depends(require_role("provider"))):
+    """Get gigs created by current provider"""
+    try:
+        gigs = await db.service_gigs.find({"provider_user_id": current["id"]}).sort("created_at", -1).to_list(100)
+        
+        return {"gigs": gigs}
+        
+    except Exception as e:
+        logger.error(f"Error getting my gigs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get gigs")
+
+@api.get("/provider/analytics")
+async def get_provider_analytics(current=Depends(require_role("provider"))):
+    """Get provider performance analytics"""
+    try:
+        # Get basic stats
+        total_gigs = await db.service_gigs.count_documents({"provider_user_id": current["id"]})
+        active_gigs = await db.service_gigs.count_documents({"provider_user_id": current["id"], "status": "active"})
+        
+        # Get order stats
+        total_orders = await db.service_orders.count_documents({"provider_user_id": current["id"]})
+        completed_orders = await db.service_orders.count_documents({"provider_user_id": current["id"], "status": "completed"})
+        
+        # Calculate earnings (mock for now - in production, calculate from completed orders)
+        orders = await db.service_orders.find({"provider_user_id": current["id"], "status": "completed"}).to_list(1000)
+        total_earned = sum(order["price"] for order in orders) / 100  # Convert from cents
+        
+        # Calculate this month's earnings
+        from datetime import datetime
+        current_month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        this_month_orders = await db.service_orders.find({
+            "provider_user_id": current["id"], 
+            "status": "completed",
+            "updated_at": {"$gte": current_month_start}
+        }).to_list(1000)
+        monthly_revenue = sum(order["price"] for order in this_month_orders) / 100
+        
+        # Calculate ratings
+        reviews = await db.service_reviews.find({"provider_user_id": current["id"]}).to_list(1000)
+        avg_rating = sum(r["rating"] for r in reviews) / len(reviews) if reviews else None
+        
+        return {
+            "total_gigs": total_gigs,
+            "active_gigs": active_gigs,
+            "total_orders": total_orders,
+            "completed_orders": completed_orders,
+            "total_earned": total_earned,
+            "monthly_revenue": monthly_revenue,
+            "available_balance": total_earned * 0.8,  # Mock: 80% available, 20% in escrow
+            "rating": round(avg_rating, 1) if avg_rating else None,
+            "win_rate": round((completed_orders / total_orders * 100), 1) if total_orders > 0 else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting provider analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
 @api.get("/metrics")
 async def get_prometheus_metrics():
     """Prometheus metrics endpoint"""
