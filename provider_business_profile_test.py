@@ -151,15 +151,14 @@ class ProviderBusinessProfileTester:
             
             if response.status_code == 200:
                 data = response.json()
-                profile_complete = data.get("profile_complete", False)
-                completion_percentage = data.get("completion_percentage", 0)
+                profile_complete = data.get("complete", False)  # Changed from "profile_complete" to "complete"
+                missing_fields = data.get("missing", [])
                 
                 if profile_complete:
                     self.log_test("Profile Completion Check", "PASS", 
-                                f"Profile complete: {profile_complete}, Completion: {completion_percentage}%")
+                                f"Profile complete: {profile_complete}, Missing fields: {len(missing_fields)}")
                     return True
                 else:
-                    missing_fields = data.get("missing_fields", [])
                     self.log_test("Profile Completion Check", "FAIL", 
                                 f"Profile incomplete. Missing fields: {missing_fields}")
                     return False
