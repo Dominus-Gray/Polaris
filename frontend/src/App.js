@@ -4807,8 +4807,8 @@ function ProviderHome(){
     load(); 
   },[]);
 
-  const createNewGig = () => {
-    navigate('/provider/gigs/create');
+  const createNewService = () => {
+    navigate('/provider/services/create');
   };
 
   const editGig = (gigId) => {
