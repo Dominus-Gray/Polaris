@@ -3340,7 +3340,7 @@ async def get_knowledge_base_areas(current=Depends(require_user)):
     }
     
     areas = []
-    for area_id in ["area1", "area2", "area3", "area4", "area5", "area6", "area7", "area8"]:
+    for area_id in ["area1", "area2", "area3", "area4", "area5", "area6", "area7", "area8", "area9"]:
         article_count = await db.kb_articles.count_documents({
             "area_ids": area_id,
             "status": "published"
