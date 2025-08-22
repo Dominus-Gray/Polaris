@@ -8822,7 +8822,7 @@ function CertificateVerification({ certificateId }) {
 
 // ================= GIG CREATION COMPONENT =================
 function ServiceCreatePage() {
-  const [gigData, setGigData] = useState({
+  const [serviceData, setServiceData] = useState({
     title: '',
     description: '',
     category: 'business_formation',
