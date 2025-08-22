@@ -5576,7 +5576,7 @@ async def upgrade_subscription(request: UpdateSubscriptionRequest, current=Depen
             "success": True,
             "subscription": subscription_doc,
             "tier_details": tier,
-            "message": f"Successfully upgraded to {tier['name']} plan"
+            "message": f"Successfully upgraded to {tier.name} plan"
         }
         
     except Exception as e:
