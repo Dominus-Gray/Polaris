@@ -1,4 +1,387 @@
 #!/usr/bin/env python3
+"""
+SERVICE PROVIDER AUTHENTICATION AND MARKETPLACE TESTING
+Testing specific scope from review request:
+1. POST /api/auth/login with provider.qa@polaris.example.com / Polaris#2025! credentials
+2. GET /api/home/provider endpoint with authentication headers  
+3. GET /api/marketplace/gigs/my endpoint for provider gigs
+4. GET /api/marketplace/orders/my?role_filter=provider for provider orders
+5. Verify provider role and marketplace data structure
+
+This is to debug why Service Provider login on frontend redirects back to landing page 
+instead of showing Provider dashboard.
+"""
+
+import requests
+import json
+import time
+from datetime import datetime
+
+# Configuration
+BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
+
+# Test Credentials
+PROVIDER_CREDENTIALS = {
+    "email": "provider.qa@polaris.example.com",
+    "password": "Polaris#2025!"
+}
+
+class ServiceProviderMarketplaceTester:
+    def __init__(self):
+        self.provider_token = None
+        self.test_results = []
+        self.session = requests.Session()
+        
+    def log_test(self, test_name, status, details=""):
+        """Log test result"""
+        result = {
+            "test": test_name,
+            "status": status,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.test_results.append(result)
+        status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+        print(f"{status_icon} {test_name}: {status}")
+        if details:
+            print(f"   Details: {details}")
+    
+    def test_provider_login(self):
+        """Test 1: POST /api/auth/login with provider credentials"""
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=PROVIDER_CREDENTIALS,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "access_token" in data:
+                    self.provider_token = data["access_token"]
+                    self.log_test(
+                        "Provider Login Authentication", 
+                        "PASS", 
+                        f"Token received: {self.provider_token[:20]}..."
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Provider Login Authentication", 
+                        "FAIL", 
+                        f"No access_token in response: {data}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Provider Login Authentication", 
+                    "FAIL", 
+                    f"Status: {response.status_code}, Response: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Provider Login Authentication", 
+                "FAIL", 
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_provider_role_verification(self):
+        """Verify provider role from auth/me endpoint"""
+        if not self.provider_token:
+            self.log_test("Provider Role Verification", "SKIP", "No token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.provider_token}"}
+            response = self.session.get(f"{BACKEND_URL}/auth/me", headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("role") == "provider":
+                    self.log_test(
+                        "Provider Role Verification", 
+                        "PASS", 
+                        f"Role confirmed: {data.get('role')}, Email: {data.get('email')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Provider Role Verification", 
+                        "FAIL", 
+                        f"Expected role 'provider', got: {data.get('role')}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Provider Role Verification", 
+                    "FAIL", 
+                    f"Status: {response.status_code}, Response: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Provider Role Verification", 
+                "FAIL", 
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_provider_home_endpoint(self):
+        """Test 2: GET /api/home/provider endpoint with authentication headers"""
+        if not self.provider_token:
+            self.log_test("Provider Home Endpoint", "SKIP", "No token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.provider_token}"}
+            response = self.session.get(f"{BACKEND_URL}/home/provider", headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check for expected provider dashboard data
+                expected_fields = ["profile_complete", "dashboard_data"]
+                
+                details = f"Response keys: {list(data.keys())}"
+                if any(field in data for field in expected_fields):
+                    self.log_test(
+                        "Provider Home Endpoint", 
+                        "PASS", 
+                        details
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Provider Home Endpoint", 
+                        "PARTIAL", 
+                        f"Endpoint accessible but missing expected fields. {details}"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Provider Home Endpoint", 
+                    "FAIL", 
+                    f"Status: {response.status_code}, Response: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Provider Home Endpoint", 
+                "FAIL", 
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_marketplace_gigs_endpoint(self):
+        """Test 3: GET /api/marketplace/gigs/my endpoint for provider gigs"""
+        if not self.provider_token:
+            self.log_test("Marketplace Gigs Endpoint", "SKIP", "No token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.provider_token}"}
+            response = self.session.get(f"{BACKEND_URL}/marketplace/gigs/my", headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Marketplace Gigs Endpoint", 
+                    "PASS", 
+                    f"Gigs data structure: {type(data)}, Length: {len(data) if isinstance(data, list) else 'N/A'}"
+                )
+                return True
+            elif response.status_code == 404:
+                self.log_test(
+                    "Marketplace Gigs Endpoint", 
+                    "FAIL", 
+                    "Endpoint not found - marketplace gigs functionality not implemented"
+                )
+                return False
+            else:
+                self.log_test(
+                    "Marketplace Gigs Endpoint", 
+                    "FAIL", 
+                    f"Status: {response.status_code}, Response: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Marketplace Gigs Endpoint", 
+                "FAIL", 
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_marketplace_orders_endpoint(self):
+        """Test 4: GET /api/marketplace/orders/my?role_filter=provider for provider orders"""
+        if not self.provider_token:
+            self.log_test("Marketplace Orders Endpoint", "SKIP", "No token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.provider_token}"}
+            response = self.session.get(
+                f"{BACKEND_URL}/marketplace/orders/my?role_filter=provider", 
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Marketplace Orders Endpoint", 
+                    "PASS", 
+                    f"Orders data structure: {type(data)}, Length: {len(data) if isinstance(data, list) else 'N/A'}"
+                )
+                return True
+            elif response.status_code == 404:
+                self.log_test(
+                    "Marketplace Orders Endpoint", 
+                    "FAIL", 
+                    "Endpoint not found - marketplace orders functionality not implemented"
+                )
+                return False
+            else:
+                self.log_test(
+                    "Marketplace Orders Endpoint", 
+                    "FAIL", 
+                    f"Status: {response.status_code}, Response: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Marketplace Orders Endpoint", 
+                "FAIL", 
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_alternative_provider_endpoints(self):
+        """Test alternative provider-related endpoints that might exist"""
+        if not self.provider_token:
+            self.log_test("Alternative Provider Endpoints", "SKIP", "No token available")
+            return False
+            
+        headers = {"Authorization": f"Bearer {self.provider_token}"}
+        alternative_endpoints = [
+            "/provider/dashboard",
+            "/provider/profile", 
+            "/provider/services",
+            "/service-requests/provider",
+            "/provider/respond-to-request"
+        ]
+        
+        working_endpoints = []
+        
+        for endpoint in alternative_endpoints:
+            try:
+                response = self.session.get(f"{BACKEND_URL}{endpoint}", headers=headers)
+                if response.status_code == 200:
+                    working_endpoints.append(endpoint)
+                elif response.status_code in [401, 403]:
+                    # Authentication/authorization issues
+                    continue
+                elif response.status_code == 404:
+                    # Endpoint doesn't exist
+                    continue
+            except Exception:
+                continue
+        
+        if working_endpoints:
+            self.log_test(
+                "Alternative Provider Endpoints", 
+                "PASS", 
+                f"Found working endpoints: {working_endpoints}"
+            )
+            return True
+        else:
+            self.log_test(
+                "Alternative Provider Endpoints", 
+                "FAIL", 
+                "No alternative provider endpoints found"
+            )
+            return False
+    
+    def run_comprehensive_test(self):
+        """Run all Service Provider marketplace tests"""
+        print("🔍 SERVICE PROVIDER AUTHENTICATION AND MARKETPLACE TESTING")
+        print("=" * 70)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Provider Email: {PROVIDER_CREDENTIALS['email']}")
+        print("=" * 70)
+        
+        # Test sequence
+        tests = [
+            ("Provider Login", self.test_provider_login),
+            ("Provider Role Verification", self.test_provider_role_verification),
+            ("Provider Home Endpoint", self.test_provider_home_endpoint),
+            ("Marketplace Gigs Endpoint", self.test_marketplace_gigs_endpoint),
+            ("Marketplace Orders Endpoint", self.test_marketplace_orders_endpoint),
+            ("Alternative Provider Endpoints", self.test_alternative_provider_endpoints)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(tests)
+        
+        for test_name, test_func in tests:
+            print(f"\n🧪 Running: {test_name}")
+            if test_func():
+                passed_tests += 1
+            time.sleep(0.5)  # Brief pause between tests
+        
+        # Summary
+        print("\n" + "=" * 70)
+        print("📊 TEST SUMMARY")
+        print("=" * 70)
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"Tests Passed: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+        
+        # Detailed results
+        print("\n📋 DETAILED RESULTS:")
+        for result in self.test_results:
+            status_icon = "✅" if result["status"] == "PASS" else "❌" if result["status"] == "FAIL" else "⚠️"
+            print(f"{status_icon} {result['test']}: {result['status']}")
+            if result["details"]:
+                print(f"   └─ {result['details']}")
+        
+        # Analysis and recommendations
+        print("\n🔍 ANALYSIS:")
+        
+        if self.provider_token:
+            print("✅ Provider authentication is working correctly")
+        else:
+            print("❌ Provider authentication failed - this is likely the root cause")
+            print("   └─ Frontend redirect issue may be due to failed backend authentication")
+        
+        # Check for marketplace functionality
+        marketplace_working = any(
+            result["test"] in ["Marketplace Gigs Endpoint", "Marketplace Orders Endpoint"] 
+            and result["status"] == "PASS" 
+            for result in self.test_results
+        )
+        
+        if not marketplace_working:
+            print("❌ Marketplace endpoints not implemented")
+            print("   └─ This explains why provider dashboard shows no marketplace data")
+        
+        return success_rate >= 50  # Consider successful if at least 50% pass
+
+if __name__ == "__main__":
+    tester = ServiceProviderMarketplaceTester()
+    success = tester.run_comprehensive_test()
+    
+    if success:
+        print("\n🎉 Service Provider testing completed with acceptable results")
+    else:
+        print("\n⚠️ Service Provider testing revealed critical issues")
+    
+    print(f"\nTest completed at: {datetime.now().isoformat()}")
 
 import requests
 import json
