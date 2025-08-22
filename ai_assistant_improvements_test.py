@@ -94,7 +94,7 @@ class AIAssistantImprovementsTest:
                               f"Failed to generate license: {license_response.status_code}")
                 return None
             
-            license_code = license_response.json()["license_codes"][0]["license_code"]
+            license_code = license_response.json()["licenses"][0]["license_code"]
             
             # Register regular user with license code
             user_data = {
