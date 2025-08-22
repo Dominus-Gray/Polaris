@@ -543,9 +543,13 @@ class AgencySubscriptionTester:
 
 if __name__ == "__main__":
     tester = AgencySubscriptionTester()
-    passed, failed = tester.run_all_tests()
+    result = tester.run_all_tests()
     
-    if failed == 0:
-        print("\n🎉 All tests passed! Agency Subscription System is working correctly.")
+    if result:
+        passed, failed = result
+        if failed == 0:
+            print("\n🎉 All tests passed! Agency Subscription System is working correctly.")
+        else:
+            print(f"\n⚠️  {failed} test(s) failed. Please review the issues above.")
     else:
-        print(f"\n⚠️  {failed} test(s) failed. Please review the issues above.")
+        print("\n❌ Testing failed to complete.")
