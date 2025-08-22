@@ -2,6 +2,63 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import axios from "axios";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, Navigate, useParams } from "react-router-dom";
+
+// Enhanced error boundary for production stability
+class PolarisErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Polaris Error:', error, errorInfo);
+    // Log to monitoring service in production
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'exception', {
+        description: error.toString(),
+        fatal: false
+      });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <div className="text-center p-8 max-w-md">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">
+              Something went wrong
+            </h2>
+            <p className="text-slate-600 mb-6">
+              We're sorry, but something unexpected happened. Please refresh the page or contact support if the issue persists.
+            </p>
+            <div className="space-x-4">
+              <button 
+                className="btn btn-primary"
+                onClick={() => window.location.reload()}
+              >
+                Refresh Page
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => window.location.href = '/'}
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 import { Toaster, toast } from "sonner";
 import ProfileSettings from "./components/ProfileSettings";
 import AdminDashboard from "./components/AdminDashboard";
