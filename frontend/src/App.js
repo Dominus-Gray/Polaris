@@ -4083,8 +4083,8 @@ function ClientHome(){
               { id: 'overview', label: 'Overview', icon: '📊' },
               { id: 'gaps', label: 'Gap Analysis', icon: '🎯' },
               { id: 'services', label: 'Services', icon: '🔧' },
+              { id: 'marketplace', label: 'Find Providers', icon: '🏪' },
               { id: 'assessment', label: 'Assessment', icon: '📝' },
-              { id: 'knowledge', label: 'Knowledge Base', icon: '📚' },
               { id: 'certificates', label: 'Certificates', icon: '🏆' }
             ].map((tab) => (
               <button
