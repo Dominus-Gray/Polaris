@@ -4253,9 +4253,7 @@ function ClientHome(){
                 >
                   <span style={{ color: 'white' }}>Continue Assessment</span>
                 </button>
-                {knowledgeBaseAccess && !knowledgeBaseAccess.has_all_access && (
-                  <button className="btn" onClick={() => setActiveTab('knowledge')}>View Knowledge Base</button>
-                )}
+                <button className="btn" onClick={() => setActiveTab('marketplace')}>Find Professional Help</button>
               </div>
             </div>
           )}
