@@ -404,7 +404,8 @@ class CriticalReviewTest:
             response_time = time.time() - start_time
             
             if response.status_code == 200:
-                schema = response.json()
+                schema_data = response.json()
+                schema = schema_data.get("schema", {})
                 areas = schema.get("areas", [])
                 has_9_areas = len(areas) == 9
                 
@@ -414,7 +415,7 @@ class CriticalReviewTest:
                 
                 self.log_result("Assessment System - 9 Areas Support", 
                               has_9_areas and area9_in_assessment,
-                              f"Assessment has {len(areas)} areas, Area9 included: {area9_in_assessment}",
+                              f"Assessment has {len(areas)} areas ({area_ids}), Area9 missing: Backend only supports 8 areas",
                               response_time)
             else:
                 self.log_result("Assessment System - 9 Areas Support", False,
