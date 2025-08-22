@@ -4686,13 +4686,13 @@ function ClientHome(){
                 </div>
               </div>
 
-              {/* Provider Gigs Grid */}
+              {/* Available Services Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {marketplaceGigs.length > 0 ? marketplaceGigs.map((gig, idx) => (
+                {availableServices.length > 0 ? availableServices.map((service, idx) => (
                   <div key={idx} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{gig.title}</h4>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{service.title}</h4>
                         <p className="text-sm text-slate-600 mb-3 line-clamp-3">{gig.description}</p>
                         <div className="flex items-center gap-4 text-sm text-slate-500 mb-3">
                           <span>📂 {gig.category}</span>
