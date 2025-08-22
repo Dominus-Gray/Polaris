@@ -7328,6 +7328,10 @@ function AppShell(){
           <Route path="/business/profile" element={<BusinessProfileForm />} />
           <Route path="/service-request" element={<ServiceRequestPage />} />
           <Route path="/provider/proposals" element={<ProviderProposalsPage />} />
+          <Route path="/provider/gigs/create" element={<GigCreatePage />} />
+          <Route path="/provider/gigs/edit/:gigId" element={<GigEditPage />} />
+          <Route path="/provider/orders/:orderId" element={<OrderManagementPage />} />
+          <Route path="/marketplace/gig/:gigId" element={<GigDetailsPage />} />
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/agency" element={<AgencyHome />} />
           <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
