@@ -2485,7 +2485,8 @@ function AreaDeliverablesPage() {
       { id: 'area5', title: 'Technology & Security Infrastructure' },
       { id: 'area6', title: 'Human Resources & Capacity' },
       { id: 'area7', title: 'Performance Tracking & Reporting' },
-      { id: 'area8', title: 'Risk Management & Business Continuity' }
+      { id: 'area8', title: 'Risk Management & Business Continuity' },
+      { id: 'area9', title: 'Supply Chain Management & Vendor Relations' }
     ];
 
     const AREA_DELIVERABLES = {
