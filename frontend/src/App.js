@@ -9353,4 +9353,4 @@ function GigDetailsPage() {
   );
 }
 
-export default function App(){ return (<BrowserRouter><AppShell /></BrowserRouter>); }
+export default function App(){ return (<PolarisErrorBoundary><BrowserRouter><AppShell /></BrowserRouter></PolarisErrorBoundary>); }
