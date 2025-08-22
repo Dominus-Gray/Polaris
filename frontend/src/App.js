@@ -2617,10 +2617,15 @@ function AreaDeliverablesPage() {
                       </div>
                     </div>
                     <button 
-                      className="btn btn-primary btn-sm w-full mt-3"
+                      className="btn btn-primary btn-sm btn-download-template w-full mt-3"
                       onClick={() => downloadResource(template.name, 'template')}
+                      style={{ 
+                        background: 'linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235))',
+                        color: 'white',
+                        border: 'none'
+                      }}
                     >
-                      Download Template
+                      <span style={{ color: 'white' }}>Download Template</span>
                     </button>
                   </div>
                 ))}
