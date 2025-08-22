@@ -8996,8 +8996,8 @@ function ServiceCreatePage() {
                 type="text"
                 className="input w-full"
                 placeholder="I will help you with business formation and legal setup"
-                value={gigData.title}
-                onChange={(e) => setGigData(prev => ({ ...prev, title: e.target.value }))}
+                value={serviceData.title}
+                onChange={(e) => setServiceData(prev => ({ ...prev, title: e.target.value }))}
                 required
               />
             </div>
