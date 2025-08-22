@@ -6909,12 +6909,63 @@ function AIAssistantCard({ areaId, context }) {
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [nextActions, setNextActions] = useState([]);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [userAccess, setUserAccess] = useState(null);
 
   useEffect(() => {
-    if (isOpen && !nextActions.length) {
+    checkAccess();
+  }, [areaId]);
+
+  useEffect(() => {
+    if (isOpen && !nextActions.length && hasAccess) {
       loadNextBestActions();
     }
-  }, [isOpen]);
+  }, [isOpen, hasAccess]);
+
+  const checkAccess = async () => {
+    try {
+      const token = localStorage.getItem('polaris_token');
+      const me = JSON.parse(localStorage.getItem('polaris_me') || 'null');
+      
+      if (!token || !me) {
+        setHasAccess(false);
+        return;
+      }
+
+      // Check if user is test user
+      if (me.email && me.email.endsWith('@polaris.example.com')) {
+        setHasAccess(true);
+        return;
+      }
+
+      const { data } = await axios.get(`${API}/knowledge-base/access`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setUserAccess(data);
+      
+      // Check if user has access to this specific area or all areas
+      const areaAccess = data.has_all_access || (data.unlocked_areas && data.unlocked_areas.includes(areaId));
+      setHasAccess(areaAccess);
+      
+    } catch (e) {
+      console.error('Access check failed:', e);
+      setHasAccess(false);
+    }
+  };
+
+  const unlockArea = async () => {
+    try {
+      const { data } = await axios.post(`${API}/payments/knowledge-base`, {
+        package_id: 'knowledge_base_single',
+        origin_url: window.location.origin,
+        metadata: { area_id: areaId }
+      });
+      window.location.href = data.url;
+    } catch (e) {
+      toast.error('Failed to process payment', { description: e.response?.data?.detail || e.message });
+    }
+  };
 
   const loadNextBestActions = async () => {
     try {
