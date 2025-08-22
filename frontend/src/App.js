@@ -9329,7 +9329,7 @@ function OrderManagementPage() {
   );
 }
 
-function GigDetailsPage() {
+function ServiceDetailsPage() {
   const { gigId } = useParams();
   const navigate = useNavigate();
   
