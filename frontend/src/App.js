@@ -5684,6 +5684,226 @@ function AgencyHome(){
             </div>
           )}
 
+          {activeTab === 'subscription' && (
+            <div className="space-y-6">
+              {/* Current Subscription Overview */}
+              {subscription && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-blue-900">
+                        {subscription.subscription?.tier_name || 'Current Plan'}
+                      </h3>
+                      <p className="text-blue-700">
+                        {subscription.subscription?.status === 'trial' ? 'Trial Period' : 'Active Subscription'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-blue-900">
+                        ${subscription.tier_details?.monthly_price ? (subscription.tier_details.monthly_price / 100).toFixed(0) : '0'}
+                      </div>
+                      <div className="text-blue-700 text-sm">per month</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white/60 rounded-lg p-4">
+                      <div className="text-2xl font-bold text-slate-900">
+                        {subscription.subscription?.current_usage?.clients_active || 0}
+                        <span className="text-lg text-slate-600">
+                          /{subscription.tier_details?.client_limit === -1 ? '∞' : subscription.tier_details?.client_limit}
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-600">Active Clients</div>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-4">
+                      <div className="text-2xl font-bold text-slate-900">
+                        {subscription.subscription?.current_usage?.license_codes_used_this_month || 0}
+                        <span className="text-lg text-slate-600">
+                          /{subscription.tier_details?.license_codes_per_month === -1 ? '∞' : subscription.tier_details?.license_codes_per_month}
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-600">License Codes This Month</div>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-4">
+                      <div className="text-2xl font-bold text-green-600">
+                        {subscription.subscription?.status === 'trial' 
+                          ? `${subscription.subscription?.trial_days_remaining || 0} days` 
+                          : '✓'}
+                      </div>
+                      <div className="text-sm text-slate-600">
+                        {subscription.subscription?.status === 'trial' ? 'Trial Remaining' : 'Status'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Usage Analytics */}
+              {usageData && (
+                <div className="bg-white rounded-lg border p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Usage Analytics (Last 6 Months)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 className="text-sm font-medium text-slate-700 mb-3">License Codes Generated</h5>
+                      <div className="space-y-2">
+                        {usageData.usage_history?.slice(0, 6).map((month, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-sm">
+                            <span className="text-slate-600">{month.month}</span>
+                            <span className="font-medium">{month.license_codes_generated}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-medium text-slate-700 mb-3">Active Clients</h5>
+                      <div className="space-y-2">
+                        {usageData.usage_history?.slice(0, 6).map((month, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-sm">
+                            <span className="text-slate-600">{month.month}</span>
+                            <span className="font-medium">{month.clients_active}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Subscription Tiers */}
+              <div className="bg-white rounded-lg border p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Available Plans</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {subscriptionTiers.map((tier, idx) => (
+                    <div key={tier.tier_id} className={`relative rounded-lg border-2 p-6 ${
+                      subscription?.subscription?.tier_id === tier.tier_id 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}>
+                      {subscription?.subscription?.tier_id === tier.tier_id && (
+                        <div className="absolute -top-3 left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                          Current Plan
+                        </div>
+                      )}
+                      
+                      <div className="text-center">
+                        <h5 className="text-lg font-semibold text-slate-900 mb-2">{tier.name}</h5>
+                        <div className="text-3xl font-bold text-slate-900 mb-1">
+                          ${(tier.monthly_price / 100).toFixed(0)}
+                        </div>
+                        <div className="text-sm text-slate-600 mb-4">per month</div>
+                        
+                        <div className="text-left space-y-2 mb-6">
+                          <div className="text-sm">
+                            <span className="font-medium">Clients:</span> {tier.client_limit === -1 ? 'Unlimited' : tier.client_limit}
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium">Codes/month:</span> {tier.license_codes_per_month === -1 ? 'Unlimited' : tier.license_codes_per_month}
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium">Support:</span> {tier.support_level.replace('_', ' ')}
+                          </div>
+                        </div>
+                        
+                        {subscription?.subscription?.tier_id === tier.tier_id ? (
+                          <button className="w-full btn btn-secondary" disabled>
+                            Current Plan
+                          </button>
+                        ) : (
+                          <button 
+                            className="w-full btn btn-primary"
+                            onClick={() => upgradeSubscription(tier.tier_id)}
+                            disabled={upgradeLoading}
+                          >
+                            {upgradeLoading ? 'Processing...' : 
+                             idx < subscriptionTiers.findIndex(t => t.tier_id === subscription?.subscription?.tier_id) ? 
+                             'Downgrade' : 'Upgrade'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Annual Billing Toggle */}
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="font-medium text-green-900">Switch to Annual Billing</h5>
+                      <p className="text-sm text-green-700">Save 20% with annual payments</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-green-900">20% OFF</div>
+                      <div className="text-sm text-green-700">annual plans</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Feature Comparison */}
+              <div className="bg-white rounded-lg border p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Feature Comparison</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">Feature</th>
+                        <th className="text-center py-2">Starter</th>
+                        <th className="text-center py-2">Professional</th>
+                        <th className="text-center py-2">Enterprise</th>
+                        <th className="text-center py-2">Enterprise Plus</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-slate-600">
+                      <tr className="border-b">
+                        <td className="py-2">Active Clients</td>
+                        <td className="text-center">50</td>
+                        <td className="text-center">200</td>
+                        <td className="text-center">1,000</td>
+                        <td className="text-center">Unlimited</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2">License Codes/Month</td>
+                        <td className="text-center">100</td>
+                        <td className="text-center">500</td>
+                        <td className="text-center">Unlimited</td>
+                        <td className="text-center">Unlimited</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2">Advanced Analytics</td>
+                        <td className="text-center">❌</td>
+                        <td className="text-center">✅</td>
+                        <td className="text-center">✅</td>
+                        <td className="text-center">✅</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2">White-label Branding</td>
+                        <td className="text-center">Logo Only</td>
+                        <td className="text-center">Full Theme</td>
+                        <td className="text-center">Complete</td>
+                        <td className="text-center">Complete + Mobile</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2">API Access</td>
+                        <td className="text-center">❌</td>
+                        <td className="text-center">Limited</td>
+                        <td className="text-center">Full REST API</td>
+                        <td className="text-center">Custom APIs</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2">Support Level</td>
+                        <td className="text-center">Email</td>
+                        <td className="text-center">Email + Chat</td>
+                        <td className="text-center">Phone + Dedicated AM</td>
+                        <td className="text-center">24/7 + Success Manager</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'branding' && <AgencyThemeManager />}
           
           {activeTab === 'system' && <SystemHealthDashboard />}
