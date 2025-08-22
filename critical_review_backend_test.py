@@ -123,11 +123,12 @@ class CriticalReviewTest:
             
             if response.status_code == 200:
                 areas = response.json().get("areas", [])
-                area9_in_kb = any(area.get("area_id") == "area9" for area in areas)
+                area9_in_kb = any(area.get("id") == "area9" for area in areas)
+                area_ids = [area.get("id") for area in areas]
                 
                 self.log_result("Knowledge Base - Area9 Recognition", 
                               area9_in_kb,
-                              f"Area9 found in knowledge base: {area9_in_kb}. Total areas: {len(areas)}",
+                              f"Area9 found in knowledge base: {area9_in_kb}. Found areas: {area_ids}",
                               response_time)
             else:
                 self.log_result("Knowledge Base - Area9 Recognition", False,
