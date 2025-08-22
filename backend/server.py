@@ -4858,9 +4858,9 @@ async def get_knowledge_base_content(area_id: str, current=Depends(require_user)
         "area9": "Supply Chain Management & Vendor Relations"
     }
     
-    # Check access - only test accounts get free access
+    # Check access - only test accounts (except providers) get free access
     has_access = False
-    if current["email"].endswith("@polaris.example.com"):
+    if current["email"].endswith("@polaris.example.com") and current["role"] != "provider":
         has_access = True
     else:
         # Check if user has paid for access
