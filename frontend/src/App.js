@@ -9069,7 +9069,7 @@ function ServiceCreatePage() {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {gigData.tags.map((tag, index) => (
+                {serviceData.tags.map((tag, index) => (
                   <span
                     key={index}
                     className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
