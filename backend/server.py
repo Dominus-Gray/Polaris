@@ -4971,7 +4971,7 @@ async def download_kb_resource(resource_id: str, current=Depends(require_user)):
     """Download knowledge base resource as PDF or document"""
     try:
         # Check access permissions
-        has_access = current["email"].endswith("@polaris.example.com")
+        has_access = current["email"].endswith("@polaris.example.com") and current["role"] != "provider"
         if not has_access:
             access = await db.user_access.find_one({"user_id": current["id"]})
             if access and access.get("knowledge_base_access", {}).get("all_areas"):
