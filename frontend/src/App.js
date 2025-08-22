@@ -7478,6 +7478,11 @@ function AppShell(){
           <Route path="/business/profile" element={<BusinessProfileForm />} />
           <Route path="/service-request" element={<ServiceRequestPage />} />
           <Route path="/provider/proposals" element={<ProviderProposalsPage />} />
+          <Route path="/assessment/results/:sessionId" element={<AssessmentResultsPage />} />
+          <Route path="/assessment/action-plan/:sessionId" element={<ActionPlanPage />} />
+          <Route path="/readiness-dashboard" element={<ReadinessDashboard />} />
+          <Route path="/tools/capability-statement" element={<CapabilityStatementBuilder />} />
+          <Route path="/certifications" element={<CertificationCenter />} />
           <Route path="/provider/services/create" element={<ServiceCreatePage />} />
           <Route path="/provider/services/edit/:serviceId" element={<ServiceEditPage />} />
           <Route path="/provider/orders/:orderId" element={<OrderManagementPage />} />
