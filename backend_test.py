@@ -239,7 +239,7 @@ class FinalVerificationTester:
                             "request_id": request_id,
                             "provider_id": provider_id
                         }
-                        response = self.session.post(f"{BACKEND_URL}/engagements", 
+                        response = self.session.post(f"{BACKEND_URL}/engagements/create", 
                                                    headers=client_headers,
                                                    json=engagement_data)
                         if response.status_code == 200:
