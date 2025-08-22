@@ -9094,13 +9094,13 @@ function ServiceCreatePage() {
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Service Packages</h2>
           
           <div className="space-y-6">
-            {gigData.packages.map((pkg, index) => (
+            {serviceData.packages.map((pkg, index) => (
               <div key={index} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-medium text-slate-900 capitalize">
                     {pkg.package_type} Package
                   </h3>
-                  {gigData.packages.length > 1 && (
+                  {serviceData.packages.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removePackage(index)}
