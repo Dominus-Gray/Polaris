@@ -6996,8 +6996,11 @@ async def system_health_check():
     try:
         # Check database connectivity
         db_status = "healthy"
+        db_response_time = 0
         try:
+            start_time = time.time()
             await db.users.count_documents({}, limit=1)
+            db_response_time = round((time.time() - start_time) * 1000, 2)  # ms
         except:
             db_status = "unhealthy"
         
@@ -7007,13 +7010,29 @@ async def system_health_check():
         # Check Stripe integration
         stripe_status = "healthy" if STRIPE_AVAILABLE else "unavailable"
         
+        # Calculate overall health score
+        healthy_components = sum([
+            1 if db_status == "healthy" else 0,
+            1 if ai_status == "healthy" else 0,
+            1 if stripe_status == "healthy" else 0
+        ])
+        overall_score = round((healthy_components / 3) * 100)
+        
         return {
-            "status": "healthy",
+            "status": "healthy" if overall_score >= 67 else "degraded" if overall_score >= 34 else "unhealthy",
+            "overall_score": overall_score,
             "timestamp": datetime.utcnow().isoformat(),
             "components": {
-                "database": db_status,
-                "ai_integration": ai_status,
-                "payment_integration": stripe_status
+                "database": {
+                    "status": db_status,
+                    "response_time_ms": db_response_time
+                },
+                "ai_integration": {
+                    "status": ai_status
+                },
+                "payment_integration": {
+                    "status": stripe_status
+                }
             },
             "version": "1.0.0"
         }
@@ -7022,6 +7041,79 @@ async def system_health_check():
         logger.error(f"Health check failed: {e}")
         return {
             "status": "unhealthy",
+            "overall_score": 0,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+# Performance Metrics Endpoint
+@api.get("/system/metrics")
+async def system_performance_metrics():
+    """Detailed system performance metrics"""
+    try:
+        # Database performance metrics
+        db_metrics = {}
+        try:
+            start_time = time.time()
+            
+            # Count active users (logged in within 24 hours)
+            recent_cutoff = datetime.utcnow() - timedelta(hours=24)
+            active_users = await db.users.count_documents({
+                "last_login": {"$gte": recent_cutoff}
+            })
+            
+            # Count total assessments 
+            total_assessments = await db.assessment_sessions.count_documents({})
+            
+            # Count service requests
+            total_requests = await db.service_requests.count_documents({})
+            
+            # Count marketplace gigs
+            total_gigs = await db.service_gigs.count_documents({})
+            
+            db_query_time = round((time.time() - start_time) * 1000, 2)
+            
+            db_metrics = {
+                "query_response_time_ms": db_query_time,
+                "active_users_24h": active_users,
+                "total_assessments": total_assessments,
+                "total_service_requests": total_requests,
+                "total_marketplace_gigs": total_gigs
+            }
+        except Exception as e:
+            db_metrics = {"error": f"Database metrics unavailable: {str(e)}"}
+        
+        # System resource metrics (basic implementation)
+        try:
+            import psutil
+            cpu_percent = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            
+            resource_metrics = {
+                "cpu_usage_percent": cpu_percent,
+                "memory_usage_percent": memory.percent,
+                "disk_usage_percent": (disk.used / disk.total) * 100,
+                "available_memory_mb": round(memory.available / 1024 / 1024)
+            }
+        except ImportError:
+            resource_metrics = {"note": "psutil not available - install for detailed system metrics"}
+        
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "database_metrics": db_metrics,
+            "system_resources": resource_metrics,
+            "performance_targets": {
+                "api_response_target_ms": 500,
+                "db_query_target_ms": 200,
+                "cpu_usage_target_percent": 70,
+                "memory_usage_target_percent": 80
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Performance metrics failed: {e}")
+        return {
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat()
         }
