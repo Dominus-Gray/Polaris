@@ -64,7 +64,8 @@ DATA_STANDARDS = {
         "area5": "Technology & Security Infrastructure",
         "area6": "Human Resources & Capacity",
         "area7": "Performance Tracking & Reporting",
-        "area8": "Risk Management & Business Continuity"
+        "area8": "Risk Management & Business Continuity",
+        "area9": "Supply Chain Management & Vendor Relations"
     },
     "budget_ranges": [
         "under-500", "500-1500", "1500-5000", "5000-15000", "over-15000"
