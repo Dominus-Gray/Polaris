@@ -5480,6 +5480,10 @@ function AgencyHome(){
   const [impact, setImpact] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionTiers, setSubscriptionTiers] = useState([]);
+  const [usageData, setUsageData] = useState(null);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
   
   useEffect(()=>{ 
     const load=async()=>{ 
@@ -5489,6 +5493,20 @@ function AgencyHome(){
         const certs = await axios.get(`${API}/agency/certificates`);
         setCertificates(certs.data.certificates || []);
       }catch{}
+      
+      // Load subscription data
+      try{
+        const [subscriptionRes, tiersRes, usageRes] = await Promise.all([
+          axios.get(`${API}/agency/subscription/current`),
+          axios.get(`${API}/agency/subscription/tiers`),
+          axios.get(`${API}/agency/subscription/usage`)
+        ]);
+        setSubscription(subscriptionRes.data);
+        setSubscriptionTiers(tiersRes.data.tiers);
+        setUsageData(usageRes.data);
+      }catch(e){
+        console.error('Failed to load subscription data:', e);
+      }
     }; 
     load(); 
   },[]);
