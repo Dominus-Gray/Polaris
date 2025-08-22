@@ -348,22 +348,13 @@ class ProviderAuditTest:
         try:
             start_time = time.time()
             provider_headers = self.get_headers("provider")
-            response = requests.get(f"{BACKEND_URL}/business-profiles", headers=provider_headers)
+            response = requests.get(f"{BACKEND_URL}/business/profile/me", headers=provider_headers)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
                 business_profile = response.json()
                 self.log_result("Business Profile Integration", True, 
-                              f"Business profile accessible: {list(business_profile.keys()) if isinstance(business_profile, dict) else 'list data'}", response_time)
-            elif response.status_code == 404:
-                # Try alternative endpoint
-                response2 = requests.get(f"{BACKEND_URL}/provider/business-profile", headers=provider_headers)
-                if response2.status_code == 200:
-                    self.log_result("Business Profile Integration", True, 
-                                  f"Business profile accessible via provider endpoint", time.time() - start_time)
-                else:
-                    self.log_result("Business Profile Integration", False, 
-                                  f"Business profile not accessible - Status: {response.status_code}", response_time)
+                              f"Business profile accessible: {list(business_profile.keys()) if isinstance(business_profile, dict) else 'profile data available'}", response_time)
             else:
                 self.log_result("Business Profile Integration", False, 
                               f"Status: {response.status_code}, Response: {response.text}", response_time)
