@@ -399,7 +399,7 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "Assessment Gap Flow Backend Testing"
+    - "AI Assistant Improvements Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "critical_first"
