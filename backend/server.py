@@ -5522,7 +5522,7 @@ async def upgrade_subscription(request: UpdateSubscriptionRequest, current=Depen
         tier = SUBSCRIPTION_TIERS[request.tier_id]
         
         # Calculate price based on billing cycle
-        price = tier["annual_price"] if request.billing_cycle == "annual" else tier["monthly_price"]
+        price = tier.annual_price if request.billing_cycle == "annual" else tier.monthly_price
         
         # For now, simulate successful upgrade (in production, integrate with Stripe)
         subscription_id = str(uuid.uuid4())
