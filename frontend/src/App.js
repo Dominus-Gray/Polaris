@@ -5300,6 +5300,7 @@ function NavigatorHome(){
         </div>
       </div>
     </div>
+  );
 }
 
 function NavigatorAnalyticsPage(){
