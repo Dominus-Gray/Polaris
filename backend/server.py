@@ -5476,270 +5476,208 @@ async def list_client_certificates(current=Depends(require_role("client"))):
 
 # ================== AGENCY SUBSCRIPTION MANAGEMENT ==================
 
-@api.get("/agency/subscription/tiers")
-async def get_subscription_tiers():
-    """Get all available subscription tiers with pricing and features"""
-    return {"tiers": list(SUBSCRIPTION_TIERS.values())}
+# ================== AGENCY PER-ASSESSMENT PRICING SYSTEM ==================
 
-@api.get("/agency/subscription/current")
-async def get_current_subscription(current=Depends(require_role("agency"))):
-    """Get current agency subscription details"""
-    try:
-        subscription = await db.agency_subscriptions.find_one({"agency_user_id": current["id"]})
-        
-        if not subscription:
-            # Return default/trial subscription
-            return {
-                "subscription": {
-                    "tier_id": "starter",
-                    "tier_name": "Starter (Trial)",
-                    "status": "trial",
-                    "client_limit": 5,  # Trial limit
-                    "license_codes_per_month": 10,  # Trial limit
-                    "trial_days_remaining": 14,
-                    "current_usage": {
-                        "clients_active": 0,
-                        "license_codes_used_this_month": 0
-                    }
-                },
-                "tier_details": SUBSCRIPTION_TIERS["starter"]
-            }
-        
-        # Get current usage
-        current_month = datetime.utcnow().strftime("%Y-%m")
-        usage = await db.subscription_usage.find_one({
-            "agency_user_id": current["id"],
-            "month": current_month
-        }) or {"clients_active": 0, "license_codes_generated": 0}
-        
-        tier_details = SUBSCRIPTION_TIERS.get(subscription["tier_id"], SUBSCRIPTION_TIERS["starter"])
-        
-        return {
-            "subscription": {
-                **subscription,
-                "tier_name": tier_details["name"],
-                "current_usage": {
-                    "clients_active": usage["clients_active"],
-                    "license_codes_used_this_month": usage["license_codes_generated"]
-                }
-            },
-            "tier_details": tier_details
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting subscription: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get subscription details")
+@api.get("/agency/pricing/tiers")
+async def get_pricing_tiers():
+    """Get all available per-assessment pricing tiers"""
+    return {"tiers": list(ASSESSMENT_PRICING_TIERS.values())}
 
-@api.post("/agency/subscription/upgrade")
-async def upgrade_subscription(request: UpdateSubscriptionRequest, current=Depends(require_role("agency"))):
-    """Upgrade or change agency subscription tier"""
+@api.get("/agency/credits/balance")
+async def get_credit_balance(current=Depends(require_role("agency"))):
+    """Get current assessment credit balance for agency"""
     try:
-        if request.tier_id not in SUBSCRIPTION_TIERS:
-            raise HTTPException(status_code=400, detail="Invalid subscription tier")
-        
-        tier = SUBSCRIPTION_TIERS[request.tier_id]
-        
-        # Calculate price based on billing cycle
-        price = tier["annual_price"] if request.billing_cycle == "annual" else tier["monthly_price"]
-        
-        # For now, simulate successful upgrade (in production, integrate with Stripe)
-        subscription_id = str(uuid.uuid4())
-        now = datetime.utcnow()
-        
-        # Calculate period end properly
-        if request.billing_cycle == "annual":
-            if now.month == 2 and now.day == 29:  # Handle leap year edge case
-                period_end = now.replace(year=now.year + 1, day=28)
-            else:
-                period_end = now.replace(year=now.year + 1)
-        else:
-            # Handle month rollover
-            if now.month == 12:
-                period_end = now.replace(year=now.year + 1, month=1)
-            else:
-                # Handle different month lengths
-                next_month = now.month + 1
-                try:
-                    period_end = now.replace(month=next_month)
-                except ValueError:  # Day doesn't exist in next month (e.g., Jan 31 -> Feb 31)
-                    # Go to last day of next month
-                    import calendar
-                    last_day = calendar.monthrange(now.year, next_month)[1]
-                    period_end = now.replace(month=next_month, day=min(now.day, last_day))
-        
-        subscription_doc = {
-            "_id": subscription_id,
-            "subscription_id": subscription_id,
+        credits = await db.assessment_credits.find({
             "agency_user_id": current["id"],
-            "tier_id": request.tier_id,
             "status": "active",
-            "billing_cycle": request.billing_cycle,
-            "current_period_start": now,
-            "current_period_end": period_end,
-            "client_count": 0,
-            "license_codes_used_this_month": 0,
-            "stripe_subscription_id": f"sub_mock_{subscription_id[:8]}",
-            "created_at": now,
-            "updated_at": now
-        }
+            "remaining_amount": {"$gt": 0}
+        }).to_list(100)
         
-        # Upsert subscription
-        await db.agency_subscriptions.replace_one(
-            {"agency_user_id": current["id"]},
-            subscription_doc,
-            upsert=True
-        )
+        total_credits = sum(credit["remaining_amount"] for credit in credits)
         
-        return {
-            "success": True,
-            "subscription": subscription_doc,
-            "tier_details": tier,
-            "message": f"Successfully upgraded to {tier['name']} plan"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error upgrading subscription: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to upgrade subscription: {str(e)}")
-
-@api.get("/agency/subscription/usage")
-async def get_subscription_usage(current=Depends(require_role("agency")), months: int = 6):
-    """Get subscription usage analytics over time"""
-    try:
-        # Get usage for last X months
-        usage_data = []
-        current_date = datetime.utcnow()
-        
-        for i in range(months):
-            # Calculate month properly
-            if current_date.month - i <= 0:
-                year = current_date.year - 1
-                month = 12 + (current_date.month - i)
-            else:
-                year = current_date.year
-                month = current_date.month - i
-            
-            month_str = f"{year:04d}-{month:02d}"
-            
-            usage = await db.subscription_usage.find_one({
-                "agency_user_id": current["id"],
-                "month": month_str
-            })
-            
-            if usage:
-                usage_data.append({
-                    "month": month_str,
-                    "clients_active": usage.get("clients_active", 0),
-                    "license_codes_generated": usage.get("license_codes_generated", 0),
-                    "api_calls": usage.get("api_calls", 0)
-                })
-            else:
-                usage_data.append({
-                    "month": month_str,
-                    "clients_active": 0,
-                    "license_codes_generated": 0,
-                    "api_calls": 0
-                })
-        
-        # Get current subscription limits
-        subscription = await db.agency_subscriptions.find_one({"agency_user_id": current["id"]})
-        tier_limits = SUBSCRIPTION_TIERS.get(subscription["tier_id"] if subscription else "starter", SUBSCRIPTION_TIERS["starter"])
-        
-        return {
-            "usage_history": list(reversed(usage_data)),
-            "current_limits": {
-                "client_limit": tier_limits["client_limit"],
-                "license_codes_per_month": tier_limits["license_codes_per_month"]
-            },
-            "current_tier": subscription["tier_id"] if subscription else "trial"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting usage: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get usage data")
-
-@api.post("/agency/subscription/usage/track")
-async def track_usage(usage_type: str, current=Depends(require_role("agency"))):
-    """Track usage events (called internally by other endpoints)"""
-    try:
+        # Get recent usage
         current_month = datetime.utcnow().strftime("%Y-%m")
-        
-        # Get or create usage record for current month
-        usage_doc = await db.subscription_usage.find_one({
+        usage = await db.assessment_usage.find_one({
             "agency_user_id": current["id"],
             "month": current_month
         })
         
-        if not usage_doc:
-            usage_doc = {
-                "_id": str(uuid.uuid4()),
-                "agency_user_id": current["id"],
-                "month": current_month,
-                "clients_active": 0,
-                "license_codes_generated": 0,
-                "api_calls": 0,
-                "storage_used_mb": 0
+        used_this_month = usage["assessments_completed"] if usage else 0
+        
+        return {
+            "total_credits": total_credits,
+            "used_this_month": used_this_month,
+            "credits_breakdown": [
+                {
+                    "tier": credit["tier_id"],
+                    "remaining": credit["remaining_amount"],
+                    "price_per_credit": credit["price_per_credit"] / 100,
+                    "purchased_date": credit["purchase_date"]
+                } for credit in credits
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting credit balance: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get credit balance")
+
+@api.post("/agency/credits/purchase")
+async def purchase_assessment_credits(request: PurchaseCreditsRequest, current=Depends(require_role("agency"))):
+    """Purchase assessment credits for agency"""
+    try:
+        if request.tier_id not in ASSESSMENT_PRICING_TIERS:
+            raise HTTPException(status_code=400, detail="Invalid pricing tier")
+        
+        tier = ASSESSMENT_PRICING_TIERS[request.tier_id]
+        
+        # Check minimum volume requirements
+        if request.credit_amount < tier["monthly_minimum"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"{tier['name']} tier requires minimum {tier['monthly_minimum']} credits"
+            )
+        
+        total_price = request.credit_amount * tier["per_assessment_price"]  # Price in cents
+        
+        # Create credit record
+        credit_id = str(uuid.uuid4())
+        credit_doc = {
+            "_id": credit_id,
+            "credit_id": credit_id,
+            "agency_user_id": current["id"],
+            "purchased_amount": request.credit_amount,
+            "remaining_amount": request.credit_amount,
+            "tier_id": request.tier_id,
+            "price_per_credit": tier["per_assessment_price"],
+            "purchase_date": datetime.utcnow(),
+            "expiry_date": datetime.utcnow().replace(year=datetime.utcnow().year + 1),  # 1 year expiry
+            "status": "active"
+        }
+        
+        await db.assessment_credits.insert_one(credit_doc)
+        
+        # In production, integrate with Stripe for actual payment
+        return {
+            "success": True,
+            "credit_id": credit_id,
+            "credits_purchased": request.credit_amount,
+            "total_cost": total_price / 100,  # Convert to dollars
+            "price_per_credit": tier["per_assessment_price"] / 100,
+            "tier": tier["name"],
+            "expires_at": credit_doc["expiry_date"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error purchasing credits: {e}")
+        raise HTTPException(status_code=500, detail="Failed to purchase credits")
+
+@api.post("/agency/assessment/complete")
+async def complete_assessment_billing(client_user_id: str, assessment_session_id: str, current=Depends(require_role("agency"))):
+    """Mark assessment as complete and deduct credit"""
+    try:
+        # Check if agency has available credits
+        credits = await db.assessment_credits.find({
+            "agency_user_id": current["id"],
+            "status": "active", 
+            "remaining_amount": {"$gt": 0}
+        }).sort("purchase_date", 1).to_list(100)  # FIFO usage
+        
+        if not credits:
+            raise HTTPException(status_code=402, detail="No assessment credits available. Please purchase credits to continue.")
+        
+        # Use oldest credits first (FIFO)
+        credit = credits[0]
+        
+        # Deduct one credit
+        await db.assessment_credits.update_one(
+            {"_id": credit["_id"]},
+            {
+                "$inc": {"remaining_amount": -1},
+                "$set": {"status": "used" if credit["remaining_amount"] == 1 else "active"}
             }
+        )
         
-        # Update usage based on type
-        if usage_type == "license_code":
-            usage_doc["license_codes_generated"] += 1
-        elif usage_type == "api_call":
-            usage_doc["api_calls"] += 1
-        
-        # Update or insert usage record
-        await db.subscription_usage.replace_one(
+        # Track usage
+        current_month = datetime.utcnow().strftime("%Y-%m")
+        await db.assessment_usage.update_one(
             {"agency_user_id": current["id"], "month": current_month},
-            usage_doc,
+            {
+                "$inc": {"assessments_completed": 1},
+                "$setOnInsert": {
+                    "_id": str(uuid.uuid4()),
+                    "agency_user_id": current["id"],
+                    "month": current_month
+                }
+            },
             upsert=True
         )
         
-        return {"success": True, "updated_usage": usage_doc}
+        # Create billing record
+        billing_record = {
+            "_id": str(uuid.uuid4()),
+            "agency_user_id": current["id"],
+            "client_user_id": client_user_id,
+            "assessment_session_id": assessment_session_id,
+            "credit_id": credit["_id"],
+            "amount_charged": credit["price_per_credit"],
+            "tier_id": credit["tier_id"],
+            "completed_at": datetime.utcnow()
+        }
+        
+        await db.assessment_billing.insert_one(billing_record)
+        
+        return {
+            "success": True,
+            "assessment_billed": True,
+            "remaining_credits": credit["remaining_amount"] - 1,
+            "amount_charged": credit["price_per_credit"] / 100
+        }
         
     except Exception as e:
-        logger.error(f"Error tracking usage: {e}")
-        raise HTTPException(status_code=500, detail="Failed to track usage")
+        logger.error(f"Error completing assessment billing: {e}")
+        raise HTTPException(status_code=500, detail="Failed to complete assessment billing")
 
-# Helper function to check subscription limits
-async def check_subscription_limits(agency_user_id: str, action_type: str) -> bool:
-    """Check if agency can perform action based on subscription limits"""
+@api.get("/agency/billing/history")
+async def get_billing_history(current=Depends(require_role("agency")), months: int = 6):
+    """Get assessment billing history"""
     try:
-        subscription = await db.agency_subscriptions.find_one({"agency_user_id": agency_user_id})
+        # Get billing records for last X months
+        start_date = datetime.utcnow() - timedelta(days=30 * months)
         
-        if not subscription:
-            # Trial limits
-            if action_type == "license_code":
-                current_month = datetime.utcnow().strftime("%Y-%m")
-                usage = await db.subscription_usage.find_one({
-                    "agency_user_id": agency_user_id,
-                    "month": current_month
-                })
-                return (usage.get("license_codes_generated", 0) if usage else 0) < 10  # Trial limit
-            return True
+        billing_records = await db.assessment_billing.find({
+            "agency_user_id": current["id"],
+            "completed_at": {"$gte": start_date}
+        }).sort("completed_at", -1).to_list(1000)
         
-        tier = SUBSCRIPTION_TIERS.get(subscription["tier_id"])
-        if not tier:
-            return False
+        # Group by month
+        monthly_totals = {}
+        for record in billing_records:
+            month_key = record["completed_at"].strftime("%Y-%m")
+            if month_key not in monthly_totals:
+                monthly_totals[month_key] = {
+                    "month": month_key,
+                    "assessments_count": 0,
+                    "total_cost": 0,
+                    "average_cost": 0
+                }
+            
+            monthly_totals[month_key]["assessments_count"] += 1
+            monthly_totals[month_key]["total_cost"] += record["amount_charged"]
         
-        current_month = datetime.utcnow().strftime("%Y-%m")
-        usage = await db.subscription_usage.find_one({
-            "agency_user_id": agency_user_id,
-            "month": current_month
-        }) or {"license_codes_generated": 0, "clients_active": 0}
+        # Calculate averages
+        for month_data in monthly_totals.values():
+            month_data["average_cost"] = month_data["total_cost"] / month_data["assessments_count"]
+            month_data["total_cost"] = month_data["total_cost"] / 100  # Convert to dollars
+            month_data["average_cost"] = month_data["average_cost"] / 100
         
-        if action_type == "license_code":
-            if tier["license_codes_per_month"] == -1:  # Unlimited
-                return True
-            return usage["license_codes_generated"] < tier["license_codes_per_month"]
-        elif action_type == "client":
-            if tier["client_limit"] == -1:  # Unlimited
-                return True
-            return usage["clients_active"] < tier["client_limit"]
-        
-        return True
+        return {
+            "billing_history": list(monthly_totals.values()),
+            "total_records": len(billing_records)
+        }
         
     except Exception as e:
-        logger.error(f"Error checking limits: {e}")
-        return False
+        logger.error(f"Error getting billing history: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get billing history")
 
 
 @api.get("/health")
