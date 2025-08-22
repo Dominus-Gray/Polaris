@@ -7204,7 +7204,208 @@ async def get_readiness_dashboard(
         logger.error(f"Error getting readiness dashboard: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve dashboard data")
 
-# Capability Statement Builder Endpoints
+# Provider Verification System Endpoints
+@api.get("/provider/verification/status")
+async def get_verification_status(current=Depends(get_current_user)):
+    """Get provider verification status"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only providers can access verification status")
+        
+        verification = await db.provider_verifications.find_one({"user_id": current["user_id"]})
+        
+        if not verification:
+            return {
+                "status": "unverified",
+                "verification_data": None,
+                "submitted_at": None
+            }
+        
+        return {
+            "status": verification.get("status", "pending"),
+            "verification_data": verification.get("verification_data"),
+            "submitted_at": verification.get("submitted_at"),
+            "reviewed_at": verification.get("reviewed_at"),
+            "notes": verification.get("review_notes")
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting verification status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve verification status")
+
+@api.post("/provider/verification/upload")
+async def upload_verification_document(
+    file: UploadFile,
+    document_type: str,
+    current=Depends(get_current_user)
+):
+    """Upload verification document"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only providers can upload verification documents")
+        
+        # In a real implementation, you would upload to cloud storage (S3, etc.)
+        # For now, we'll simulate the upload
+        
+        allowed_types = ["business_license", "insurance_certificate", "tax_documents"]
+        if document_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid document type")
+        
+        # Simulate file upload and return mock URL
+        file_url = f"/uploads/verification/{current['user_id']}/{document_type}_{file.filename}"
+        
+        return {
+            "success": True,
+            "file_url": file_url,
+            "document_type": document_type,
+            "filename": file.filename
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading verification document: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload document")
+
+@api.post("/provider/verification/submit")
+async def submit_verification(
+    verification_data: Dict[str, Any],
+    current=Depends(get_current_user)
+):
+    """Submit provider verification for review"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only providers can submit verification")
+        
+        verification = {
+            "user_id": current["user_id"],
+            "verification_data": verification_data,
+            "status": "pending",
+            "submitted_at": datetime.utcnow(),
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.provider_verifications.update_one(
+            {"user_id": current["user_id"]},
+            {"$set": verification},
+            upsert=True
+        )
+        
+        # Update user profile to reflect verification submission
+        await db.users.update_one(
+            {"_id": current["user_id"]},
+            {"$set": {"verification_status": "pending", "verification_submitted_at": datetime.utcnow()}}
+        )
+        
+        return {
+            "success": True,
+            "message": "Verification submitted successfully",
+            "status": "pending"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting verification: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit verification")
+
+# Revenue Analytics Endpoints
+@api.get("/provider/revenue/analytics")
+async def get_revenue_analytics(current=Depends(get_current_user)):
+    """Get provider revenue analytics and performance metrics"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only providers can access revenue analytics")
+        
+        # Get provider's orders and calculate analytics
+        orders = await db.service_orders.find({"provider_id": current["user_id"]}).to_list(length=None)
+        
+        # Calculate metrics (mock data for demo)
+        current_month_revenue = 8500
+        last_month_revenue = 7200
+        year_to_date = 45600
+        projected_annual = 102000
+        
+        # Get active proposals
+        active_proposals = await db.service_requests.count_documents({
+            "responded_providers": current["user_id"],
+            "status": {"$in": ["open", "in_progress"]}
+        })
+        
+        return {
+            "current_month_revenue": current_month_revenue,
+            "last_month_revenue": last_month_revenue,
+            "year_to_date": year_to_date,
+            "projected_annual": projected_annual,
+            "average_project_value": 2800,
+            "conversion_rate": 24,
+            "response_rate": 78,
+            "client_satisfaction": 4.7,
+            "active_proposals": active_proposals,
+            "won_proposals": 8,
+            "lost_proposals": 4,
+            "pipeline_value": 34000,
+            "monthly_trends": [
+                {"month": "Jan", "revenue": 6200, "projects": 3},
+                {"month": "Feb", "revenue": 7800, "projects": 4},
+                {"month": "Mar", "revenue": 8500, "projects": 5},
+                {"month": "Apr", "revenue": 9200, "projects": 4},
+                {"month": "May", "revenue": 7600, "projects": 3},
+                {"month": "Jun", "revenue": 8500, "projects": 4}
+            ],
+            "top_services": [
+                {"name": "Business Formation", "revenue": 18500, "projects": 12, "avg_value": 1542},
+                {"name": "Financial Planning", "revenue": 15200, "projects": 8, "avg_value": 1900},
+                {"name": "Legal Compliance", "revenue": 12800, "projects": 6, "avg_value": 2133}
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting revenue analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve revenue analytics")
+
+@api.get("/provider/revenue/market-analysis")
+async def get_market_analysis(current=Depends(get_current_user)):
+    """Get market analysis and pricing recommendations"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only providers can access market analysis")
+        
+        # Mock market analysis data
+        return {
+            "market_rates": {
+                "Business Formation": {"min": 800, "max": 3500, "average": 1650, "your_rate": 1542},
+                "Financial Planning": {"min": 1200, "max": 5000, "average": 2200, "your_rate": 1900},
+                "Legal Compliance": {"min": 1500, "max": 4500, "average": 2400, "your_rate": 2133}
+            },
+            "demand_trends": {
+                "Business Formation": {"trend": "increasing", "demand_score": 85, "competition": "moderate"},
+                "Financial Planning": {"trend": "stable", "demand_score": 72, "competition": "high"},
+                "Legal Compliance": {"trend": "increasing", "demand_score": 91, "competition": "low"}
+            },
+            "optimization_opportunities": [
+                {
+                    "service": "Legal Compliance",
+                    "current_rate": 2133,
+                    "suggested_rate": 2400,
+                    "potential_increase": 12.5,
+                    "reasoning": "Below market average with high demand and low competition"
+                },
+                {
+                    "service": "Business Formation",
+                    "current_rate": 1542,
+                    "suggested_rate": 1800,
+                    "potential_increase": 16.7,
+                    "reasoning": "Strong demand trend and moderate competition allow for premium pricing"
+                }
+            ],
+            "seasonal_insights": {
+                "Q1": {"revenue_multiplier": 1.2, "best_services": ["Business Formation", "Tax Planning"]},
+                "Q2": {"revenue_multiplier": 0.9, "best_services": ["Financial Planning", "Legal Compliance"]},
+                "Q3": {"revenue_multiplier": 0.8, "best_services": ["HR Services", "Performance Management"]},
+                "Q4": {"revenue_multiplier": 1.3, "best_services": ["Tax Planning", "Year-end Financial"]}
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting market analysis: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve market analysis")
 @api.post("/tools/capability-statement/generate")
 async def generate_capability_content(
     request_data: Dict[str, Any],
