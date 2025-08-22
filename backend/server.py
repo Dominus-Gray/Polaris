@@ -8062,7 +8062,86 @@ class ReviewOrderRequest(BaseModel):
     rating: int = Field(..., ge=1, le=5)
     comment: str = Field(..., min_length=10, max_length=500)
 
-@api.post("/marketplace/gig/create")
+@api.post("/marketplace/service/create")
+async def create_service_offering(service_data: Dict[str, Any], current=Depends(get_current_user)):
+    """Create a new service offering for providers"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only service providers can create services")
+        
+        service = {
+            "service_id": str(uuid.uuid4()),
+            "provider_id": current["user_id"],
+            "title": service_data["title"],
+            "description": service_data["description"],
+            "category": service_data["category"],
+            "subcategory": service_data.get("subcategory"),
+            "tags": service_data.get("tags", []),
+            "packages": service_data["packages"],
+            "requirements": service_data.get("requirements", []),
+            "status": "active",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.service_offerings.insert_one(service)
+        
+        return {
+            "success": True,
+            "service_id": service["service_id"],
+            "message": "Service offering created successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating service offering: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create service offering")
+
+@api.get("/marketplace/services/search")
+async def search_service_offerings(
+    query: str = Query(None),
+    category: str = Query(None),
+    limit: int = Query(20, le=100),
+    offset: int = Query(0, ge=0)
+):
+    """Search available service offerings"""
+    try:
+        filters = {"status": "active"}
+        
+        if category:
+            filters["category"] = category
+            
+        if query:
+            filters["$text"] = {"$search": query}
+        
+        services = await db.service_offerings.find(filters).skip(offset).limit(limit).to_list(length=None)
+        
+        # Add provider information
+        for service in services:
+            provider = await db.users.find_one({"_id": service["provider_id"]})
+            if provider:
+                service["provider_name"] = provider.get("business_profile", {}).get("company_name", "Professional Provider")
+                service["provider_rating"] = provider.get("rating", 4.5)
+        
+        return {"services": services, "total": len(services)}
+        
+    except Exception as e:
+        logger.error(f"Error searching service offerings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search services")
+
+@api.get("/marketplace/services/my")
+async def get_my_service_offerings(current=Depends(get_current_user)):
+    """Get current user's service offerings"""
+    try:
+        if current["role"] != "provider":
+            raise HTTPException(status_code=403, detail="Only service providers can access this endpoint")
+        
+        services = await db.service_offerings.find({"provider_id": current["user_id"]}).to_list(length=None)
+        
+        return {"services": services}
+        
+    except Exception as e:
+        logger.error(f"Error getting my service offerings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve service offerings")
 async def create_service_gig(request: CreateGigRequest, current=Depends(require_role("provider"))):
     """Create a new service gig/listing"""
     try:
