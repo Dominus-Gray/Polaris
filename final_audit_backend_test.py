@@ -145,10 +145,10 @@ class FinalAuditTest:
         
         client_headers = self.get_headers("client")
         
-        # Test 2.1: Client can browse marketplace/gigs
+        # Test 2.1: Client can browse marketplace/gigs (using search endpoint)
         try:
             start_time = time.time()
-            response = requests.get(f"{BACKEND_URL}/marketplace/gigs", headers=client_headers)
+            response = requests.get(f"{BACKEND_URL}/marketplace/gigs/search", headers=client_headers)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
