@@ -79,10 +79,15 @@ class AIAssistantImprovementsTest:
                 self.log_result("Create Regular User - License Generation", False, "Failed to authenticate navigator")
                 return None
             
-            # Generate license codes
-            headers = {"Authorization": f"Bearer {navigator_token}"}
-            license_response = requests.post(f"{BACKEND_URL}/navigator/agencies/generate-licenses", 
-                                           json={"count": 1}, headers=headers)
+            # Generate license codes (need to use agency token, not navigator)
+            agency_token = self.authenticate_user("agency")
+            if not agency_token:
+                self.log_result("Create Regular User - Agency Authentication", False, "Failed to authenticate agency")
+                return None
+                
+            headers = {"Authorization": f"Bearer {agency_token}"}
+            license_response = requests.post(f"{BACKEND_URL}/agency/licenses/generate", 
+                                           json={"quantity": 1}, headers=headers)
             
             if license_response.status_code != 200:
                 self.log_result("Create Regular User - License Generation", False, 
