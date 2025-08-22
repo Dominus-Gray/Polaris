@@ -5884,12 +5884,79 @@ async def home_client(current=Depends(require_role("client"))):
 
 @api.get("/home/provider")
 async def home_provider(current=Depends(require_role("provider"))):
-    prof = await db.business_profiles.find_one({"user_id": current["id"]})
-    prov_prof = await db.provider_profiles.find_one({"user_id": current["id"]})
-    # Call get_eligible_for_provider directly
-    elig = await get_eligible_for_provider(current=current)
-    responses = await db.match_responses.count_documents({"provider_user_id": current["id"]})
-    return {"eligible_requests": len(elig.get("requests", [])), "responses": responses, "profile_complete": bool(prof and prof.get("logo_upload_id") and prov_prof)}
+    try:
+        prof = await db.business_profiles.find_one({"user_id": current["id"]})
+        prov_prof = await db.provider_profiles.find_one({"user_id": current["id"]})
+        
+        # Get marketplace analytics
+        total_gigs = await db.service_gigs.count_documents({"provider_user_id": current["id"]})
+        active_gigs = await db.service_gigs.count_documents({"provider_user_id": current["id"], "status": "active"})
+        
+        # Get order stats
+        total_orders = await db.service_orders.count_documents({"provider_user_id": current["id"]})
+        completed_orders = await db.service_orders.count_documents({"provider_user_id": current["id"], "status": "completed"})
+        
+        # Calculate earnings
+        orders = await db.service_orders.find({"provider_user_id": current["id"], "status": "completed"}).to_list(1000)
+        total_earned = sum(order["price"] for order in orders) / 100  # Convert from cents
+        
+        # Calculate this month's earnings
+        from datetime import datetime
+        current_month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        this_month_orders = await db.service_orders.find({
+            "provider_user_id": current["id"], 
+            "status": "completed",
+            "updated_at": {"$gte": current_month_start}
+        }).to_list(1000)
+        monthly_revenue = sum(order["price"] for order in this_month_orders) / 100
+        
+        # Calculate ratings
+        reviews = await db.service_reviews.find({"provider_user_id": current["id"]}).to_list(1000)
+        avg_rating = sum(r["rating"] for r in reviews) / len(reviews) if reviews else None
+        
+        # Legacy service request system (keep for backward compatibility)
+        try:
+            elig = await get_eligible_for_provider(current=current)
+            eligible_requests = len(elig.get("requests", []))
+        except:
+            eligible_requests = 0
+            
+        responses = await db.match_responses.count_documents({"provider_user_id": current["id"]})
+        
+        return {
+            # Profile completion
+            "profile_complete": bool(prof and prof.get("logo_upload_id") and prov_prof),
+            
+            # Legacy service request metrics
+            "eligible_requests": eligible_requests,
+            "responses": responses,
+            
+            # New marketplace metrics
+            "total_gigs": total_gigs,
+            "active_gigs": active_gigs,
+            "total_orders": total_orders,
+            "completed_orders": completed_orders,
+            "total_earned": total_earned,
+            "monthly_revenue": monthly_revenue,
+            "available_balance": total_earned * 0.8,  # Mock: 80% available, 20% in escrow
+            "rating": round(avg_rating, 1) if avg_rating else None,
+            "win_rate": round((completed_orders / total_orders * 100), 1) if total_orders > 0 else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting provider home data: {e}")
+        # Fallback to basic data
+        prof = await db.business_profiles.find_one({"user_id": current["id"]})
+        prov_prof = await db.provider_profiles.find_one({"user_id": current["id"]})
+        return {
+            "profile_complete": bool(prof and prof.get("logo_upload_id") and prov_prof),
+            "eligible_requests": 0,
+            "responses": 0,
+            "total_gigs": 0,
+            "active_gigs": 0,
+            "monthly_revenue": 0,
+            "rating": None
+        }
 
 @api.get("/home/navigator")
 async def home_navigator(current=Depends(require_role("navigator"))):
