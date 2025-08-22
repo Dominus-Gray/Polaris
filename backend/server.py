@@ -3562,6 +3562,11 @@ async def generate_ai_content(prompt: str, content_type: str = "guide") -> str:
 @api.get("/knowledge-base/areas")
 async def get_knowledge_base_areas(current=Depends(require_user)):
     """Get all knowledge base areas with access status and article counts"""
+    
+    # CRITICAL: Providers should NEVER have Knowledge Base access
+    if current["role"] == "provider":
+        raise create_polaris_error("POL-1005", "Service providers do not have access to Knowledge Base features", 403)
+    
     access = await db.user_access.find_one({"user_id": current["id"]})
     
     # Get actual article counts from database
