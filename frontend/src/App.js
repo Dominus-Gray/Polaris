@@ -3811,11 +3811,7 @@ function ClientHome(){
       const data = response.data;
       
       if (data.payment_status === 'paid') {
-        toast.success('Payment successful! Knowledge base unlocked.');
-        // Reload access status
-        const access = await axios.get(`${API}/knowledge-base/access`);
-        setKnowledgeBaseAccess(access.data);
-        setActiveTab('knowledge');
+        // Payment success handling
         return;
       } else if (data.status === 'expired') {
         toast.error('Payment session expired. Please try again.');
