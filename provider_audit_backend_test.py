@@ -196,7 +196,7 @@ class ProviderAuditTest:
             response_data = {
                 "request_id": self.test_data["service_request_id"],
                 "proposed_fee": 2500.00,
-                "estimated_timeline": "3 weeks",
+                "estimated_timeline": "2-4 weeks",  # Use valid timeline from DATA_STANDARDS
                 "proposal_note": "Provider audit test response - I can provide comprehensive technology security assessment with detailed recommendations and implementation roadmap."
             }
             
