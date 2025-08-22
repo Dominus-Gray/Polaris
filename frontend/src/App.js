@@ -4731,6 +4731,10 @@ function ProviderHome(){
     navigate(`/provider/orders/${orderId}`);
   };
 
+  const respondToOpportunity = (opportunityId) => {
+    navigate(`/provider/proposals?opportunity=${opportunityId}`);
+  };
+
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
   if(!data.profile_complete) return <BusinessProfileForm/>;
   
