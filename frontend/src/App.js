@@ -7081,6 +7081,7 @@ function AIAssistantCard({ areaId, context }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           <h4 className="text-lg font-semibold text-slate-900">AI Business Assistant</h4>
+          {!hasAccess && <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Premium</span>}
         </div>
         <button 
           className="text-slate-500 hover:text-slate-700"
@@ -7092,8 +7093,48 @@ function AIAssistantCard({ areaId, context }) {
         </button>
       </div>
 
-      {/* Next Best Actions */}
-      {nextActions.length > 0 && (
+      {!hasAccess ? (
+        /* Paywall Interface */
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h5 className="text-lg font-semibold text-slate-900 mb-2">AI Business Assistant</h5>
+          <p className="text-slate-600 text-sm mb-6 max-w-md mx-auto">
+            Get instant, personalized guidance from our AI consultant. Ask specific questions about this business area and receive step-by-step recommendations tailored to your needs.
+          </p>
+          <div className="space-y-2 text-left max-w-sm mx-auto mb-6">
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Unlimited AI consultations for this area
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Personalized next-step recommendations
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Compliance and regulatory guidance
+            </div>
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={unlockArea}
+          >
+            Unlock AI Assistant - $20
+          </button>
+        </div>
+      ) : (
+        /* Full AI Assistant Interface */
+        <div>
         <div className="mb-6">
           <h5 className="text-sm font-semibold text-slate-900 mb-3">💡 Next Best Actions</h5>
           <div className="space-y-2">
