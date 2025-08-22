@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 # Test Configuration
-BASE_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
+BASE_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
 PROVIDER_EMAIL = "provider.qa@polaris.example.com"
 PROVIDER_PASSWORD = "Polaris#2025!"
 

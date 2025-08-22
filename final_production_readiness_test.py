@@ -18,7 +18,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BASE_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
+BASE_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},

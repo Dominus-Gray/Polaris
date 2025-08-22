@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
 CLIENT_EMAIL = "client.qa@polaris.example.com"
 CLIENT_PASSWORD = "Polaris#2025!"
 
@@ -123,7 +123,7 @@ def test_cors_and_headers():
         preflight_response = requests.options(
             f"{BACKEND_URL}/home/client",
             headers={
-                "Origin": "https://readiness-hub-2.preview.emergentagent.com",
+                "Origin": "https://frontend-sync-3.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET",
                 "Access-Control-Request-Headers": "authorization,content-type"
             },

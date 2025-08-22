@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
 
 # Test credentials
 PROVIDER_CREDENTIALS = {

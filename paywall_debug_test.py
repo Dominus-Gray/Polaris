@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://readiness-hub-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
 
 def test_paywall_debug():
     # Create a regular user
