@@ -282,6 +282,43 @@ class ProviderBusinessProfileTester:
         except Exception as e:
             self.log_test("Provider Profile Creation", "FAIL", f"Exception: {str(e)}")
             return False
+    
+    def get_current_business_profile(self):
+        """Get current business profile to verify data"""
+        if not self.provider_token:
+            self.log_test("Get Business Profile", "FAIL", "No provider token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.provider_token}"}
+            response = self.session.get(
+                f"{BACKEND_URL}/business/profile/me",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    company_name = data.get("company_name")
+                    tax_id = data.get("tax_id")
+                    contact_name = data.get("contact_name")
+                    
+                    self.log_test("Get Business Profile", "PASS", 
+                                f"Retrieved profile: {company_name}, Tax ID: {tax_id}, Contact: {contact_name}")
+                    return True
+                else:
+                    self.log_test("Get Business Profile", "FAIL", "No profile data returned")
+                    return False
+            else:
+                error_detail = response.json().get("detail", "Unknown error") if response.content else "No response content"
+                self.log_test("Get Business Profile", "FAIL", 
+                            f"Status {response.status_code}: {error_detail}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Business Profile", "FAIL", f"Exception: {str(e)}")
+            return False
         """Get current business profile to verify data"""
         if not self.provider_token:
             self.log_test("Get Business Profile", "FAIL", "No provider token available")
