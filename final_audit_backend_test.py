@@ -200,23 +200,38 @@ class FinalAuditTest:
             gig_data = {
                 "title": "Technology Security Consulting",
                 "description": "Professional cybersecurity assessment and implementation services",
-                "area_id": "area5",
-                "price_range": "1500-3000",
-                "timeline": "2-4 weeks",
-                "location": "Texas"
+                "category": "Technology",
+                "subcategory": "Security",
+                "tags": ["cybersecurity", "compliance", "assessment"],
+                "packages": [
+                    {
+                        "name": "Basic Security Assessment",
+                        "description": "Basic cybersecurity evaluation",
+                        "price": 1500,
+                        "delivery_days": 14,
+                        "revisions": 1
+                    }
+                ],
+                "requirements": ["Business information", "Current security setup"],
+                "faq": [
+                    {
+                        "question": "What is included?",
+                        "answer": "Comprehensive security assessment and recommendations"
+                    }
+                ]
             }
-            response = requests.post(f"{BACKEND_URL}/provider/gigs", 
+            response = requests.post(f"{BACKEND_URL}/marketplace/gig/create", 
                                    headers=provider_headers, json=gig_data)
             response_time = time.time() - start_time
             
             if response.status_code == 200 or response.status_code == 201:
                 data = response.json()
-                self.test_data["gig_id"] = data.get("id") or data.get("gig_id")
+                self.test_data["gig_id"] = data.get("gig_id")
                 self.log_result("Provider Gig Creation", True, 
                               f"Gig created successfully", response_time)
             else:
                 self.log_result("Provider Gig Creation", False, 
-                              f"Gig creation failed: {response.status_code}", response_time)
+                              f"Gig creation failed: {response.status_code} - {response.text[:100]}", response_time)
                 
         except Exception as e:
             self.log_result("Provider Gig Creation", False, f"Exception: {str(e)}", 0)
