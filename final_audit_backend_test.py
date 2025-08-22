@@ -199,9 +199,9 @@ class FinalAuditTest:
             start_time = time.time()
             gig_data = {
                 "title": "Technology Security Consulting",
-                "description": "Professional cybersecurity assessment and implementation services",
-                "category": "Technology",
-                "subcategory": "Security",
+                "description": "Professional cybersecurity assessment and implementation services for small businesses",
+                "category": "tech_security",
+                "subcategory": "Cybersecurity Assessment",
                 "tags": ["cybersecurity", "compliance", "assessment"],
                 "packages": [
                     {
