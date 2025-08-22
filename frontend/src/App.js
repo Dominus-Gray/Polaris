@@ -8904,7 +8904,7 @@ function ServiceCreatePage() {
   };
 
   const updatePackage = (index, field, value) => {
-    setGigData(prev => ({
+    setServiceData(prev => ({
       ...prev,
       packages: prev.packages.map((pkg, i) => 
         i === index ? { ...pkg, [field]: value } : pkg
