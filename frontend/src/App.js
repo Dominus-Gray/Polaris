@@ -5029,29 +5029,29 @@ function ProviderHome(){
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                {myGigs.length > 0 ? myGigs.map((gig, idx) => (
+                {myServices.length > 0 ? myServices.map((service, idx) => (
                   <div key={idx} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{gig.title}</h4>
-                        <p className="text-sm text-slate-600 mb-3">{gig.description.substring(0, 150)}...</p>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{service.title}</h4>
+                        <p className="text-sm text-slate-600 mb-3">{service.description.substring(0, 150)}...</p>
                         <div className="flex items-center gap-4 text-sm text-slate-500">
-                          <span>📂 {gig.category}</span>
-                          <span>⭐ {gig.rating ? `${gig.rating}/5` : 'No ratings yet'}</span>
-                          <span>📦 {gig.packages?.length || 0} packages</span>
+                          <span>📂 {service.category}</span>
+                          <span>⭐ {service.rating ? `${service.rating}/5` : 'No ratings yet'}</span>
+                          <span>📦 {service.packages?.length || 0} packages</span>
                           <span className={`px-2 py-1 rounded-full text-xs ${
-                            gig.status === 'active' ? 'bg-green-100 text-green-800' :
-                            gig.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
+                            service.status === 'active' ? 'bg-green-100 text-green-800' :
+                            service.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {gig.status}
+                            {service.status}
                           </span>
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button 
                           className="btn btn-sm btn-secondary"
-                          onClick={() => editGig(gig.gig_id)}
+                          onClick={() => editService(service.service_id)}
                         >
                           Edit
                         </button>
@@ -5065,7 +5065,7 @@ function ProviderHome(){
                     </div>
                     
                     {/* Package pricing preview */}
-                    {gig.packages && gig.packages.length > 0 && (
+                    {service.packages && service.packages.length > 0 && (
                       <div className="border-t pt-4">
                         <div className="flex items-center gap-4 text-sm">
                           {gig.packages.map((pkg, pIdx) => (
