@@ -4772,7 +4772,7 @@ function ProviderHome(){
   const [opportunities, setOpportunities] = useState([]);
   const [activeEngagements, setActiveEngagements] = useState([]);
   const [earnings, setEarnings] = useState(null);
-  const [myGigs, setMyGigs] = useState([]);
+  const [myServices, setMyServices] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [notifications, setNotifications] = useState([]);
