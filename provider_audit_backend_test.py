@@ -618,8 +618,10 @@ class ProviderAuditTest:
             self.test_marketplace_integration,
             self.test_knowledge_base_exclusion,
             self.test_provider_profile_management,
+            self.test_provider_ui_ux_parity,
             self.test_error_handling_and_security,
-            self.test_provider_notifications_and_matching
+            self.test_provider_notifications_and_matching,
+            self.test_provider_comprehensive_workflow
         ]
         
         for test in tests:
