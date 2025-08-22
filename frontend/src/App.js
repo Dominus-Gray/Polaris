@@ -4681,19 +4681,288 @@ function ClientHome(){
 
 function ProviderHome(){
   const [data, setData] = useState(null);
+  const [opportunities, setOpportunities] = useState([]);
+  const [activeEngagements, setActiveEngagements] = useState([]);
+  const [earnings, setEarnings] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
-  useEffect(()=>{ const load=async()=>{ const {data} = await axios.get(`${API}/home/provider`); setData(data); }; load(); },[]);
+  
+  useEffect(()=>{ 
+    const load = async()=>{ 
+      try {
+        const [homeRes, opportunitiesRes, engagementsRes, earningsRes, notificationsRes] = await Promise.all([
+          axios.get(`${API}/home/provider`),
+          axios.get(`${API}/provider/opportunities`),
+          axios.get(`${API}/provider/engagements`),
+          axios.get(`${API}/provider/earnings`),
+          axios.get(`${API}/provider/notifications`)
+        ]);
+        
+        setData(homeRes.data);
+        setOpportunities(opportunitiesRes.data.opportunities || []);
+        setActiveEngagements(engagementsRes.data.engagements || []);
+        setEarnings(earningsRes.data);
+        setNotifications(notificationsRes.data.notifications || []);
+      } catch(e) {
+        console.error('Provider dashboard load error:', e);
+        // Fallback to basic home data
+        const {data} = await axios.get(`${API}/home/provider`);
+        setData(data);
+      }
+    }; 
+    load(); 
+  },[]);
+
+  const respondToOpportunity = (opportunityId) => {
+    navigate(`/provider/proposals?opportunity=${opportunityId}`);
+  };
+
+  const viewEngagement = (engagementId) => {
+    navigate(`/provider/engagements/${engagementId}`);
+  };
+
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
   if(!data.profile_complete) return <BusinessProfileForm/>;
+  
   return (
-    <div className="container mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="tile"><div className="tile-title">Eligible Requests</div><div className="tile-num">{String(data.eligible_requests || 0)}</div><div className="tile-sub">by expertise</div></div>
-        <div className="tile"><div className="tile-title">Responses</div><div className="tile-num">{String(data.responses || 0)}</div><div className="tile-sub">submitted</div></div>
-        <div className="tile"><div className="tile-title">Profile</div><div className="tile-num">✓</div><div className="tile-sub">Complete</div></div>
+    <div className="container mt-6 max-w-7xl">
+      {/* Enhanced Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-sm p-6 text-white mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">Provider Dashboard</h1>
+            <p className="text-blue-100">Manage your opportunities and grow your business</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">{data.rating || 'N/A'}</div>
+            <div className="text-blue-100 text-sm">Average Rating</div>
+          </div>
+        </div>
       </div>
-      <div className="mt-4 flex gap-2">
-        <button className="btn btn-primary" onClick={()=>navigate('/provider/proposals')}>Open Proposal Composer</button>
+
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border mb-6">
+        <div className="border-b p-4">
+          <nav className="flex gap-6">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+              { id: 'opportunities', label: 'Opportunities', icon: '💼' },
+              { id: 'engagements', label: 'Active Projects', icon: '⚡' },
+              { id: 'earnings', label: 'Earnings', icon: '💰' },
+              { id: 'profile', label: 'Profile & Portfolio', icon: '👤' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === tab.id 
+                    ? 'bg-blue-100 text-blue-800 border border-blue-300' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          {/* Dashboard Tab */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              {/* Key Performance Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="tile">
+                  <div className="tile-title">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 4h6m-6 4h6m-6 4h6" />
+                    </svg>
+                    Active Opportunities
+                  </div>
+                  <div className="tile-num">{opportunities.filter(o => o.status === 'active').length}</div>
+                  <div className="tile-sub">eligible for response</div>
+                </div>
+                
+                <div className="tile">
+                  <div className="tile-title">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                    Win Rate
+                  </div>
+                  <div className="tile-num">{data.win_rate ? `${data.win_rate}%` : 'N/A'}</div>
+                  <div className="tile-sub">proposal success</div>
+                </div>
+                
+                <div className="tile">
+                  <div className="tile-title">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Monthly Revenue
+                  </div>
+                  <div className="tile-num">{earnings?.monthly_revenue ? `$${earnings.monthly_revenue.toLocaleString()}` : '$0'}</div>
+                  <div className="tile-sub">this month</div>
+                </div>
+                
+                <div className="tile">
+                  <div className="tile-title">
+                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Active Clients
+                  </div>
+                  <div className="tile-num">{activeEngagements.length}</div>
+                  <div className="tile-sub">current projects</div>
+                </div>
+              </div>
+
+              {/* Recent Notifications */}
+              {notifications.length > 0 && (
+                <div className="bg-white border rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Notifications</h3>
+                  <div className="space-y-3">
+                    {notifications.slice(0, 3).map((notification, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-900">{notification.title}</p>
+                          <p className="text-xs text-slate-600">{notification.message}</p>
+                          <p className="text-xs text-slate-400 mt-1">{new Date(notification.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div className="bg-white border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <button 
+                    className="btn btn-primary flex items-center gap-2"
+                    onClick={() => setActiveTab('opportunities')}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Browse Opportunities
+                  </button>
+                  <button 
+                    className="btn btn-secondary flex items-center gap-2"
+                    onClick={() => navigate('/provider/proposals')}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Create Proposal
+                  </button>
+                  <button 
+                    className="btn flex items-center gap-2"
+                    onClick={() => setActiveTab('profile')}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Update Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Opportunities Tab */}
+          {activeTab === 'opportunities' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">Available Opportunities</h3>
+                <div className="flex gap-2">
+                  <select className="input text-sm">
+                    <option value="">All Areas</option>
+                    <option value="area1">Business Formation</option>
+                    <option value="area2">Financial Operations</option>
+                    <option value="area5">Technology & Security</option>
+                  </select>
+                  <select className="input text-sm">
+                    <option value="">All Budgets</option>
+                    <option value="500-1000">$500 - $1,000</option>
+                    <option value="1000-2500">$1,000 - $2,500</option>
+                    <option value="2500-5000">$2,500 - $5,000</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {opportunities.length > 0 ? opportunities.map((opp, idx) => (
+                  <div key={idx} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{opp.title}</h4>
+                        <p className="text-sm text-slate-600 mb-3">{opp.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                          <span>💼 {opp.area_name}</span>
+                          <span>💰 {opp.budget_range}</span>
+                          <span>⏱️ {opp.timeline}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-slate-500 mb-2">Posted {opp.days_ago} days ago</div>
+                        <button 
+                          className="btn btn-primary btn-sm"
+                          onClick={() => respondToOpportunity(opp.id)}
+                        >
+                          Respond
+                        </button>
+                      </div>
+                    </div>
+                    {opp.compatibility_score && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-slate-600">Match Score:</span>
+                        <div className="flex-1 bg-slate-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{width: `${opp.compatibility_score}%`}}
+                          ></div>
+                        </div>
+                        <span className="text-green-600 font-medium">{opp.compatibility_score}%</span>
+                      </div>
+                    )}
+                  </div>
+                )) : (
+                  <div className="text-center py-12 text-slate-500">
+                    <svg className="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <p className="text-lg font-medium">No opportunities available</p>
+                    <p className="text-sm">Check back later for new service requests that match your expertise</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Other tabs would be implemented similarly */}
+          {activeTab === 'engagements' && (
+            <div className="text-center py-12 text-slate-500">
+              <p>Active Engagements management coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'earnings' && (
+            <div className="text-center py-12 text-slate-500">
+              <p>Earnings analytics coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="text-center py-12 text-slate-500">
+              <p>Portfolio management coming soon...</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
