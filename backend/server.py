@@ -3528,7 +3528,8 @@ async def generate_kb_content(
             "area5": "Technology & Security Infrastructure",
             "area6": "Human Resources & Capacity",
             "area7": "Performance Tracking & Reporting",
-            "area8": "Risk Management & Business Continuity"
+            "area8": "Risk Management & Business Continuity",
+            "area9": "Supply Chain Management & Vendor Relations"
         }
         
         area_name = area_names.get(area_id, "Unknown Area")
