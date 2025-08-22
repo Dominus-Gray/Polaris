@@ -7568,6 +7568,406 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 # ---------------- Procurement Opportunities (Phase: Bigger Bets) ----------------
 
+# ================== MARKETPLACE SERVICE PROVIDER SYSTEM ==================
+
+class CreateGigRequest(BaseModel):
+    title: str = Field(..., min_length=5, max_length=100)
+    description: str = Field(..., min_length=20, max_length=2000)
+    category: str = Field(..., pattern="^(business_formation|financial_ops|legal_compliance|quality_mgmt|tech_security|hr_capacity|performance_tracking|risk_mgmt|supply_chain)$")
+    subcategory: str = Field(..., max_length=50)
+    tags: List[str] = Field(..., max_items=10)
+    packages: List[dict] = Field(..., min_items=1, max_items=3)
+    requirements: List[str] = Field(default=[])
+    faq: List[dict] = Field(default=[])
+
+class PlaceOrderRequest(BaseModel):
+    gig_id: str
+    package_type: str = Field(..., pattern="^(basic|standard|premium)$")
+    requirements_answers: List[dict] = Field(default=[])
+    special_instructions: Optional[str] = Field(None, max_length=500)
+
+class DeliverOrderRequest(BaseModel):
+    order_id: str
+    message: str = Field(..., min_length=10, max_length=1000)
+    attachment_urls: List[str] = Field(default=[])
+
+class ReviewOrderRequest(BaseModel):
+    order_id: str
+    rating: int = Field(..., ge=1, le=5)
+    comment: str = Field(..., min_length=10, max_length=500)
+
+@api.post("/marketplace/gig/create")
+async def create_service_gig(request: CreateGigRequest, current=Depends(require_role("provider"))):
+    """Create a new service gig/listing"""
+    try:
+        # Validate provider is approved
+        provider = await db.users.find_one({"_id": current["id"]})
+        if provider.get("approval_status") != "approved":
+            raise HTTPException(status_code=403, detail="Provider must be approved to create gigs")
+        
+        gig_id = str(uuid.uuid4())
+        gig_doc = {
+            "_id": gig_id,
+            "gig_id": gig_id,
+            "provider_user_id": current["id"],
+            "title": request.title,
+            "description": request.description,
+            "category": request.category,
+            "subcategory": request.subcategory,
+            "tags": request.tags,
+            "packages": [pkg for pkg in request.packages],
+            "requirements": request.requirements,
+            "gallery_images": [],
+            "faq": request.faq,
+            "status": "active",
+            "rating": None,
+            "review_count": 0,
+            "orders_completed": 0,
+            "response_time_hours": 24,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.service_gigs.insert_one(gig_doc)
+        
+        return {
+            "success": True,
+            "gig_id": gig_id,
+            "message": "Gig created successfully",
+            "gig": gig_doc
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating gig: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create gig")
+
+@api.get("/marketplace/gigs/search")
+async def search_gigs(
+    q: str = "",
+    category: str = "",
+    min_price: int = 0,
+    max_price: int = 999999,
+    delivery_time: int = 30,
+    rating: float = 0,
+    limit: int = 20,
+    offset: int = 0
+):
+    """Search and discover service gigs"""
+    try:
+        # Build search filters
+        filters = {"status": "active"}
+        
+        if q:
+            filters["$or"] = [
+                {"title": {"$regex": q, "$options": "i"}},
+                {"description": {"$regex": q, "$options": "i"}},
+                {"tags": {"$in": [q]}}
+            ]
+        
+        if category:
+            filters["category"] = category
+        
+        # Price filter (check all packages)
+        if min_price > 0 or max_price < 999999:
+            filters["$or"] = [
+                {"packages.price": {"$gte": min_price * 100, "$lte": max_price * 100}}
+            ]
+        
+        # Delivery time filter
+        if delivery_time < 30:
+            filters["packages.delivery_days"] = {"$lte": delivery_time}
+        
+        # Rating filter  
+        if rating > 0:
+            filters["rating"] = {"$gte": rating}
+        
+        # Execute search with pagination
+        gigs = await db.service_gigs.find(filters).skip(offset).limit(limit).to_list(limit)
+        
+        # Enrich with provider data
+        for gig in gigs:
+            provider = await db.users.find_one({"_id": gig["provider_user_id"]})
+            if provider:
+                gig["provider_name"] = provider.get("name", "Anonymous")
+                gig["provider_avatar"] = provider.get("avatar_url", "")
+                gig["provider_level"] = provider.get("provider_level", "New Seller")
+        
+        total_count = await db.service_gigs.count_documents(filters)
+        
+        return {
+            "gigs": gigs,
+            "total_count": total_count,
+            "has_more": (offset + limit) < total_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching gigs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search gigs")
+
+@api.get("/marketplace/gig/{gig_id}")
+async def get_gig_details(gig_id: str):
+    """Get detailed information about a specific gig"""
+    try:
+        gig = await db.service_gigs.find_one({"_id": gig_id})
+        if not gig:
+            raise HTTPException(status_code=404, detail="Gig not found")
+        
+        # Get provider information
+        provider = await db.users.find_one({"_id": gig["provider_user_id"]})
+        
+        # Get recent reviews
+        reviews = await db.service_reviews.find({
+            "gig_id": gig_id
+        }).sort("created_at", -1).limit(10).to_list(10)
+        
+        # Enrich reviews with client names
+        for review in reviews:
+            client = await db.users.find_one({"_id": review["client_user_id"]})
+            if client:
+                review["client_name"] = client.get("name", "Anonymous")
+        
+        return {
+            "gig": gig,
+            "provider": {
+                "name": provider.get("name", "Anonymous") if provider else "Anonymous",
+                "avatar_url": provider.get("avatar_url", "") if provider else "",
+                "provider_level": provider.get("provider_level", "New Seller") if provider else "New Seller",
+                "response_rate": provider.get("response_rate", 100) if provider else 100,
+                "member_since": provider.get("created_at") if provider else None
+            },
+            "reviews": reviews
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting gig details: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get gig details")
+
+@api.post("/marketplace/order/place")
+async def place_service_order(request: PlaceOrderRequest, current=Depends(require_role("client"))):
+    """Place an order for a service gig"""
+    try:
+        # Get gig details
+        gig = await db.service_gigs.find_one({"_id": request.gig_id})
+        if not gig:
+            raise HTTPException(status_code=404, detail="Gig not found")
+        
+        # Find the selected package
+        selected_package = None
+        for package in gig["packages"]:
+            if package["package_type"] == request.package_type:
+                selected_package = package
+                break
+        
+        if not selected_package:
+            raise HTTPException(status_code=400, detail="Invalid package type")
+        
+        # Calculate delivery deadline
+        delivery_deadline = datetime.utcnow() + timedelta(days=selected_package["delivery_days"])
+        
+        # Create order
+        order_id = str(uuid.uuid4())
+        order_doc = {
+            "_id": order_id,
+            "order_id": order_id,
+            "gig_id": request.gig_id,
+            "package_type": request.package_type,
+            "client_user_id": current["id"],
+            "provider_user_id": gig["provider_user_id"],
+            "title": f"{gig['title']} - {selected_package['title']}",
+            "description": selected_package["description"],
+            "price": selected_package["price"],
+            "delivery_deadline": delivery_deadline,
+            "requirements_answered": request.requirements_answers,
+            "status": "in_progress",
+            "escrow_status": "held",
+            "revisions_remaining": selected_package["revisions_included"],
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.service_orders.insert_one(order_doc)
+        
+        # Create initial message if special instructions provided
+        if request.special_instructions:
+            message_id = str(uuid.uuid4())
+            message_doc = {
+                "_id": message_id,
+                "message_id": message_id,
+                "order_id": order_id,
+                "sender_user_id": current["id"],
+                "content": request.special_instructions,
+                "attachments": [],
+                "timestamp": datetime.utcnow(),
+                "is_read": False
+            }
+            await db.order_messages.insert_one(message_doc)
+        
+        # TODO: Process payment and escrow
+        
+        return {
+            "success": True,
+            "order_id": order_id,
+            "message": "Order placed successfully",
+            "order": order_doc
+        }
+        
+    except Exception as e:
+        logger.error(f"Error placing order: {e}")
+        raise HTTPException(status_code=500, detail="Failed to place order")
+
+@api.post("/marketplace/order/deliver")
+async def deliver_order(request: DeliverOrderRequest, current=Depends(require_role("provider"))):
+    """Submit delivery for an order"""
+    try:
+        # Get order
+        order = await db.service_orders.find_one({"_id": request.order_id})
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        if order["provider_user_id"] != current["id"]:
+            raise HTTPException(status_code=403, detail="Not authorized for this order")
+        
+        if order["status"] not in ["in_progress", "revision_requested"]:
+            raise HTTPException(status_code=400, detail="Order not in deliverable state")
+        
+        # Get delivery version (increment for revisions)
+        existing_deliveries = await db.order_deliveries.find({"order_id": request.order_id}).to_list(100)
+        version = len(existing_deliveries) + 1
+        
+        # Create delivery record
+        delivery_id = str(uuid.uuid4())
+        delivery_doc = {
+            "_id": delivery_id,
+            "delivery_id": delivery_id,
+            "order_id": request.order_id,
+            "version": version,
+            "message": request.message,
+            "attachments": request.attachment_urls,
+            "delivered_at": datetime.utcnow()
+        }
+        
+        await db.order_deliveries.insert_one(delivery_doc)
+        
+        # Update order status
+        await db.service_orders.update_one(
+            {"_id": request.order_id},
+            {
+                "$set": {
+                    "status": "delivered",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "delivery_id": delivery_id,
+            "message": "Order delivered successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error delivering order: {e}")
+        raise HTTPException(status_code=500, detail="Failed to deliver order")
+
+@api.post("/marketplace/order/review")
+async def review_order(request: ReviewOrderRequest, current=Depends(require_role("client"))):
+    """Submit review for completed order"""
+    try:
+        # Get order
+        order = await db.service_orders.find_one({"_id": request.order_id})
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        if order["client_user_id"] != current["id"]:
+            raise HTTPException(status_code=403, detail="Not authorized for this order")
+        
+        if order["status"] != "completed":
+            raise HTTPException(status_code=400, detail="Order must be completed to review")
+        
+        # Check if already reviewed
+        existing_review = await db.service_reviews.find_one({
+            "order_id": request.order_id,
+            "client_user_id": current["id"]
+        })
+        
+        if existing_review:
+            raise HTTPException(status_code=400, detail="Order already reviewed")
+        
+        # Create review
+        review_id = str(uuid.uuid4())
+        review_doc = {
+            "_id": review_id,
+            "review_id": review_id,
+            "order_id": request.order_id,
+            "gig_id": order["gig_id"],
+            "client_user_id": current["id"],
+            "provider_user_id": order["provider_user_id"],
+            "rating": request.rating,
+            "comment": request.comment,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.service_reviews.insert_one(review_doc)
+        
+        # Update gig rating and review count
+        gig_reviews = await db.service_reviews.find({"gig_id": order["gig_id"]}).to_list(1000)
+        avg_rating = sum(r["rating"] for r in gig_reviews) / len(gig_reviews)
+        
+        await db.service_gigs.update_one(
+            {"_id": order["gig_id"]},
+            {
+                "$set": {
+                    "rating": round(avg_rating, 1),
+                    "review_count": len(gig_reviews)
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "review_id": review_id,
+            "message": "Review submitted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting review: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit review")
+
+@api.get("/marketplace/orders/my")
+async def get_my_orders(current=Depends(require_user), role_filter: str = ""):
+    """Get orders for current user (client or provider)"""
+    try:
+        user_role = current.get("role")
+        
+        if user_role == "client" or role_filter == "client":
+            orders = await db.service_orders.find({"client_user_id": current["id"]}).sort("created_at", -1).to_list(100)
+        elif user_role == "provider" or role_filter == "provider":
+            orders = await db.service_orders.find({"provider_user_id": current["id"]}).sort("created_at", -1).to_list(100)
+        else:
+            orders = []
+        
+        # Enrich orders with gig and user data
+        for order in orders:
+            gig = await db.service_gigs.find_one({"_id": order["gig_id"]})
+            if gig:
+                order["gig_title"] = gig["title"]
+            
+            # Get counterpart user info
+            if user_role == "client":
+                provider = await db.users.find_one({"_id": order["provider_user_id"]})
+                if provider:
+                    order["provider_name"] = provider.get("name", "Anonymous")
+            else:
+                client = await db.users.find_one({"_id": order["client_user_id"]})
+                if client:
+                    order["client_name"] = client.get("name", "Anonymous")
+        
+        return {"orders": orders}
+        
+    except Exception as e:
+        logger.error(f"Error getting orders: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get orders")
+
 @api.get("/metrics")
 async def get_prometheus_metrics():
     """Prometheus metrics endpoint"""
