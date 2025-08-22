@@ -3873,28 +3873,6 @@ function ClientHome(){
     }catch(e){ toast.error('Failed to copy link', { description: e.message }); }
   };
 
-  const upgradeSubscription = async(tierId, billingCycle = 'monthly') => {
-    setUpgradeLoading(true);
-    try{
-      const response = await axios.post(`${API}/agency/subscription/upgrade`, {
-        tier_id: tierId,
-        billing_cycle: billingCycle
-      });
-      
-      toast.success(response.data.message);
-      setSubscription(response.data.subscription);
-      
-      // Reload subscription data
-      const subscriptionRes = await axios.get(`${API}/agency/subscription/current`);
-      setSubscription(subscriptionRes.data);
-      
-    }catch(e){
-      toast.error('Upgrade failed', { description: e.response?.data?.detail || e.message });
-    }finally{
-      setUpgradeLoading(false);
-    }
-  };
-
   const downloadAreaTemplate = async (areaId, resourceType) => {
     try {
       const response = await axios.get(
