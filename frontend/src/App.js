@@ -8933,9 +8933,9 @@ function ServiceCreatePage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API}/marketplace/gig/create`, {
-        ...gigData,
-        packages: gigData.packages.map(pkg => ({
+      const response = await axios.post(`${API}/marketplace/service/create`, {
+        ...serviceData,
+        packages: serviceData.packages.map(pkg => ({
           ...pkg,
           price: Math.round(pkg.price * 100), // Convert to cents
         }))
