@@ -3842,8 +3842,8 @@ async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(requir
         # Check if user has Knowledge Base access
         access_data = await db.knowledge_base_access.find_one({"user_id": current["id"]})
         
-        # Allow test users to bypass paywall
-        is_test_user = current.get("email", "").endswith("@polaris.example.com")
+        # Allow test users to bypass paywall (except providers)
+        is_test_user = current.get("email", "").endswith("@polaris.example.com") and current["role"] != "provider"
         
         if not is_test_user:
             if not access_data:
