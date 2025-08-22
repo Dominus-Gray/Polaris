@@ -78,8 +78,7 @@ class ProviderBusinessProfileTester:
             self.log_test("Business Profile Creation", "FAIL", "No provider token available")
             return False
             
-        # Complete business profile data as specified in review request
-        # Including all REQUIRED_BUSINESS_FIELDS from backend
+        # Complete business profile data matching BusinessProfileIn model
         business_profile_data = {
             "company_name": "QA Test Provider Company",
             "tax_id": "12-3456789",
@@ -97,10 +96,7 @@ class ProviderBusinessProfileTester:
             "year_founded": 2020,
             "ownership_structure": "Single Owner",
             "contact_title": "CEO",
-            # Additional required fields
-            "payment_methods": "Credit Card, Bank Transfer",
-            "subscription_plan": "Professional",
-            "billing_frequency": "Monthly"
+            "website_url": "https://qaprovider.com"
         }
         
         try:
