@@ -4182,13 +4182,10 @@ function ClientHome(){
                         }
                       </p>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-blue-100">
-                      <div className="text-sm font-medium text-slate-800 mb-1">Knowledge Base</div>
+                    <div className="bg-white rounded-lg p-4 border border-green-100">
+                      <div className="text-sm font-medium text-slate-800 mb-1">Professional Services</div>
                       <p className="text-sm text-slate-600">
-                        {knowledgeBaseAccess?.has_all_access 
-                          ? '✅ Full access to all business area resources'
-                          : `${knowledgeBaseAccess?.unlocked_areas.length || 0}/8 areas unlocked - consider upgrading for complete guidance`
-                        }
+                        Browse marketplace providers for expert assistance with your business needs
                       </p>
                     </div>
                   </div>
