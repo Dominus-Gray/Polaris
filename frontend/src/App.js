@@ -4693,10 +4693,10 @@ function ClientHome(){
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h4 className="text-lg font-semibold text-slate-900 mb-2">{service.title}</h4>
-                        <p className="text-sm text-slate-600 mb-3 line-clamp-3">{gig.description}</p>
+                        <p className="text-sm text-slate-600 mb-3 line-clamp-3">{service.description}</p>
                         <div className="flex items-center gap-4 text-sm text-slate-500 mb-3">
-                          <span>📂 {gig.category}</span>
-                          {gig.rating && <span>⭐ {gig.rating}/5 ({gig.review_count} reviews)</span>}
+                          <span>📂 {service.category}</span>
+                          {service.rating && <span>⭐ {service.rating}/5 ({service.review_count} reviews)</span>}
                         </div>
                       </div>
                     </div>
@@ -4705,26 +4705,26 @@ function ClientHome(){
                     <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-lg">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         <span className="text-blue-600 font-medium text-sm">
-                          {gig.provider_name?.charAt(0) || 'P'}
+                          {service.provider_name?.charAt(0) || 'P'}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-slate-900">{gig.provider_name || 'Professional Provider'}</div>
-                        <div className="text-xs text-slate-500">{gig.provider_level || 'Verified Provider'}</div>
+                        <div className="font-medium text-slate-900">{service.provider_name || 'Professional Provider'}</div>
+                        <div className="text-xs text-slate-500">{service.provider_level || 'Verified Provider'}</div>
                       </div>
                     </div>
 
                     {/* Package Pricing */}
-                    {gig.packages && gig.packages.length > 0 && (
+                    {service.packages && service.packages.length > 0 && (
                       <div className="border-t pt-4">
                         <div className="text-sm font-medium text-slate-900 mb-2">Starting at:</div>
                         <div className="flex items-center justify-between">
                           <div className="text-2xl font-bold text-green-600">
-                            ${Math.min(...gig.packages.map(p => p.price / 100))}
+                            ${Math.min(...service.packages.map(p => p.price / 100))}
                           </div>
                           <button 
                             className="btn btn-primary btn-sm"
-                            onClick={() => navigate(`/marketplace/gig/${gig.gig_id}`)}
+                            onClick={() => navigate(`/marketplace/service/${service.service_id}`)}
                           >
                             View Details
                           </button>
