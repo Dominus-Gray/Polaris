@@ -2380,6 +2380,33 @@ async def generate_licenses(request: LicenseGenerationIn, current=Depends(requir
     if not user_record or user_record.get("approval_status") != "approved":
         raise HTTPException(status_code=403, detail="Agency must be approved to generate license codes")
     
+    # Check subscription limits
+    current_month = datetime.utcnow().strftime("%Y-%m")
+    usage = await db.subscription_usage.find_one({
+        "agency_user_id": current["id"],
+        "month": current_month
+    }) or {"license_codes_generated": 0}
+    
+    subscription = await db.agency_subscriptions.find_one({"agency_user_id": current["id"]})
+    
+    # Determine limits based on subscription
+    if subscription:
+        tier = SUBSCRIPTION_TIERS.get(subscription["tier_id"])
+        monthly_limit = tier["license_codes_per_month"] if tier else 10
+    else:
+        # Trial limits
+        monthly_limit = 10
+    
+    current_usage = usage["license_codes_generated"]
+    
+    # Check if request would exceed limits
+    if monthly_limit != -1 and (current_usage + request.quantity) > monthly_limit:
+        remaining = max(0, monthly_limit - current_usage)
+        raise HTTPException(
+            status_code=402, 
+            detail=f"License code limit reached. You can generate {remaining} more codes this month. Upgrade your subscription for higher limits."
+        )
+    
     licenses = []
     expires_at = datetime.utcnow() + timedelta(days=request.expires_days) if request.expires_days else None
     
@@ -2402,6 +2429,23 @@ async def generate_licenses(request: LicenseGenerationIn, current=Depends(requir
         await db.agency_licenses.insert_one(license_doc)
         licenses.append(license_doc)
     
+    # Update usage tracking
+    await db.subscription_usage.update_one(
+        {"agency_user_id": current["id"], "month": current_month},
+        {
+            "$inc": {"license_codes_generated": request.quantity},
+            "$setOnInsert": {
+                "_id": str(uuid.uuid4()),
+                "agency_user_id": current["id"],
+                "month": current_month,
+                "clients_active": 0,
+                "api_calls": 0,
+                "storage_used_mb": 0
+            }
+        },
+        upsert=True
+    )
+    
     return {
         "message": f"Generated {request.quantity} license codes",
         "licenses": [
@@ -2409,7 +2453,12 @@ async def generate_licenses(request: LicenseGenerationIn, current=Depends(requir
                 "license_code": lic["license_code"],
                 "expires_at": lic["expires_at"]
             } for lic in licenses
-        ]
+        ],
+        "usage_update": {
+            "codes_generated_this_month": current_usage + request.quantity,
+            "monthly_limit": monthly_limit if monthly_limit != -1 else "Unlimited",
+            "remaining_this_month": max(0, monthly_limit - (current_usage + request.quantity)) if monthly_limit != -1 else "Unlimited"
+        }
     }
 
 @api.get("/agency/licenses")
