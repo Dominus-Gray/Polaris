@@ -5595,6 +5595,7 @@ function AgencyHome(){
           <nav className="flex gap-6">
             {[
               { id: 'overview', label: 'Overview', icon: '📊' },
+              { id: 'subscription', label: 'Subscription & Billing', icon: '💳' },
               { id: 'branding', label: 'Branding & Theme', icon: '🎨' },
               { id: 'system', label: 'System Health', icon: '⚡' }
             ].map((tab) => (
