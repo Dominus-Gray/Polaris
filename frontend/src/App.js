@@ -4872,7 +4872,7 @@ function ProviderHome(){
           <nav className="flex gap-6">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-              { id: 'gigs', label: 'My Gigs', icon: '🎯' },
+              { id: 'services', label: 'My Services', icon: '🎯' },
               { id: 'orders', label: 'Active Orders', icon: '⚡' },
               { id: 'earnings', label: 'Earnings', icon: '💰' },
               { id: 'profile', label: 'Profile & Portfolio', icon: '👤' }
