@@ -3809,8 +3809,8 @@ function ClientHome(){
       if (selectedCategory) params.append('category', selectedCategory);
       params.append('limit', '20');
       
-      const response = await axios.get(`${API}/marketplace/gigs/search?${params}`);
-      setMarketplaceGigs(response.data.gigs || []);
+      const response = await axios.get(`${API}/marketplace/services/search?${params}`);
+      setAvailableServices(response.data.services || []);
     } catch (error) {
       console.error('Marketplace search error:', error);
     }
