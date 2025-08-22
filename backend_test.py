@@ -167,17 +167,17 @@ class FinalVerificationTester:
         
         provider_headers = {"Authorization": f"Bearer {self.provider_token}"}
         
-        # Test 2.3: Provider can view available service requests
+        # Test 2.3: Provider can view notifications (available endpoint)
         try:
-            response = self.session.get(f"{BACKEND_URL}/provider/available-requests", headers=provider_headers)
+            response = self.session.get(f"{BACKEND_URL}/provider/notifications", headers=provider_headers)
             if response.status_code == 200:
-                requests_data = response.json()
-                available_count = len(requests_data.get("requests", []))
-                self.log_test("Provider View Available Requests", "PASS", f"Found {available_count} available requests")
+                notifications_data = response.json()
+                notification_count = len(notifications_data.get("notifications", []))
+                self.log_test("Provider View Notifications", "PASS", f"Found {notification_count} notifications")
             else:
-                self.log_test("Provider View Available Requests", "FAIL", f"Status: {response.status_code}")
+                self.log_test("Provider View Notifications", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
-            self.log_test("Provider View Available Requests", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Provider View Notifications", "FAIL", f"Exception: {str(e)}")
         
         # Test 2.4: Provider can respond to service request (if we have one)
         if request_id:
