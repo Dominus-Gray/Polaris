@@ -4811,6 +4811,10 @@ function ProviderHome(){
     navigate('/provider/services/create');
   };
 
+  const editService = (serviceId) => {
+    navigate(`/provider/services/edit/${serviceId}`);
+  };
+
   const editGig = (gigId) => {
     navigate(`/provider/gigs/edit/${gigId}`);
   };
