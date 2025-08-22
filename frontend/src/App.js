@@ -8880,7 +8880,7 @@ function ServiceCreatePage() {
   };
 
   const removeTag = (tagToRemove) => {
-    setGigData(prev => ({
+    setServiceData(prev => ({
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
