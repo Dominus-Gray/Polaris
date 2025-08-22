@@ -5768,6 +5768,16 @@ async def get_billing_history(current=Depends(require_role("agency")), months: i
         raise HTTPException(status_code=500, detail="Failed to get billing history")
 
 
+@api.get("/debug/role")
+async def debug_user_role(current=Depends(require_user)):
+    """Debug endpoint to check user role detection"""
+    return {
+        "user_id": current.get("id"),
+        "email": current.get("email"),
+        "role": current.get("role"),
+        "full_current": current
+    }
+
 @api.get("/health")
 async def api_health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
