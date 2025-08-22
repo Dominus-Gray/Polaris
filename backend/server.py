@@ -5524,20 +5524,30 @@ async def upgrade_subscription(request: UpdateSubscriptionRequest, current=Depen
         # Calculate price based on billing cycle
         price = tier["annual_price"] if request.billing_cycle == "annual" else tier["monthly_price"]
         
-        # Create Stripe checkout session
-        checkout_data = {
-            "tier_id": request.tier_id,
-            "billing_cycle": request.billing_cycle,
-            "price": price,
-            "agency_user_id": current["id"],
-            "success_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/agency/subscription/success",
-            "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/agency/subscription"
-        }
-        
         # For now, simulate successful upgrade (in production, integrate with Stripe)
         subscription_id = str(uuid.uuid4())
         now = datetime.utcnow()
-        period_end = now.replace(year=now.year + 1) if request.billing_cycle == "annual" else now.replace(month=now.month + 1)
+        
+        # Calculate period end properly
+        if request.billing_cycle == "annual":
+            if now.month == 2 and now.day == 29:  # Handle leap year edge case
+                period_end = now.replace(year=now.year + 1, day=28)
+            else:
+                period_end = now.replace(year=now.year + 1)
+        else:
+            # Handle month rollover
+            if now.month == 12:
+                period_end = now.replace(year=now.year + 1, month=1)
+            else:
+                # Handle different month lengths
+                next_month = now.month + 1
+                try:
+                    period_end = now.replace(month=next_month)
+                except ValueError:  # Day doesn't exist in next month (e.g., Jan 31 -> Feb 31)
+                    # Go to last day of next month
+                    import calendar
+                    last_day = calendar.monthrange(now.year, next_month)[1]
+                    period_end = now.replace(month=next_month, day=min(now.day, last_day))
         
         subscription_doc = {
             "_id": subscription_id,
@@ -5571,7 +5581,7 @@ async def upgrade_subscription(request: UpdateSubscriptionRequest, current=Depen
         
     except Exception as e:
         logger.error(f"Error upgrading subscription: {e}")
-        raise HTTPException(status_code=500, detail="Failed to upgrade subscription")
+        raise HTTPException(status_code=500, detail=f"Failed to upgrade subscription: {str(e)}")
 
 @api.get("/agency/subscription/usage")
 async def get_subscription_usage(current=Depends(require_role("agency")), months: int = 6):
