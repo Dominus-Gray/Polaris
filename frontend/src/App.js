@@ -2995,6 +2995,43 @@ function ExternalResourcesPage() {
             maturity: "Local Emergency Response Systems"
           }
         ]
+      },
+      area9: {
+        name: "Supply Chain Management & Vendor Relations",
+        resources: [
+          {
+            title: "SBA Subcontracting Directory and DSBS Registration",
+            url: "https://www.sba.gov/federal-contracting/contracting-assistance-programs/subcontracting-opportunities",
+            description: "Register in Dynamic Small Business Search for subcontracting opportunities",
+            type: "Federal",
+            location: "National",
+            maturity: "Vendor Registration and Qualification"
+          },
+          {
+            title: "Texas Procurement and Support Services - Vendor Registration",
+            url: "https://www.tpss.texas.gov/vendor-registration",
+            description: "Register as a vendor for Texas state procurement opportunities",
+            type: "State",
+            location: "Texas Statewide",
+            maturity: "State Vendor Certification"
+          },
+          {
+            title: "San Antonio Procurement Division - Vendor Registration",
+            url: "https://webapp7.sanantonio.gov/VendorSelfService/",
+            description: "Register to participate in City of San Antonio procurement",
+            type: "Municipal",
+            location: "San Antonio, TX",
+            maturity: "Local Procurement Registration"
+          },
+          {
+            title: "PTAC Texas - Supply Chain Management Training",
+            url: "https://www.texasptac.org/training/supply-chain-management/",
+            description: "Free training on supply chain management for government contractors",
+            type: "Nonprofit",
+            location: "Texas Statewide",
+            maturity: "Supply Chain Best Practices"
+          }
+        ]
       }
     };
 
