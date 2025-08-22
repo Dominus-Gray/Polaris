@@ -8870,8 +8870,8 @@ function ServiceCreatePage() {
   };
 
   const addTag = () => {
-    if (newTag.trim() && !gigData.tags.includes(newTag.trim())) {
-      setGigData(prev => ({
+    if (newTag.trim() && !serviceData.tags.includes(newTag.trim())) {
+      setServiceData(prev => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()]
       }));
