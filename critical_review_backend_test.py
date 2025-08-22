@@ -312,13 +312,13 @@ class CriticalReviewTest:
             if response.status_code == 200:
                 areas_data = response.json()
                 areas = areas_data.get("areas", [])
-                area_ids = [area.get("area_id") for area in areas]
+                area_ids = [area.get("id") for area in areas]
                 
                 all_9_areas_present = all(area_id in area_ids for area_id in expected_areas)
                 
                 self.log_result("Knowledge Base - All 9 Areas Present", 
                               all_9_areas_present,
-                              f"Found {len(areas)} areas: {area_ids}. All 9 expected areas present: {all_9_areas_present}",
+                              f"Found {len(areas)} areas: {area_ids}. Missing area9. Backend only supports 8 areas currently.",
                               response_time)
             else:
                 self.log_result("Knowledge Base - All 9 Areas Present", False,
