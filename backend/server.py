@@ -3582,7 +3582,8 @@ async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(requir
                 "area5": "Technology & Security Infrastructure",
                 "area6": "Human Resources & Capacity",
                 "area7": "Performance Tracking & Reporting",
-                "area8": "Risk Management & Business Continuity"
+                "area8": "Risk Management & Business Continuity",
+                "area9": "Supply Chain Management & Vendor Relations"
             }
             context_parts.append(f"Business area focus: {area_names.get(request.area_id)}")
         
