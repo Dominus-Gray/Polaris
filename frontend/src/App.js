@@ -7265,7 +7265,41 @@ function OpportunitiesPage(){
 function AppShell(){
   useAuthHeader();
   const location = useLocation();
-  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const [me, setMe] = useState(null);
+  
+  useEffect(() => {
+    // Initialize user data from localStorage
+    try {
+      const userData = localStorage.getItem('polaris_me');
+      if (userData) {
+        setMe(JSON.parse(userData));
+      }
+    } catch (e) {
+      console.error('Error parsing user data from localStorage:', e);
+      localStorage.removeItem('polaris_me');
+      setMe(null);
+    }
+    
+    // Listen for localStorage changes
+    const handleStorageChange = (e) => {
+      if (e.key === 'polaris_me') {
+        try {
+          if (e.newValue) {
+            setMe(JSON.parse(e.newValue));
+          } else {
+            setMe(null);
+          }
+        } catch (error) {
+          console.error('Error parsing user data from storage event:', error);
+          setMe(null);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+  
   const showLanding = location.pathname === '/' && !me;
   return (
     <div className="app-shell">
