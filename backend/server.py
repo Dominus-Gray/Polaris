@@ -2174,6 +2174,15 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
                 {"id": "q8_2", "text": "Are you prepared for emergency situations and disruptions?"},
                 {"id": "q8_3", "text": "Do you have appropriate liability and professional insurance?"}
             ]
+        },
+        {
+            "id": "area9", 
+            "title": "Supply Chain Management & Vendor Relations", 
+            "questions": [
+                {"id": "q9_1", "text": "Do you have documented vendor qualification and selection processes?"},
+                {"id": "q9_2", "text": "Can you demonstrate supply chain resilience and risk mitigation strategies?"},
+                {"id": "q9_3", "text": "Do you maintain proper vendor contracts and performance monitoring?"}
+            ]
         }
     ]
 }
