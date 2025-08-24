@@ -2722,7 +2722,7 @@ async def create_engagement(payload: EngagementCreateIn, current=Depends(require
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
     eid = str(uuid.uuid4())
-    doc = {"_id": eid, "id": eid, "request_id": req["_id"], "response_id": resp["_id"], "client_user_id": current["id"], "provider_user_id": resp.get("provider_id"), "status": "active", "agreed_fee": payload.agreed_fee, "created_at": datetime.utcnow()}
+    doc = {"_id": eid, "id": eid, "request_id": req["_id"], "response_id": resp["_id"], "client_user_id": current["id"], "provider_user_id": resp.get("provider_id"), "status": "active", "agreed_fee": payload.agreed_fee, "created_at": datetime.utcnow(), "area_id": req.get("area_id")}
     await db.engagements.insert_one(doc)
     fee = round(payload.agreed_fee * 0.05, 2)
     rid = str(uuid.uuid4())
