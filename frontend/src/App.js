@@ -1281,11 +1281,22 @@ function AssessmentPage(){
                         <button 
                           className="btn btn-sm w-full"
                           style={{ backgroundColor: 'rgb(22, 163, 74)', color: 'white' }}
-                          onClick={() => {
+                          onClick={async () => {
                             // Mark as pending with free resources selected
                             const updatedAnswers = {...answers};
                             updatedAnswers[question.id] = 'pending_free_resources';
                             setAnswers(updatedAnswers);
+
+                            try {
+                              await axios.post(`${API}/assessment/maturity/pending`, {
+                                area_id: currentAreaData.id,
+                                question_id: question.id,
+                                source: 'free',
+                                detail: 'Selected Free Local Resources via assessment panel'
+                              });
+                            } catch (e) {
+                              console.warn('Failed to record maturity pending (free)', e);
+                            }
                             
                             // Navigate to external resources for this area
                             navigate(`/external-resources/${currentAreaData.id}?question=${question.id}`);
