@@ -1326,7 +1326,19 @@ function AssessmentPage(){
                               updatedAnswers[question.id] = `pending_professional_${e.target.value}`;
                               setAnswers(updatedAnswers);
                               
+                              (async () => {
+                              try {
+                                await axios.post(`${API}/assessment/maturity/pending`, {
+                                  area_id: currentAreaData.id,
+                                  question_id: question.id,
+                                  source: 'professional',
+                                  detail: `Budget ${e.target.value}`
+                                });
+                              } catch (e) {
+                                console.warn('Failed to record maturity pending (professional)', e);
+                              }
                               handleProfessionalHelp(question.id, currentAreaData.id, e.target.value);
+                            })();
                             }
                           }}
                           defaultValue=""
