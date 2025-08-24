@@ -2206,6 +2206,91 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
 }
 
 # ---------------- AI resources for "No" pathway ----------------
+
+# ---------------- Maturity Status Management ----------------
+class MaturityPendingIn(BaseModel):
+    area_id: str
+    question_id: str
+    source: str  # 'free' or 'professional'
+    detail: Optional[str] = None
+    external_url: Optional[str] = None
+    session_id: Optional[str] = None
+
+class MaturityStatusOut(BaseModel):
+    id: str
+    user_id: str
+    area_id: str
+    question_id: str
+    source: str
+    status: str  # 'pending' or 'compliant'
+    detail: Optional[str] = None
+    external_url: Optional[str] = None
+    session_id: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+@api.post("/assessment/maturity/pending")
+async def mark_maturity_pending(payload: MaturityPendingIn, current=Depends(require_user)):
+    """Mark a maturity requirement as pending when client selects a free or paid service.
+    This records the user's intent to address a requirement via free resources or professional help.
+    """
+    try:
+        # Validate area id format
+        DataValidator.validate_service_area(payload.area_id)
+        # Basic normalization
+        src = payload.source.lower().strip()
+        if src not in ("free", "professional"):
+            raise create_polaris_error("POL-3002", f"Invalid source: {payload.source}")
+        now = datetime.utcnow().isoformat() + "Z"
+        mid = str(uuid.uuid4())
+        doc = {
+            "_id": mid,
+            "id": mid,
+            "user_id": current["id"],
+            "area_id": payload.area_id,
+            "question_id": payload.question_id,
+            "source": src,
+            "status": "pending",
+            "detail": DataValidator.sanitize_text(payload.detail or "", 500),
+            "external_url": DataValidator.sanitize_text(payload.external_url or "", 1024),
+            "session_id": payload.session_id or None,
+            "created_at": now,
+            "updated_at": now
+        }
+        await db.maturity_status.insert_one(doc)
+        return {"ok": True, "status_id": mid}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to mark maturity pending: {e}")
+        raise create_polaris_error("POL-3003", "Failed to record pending maturity status", 500)
+
+@api.get("/assessment/maturity/mine")
+async def list_my_maturity_status(current=Depends(require_user)):
+    try:
+        items = await db.maturity_status.find({"user_id": current["id"]}).sort("updated_at", -1).to_list(500)
+        return {"items": items}
+    except Exception as e:
+        logger.error(f"Failed to list maturity status: {e}")
+        raise create_polaris_error("POL-3003", "Failed to load maturity status", 500)
+
+@api.post("/assessment/maturity/{status_id}/set-status")
+async def set_maturity_status(status_id: str, status: str = Form(...), current=Depends(require_user)):
+    """Update a maturity item status (e.g., pending -> compliant)."""
+    try:
+        status = status.lower().strip()
+        if status not in ("pending", "compliant"):
+            raise create_polaris_error("POL-3002", f"Invalid status: {status}")
+        res = await db.maturity_status.update_one({"_id": status_id, "user_id": current["id"]}, {"$set": {"status": status, "updated_at": datetime.utcnow().isoformat() + "Z"}})
+        if res.matched_count == 0:
+            raise create_polaris_error("POL-3003", "Status item not found or unauthorized", 404)
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update maturity status: {e}")
+        raise create_polaris_error("POL-3003", "Failed to update maturity status", 500)
+
 class AIResourcesReq(BaseModel):
     area_id: str
     question_id: str
