@@ -190,19 +190,20 @@ def setup_qa_users():
                                 nav_token = nav_login.json()["access_token"]
                                 nav_headers = {"Authorization": f"Bearer {nav_token}"}
                                 
-                                # Login provider to get ID
-                                provider_login = session.post(f"{BACKEND_URL}/auth/login", json={
-                                    "email": user["email"],
-                                    "password": user["password"]
-                                })
+                                # Get pending providers
+                                pending_response = session.get(f"{BACKEND_URL}/navigator/providers/pending", headers=nav_headers)
                                 
-                                if provider_login.status_code == 200:
-                                    provider_headers = {"Authorization": f"Bearer {provider_login.json()['access_token']}"}
-                                    provider_me = session.get(f"{BACKEND_URL}/auth/me", headers=provider_headers)
+                                if pending_response.status_code == 200:
+                                    pending_providers = pending_response.json()
                                     
-                                    if provider_me.status_code == 200:
-                                        provider_id = provider_me.json()["id"]
-                                        
+                                    # Find our provider
+                                    provider_id = None
+                                    for provider in pending_providers.get("providers", []):
+                                        if provider.get("email") == user["email"]:
+                                            provider_id = provider.get("id")
+                                            break
+                                    
+                                    if provider_id:
                                         # Approve provider
                                         approval_response = session.post(f"{BACKEND_URL}/navigator/providers/approve",
                                                                        json={"provider_user_id": provider_id, "approval_status": "approved"},
@@ -211,7 +212,11 @@ def setup_qa_users():
                                         if approval_response.status_code == 200:
                                             print(f"✅ Provider approved: {user['email']}")
                                         else:
-                                            print(f"⚠️ Provider approval failed: {approval_response.status_code}")
+                                            print(f"⚠️ Provider approval failed: {approval_response.status_code} - {approval_response.text}")
+                                    else:
+                                        print(f"⚠️ Provider not found in pending list")
+                                else:
+                                    print(f"⚠️ Failed to get pending providers: {pending_response.status_code}")
                         except Exception as e:
                             print(f"❌ Provider approval failed: {str(e)}")
                 else:
