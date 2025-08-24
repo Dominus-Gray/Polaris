@@ -9,6 +9,8 @@ import ReadinessDashboard from './pages/ReadinessDashboard';
 import CapabilityStatementBuilder from './pages/CapabilityStatementBuilder';
 import ProviderVerification from './pages/ProviderVerification';
 import RevenueOptimization from './pages/RevenueOptimization';
+import ActionPlanPage from './pages/ActionPlanPage';
+import CertificationCenter from './pages/CertificationCenter';
 
 // Enhanced error boundary for production stability
 class PolarisErrorBoundary extends React.Component {
