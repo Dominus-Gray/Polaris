@@ -3202,6 +3202,24 @@ function ExternalResourcesPage() {
                       rel="noopener noreferrer"
                       className="btn btn-primary btn-sm text-center"
                       style={{ color: 'white', textAlign: 'center' }}
+                      onClick={async () => {
+                        try {
+                          // Record maturity pending if coming from an assessment context
+                          const params = new URLSearchParams(window.location.search);
+                          const questionId = params.get('question');
+                          if (questionId) {
+                            await axios.post(`${API}/assessment/maturity/pending`, {
+                              area_id: areaId,
+                              question_id: questionId,
+                              source: 'free',
+                              detail: `Navigated to external resource: ${resource.title}`,
+                              external_url: resource.url
+                            });
+                          }
+                        } catch (e) {
+                          console.warn('Failed to record maturity pending from external resource', e);
+                        }
+                      }}
                     >
                       <span style={{ color: 'white' }}>Visit Website</span>
                       <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
