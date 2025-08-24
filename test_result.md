@@ -568,10 +568,10 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "Agency Subscription System Testing"
+    - "Maturity Status Endpoints and Frontend Integration Contract"
   stuck_tasks: []
   test_all: false
-  test_priority: "critical_first"
+  test_priority: "high_first"
 
 # E2E Test Results Summary
 ## ✅ WORKING FEATURES CONFIRMED:
