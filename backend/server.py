@@ -3166,7 +3166,7 @@ async def update_engagement_status(
                     "id": DataValidator.generate_standard_id("notif"),
                     "user_id": target_id,
                     "type": "engagement_status_update",
-                    "title": f"Engagement Status Updated: {engagement['area_name']}",
+                    "title": f"Engagement Status Updated: {engagement.get('area_name','')}",
                     "message": f"Status changed to {new_status.replace('_', ' ').title()}",
                     "data": {
                         "engagement_id": engagement_id,
@@ -3182,6 +3182,18 @@ async def update_engagement_status(
                 await db.notifications.insert_one(notification)
             except Exception as e:
                 logger.error(f"Failed to notify user {target_id}: {e}")
+        
+        # Auto-mark maturity compliant when engagement reaches approved/completed
+        if new_status in ("approved", "completed"):
+            try:
+                area_id = engagement.get("area_id")
+                if eng_client_id and area_id:
+                    await db.maturity_status.update_many(
+                        {"user_id": eng_client_id, "area_id": area_id, "status": "pending"},
+                        {"$set": {"status": "compliant", "updated_at": DataValidator.standardize_timestamp()}}
+                    )
+            except Exception as e:
+                logger.error(f"Auto maturity compliance update failed: {e}")
         
         logger.info(f"Engagement {engagement_id} status updated from {current_status} to {new_status} by {current['id']}")
         
