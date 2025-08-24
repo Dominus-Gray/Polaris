@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 # Test configuration
-BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
 
 # Test credentials
 PROVIDER_CREDENTIALS = {

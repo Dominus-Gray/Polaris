@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "email": "client.qa@polaris.example.com",
     "password": "Polaris#2025!"

@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
 
 class SystemMonitoringTester:
     def __init__(self):

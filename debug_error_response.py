@@ -6,7 +6,7 @@ Debug script to examine the actual error response format
 import requests
 import json
 
-BASE_URL = "https://frontend-sync-3.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-inspector.preview.emergentagent.com/api"
 
 # Test invalid credentials
 invalid_payload = {
