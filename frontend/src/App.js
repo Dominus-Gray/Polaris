@@ -1689,14 +1689,20 @@ function KnowledgeBasePage(){
   const unlockArea = async (areaId) => {
     setPaymentLoading(true);
     try {
-      const { data } = await axios.post(`${API}/payments/knowledge-base`, {
+      const { data } = await axios.post(`${API}/payments/v1/checkout/session`, {
         package_id: 'knowledge_base_single',
         origin_url: window.location.origin,
         metadata: { area_id: areaId }
       });
-      window.location.href = data.url;
+      if (data && data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error('Payment link unavailable. Please try again.');
+      }
     } catch (e) {
-      toast.error('Failed to process payment', { description: e.response?.data?.detail || e.message });
+      const msg = e.response?.data?.detail || e.message;
+      toast.error(`Failed to initiate payment: ${msg}`);
+    } finally {
       setPaymentLoading(false);
     }
   };
