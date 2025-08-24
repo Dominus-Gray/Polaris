@@ -3080,14 +3080,20 @@ async def update_engagement_status(
         raise create_polaris_error("POL-1001", "Authentication required", 401)
     
     try:
-        # Verify engagement exists
+        # Verify engagement exists (support both schemas)
         engagement = await db.engagements.find_one({"engagement_id": engagement_id})
+        if not engagement:
+            engagement = await db.engagements.find_one({"_id": engagement_id})
         if not engagement:
             raise create_polaris_error("POL-1007", "Engagement not found", 404)
         
+        # Resolve user ids across schemas
+        eng_client_id = engagement.get("client_id") or engagement.get("client_user_id")
+        eng_provider_id = engagement.get("provider_id") or engagement.get("provider_user_id")
+        
         # Check access permissions
-        if not (engagement.get("client_id") == current["id"] or 
-                engagement.get("provider_id") == current["id"] or 
+        if not (eng_client_id == current["id"] or 
+                eng_provider_id == current["id"] or 
                 current.get("role") in ["navigator", "agency"]):
             raise create_polaris_error("POL-1003", "Insufficient permissions", 403)
         
