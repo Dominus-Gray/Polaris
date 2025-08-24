@@ -91,23 +91,22 @@ def setup_qa_users():
                             nav_token = nav_login.json()["access_token"]
                             nav_headers = {"Authorization": f"Bearer {nav_token}"}
                             
-                            # Try to approve agency
+                            # Try to approve agency - need to get agency ID from pending agencies
                             try:
-                                # First get agency user ID
-                                agency_login = session.post(f"{BACKEND_URL}/auth/login", json={
-                                    "email": user["email"],
-                                    "password": user["password"]
-                                })
+                                # Get pending agencies
+                                pending_response = session.get(f"{BACKEND_URL}/navigator/agencies/pending", headers=nav_headers)
                                 
-                                if agency_login.status_code == 200:
-                                    agency_token = agency_login.json()["access_token"]
-                                    agency_headers = {"Authorization": f"Bearer {agency_token}"}
+                                if pending_response.status_code == 200:
+                                    pending_agencies = pending_response.json()
                                     
-                                    # Get agency user info
-                                    agency_me = session.get(f"{BACKEND_URL}/auth/me", headers=agency_headers)
-                                    if agency_me.status_code == 200:
-                                        agency_id = agency_me.json()["id"]
-                                        
+                                    # Find our agency
+                                    agency_id = None
+                                    for agency in pending_agencies.get("agencies", []):
+                                        if agency.get("email") == user["email"]:
+                                            agency_id = agency.get("id")
+                                            break
+                                    
+                                    if agency_id:
                                         # Approve agency
                                         approval_response = session.post(f"{BACKEND_URL}/navigator/agencies/approve", 
                                                                        json={"agency_user_id": agency_id, "approval_status": "approved"},
@@ -116,26 +115,42 @@ def setup_qa_users():
                                         if approval_response.status_code == 200:
                                             print(f"✅ Agency approved: {user['email']}")
                                             
-                                            # Generate license codes
-                                            license_response = session.post(f"{BACKEND_URL}/agency/licenses/generate",
-                                                                           json={"count": 5},
-                                                                           headers=agency_headers)
+                                            # Now login as agency to generate license
+                                            agency_login = session.post(f"{BACKEND_URL}/auth/login", json={
+                                                "email": user["email"],
+                                                "password": user["password"]
+                                            })
                                             
-                                            if license_response.status_code == 200:
-                                                licenses = license_response.json()
-                                                if licenses.get("license_codes"):
-                                                    license_code = licenses["license_codes"][0]["license_code"]
-                                                    print(f"✅ License generated: {license_code}")
-                                                    
-                                                    # Update client user with license code
-                                                    for client_user in QA_USERS:
-                                                        if client_user["role"] == "client":
-                                                            client_user["license_code"] = license_code
-                                                            break
+                                            if agency_login.status_code == 200:
+                                                agency_token = agency_login.json()["access_token"]
+                                                agency_headers = {"Authorization": f"Bearer {agency_token}"}
+                                                
+                                                # Generate license codes
+                                                license_response = session.post(f"{BACKEND_URL}/agency/licenses/generate",
+                                                                               json={"count": 5},
+                                                                               headers=agency_headers)
+                                                
+                                                if license_response.status_code == 200:
+                                                    licenses = license_response.json()
+                                                    if licenses.get("license_codes"):
+                                                        license_code = licenses["license_codes"][0]["license_code"]
+                                                        print(f"✅ License generated: {license_code}")
+                                                        
+                                                        # Update client user with license code
+                                                        for client_user in QA_USERS:
+                                                            if client_user["role"] == "client":
+                                                                client_user["license_code"] = license_code
+                                                                break
+                                                else:
+                                                    print(f"⚠️ License generation failed: {license_response.status_code} - {license_response.text}")
                                             else:
-                                                print(f"⚠️ License generation failed: {license_response.status_code}")
+                                                print(f"⚠️ Agency login after approval failed: {agency_login.status_code}")
                                         else:
-                                            print(f"⚠️ Agency approval failed: {approval_response.status_code}")
+                                            print(f"⚠️ Agency approval failed: {approval_response.status_code} - {approval_response.text}")
+                                    else:
+                                        print(f"⚠️ Agency not found in pending list")
+                                else:
+                                    print(f"⚠️ Failed to get pending agencies: {pending_response.status_code}")
                             except Exception as e:
                                 print(f"❌ Agency approval process failed: {str(e)}")
                     else:
