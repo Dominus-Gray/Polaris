@@ -6254,6 +6254,7 @@ function AgencyHome(){
               { id: 'subscription', label: 'Subscription & Billing', icon: '💳' },
               { id: 'branding', label: 'Branding & Theme', icon: '🎨' },
               { id: 'licenses', label: 'Client Licenses', icon: '🔑' },
+              { id: 'licenses', label: 'Client Licenses', icon: '🔑' },
               { id: 'system', label: 'System Health', icon: '⚡' }
             ].map((tab) => (
               <button
