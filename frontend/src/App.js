@@ -6954,7 +6954,7 @@ function ServiceRequestPage(){
                     </div>
                   ))}
                   {responses.length === 0 && (
-                    <div className="text-sm text-slate-500">No proposals yet. Providers will respond soon.</div>
+                    <div className="text-sm text-slate-500">No service requests yet. Providers will respond soon.</div>
                   )}
                 </div>
               </div>
