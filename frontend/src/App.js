@@ -5064,7 +5064,7 @@ function ProviderHome(){
     navigate(`/provider/services/edit/${serviceId}`);
   };
 
-  const editGig = (gigId) => {
+  const editService = (gigId) => {
     navigate(`/provider/gigs/edit/${gigId}`);
   };
 
