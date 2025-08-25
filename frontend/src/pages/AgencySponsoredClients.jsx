@@ -75,6 +75,7 @@ export default function AgencySponsoredClients(){
                     <div className="text-xs text-slate-500">{c.license_code ? `License: ${c.license_code}` : ''}</div>
                   </td>
                   <td className="p-3">{c.email}</td>
+                  <td className="p-3">{[c.city, c.state].filter(Boolean).join(', ') || '—'}</td>
                   <td className="p-3">{c.accepted_at ? new Date(c.accepted_at).toLocaleDateString() : '—'}</td>
                   <td className="p-3">
                     <div className="flex gap-2">
