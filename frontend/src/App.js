@@ -9588,7 +9588,7 @@ function OrderManagementPage() {
 }
 
 function ServiceDetailsPage() {
-  const { gigId } = useParams();
+  const { serviceId } = useParams();
   const navigate = useNavigate();
   
   return (
