@@ -9206,8 +9206,8 @@ function ServiceCreatePage() {
         toast.error('Failed to create service');
       }
     } catch (error) {
-      console.error('Gig creation error:', error);
-      toast.error('Failed to create gig', { 
+      console.error('Service creation error:', error);
+      toast.error('Failed to create service', { 
         description: error.response?.data?.detail || error.message 
       });
     } finally {
