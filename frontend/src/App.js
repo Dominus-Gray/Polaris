@@ -6189,6 +6189,7 @@ function AgencyHome(){
               { id: 'subscription', label: 'Subscription & Billing', icon: '💳' },
               { id: 'branding', label: 'Branding & Theme', icon: '🎨' },
               { id: 'licenses', label: 'Client Licenses', icon: '🔑' },
+              { id: 'sponsored', label: 'Sponsored Companies', icon: '🏷️' },
               { id: 'issue_cert', label: 'Issue Certificates', icon: '✅' },
               { id: 'system', label: 'System Health', icon: '⚡' }
             ].map((tab) => (
