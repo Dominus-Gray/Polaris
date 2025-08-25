@@ -9203,7 +9203,7 @@ function ServiceCreatePage() {
         toast.success('Service created successfully!');
         navigate('/provider');
       } else {
-        toast.error('Failed to create gig');
+        toast.error('Failed to create service');
       }
     } catch (error) {
       console.error('Gig creation error:', error);
