@@ -9539,7 +9539,7 @@ function ServiceEditPage() {
     <div className="container mt-6 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Edit Service Gig</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Edit Service</h1>
           <p className="text-slate-600">Update your service listing</p>
         </div>
         <button 
