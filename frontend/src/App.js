@@ -5439,6 +5439,7 @@ function ProviderHome(){
 }
 
 function NavigatorHome(){
+  // Guard against null crashes and show skeletons while loading
   const [data, setData] = useState(null);
   const [pendingProviders, setPendingProviders] = useState([]);
   const [pendingAgencies, setPendingAgencies] = useState([]);
