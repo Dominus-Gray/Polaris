@@ -9238,7 +9238,7 @@ function ServiceCreatePage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Gig Title *
+                Service Title *
               </label>
               <input
                 type="text"
