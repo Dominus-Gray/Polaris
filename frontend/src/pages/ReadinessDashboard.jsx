@@ -5,6 +5,25 @@ import axios from 'axios';
 const API = process.env.REACT_APP_BACKEND_URL || 'https://polaris-inspector.preview.emergentagent.com/api';
 
 function ReadinessDashboard() {
+  const [planner, setPlanner] = useState({ loading: true, tasks: [] });
+  const loadPlanner = async () => {
+    try {
+      const { data } = await axios.get(`${API}/planner/tasks`);
+      setPlanner({ loading: false, tasks: data || [] });
+    } catch (e) {
+      console.warn('Failed to load planner', e);
+      setPlanner({ loading: false, tasks: [] });
+    }
+  };
+  const markTask = async (taskId, status) => {
+    try {
+      await axios.patch(`${API}/planner/tasks/${taskId}`, { status });
+      setPlanner(p => ({ ...p, tasks: p.tasks.map(t => t.id === taskId ? { ...t, status } : t) }));
+    } catch (e) {
+      console.warn('Failed to update task', e);
+    }
+  };
+  useEffect(() => { loadPlanner(); }, []);
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
