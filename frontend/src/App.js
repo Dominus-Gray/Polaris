@@ -4424,7 +4424,19 @@ function ClientHome(){
                 onClick={() => {
                   // Log resource access for navigator analytics
                   axios.post(`${API}/analytics/resource-access`, { resource_id: service.id, gap_area: service.area });
-                  navigate('/free-resources');
+                  const map = {
+                    'Business Formation': 'https://www.sba.gov/business-guide/plan-your-business/choose-business-structure',
+                    'Financial Operations': 'https://www.sba.gov/funding-programs',
+                    'Legal Compliance': 'https://www.sba.gov/business-guide/launch-your-business',
+                    'Quality Management': 'https://www.iso.org/home.html',
+                    'Technology & Security': 'https://www.cisa.gov/resources-tools',
+                    'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
+                    'Performance Tracking': 'https://www.score.org/templates-tools',
+                    'Risk Management': 'https://www.ready.gov/business',
+                    'Supply Chain Management': 'https://www.ptac.org/locate-your-ptac/'
+                  };
+                  const url = map[service.area_name] || 'https://www.sba.gov/local-assistance';
+                  window.open(url, '_blank', 'noopener');
                 }}
               >
                 <div className="font-medium text-green-800 text-sm">{service.title}</div>
