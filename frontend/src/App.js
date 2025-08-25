@@ -7139,7 +7139,7 @@ function ServiceRequestPage(){
   );
 }
 
-// ---------------- Provider Proposal Composer ----------------
+// ---------------- Provider Service Request Responses ----------------
 function ProviderServiceRequestsPage(){
   const [eligible, setEligible] = useState([]);
   const [notes, setNotes] = useState({});
