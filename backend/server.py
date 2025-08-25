@@ -3420,6 +3420,86 @@ class PlannerQuickTaskIn(BaseModel):
     title: str
     steps: List[str] = []
 
+class PlannerTaskOut(BaseModel):
+    id: str
+    area_id: str
+    title: str
+    steps: List[str]
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+@api.post("/planner/quick-task")
+async def planner_quick_task(payload: PlannerQuickTaskIn, current=Depends(require_user)):
+    try:
+        DataValidator.validate_service_area(payload.area_id)
+        tid = str(uuid.uuid4())
+        now = datetime.utcnow()
+        doc = {
+            "_id": tid,
+            "id": tid,
+            "user_id": current["id"],
+            "area_id": payload.area_id,
+            "title": DataValidator.sanitize_text(payload.title, 200),
+            "steps": [DataValidator.sanitize_text(s, 200) for s in (payload.steps or [])],
+            "status": "open",
+            "created_at": now,
+            "updated_at": now
+        }
+        await db.planner_tasks.insert_one(doc)
+        return {"ok": True, "task_id": tid}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to add quick task: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add quick task")
+
+@api.get("/planner/tasks", response_model=List[PlannerTaskOut])
+async def list_planner_tasks(current=Depends(require_user)):
+    try:
+        tasks = await db.planner_tasks.find({"user_id": current["id"]}).sort("updated_at", -1).to_list(200)
+        out = []
+        for t in tasks:
+            out.append(PlannerTaskOut(
+                id=t["_id"],
+                area_id=t.get("area_id"),
+                title=t.get("title", ""),
+                steps=t.get("steps", []),
+                status=t.get("status", "open"),
+                created_at=t.get("created_at", datetime.utcnow()),
+                updated_at=t.get("updated_at", datetime.utcnow())
+            ))
+        return out
+    except Exception as e:
+        logger.error(f"Failed to list planner tasks: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load planner tasks")
+
+class PlannerStatusUpdateIn(BaseModel):
+    status: str = Field(..., pattern="^(open|completed|cancelled)$")
+
+@api.patch("/planner/tasks/{task_id}")
+async def update_planner_task(task_id: str, payload: PlannerStatusUpdateIn, current=Depends(require_user)):
+    try:
+        res = await db.planner_tasks.update_one(
+            {"_id": task_id, "user_id": current["id"]},
+            {"$set": {"status": payload.status, "updated_at": datetime.utcnow()}}
+        )
+        if res.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update planner task: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update planner task")
+
+
+# ---------------- Planner (Micro-Tasks) ----------------
+class PlannerQuickTaskIn(BaseModel):
+    area_id: str
+    title: str
+    steps: List[str] = []
+
 @api.post("/planner/quick-task")
 async def planner_quick_task(payload: PlannerQuickTaskIn, current=Depends(require_user)):
     try:
