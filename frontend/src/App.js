@@ -6482,7 +6482,7 @@ function AgencyHome(){
                 </div>
                 
                 {/* Annual Billing Toggle */}
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
                       <h5 className="font-medium text-green-900">Switch to Annual Billing</h5>
