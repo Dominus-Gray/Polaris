@@ -5259,7 +5259,7 @@ function ProviderHome(){
                         </div>
                         <button 
                           className="btn btn-sm btn-secondary"
-                          onClick={() => viewOrder(order.order_id)}
+                          onClick={() => navigate(`/engagements/${order.engagement_id || order.order_id}`)}
                         >
                           View
                         </button>
