@@ -66,6 +66,7 @@ function NavigatorApprovals() {
       <div className="flex gap-2">
         <TabButton onClick={() => setTab('providers')} active={tab==='providers'} label={`Providers (${providers.length})`} />
         <TabButton onClick={() => setTab('agencies')} active={tab==='agencies'} label={`Agencies (${agencies.length})`} />
+        <button className="btn" onClick={exportCSV}>Export CSV</button>
       </div>
 
       {loading ? (
