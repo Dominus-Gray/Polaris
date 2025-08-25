@@ -16,6 +16,8 @@ import ActionPlanPage from './pages/ActionPlanPage';
 import CertificationCenter from './pages/CertificationCenter';
 
 // Enhanced error boundary for production stability
+import EngagementDetails from './pages/EngagementDetails';
+
 class PolarisErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
