@@ -32,6 +32,18 @@ function NavigatorApprovals() {
     }
   };
 
+  const exportCSV = () => {
+    try{
+      const arr = (tab==='providers' ? filteredProviders : filteredAgencies) || [];
+      const headers = ['id','name','email','created_at','status'];
+      const rows = arr.map(x => [x.id, (x.business_name||x.agency_name||x.name||''), x.email||'', x.created_at?new Date(x.created_at).toISOString():'', x.approval_status||'pending']);
+      const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v==='string'&&v.includes(',')?`"${v.replace(/"/g,'""')}"`:v).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `approvals_${tab}.csv`; a.click(); URL.revokeObjectURL(url);
+    }catch(e){ /* no-op */ }
+  };
+
   const filteredProviders = useMemo(() => filterList(providers, query), [providers, query]);
   const filteredAgencies = useMemo(() => filterList(agencies, query), [agencies, query]);
 
