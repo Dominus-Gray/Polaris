@@ -4639,6 +4639,41 @@ function ClientHome(){
                 title="📚 Recommended Resources for You"
                 limit={4}
               />
+
+              {/* Engagements Widget */}
+              <div className="bg-white border rounded-lg p-6 mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-slate-900">Your Engagements</h3>
+                  <button className="btn btn-sm" onClick={()=>refreshServiceRequests()}>Refresh</button>
+                </div>
+                {serviceRequests && serviceRequests.length > 0 ? (
+                  <div className="space-y-2">
+                    {serviceRequests.slice(0,5).map((r)=> (
+                      <div key={r.engagement_id || r._id || r.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium text-slate-900">{r.title || r.service_title || 'Service Request'}</div>
+                          <div className="text-xs text-slate-500">Started: {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs ${r.status==='delivered'?'bg-amber-100 text-amber-800': r.status==='in_progress'?'bg-blue-100 text-blue-800': r.status==='completed'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}`}>{String(r.status||'active').replace('_',' ')}</span>
+                          <button className="btn btn-sm" onClick={()=>navigate(`/engagements/${r.engagement_id || r._id || r.id}`)}>View Timeline</button>
+                          {r.status==='delivered' && (
+                            <>
+                              <button className="btn btn-sm btn-primary" onClick={()=>updateEngagementStatus(r.engagement_id || r._id || r.id, 'completed')}>Accept Delivery</button>
+                              <button className="btn btn-sm" onClick={()=>updateEngagementStatus(r.engagement_id || r._id || r.id, 'revision_requested')}>Request Revision</button>
+                            </>
+                          )}
+                          {r.status==='in_progress' && (
+                            <button className="btn btn-sm" onClick={()=>updateEngagementStatus(r.engagement_id || r._id || r.id, 'revision_requested')}>Request Revision</button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-slate-500 text-sm">You have no active engagements yet. Create a service request to get started.</div>
+                )}
+              </div>
               
               <div className="mt-6 flex gap-3">
                 <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
