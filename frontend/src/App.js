@@ -1729,6 +1729,23 @@ function KnowledgeBasePage(){
   };
 
   const downloadTemplate = async (template, resourceType = 'template') => {
+    // Micro-planner: prompt to add quick steps after download
+    const addToPlan = async () => {
+      try {
+        await axios.post(`${API}/planner/quick-task`, {
+          area_id: selectedArea,
+          title: `Use ${template?.name || resourceType}`,
+          steps: [
+            'Review document',
+            'Customize for your business',
+            'Upload as evidence when complete'
+          ]
+        });
+        toast.success('Added to your action plan');
+      } catch (e) {
+        console.warn('Planner add failed', e);
+      }
+    };
     try {
       const response = await axios.get(
         `${API}/knowledge-base/generate-template/${selectedArea}/${resourceType}`,
