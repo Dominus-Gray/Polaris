@@ -57,7 +57,8 @@ export default function AgencySponsoredClients(){
             <tr>
               <th className="text-left p-3">Company</th>
               <th className="text-left p-3">Email</th>
-              <th className="text-left p-3">Accepted</th>
+              <th className="text-left p-3">Location</th>
+            <th className="text-left p-3">Accepted</th>
               <th className="text-left p-3">Actions</th>
             </tr>
           </thead>
