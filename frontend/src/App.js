@@ -5147,8 +5147,8 @@ function ProviderHome(){
         <div className="p-6">
           {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
-            <ProviderEarningsSnapshot />
             <div className="space-y-6">
+              <ProviderEarningsSnapshot />
               {/* Key Performance Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="tile">
