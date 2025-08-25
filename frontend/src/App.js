@@ -4831,6 +4831,7 @@ function ClientHome(){
 }
 
 function ProviderHome(){
+  // Guard against null crashes and show skeletons while loading
   const [data, setData] = useState(null);
   const [opportunities, setOpportunities] = useState([]);
   const [activeEngagements, setActiveEngagements] = useState([]);
