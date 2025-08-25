@@ -5030,14 +5030,14 @@ function ProviderHome(){
   useEffect(()=>{ 
     const load = async()=>{ 
       try {
-        const [homeRes, gigsRes, ordersRes] = await Promise.all([
+        const [homeRes, servicesRes, ordersRes] = await Promise.all([
           axios.get(`${API}/home/provider`),
           axios.get(`${API}/marketplace/services/my`),
           axios.get(`${API}/marketplace/orders/my?role_filter=provider`)
         ]);
         
         setData(homeRes.data);
-        setMyServices(gigsRes.data.services || []);
+        setMyServices(servicesRes.data.services || []);
         setMyOrders(ordersRes.data.orders || []);
         
         // Set derived data
