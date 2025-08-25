@@ -4639,6 +4639,9 @@ async def agency_clients_accepted(current=Depends(require_role("agency"))):
             "id": cid,
             "email": (user or {}).get("email", ""),
             "business_name": profile.get("company_name") or profile.get("business_name") or "",
+            "city": profile.get("city") or profile.get("business_city") or "",
+            "state": profile.get("state") or profile.get("business_state") or "",
+            "phone": profile.get("phone") or "",
             "accepted_at": inv.get("accepted_at"),
             "created_at": (user or {}).get("created_at"),
             "license_code": (user or {}).get("license_code", "")
