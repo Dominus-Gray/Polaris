@@ -6562,6 +6562,7 @@ function AgencyHome(){
           )}
 
           {activeTab === 'branding' && <AgencyThemeManager />}
+          {activeTab === 'licenses' && <AgencyLicenses />}
           
           {activeTab === 'system' && <SystemHealthDashboard />}
         </div>
