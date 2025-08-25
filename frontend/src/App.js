@@ -4,6 +4,7 @@ import axios from "axios";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, Navigate, useParams } from "react-router-dom";
 
 // Import new page components
+import AgencyLicenses from './pages/AgencyLicenses';
 import AssessmentResultsPage from './pages/AssessmentResultsPage';
 import ReadinessDashboard from './pages/ReadinessDashboard';
 import CapabilityStatementBuilder from './pages/CapabilityStatementBuilder';
