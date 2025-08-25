@@ -2969,7 +2969,7 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-async def handle_successful_payment(transaction: dict, checkout_status: CheckoutStatusResponse):
+async def handle_successful_payment(transaction: dict, checkout_status: dict):
     """Handle post-payment processing"""
     try:
         if transaction.get("package_id") == "knowledge_base_single":
