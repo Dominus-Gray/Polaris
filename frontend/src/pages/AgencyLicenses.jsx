@@ -171,6 +171,7 @@ function AgencyLicenses() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-slate-900">License Codes</h3>
           <div className="flex gap-2">
+            <InviteCompanyPanel licenses={licenses} />
             <GenerateEmailButton licenses={licenses} />
             <button className="btn btn-sm" onClick={exportCSV}>Export CSV</button>
           </div>
