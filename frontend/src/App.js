@@ -9297,7 +9297,7 @@ function ServiceCreatePage() {
             {/* Tags */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Tags (Help clients find your gig)
+                Tags (Help clients find your service)
               </label>
               <div className="flex gap-2 mb-2">
                 <input
