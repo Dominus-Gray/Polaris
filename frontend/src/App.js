@@ -9532,7 +9532,7 @@ function ServiceCreatePage() {
 
 // ================= ADDITIONAL PROVIDER COMPONENTS =================
 function ServiceEditPage() {
-  const { gigId } = useParams();
+  const { serviceId } = useParams();
   const navigate = useNavigate();
   
   return (
