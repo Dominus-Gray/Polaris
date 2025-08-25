@@ -6896,7 +6896,7 @@ function ServiceRequestPage(){
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-lg font-semibold mb-4">Proposals Received</h3>
+                <h3 className="text-lg font-semibold mb-4">Service Requests Received</h3>
                 <div className="space-y-4">
                   {responses.map(r => (
                     <div key={r.id || r._id} className="border rounded-lg p-4 hover:bg-slate-50">
