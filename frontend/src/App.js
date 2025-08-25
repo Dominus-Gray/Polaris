@@ -5064,7 +5064,7 @@ function ProviderHome(){
     navigate(`/provider/services/edit/${serviceId}`);
   };
 
-  // removed obsolete editGig (gigs => services)
+  // removed obsolete editService (services => services)
 
   const viewOrder = (orderId) => {
     navigate(`/provider/orders/${orderId}`);
