@@ -216,6 +216,76 @@ function AgencyLicenses() {
       </div>
     </div>
   );
+function InviteCompanyPanel({ licenses }){
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [count, setCount] = useState(5);
+  const available = (licenses||[]).filter(l => l.status==='available');
+
+  const prepareEmail = () => {
+    if(!email){ toast.error('Enter recipient email'); return; }
+    const selected = available.slice(0, Math.max(1, Math.min(count, available.length)));
+    if(selected.length===0){ toast.error('No available codes to include'); return; }
+
+    const headers = ['license_code','expires_at'];
+    const rows = selected.map(l => [l.license_code, l.expires_at?new Date(l.expires_at).toLocaleDateString():'']);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const subject = encodeURIComponent('Your Polaris Assessment License Codes');
+    const lines = [
+      `Hello ${name||''},`,
+      '',
+      'Below are your assessment license codes sponsored by our agency. Each code is single-use.',
+      '',
+      'Download CSV: ' + url,
+      '',
+      'Registration link: https://polaris-requirements.preview.emergentagent.com (Sign Up → Enter 10-digit license code)',
+      '',
+      'Best regards,',
+      'Your Agency'
+    ];
+    const body = encodeURIComponent(lines.join('\n'));
+
+    // Trigger CSV download for attachment
+    const a = document.createElement('a'); a.href = url; a.download = 'polaris_invite_codes.csv'; a.click();
+    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+    setTimeout(()=>URL.revokeObjectURL(url), 10000);
+  };
+
+  return (
+    <div className="inline-block">
+      <button className="btn btn-sm" onClick={()=>setOpen(o=>!o)}>
+        {open ? 'Close Invite' : 'Invite Company'}
+      </button>
+      {open && (
+        <div className="mt-2 p-3 border rounded bg-slate-50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+            <div>
+              <label className="block text-xs text-slate-600 mb-1">Company Contact Email</label>
+              <input className="input w-full" value={email} onChange={e=>setEmail(e.target.value)} placeholder="owner@company.com" />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-600 mb-1">Company / Contact Name</label>
+              <input className="input w-full" value={name} onChange={e=>setName(e.target.value)} placeholder="Acme Co." />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-600 mb-1">Include Codes</label>
+              <input type="number" className="input w-full" value={count} min={1} max={Math.min(20, available.length||1)} onChange={e=>setCount(Number(e.target.value))} />
+              <div className="text-xs text-slate-500 mt-1">Available: {available.length}</div>
+            </div>
+          </div>
+          <div className="mt-3 text-right">
+            <button className="btn btn-primary btn-sm" onClick={prepareEmail}>Prepare Email</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 }
 function GenerateEmailButton({ licenses }){
   const handleClick = () => {
