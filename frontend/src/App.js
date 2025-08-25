@@ -3943,6 +3943,25 @@ function BusinessProfileForm(){
 
 // ---------------- Home Pages ----------------
 function ClientHome(){
+  const [planner, setPlanner] = useState({ loading: true, tasks: [] });
+  const loadPlanner = async () => {
+    try {
+      const { data } = await axios.get(`${API}/planner/tasks`);
+      setPlanner({ loading: false, tasks: data || [] });
+    } catch (e) {
+      console.warn('Failed to load planner', e);
+      setPlanner({ loading: false, tasks: [] });
+    }
+  };
+  const markTask = async (taskId, status) => {
+    try {
+      await axios.patch(`${API}/planner/tasks/${taskId}`, { status });
+      setPlanner(p => ({ ...p, tasks: p.tasks.map(t => t.id === taskId ? { ...t, status } : t) }));
+    } catch (e) {
+      console.warn('Failed to update task', e);
+    }
+  };
+  useEffect(() => { loadPlanner(); }, []);
   const [data, setData] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
