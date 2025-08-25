@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 const API = `${API_BASE}/api`;
@@ -9,6 +10,7 @@ function CertificationCenter() {
   const navigate = useNavigate();
   const [certs, setCerts] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -25,6 +27,38 @@ function CertificationCenter() {
     load();
   }, []);
 
+  const copyShareLink = async (certId) => {
+    try {
+      const shareUrl = `${window.location.origin}/verify/cert/${certId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Share link copied');
+    } catch (e) {
+      toast.error('Failed to copy link');
+    }
+  };
+
+  const downloadCertificate = async (certId) => {
+    setDownloadingId(certId);
+    try {
+      // Hit the download endpoint; backend currently returns JSON (PDF coming soon)
+      const { data } = await axios.get(`${API}/certificates/${certId}/download`);
+      toast.success('Certificate ready', { description: data.download_note || 'Downloaded data returned' });
+      // For now, open the JSON response in a new tab for visibility
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `certificate-${certId}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      const msg = e.response?.data?.detail || e.message;
+      toast.error('Failed to download', { description: msg });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mt-6 max-w-4xl">
@@ -35,11 +69,11 @@ function CertificationCenter() {
 
   return (
     <div className="container mt-6 max-w-5xl">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-sm p-8 text-white mb-8">
+      <div className="bg-gradient-to-r from-[#0F172A] to-[#1B365D] rounded-lg shadow-sm p-8 text-white mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">Certification Center</h1>
-            <p className="text-purple-100">Generate and manage your procurement readiness certificates</p>
+            <p className="text-blue-100">Generate and manage your procurement readiness certificates</p>
           </div>
           <button className="btn glass" onClick={() => navigate('/readiness-dashboard')}>View Dashboard</button>
         </div>
@@ -59,6 +93,10 @@ function CertificationCenter() {
                 </div>
                 <div className="flex gap-2">
                   <button className="btn btn-sm" onClick={() => navigate(`/verify/cert/${c.id}`)}>Verify</button>
+                  <button className="btn btn-sm" onClick={() => copyShareLink(c.id)}>Copy Share Link</button>
+                  <button className="btn btn-sm btn-primary" disabled={downloadingId === c.id} onClick={() => downloadCertificate(c.id)}>
+                    {downloadingId === c.id ? 'Preparing…' : 'Download'}
+                  </button>
                 </div>
               </div>
             ))}
