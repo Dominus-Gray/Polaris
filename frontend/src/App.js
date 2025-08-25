@@ -9522,7 +9522,7 @@ function ServiceCreatePage() {
             disabled={loading}
             className="btn btn-primary"
           >
-            {loading ? 'Creating Gig...' : 'Create Gig'}
+            {loading ? 'Creating Service...' : 'Create Service'}
           </button>
         </div>
       </form>
