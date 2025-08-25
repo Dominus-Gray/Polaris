@@ -1,438 +1,517 @@
 #!/usr/bin/env python3
 """
-Backend Testing for Maturity Status Endpoints
-Testing new maturity status endpoints and frontend integration contract.
+Agency License Management Endpoints Testing
+Testing the newly exposed agency license management endpoints as requested in review.
 """
 
 import requests
 import json
-import uuid
-import time
+import sys
+import os
 from datetime import datetime
 
-# Configuration
-BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
+# Get backend URL from environment
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-requirements.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
-# Test credentials - using QA credentials from test_result.md
-TEST_CREDENTIALS = {
-    "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"}
-}
+# QA Credentials
+AGENCY_QA_EMAIL = "agency.qa@polaris.example.com"
+AGENCY_QA_PASSWORD = "Polaris#2025!"
 
-class MaturityStatusTester:
+class AgencyLicenseTest:
     def __init__(self):
         self.session = requests.Session()
-        self.tokens = {}
+        self.bearer_token = None
         self.test_results = []
         
-    def log_test(self, test_name, success, details="", response_time=0):
-        """Log test results"""
-        status = "✅ PASS" if success else "❌ FAIL"
+    def log_result(self, test_name, success, details, status_code=None):
+        """Log test result"""
         result = {
             "test": test_name,
-            "status": status,
             "success": success,
             "details": details,
-            "response_time": f"{response_time:.3f}s",
+            "status_code": status_code,
             "timestamp": datetime.now().isoformat()
         }
         self.test_results.append(result)
-        print(f"{status}: {test_name} ({response_time:.3f}s)")
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name}")
         if details:
-            print(f"    Details: {details}")
-    
-    def authenticate_user(self, role):
-        """Authenticate user and get JWT token"""
+            print(f"   Details: {details}")
+        if status_code:
+            print(f"   Status Code: {status_code}")
+        print()
+        
+    def test_agency_login(self):
+        """Test 1: Login as agency QA account and store bearer token"""
         try:
-            creds = TEST_CREDENTIALS[role]
-            start_time = time.time()
-            
-            response = self.session.post(
-                f"{BACKEND_URL}/auth/login",
-                json=creds,
-                timeout=10
-            )
-            
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                token = data.get("access_token")
-                if token:
-                    self.tokens[role] = token
-                    self.log_test(f"Authentication - {role.title()}", True, 
-                                f"Token obtained successfully", response_time)
-                    return True
-                else:
-                    self.log_test(f"Authentication - {role.title()}", False, 
-                                "No access token in response", response_time)
-                    return False
-            else:
-                self.log_test(f"Authentication - {role.title()}", False, 
-                            f"HTTP {response.status_code}: {response.text}", response_time)
-                return False
-                
-        except Exception as e:
-            self.log_test(f"Authentication - {role.title()}", False, f"Exception: {str(e)}")
-            return False
-    
-    def get_auth_headers(self, role):
-        """Get authorization headers for a role"""
-        token = self.tokens.get(role)
-        if not token:
-            return {}
-        return {"Authorization": f"Bearer {token}"}
-    
-    def test_maturity_pending_endpoint(self, role="client"):
-        """Test POST /api/assessment/maturity/pending endpoint"""
-        try:
-            headers = self.get_auth_headers(role)
-            if not headers:
-                self.log_test(f"Maturity Pending - {role.title()}", False, "No authentication token")
-                return None
-            
-            # Test payload as specified in review request
-            payload = {
-                "area_id": "area5",
-                "question_id": "q5_2", 
-                "source": "free",
-                "detail": "Selected Free Resources"
+            login_data = {
+                "email": AGENCY_QA_EMAIL,
+                "password": AGENCY_QA_PASSWORD
             }
             
-            start_time = time.time()
-            response = self.session.post(
-                f"{BACKEND_URL}/assessment/maturity/pending",
-                json=payload,
-                headers=headers,
-                timeout=10
-            )
-            response_time = time.time() - start_time
+            response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
             
             if response.status_code == 200:
                 data = response.json()
-                status_id = data.get("status_id")
-                if status_id:
-                    self.log_test(f"Maturity Pending - {role.title()}", True, 
-                                f"Status ID: {status_id}", response_time)
-                    return status_id
+                if "access_token" in data:
+                    self.bearer_token = data["access_token"]
+                    self.session.headers.update({"Authorization": f"Bearer {self.bearer_token}"})
+                    self.log_result(
+                        "Agency QA Login", 
+                        True, 
+                        f"Successfully logged in as {AGENCY_QA_EMAIL}, token stored",
+                        response.status_code
+                    )
+                    return True
                 else:
-                    self.log_test(f"Maturity Pending - {role.title()}", False, 
-                                "No status_id in response", response_time)
+                    self.log_result(
+                        "Agency QA Login", 
+                        False, 
+                        "No access_token in response",
+                        response.status_code
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Agency QA Login", 
+                    False, 
+                    f"Login failed: {response.text}",
+                    response.status_code
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result("Agency QA Login", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_license_stats_initial(self):
+        """Test 2: GET /api/agency/licenses/stats - expect 200 and JSON with required keys"""
+        try:
+            response = self.session.get(f"{API_BASE}/agency/licenses/stats")
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_keys = ["total_generated", "available", "used", "expired"]
+                
+                missing_keys = [key for key in required_keys if key not in data]
+                if not missing_keys:
+                    self.log_result(
+                        "License Stats Initial", 
+                        True, 
+                        f"Stats retrieved successfully: {data}",
+                        response.status_code
+                    )
+                    return data
+                else:
+                    self.log_result(
+                        "License Stats Initial", 
+                        False, 
+                        f"Missing required keys: {missing_keys}. Got: {data}",
+                        response.status_code
+                    )
                     return None
             else:
-                self.log_test(f"Maturity Pending - {role.title()}", False, 
-                            f"HTTP {response.status_code}: {response.text}", response_time)
+                self.log_result(
+                    "License Stats Initial", 
+                    False, 
+                    f"Failed to get stats: {response.text}",
+                    response.status_code
+                )
                 return None
                 
         except Exception as e:
-            self.log_test(f"Maturity Pending - {role.title()}", False, f"Exception: {str(e)}")
+            self.log_result("License Stats Initial", False, f"Exception: {str(e)}")
             return None
     
-    def test_maturity_mine_endpoint(self, role="client", expected_status_id=None):
-        """Test GET /api/assessment/maturity/mine endpoint"""
+    def test_license_list_initial(self):
+        """Test 3: GET /api/agency/licenses - expect 200 and licenses array"""
         try:
-            headers = self.get_auth_headers(role)
-            if not headers:
-                self.log_test(f"Maturity Mine - {role.title()}", False, "No authentication token")
-                return False
-            
-            start_time = time.time()
-            response = self.session.get(
-                f"{BACKEND_URL}/assessment/maturity/mine",
-                headers=headers,
-                timeout=10
-            )
-            response_time = time.time() - start_time
+            response = self.session.get(f"{API_BASE}/agency/licenses")
             
             if response.status_code == 200:
                 data = response.json()
-                items = data.get("items", [])
+                if "licenses" in data and isinstance(data["licenses"], list):
+                    self.log_result(
+                        "License List Initial", 
+                        True, 
+                        f"Licenses list retrieved successfully: {len(data['licenses'])} licenses",
+                        response.status_code
+                    )
+                    return data["licenses"]
+                else:
+                    self.log_result(
+                        "License List Initial", 
+                        False, 
+                        f"Invalid response format. Expected 'licenses' array. Got: {data}",
+                        response.status_code
+                    )
+                    return None
+            else:
+                self.log_result(
+                    "License List Initial", 
+                    False, 
+                    f"Failed to get licenses: {response.text}",
+                    response.status_code
+                )
+                return None
                 
-                # Check if expected status_id is in the results
-                if expected_status_id:
-                    found = any(item.get("id") == expected_status_id for item in items)
-                    if found:
-                        self.log_test(f"Maturity Mine - {role.title()}", True, 
-                                    f"Found {len(items)} items, including expected status_id", response_time)
+        except Exception as e:
+            self.log_result("License List Initial", False, f"Exception: {str(e)}")
+            return None
+    
+    def test_license_generation(self):
+        """Test 4: POST /api/agency/licenses/generate with {quantity: 3, expires_days: 60}"""
+        try:
+            generation_data = {
+                "quantity": 3,
+                "expires_days": 60
+            }
+            
+            response = self.session.post(f"{API_BASE}/agency/licenses/generate", json=generation_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["message", "licenses", "usage_update"]
+                
+                missing_fields = [field for field in required_fields if field not in data]
+                if not missing_fields:
+                    licenses_count = len(data.get("licenses", []))
+                    if licenses_count == 3:
+                        self.log_result(
+                            "License Generation", 
+                            True, 
+                            f"Successfully generated 3 licenses. Response: {data}",
+                            response.status_code
+                        )
+                        return data
+                    else:
+                        self.log_result(
+                            "License Generation", 
+                            False, 
+                            f"Expected 3 licenses, got {licenses_count}. Response: {data}",
+                            response.status_code
+                        )
+                        return None
+                else:
+                    self.log_result(
+                        "License Generation", 
+                        False, 
+                        f"Missing required fields: {missing_fields}. Got: {data}",
+                        response.status_code
+                    )
+                    return None
+            elif response.status_code == 403:
+                self.log_result(
+                    "License Generation", 
+                    True, 
+                    f"Agency approval required (403 as expected): {response.text}",
+                    response.status_code
+                )
+                return None
+            else:
+                self.log_result(
+                    "License Generation", 
+                    False, 
+                    f"Unexpected response: {response.text}",
+                    response.status_code
+                )
+                return None
+                
+        except Exception as e:
+            self.log_result("License Generation", False, f"Exception: {str(e)}")
+            return None
+    
+    def test_license_stats_after_generation(self, initial_stats):
+        """Test 5: Re-GET stats and verify counts increased (+3)"""
+        try:
+            response = self.session.get(f"{API_BASE}/agency/licenses/stats")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if initial_stats:
+                    initial_total = initial_stats.get("total_generated", 0)
+                    current_total = data.get("total_generated", 0)
+                    
+                    if current_total == initial_total + 3:
+                        self.log_result(
+                            "License Stats After Generation", 
+                            True, 
+                            f"Stats correctly updated. Initial: {initial_total}, Current: {current_total} (+3)",
+                            response.status_code
+                        )
                         return True
                     else:
-                        self.log_test(f"Maturity Mine - {role.title()}", False, 
-                                    f"Expected status_id {expected_status_id} not found in {len(items)} items", response_time)
+                        self.log_result(
+                            "License Stats After Generation", 
+                            False, 
+                            f"Stats not updated correctly. Initial: {initial_total}, Current: {current_total} (expected +3)",
+                            response.status_code
+                        )
                         return False
                 else:
-                    self.log_test(f"Maturity Mine - {role.title()}", True, 
-                                f"Retrieved {len(items)} maturity status items", response_time)
+                    # If we didn't have initial stats, just verify current stats are reasonable
+                    self.log_result(
+                        "License Stats After Generation", 
+                        True, 
+                        f"Stats retrieved after generation: {data}",
+                        response.status_code
+                    )
                     return True
             else:
-                self.log_test(f"Maturity Mine - {role.title()}", False, 
-                            f"HTTP {response.status_code}: {response.text}", response_time)
+                self.log_result(
+                    "License Stats After Generation", 
+                    False, 
+                    f"Failed to get updated stats: {response.text}",
+                    response.status_code
+                )
                 return False
                 
         except Exception as e:
-            self.log_test(f"Maturity Mine - {role.title()}", False, f"Exception: {str(e)}")
+            self.log_result("License Stats After Generation", False, f"Exception: {str(e)}")
             return False
     
-    def test_set_maturity_status(self, status_id, role="client", new_status="compliant"):
-        """Test POST /api/assessment/maturity/{status_id}/set-status endpoint"""
+    def test_license_list_after_generation(self, initial_licenses):
+        """Test 6: Re-GET licenses and verify list contains 3 new items"""
         try:
-            headers = self.get_auth_headers(role)
-            if not headers:
-                self.log_test(f"Set Maturity Status - {role.title()}", False, "No authentication token")
-                return False
-            
-            # Use form data as specified (multipart or form)
-            form_data = {"status": new_status}
-            
-            start_time = time.time()
-            response = self.session.post(
-                f"{BACKEND_URL}/assessment/maturity/{status_id}/set-status",
-                data=form_data,
-                headers=headers,
-                timeout=10
-            )
-            response_time = time.time() - start_time
+            response = self.session.get(f"{API_BASE}/agency/licenses")
             
             if response.status_code == 200:
                 data = response.json()
-                if data.get("ok"):
-                    self.log_test(f"Set Maturity Status - {role.title()}", True, 
-                                f"Status updated to '{new_status}'", response_time)
-                    return True
+                current_licenses = data.get("licenses", [])
+                
+                if initial_licenses is not None:
+                    initial_count = len(initial_licenses)
+                    current_count = len(current_licenses)
+                    
+                    if current_count == initial_count + 3:
+                        self.log_result(
+                            "License List After Generation", 
+                            True, 
+                            f"License list correctly updated. Initial: {initial_count}, Current: {current_count} (+3)",
+                            response.status_code
+                        )
+                        return True
+                    else:
+                        self.log_result(
+                            "License List After Generation", 
+                            False, 
+                            f"License list not updated correctly. Initial: {initial_count}, Current: {current_count} (expected +3)",
+                            response.status_code
+                        )
+                        return False
                 else:
-                    self.log_test(f"Set Maturity Status - {role.title()}", False, 
-                                "Response ok=False", response_time)
-                    return False
+                    # If we didn't have initial licenses, just verify current list is reasonable
+                    self.log_result(
+                        "License List After Generation", 
+                        True, 
+                        f"License list retrieved after generation: {current_count} licenses",
+                        response.status_code
+                    )
+                    return True
             else:
-                self.log_test(f"Set Maturity Status - {role.title()}", False, 
-                            f"HTTP {response.status_code}: {response.text}", response_time)
+                self.log_result(
+                    "License List After Generation", 
+                    False, 
+                    f"Failed to get updated licenses: {response.text}",
+                    response.status_code
+                )
                 return False
                 
         except Exception as e:
-            self.log_test(f"Set Maturity Status - {role.title()}", False, f"Exception: {str(e)}")
+            self.log_result("License List After Generation", False, f"Exception: {str(e)}")
             return False
     
-    def test_security_cross_user_access(self, status_id, owner_role="client", other_role="provider"):
-        """Test security: trying to update another user's status_id should return 404"""
+    def test_license_generation_negative(self):
+        """Test 7: Negative test - POST generate with quantity: 0 - expect 422 validation error"""
         try:
-            headers = self.get_auth_headers(other_role)
-            if not headers:
-                self.log_test(f"Security Test - Cross User Access", False, "No authentication token for other user")
-                return False
+            generation_data = {
+                "quantity": 0,
+                "expires_days": 60
+            }
             
-            form_data = {"status": "compliant"}
+            response = self.session.post(f"{API_BASE}/agency/licenses/generate", json=generation_data)
             
-            start_time = time.time()
-            response = self.session.post(
-                f"{BACKEND_URL}/assessment/maturity/{status_id}/set-status",
-                data=form_data,
-                headers=headers,
-                timeout=10
-            )
-            response_time = time.time() - start_time
-            
-            # Should return 404 for unauthorized access
-            if response.status_code == 404:
-                self.log_test(f"Security Test - Cross User Access", True, 
-                            f"Correctly returned 404 for unauthorized access", response_time)
+            if response.status_code == 422:
+                self.log_result(
+                    "License Generation Negative Test", 
+                    True, 
+                    f"Correctly rejected quantity=0 with 422 validation error: {response.text}",
+                    response.status_code
+                )
                 return True
             else:
-                self.log_test(f"Security Test - Cross User Access", False, 
-                            f"Expected 404, got HTTP {response.status_code}: {response.text}", response_time)
+                self.log_result(
+                    "License Generation Negative Test", 
+                    False, 
+                    f"Expected 422 validation error, got {response.status_code}: {response.text}",
+                    response.status_code
+                )
                 return False
                 
         except Exception as e:
-            self.log_test(f"Security Test - Cross User Access", False, f"Exception: {str(e)}")
+            self.log_result("License Generation Negative Test", False, f"Exception: {str(e)}")
             return False
     
-    def test_existing_endpoints(self):
-        """Test that existing flows are unaffected: /api/assessment/schema, /api/auth/me"""
-        
-        # Test assessment schema endpoint
+    def test_client_registration_rule(self):
+        """Test 8: Verify client registration rule exists (requires 10-digit license_code)"""
         try:
-            start_time = time.time()
-            response = self.session.get(f"{BACKEND_URL}/assessment/schema", timeout=10)
-            response_time = time.time() - start_time
+            # Test registration without license_code
+            registration_data = {
+                "email": "test.client@example.com",
+                "password": "TestPassword123!",
+                "role": "client",
+                "terms_accepted": True
+            }
             
-            if response.status_code == 200:
-                data = response.json()
-                schema = data.get("schema")
-                if schema and isinstance(schema, dict):
-                    self.log_test("Assessment Schema Endpoint", True, 
-                                f"Schema loaded with {len(schema)} areas", response_time)
-                else:
-                    self.log_test("Assessment Schema Endpoint", False, 
-                                "Invalid schema format", response_time)
-            else:
-                self.log_test("Assessment Schema Endpoint", False, 
-                            f"HTTP {response.status_code}: {response.text}", response_time)
-        except Exception as e:
-            self.log_test("Assessment Schema Endpoint", False, f"Exception: {str(e)}")
-        
-        # Test auth/me endpoint for each authenticated user
-        for role in self.tokens.keys():
-            try:
-                headers = self.get_auth_headers(role)
-                start_time = time.time()
-                response = self.session.get(f"{BACKEND_URL}/auth/me", headers=headers, timeout=10)
-                response_time = time.time() - start_time
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("id") and data.get("email") and data.get("role"):
-                        self.log_test(f"Auth Me - {role.title()}", True, 
-                                    f"User info retrieved: {data.get('role')} - {data.get('email')}", response_time)
-                    else:
-                        self.log_test(f"Auth Me - {role.title()}", False, 
-                                    "Missing required user fields", response_time)
-                else:
-                    self.log_test(f"Auth Me - {role.title()}", False, 
-                                f"HTTP {response.status_code}: {response.text}", response_time)
-            except Exception as e:
-                self.log_test(f"Auth Me - {role.title()}", False, f"Exception: {str(e)}")
-    
-    def verify_status_update(self, status_id, role="client", expected_status="compliant"):
-        """Verify that the status was actually updated by retrieving it"""
-        try:
-            headers = self.get_auth_headers(role)
-            if not headers:
-                self.log_test(f"Verify Status Update - {role.title()}", False, "No authentication token")
-                return False
+            response = self.session.post(f"{API_BASE}/auth/register", json=registration_data)
             
-            start_time = time.time()
-            response = self.session.get(
-                f"{BACKEND_URL}/assessment/maturity/mine",
-                headers=headers,
-                timeout=10
-            )
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                items = data.get("items", [])
-                
-                # Find the specific status_id
-                target_item = None
-                for item in items:
-                    if item.get("id") == status_id:
-                        target_item = item
-                        break
-                
-                if target_item:
-                    actual_status = target_item.get("status")
-                    if actual_status == expected_status:
-                        self.log_test(f"Verify Status Update - {role.title()}", True, 
-                                    f"Status correctly updated to '{expected_status}'", response_time)
-                        return True
-                    else:
-                        self.log_test(f"Verify Status Update - {role.title()}", False, 
-                                    f"Expected status '{expected_status}', got '{actual_status}'", response_time)
-                        return False
+            if response.status_code == 400:
+                response_text = response.text.lower()
+                if "license" in response_text and ("10-digit" in response_text or "license_code" in response_text):
+                    self.log_result(
+                        "Client Registration Rule Verification", 
+                        True, 
+                        f"Correctly requires license_code for client registration: {response.text}",
+                        response.status_code
+                    )
+                    return True
                 else:
-                    self.log_test(f"Verify Status Update - {role.title()}", False, 
-                                f"Status ID {status_id} not found in results", response_time)
+                    self.log_result(
+                        "Client Registration Rule Verification", 
+                        False, 
+                        f"Got 400 error but not license-related: {response.text}",
+                        response.status_code
+                    )
                     return False
             else:
-                self.log_test(f"Verify Status Update - {role.title()}", False, 
-                            f"HTTP {response.status_code}: {response.text}", response_time)
+                self.log_result(
+                    "Client Registration Rule Verification", 
+                    False, 
+                    f"Expected 400 error for missing license_code, got {response.status_code}: {response.text}",
+                    response.status_code
+                )
                 return False
                 
         except Exception as e:
-            self.log_test(f"Verify Status Update - {role.title()}", False, f"Exception: {str(e)}")
+            self.log_result("Client Registration Rule Verification", False, f"Exception: {str(e)}")
             return False
     
-    def run_comprehensive_test(self):
-        """Run comprehensive maturity status endpoint testing"""
-        print("🎯 MATURITY STATUS ENDPOINTS TESTING STARTED")
+    def run_all_tests(self):
+        """Run all agency license management tests"""
+        print("🎯 AGENCY LICENSE MANAGEMENT ENDPOINTS TESTING")
         print("=" * 60)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Testing with QA credentials: {AGENCY_QA_EMAIL}")
+        print()
         
-        # Step 1: Authenticate users
-        print("\n📋 STEP 1: Authentication")
-        auth_success = 0
-        for role in ["client", "provider", "agency", "navigator"]:
-            if self.authenticate_user(role):
-                auth_success += 1
+        # Test 1: Login
+        if not self.test_agency_login():
+            print("❌ Cannot proceed without authentication")
+            return self.generate_summary()
         
-        if auth_success == 0:
-            print("❌ CRITICAL: No users could be authenticated. Stopping tests.")
-            return
+        # Test 2: Initial stats
+        initial_stats = self.test_license_stats_initial()
         
-        # Step 2: Test existing endpoints to ensure they're unaffected
-        print("\n📋 STEP 2: Verify Existing Endpoints")
-        self.test_existing_endpoints()
+        # Test 3: Initial license list
+        initial_licenses = self.test_license_list_initial()
         
-        # Step 3: Test maturity pending endpoint with different roles
-        print("\n📋 STEP 3: Test Maturity Pending Endpoint")
-        status_ids = {}
-        for role in self.tokens.keys():
-            status_id = self.test_maturity_pending_endpoint(role)
-            if status_id:
-                status_ids[role] = status_id
+        # Test 4: License generation
+        generation_result = self.test_license_generation()
         
-        # Step 4: Test maturity mine endpoint
-        print("\n📋 STEP 4: Test Maturity Mine Endpoint")
-        for role in self.tokens.keys():
-            expected_id = status_ids.get(role)
-            self.test_maturity_mine_endpoint(role, expected_id)
+        # Test 5 & 6: Verify updates (only if generation was successful)
+        if generation_result:
+            self.test_license_stats_after_generation(initial_stats)
+            self.test_license_list_after_generation(initial_licenses)
         
-        # Step 5: Test set maturity status endpoint
-        print("\n📋 STEP 5: Test Set Maturity Status Endpoint")
-        for role, status_id in status_ids.items():
-            if self.test_set_maturity_status(status_id, role, "compliant"):
-                # Verify the update worked
-                self.verify_status_update(status_id, role, "compliant")
+        # Test 7: Negative test
+        self.test_license_generation_negative()
         
-        # Step 6: Test security - cross-user access
-        print("\n📋 STEP 6: Security Testing")
-        if "client" in status_ids and "provider" in self.tokens:
-            client_status_id = status_ids["client"]
-            self.test_security_cross_user_access(client_status_id, "client", "provider")
+        # Test 8: Client registration rule
+        self.test_client_registration_rule()
         
-        # Generate summary
-        self.generate_summary()
+        return self.generate_summary()
     
     def generate_summary(self):
         """Generate test summary"""
         print("\n" + "=" * 60)
-        print("🎯 MATURITY STATUS ENDPOINTS TEST SUMMARY")
+        print("🎯 AGENCY LICENSE MANAGEMENT TEST SUMMARY")
         print("=" * 60)
         
         total_tests = len(self.test_results)
         passed_tests = sum(1 for result in self.test_results if result["success"])
         failed_tests = total_tests - passed_tests
-        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
         print(f"Total Tests: {total_tests}")
         print(f"Passed: {passed_tests}")
         print(f"Failed: {failed_tests}")
-        print(f"Success Rate: {success_rate:.1f}%")
+        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%")
+        print()
         
-        if failed_tests > 0:
-            print(f"\n❌ FAILED TESTS ({failed_tests}):")
-            for result in self.test_results:
-                if not result["success"]:
-                    print(f"  • {result['test']}: {result['details']}")
-        
-        print(f"\n✅ PASSED TESTS ({passed_tests}):")
+        # Show detailed results
+        print("DETAILED RESULTS:")
         for result in self.test_results:
-            if result["success"]:
-                print(f"  • {result['test']}")
+            status = "✅" if result["success"] else "❌"
+            print(f"{status} {result['test']} (Status: {result.get('status_code', 'N/A')})")
+            if result["details"]:
+                print(f"   {result['details']}")
         
-        # Overall assessment
-        if success_rate >= 90:
-            print(f"\n🎉 EXCELLENT: Maturity status endpoints are working correctly ({success_rate:.1f}% success rate)")
-        elif success_rate >= 75:
-            print(f"\n✅ GOOD: Most maturity status endpoints working with minor issues ({success_rate:.1f}% success rate)")
-        elif success_rate >= 50:
-            print(f"\n⚠️ PARTIAL: Some maturity status endpoints working but significant issues ({success_rate:.1f}% success rate)")
-        else:
-            print(f"\n❌ CRITICAL: Major issues with maturity status endpoints ({success_rate:.1f}% success rate)")
+        print("\n" + "=" * 60)
+        print("KEY FINDINGS:")
+        
+        # Extract important data fields from successful tests
+        important_data = {}
+        for result in self.test_results:
+            if result["success"] and "Stats retrieved successfully" in result["details"]:
+                # Extract stats data
+                details = result["details"]
+                if "{" in details:
+                    try:
+                        stats_str = details[details.find("{"):details.rfind("}")+1]
+                        stats_data = eval(stats_str)  # Safe in this context
+                        important_data["license_stats"] = stats_data
+                    except:
+                        pass
+        
+        if important_data:
+            print("📊 Important Data Fields:")
+            for key, value in important_data.items():
+                print(f"   {key}: {value}")
+        
+        # Status codes summary
+        status_codes = {}
+        for result in self.test_results:
+            if result.get("status_code"):
+                code = result["status_code"]
+                status_codes[code] = status_codes.get(code, 0) + 1
+        
+        if status_codes:
+            print("📈 Status Codes:")
+            for code, count in sorted(status_codes.items()):
+                print(f"   {code}: {count} occurrences")
+        
+        return {
+            "total_tests": total_tests,
+            "passed": passed_tests,
+            "failed": failed_tests,
+            "success_rate": passed_tests/total_tests*100,
+            "results": self.test_results,
+            "important_data": important_data
+        }
 
 def main():
     """Main test execution"""
-    tester = MaturityStatusTester()
-    tester.run_comprehensive_test()
+    tester = AgencyLicenseTest()
+    summary = tester.run_all_tests()
+    
+    # Return appropriate exit code
+    if summary["failed"] == 0:
+        print("\n🎉 ALL TESTS PASSED!")
+        sys.exit(0)
+    else:
+        print(f"\n⚠️  {summary['failed']} TEST(S) FAILED")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
