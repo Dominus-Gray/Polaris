@@ -18,6 +18,8 @@ import CertificationCenter from './pages/CertificationCenter';
 // Enhanced error boundary for production stability
 
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
+import AgencySponsoredClients from './pages/AgencySponsoredClients';
+
 
 import EngagementDetails from './pages/EngagementDetails';
 
