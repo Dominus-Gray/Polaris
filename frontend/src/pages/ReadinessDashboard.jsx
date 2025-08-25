@@ -208,6 +208,43 @@ function ReadinessDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Business Area Scores */}
+      {/* Planner Card */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-slate-900">Action Plan</h3>
+          {!planner.loading && (
+            <span className="text-sm text-slate-500">{planner.tasks.length} task(s)</span>
+          )}
+        </div>
+        {planner.loading ? (
+          <div className="space-y-2">
+            <div className="h-6 bg-slate-200 rounded" />
+            <div className="h-6 bg-slate-200 rounded" />
+          </div>
+        ) : planner.tasks.length === 0 ? (
+          <div className="text-slate-600 text-sm">No quick tasks added yet. Download a template to add suggested steps.</div>
+        ) : (
+          <ul className="space-y-2">
+            {planner.tasks.slice(0, 5).map(t => (
+              <li key={t.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <div className="font-medium text-slate-900">{t.title}</div>
+                  {t.area_id && (
+                    <div className="text-xs text-slate-500">Area: {t.area_id}</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-xs ${t.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t.status}</span>
+                  {t.status !== 'completed' && (
+                    <button className="btn btn-sm" onClick={() => markTask(t.id, 'completed')}>Mark Complete</button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
