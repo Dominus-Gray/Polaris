@@ -9551,9 +9551,9 @@ function ServiceEditPage() {
       </div>
       
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-        <h3 className="text-lg font-medium text-slate-900 mb-2">Gig Editor</h3>
-        <p className="text-slate-600 mb-4">Gig ID: {gigId}</p>
-        <p className="text-slate-500">This feature will allow editing existing gigs with the same interface as creation.</p>
+        <h3 className="text-lg font-medium text-slate-900 mb-2">Service Editor</h3>
+        <p className="text-slate-600 mb-4">Service ID: {serviceId}</p>
+        <p className="text-slate-500">This feature will allow editing existing services with the same interface as creation.</p>
       </div>
     </div>
   );
