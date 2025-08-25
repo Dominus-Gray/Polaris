@@ -9200,7 +9200,7 @@ function ServiceCreatePage() {
       });
 
       if (response.data.success) {
-        toast.success('Gig created successfully!');
+        toast.success('Service created successfully!');
         navigate('/provider');
       } else {
         toast.error('Failed to create gig');
