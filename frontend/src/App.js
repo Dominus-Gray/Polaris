@@ -7169,7 +7169,7 @@ function ProviderServiceRequestsPage(){
   };
   return (
     <div className="container mt-6">
-      <h2 className="text-lg font-semibold mb-3">Proposal Composer</h2>
+      <h2 className="text-lg font-semibold mb-3">Service Request Responses</h2>
       <table className="table">
         <thead><tr><th>Area</th><th>Budget</th><th>Timeline</th><th>Invited</th><th>Proposal</th><th>Attachments</th><th>Action</th></tr></thead>
         <tbody>
