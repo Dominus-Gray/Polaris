@@ -3971,7 +3971,8 @@ async def generate_kb_content(
 
 # AI Assistant for Contextual Help
 @api.post("/knowledge-base/ai-assistance")
-async def get_ai_assistance(request: AIAssistanceRequest, current=Depends(require_user)):
+@rate_limit(max_requests=10, window_seconds=60)
+async def get_ai_assistance(http_request: Request, request: AIAssistanceRequest, current=Depends(require_user)):
     """Get AI-powered assistance and guidance - Premium feature"""
     try:
         # CRITICAL: Providers should NEVER have Knowledge Base access
