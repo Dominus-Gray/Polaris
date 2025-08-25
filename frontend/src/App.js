@@ -5751,6 +5751,7 @@ function NavigatorHome(){
           {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
+              <ProviderEarningsSnapshot />
               {/* Platform Overview Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="tile">
