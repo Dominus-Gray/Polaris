@@ -1799,6 +1799,13 @@ function KnowledgeBasePage(){
       window.URL.revokeObjectURL(url);
       
       toast.success(`Downloaded ${template.name || resourceType}`);
+
+      // Ask to add to plan after successful download
+      setTimeout(() => {
+        if (window.confirm('Add this template to your action plan with quick steps?')) {
+          addToPlan();
+        }
+      }, 100);
     } catch (e) {
       console.error('Download failed:', e);
       toast.error('Download failed', { 
