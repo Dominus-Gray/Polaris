@@ -3,13 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-const API_BASE = process.env.REACT_APP_BACKEND_URL;
-const API = `${API_BASE}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function EngagementDetails() {
   const { engagementId } = useParams();
   const navigate = useNavigate();
   const [eng, setEng] = useState(null);
+  const [tracking, setTracking] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionBusy, setActionBusy] = useState(false);
 
@@ -18,8 +18,18 @@ function EngagementDetails() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API}/engagements/${engagementId}`);
-      setEng(data.engagement);
+      // Load tracking first
+      const { data: tr } = await axios.get(`${API}/engagements/${engagementId}/tracking`);
+      setTracking(tr.tracking_entries || []);
+
+      // Try to hydrate summary from my-services list
+      try {
+        const { data: mine } = await axios.get(`${API}/engagements/my-services`);
+        const found = (mine.engagements || []).find(e => (e._id === engagementId) || (e.id === engagementId) || (e.engagement_id === engagementId));
+        if (found) setEng(found);
+      } catch {}
+
+      if (!eng) setEng({ id: engagementId, status: (tr.engagement?.status || 'active'), title: tr.engagement?.title });
     } catch (e) {
       console.error('Failed to load engagement', e);
       toast.error('Unable to load engagement');
@@ -29,7 +39,6 @@ function EngagementDetails() {
   };
 
   const setStatus = async (status) => {
-    if (!eng) return;
     setActionBusy(true);
     try {
       await axios.post(`${API}/engagements/${engagementId}/update`, { status });
@@ -49,7 +58,7 @@ function EngagementDetails() {
   if (loading) return <div className="container mt-6"><div className="skel h-6 w-1/3" /><div className="skel h-32 w-full mt-3" /></div>;
   if (!eng) return <div className="container mt-6"><div className="bg-white border rounded-lg p-6">Engagement not found</div></div>;
 
-  const timeline = buildTimeline(eng);
+  const events = buildTimeline(eng, tracking);
 
   return (
     <div className="container mt-6 max-w-4xl">
@@ -60,7 +69,7 @@ function EngagementDetails() {
             <p className="text-slate-600 text-sm">Service: {eng.title || eng.service_title || 'Service Request'}</p>
           </div>
           <div>
-            <span className={`px-3 py-1 rounded-full text-sm ${statusPill(eng.status)}`}>{eng.status.replace('_',' ')}</span>
+            <span className={`px-3 py-1 rounded-full text-sm ${statusPill(eng.status)}`}>{String(eng.status||'active').replace('_',' ')}</span>
           </div>
         </div>
       </div>
@@ -71,7 +80,7 @@ function EngagementDetails() {
           <div className="bg-white border rounded-lg p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Timeline</h3>
             <ol className="relative border-s border-slate-200">
-              {timeline.map((t, idx) => (
+              {events.map((t, idx) => (
                 <li key={idx} className="ms-6 mb-6">
                   <span className={`absolute -start-2.5 flex h-5 w-5 items-center justify-center rounded-full ${t.color} ring-2 ring-white`}></span>
                   <div className="flex items-center justify-between">
@@ -116,14 +125,23 @@ function EngagementDetails() {
   );
 }
 
-function buildTimeline(eng) {
+function buildTimeline(eng, tracking = []) {
   const events = [];
-  if (eng.created_at) events.push({ title: 'Requested', at: eng.created_at, color: 'bg-slate-400' });
-  if (eng.accepted_at) events.push({ title: 'Accepted', at: eng.accepted_at, color: 'bg-blue-500' });
-  if (eng.in_progress_at) events.push({ title: 'In Progress', at: eng.in_progress_at, color: 'bg-indigo-500' });
-  if (eng.delivered_at) events.push({ title: 'Delivered', at: eng.delivered_at, color: 'bg-amber-500' });
-  if (eng.completed_at) events.push({ title: 'Completed', at: eng.completed_at, color: 'bg-emerald-600' });
-  if (events.length === 0 && eng.status) events.push({ title: eng.status, at: eng.updated_at || eng.created_at, color: 'bg-slate-400' });
+  if (eng?.created_at) events.push({ title: 'Requested', at: eng.created_at, color: 'bg-slate-400' });
+  // Merge tracking entries
+  for (const t of tracking){
+    const mapColor = {
+      accepted: 'bg-blue-500',
+      in_progress: 'bg-indigo-500',
+      delivered: 'bg-amber-500',
+      completed: 'bg-emerald-600',
+      on_hold: 'bg-slate-400'
+    };
+    events.push({ title: (t.status||'update').replace('_',' '), at: t.updated_at || t.timestamp || Date.now(), color: mapColor[t.status] || 'bg-slate-400', note: t.notes });
+  }
+  if (!events.length) events.push({ title: String(eng?.status||'active'), at: eng?.updated_at || eng?.created_at || Date.now(), color: 'bg-slate-400' });
+  // Sort by time
+  events.sort((a,b)=> new Date(a.at) - new Date(b.at));
   return events;
 }
 
