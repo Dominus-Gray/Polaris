@@ -5859,8 +5859,6 @@ function NavigatorHome(){
           {activeTab === 'approvals' && (
             <NavigatorApprovals />
           )}
-          {/* Removed inline approvals UI in favor of component */}
-              {/* Provider Approvals */}
               <div className="bg-white border rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Provider Approval Queue ({pendingProviders.length})</h3>
                 {pendingProviders.length > 0 ? (
