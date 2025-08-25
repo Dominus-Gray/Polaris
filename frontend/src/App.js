@@ -967,6 +967,50 @@ function AssessmentPage(){
   };
 
   const handleEvidenceUpload = async (questionId, files) => {
+    // Elevate to chunked upload for large files > 8MB total
+    const CHUNK_THRESHOLD = 8 * 1024 * 1024;
+    const totalSize = Array.from(files || []).reduce((sum, f) => sum + (f?.size || 0), 0);
+    if (totalSize > CHUNK_THRESHOLD) {
+      try {
+        const CHUNK_SIZE = 2 * 1024 * 1024;
+        const file = files[0];
+        // 1. Initiate (re-using business logo initiate as platform chunk infra)
+        const initForm = new FormData();
+        initForm.append('file_name', file.name);
+        initForm.append('total_size', file.size);
+        initForm.append('mime_type', file.type || 'application/octet-stream');
+        const init = await axios.post(`${API}/business/logo/initiate`, initForm);
+        const uploadId = init.data.upload_id;
+        const chunkSize = init.data.chunk_size || CHUNK_SIZE;
+        // 2. Upload chunks
+        let uploaded = 0;
+        for (let start = 0, idx = 0; start < file.size; start += chunkSize, idx++) {
+          const chunk = file.slice(start, Math.min(start + chunkSize, file.size));
+          const form = new FormData();
+          form.append('upload_id', uploadId);
+          form.append('chunk_index', idx);
+          form.append('file', new File([chunk], file.name, { type: file.type }));
+          await axios.post(`${API}/business/logo/chunk`, form, {
+            onUploadProgress: (e) => {
+              uploaded = Math.min(file.size, start + e.loaded);
+              const percent = Math.round((uploaded / file.size) * 100);
+              // You can wire this to a progress bar UI if desired
+              console.debug(`Uploading evidence... ${percent}%`);
+            }
+          });
+        }
+        // 3. Complete
+        const completeForm = new FormData();
+        completeForm.append('upload_id', uploadId);
+        completeForm.append('total_chunks', Math.ceil(file.size / chunkSize));
+        await axios.post(`${API}/business/logo/complete`, completeForm);
+        toast.success('Evidence uploaded (chunked)');
+        return;
+      } catch (e) {
+        console.warn('Chunked upload failed, falling back to simple upload', e);
+        // Fall through to simple upload below
+      }
+    }
     if (!files || files.length === 0) return;
 
     const formData = new FormData();
