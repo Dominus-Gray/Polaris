@@ -16,7 +16,6 @@ import ActionPlanPage from './pages/ActionPlanPage';
 import CertificationCenter from './pages/CertificationCenter';
 
 // Enhanced error boundary for production stability
-import ProviderEarningsSnapshot from './components/ProviderEarningsSnapshot';
 
 import EngagementDetails from './pages/EngagementDetails';
 
