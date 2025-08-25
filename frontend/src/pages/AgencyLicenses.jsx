@@ -216,6 +216,54 @@ function AgencyLicenses() {
     </div>
   );
 }
+function GenerateEmailButton({ licenses }){
+  const handleClick = () => {
+    if(!licenses || licenses.length===0){ return; }
+    const headers = ['license_code','status','created_at','expires_at'];
+    const rows = licenses.map(l => [
+      l.license_code,
+      l.status,
+      l.created_at ? new Date(l.created_at).toLocaleDateString() : '',
+      l.expires_at ? new Date(l.expires_at).toLocaleDateString() : ''
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g,'""')}"` : v).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const subject = encodeURIComponent('Polaris License Codes for Client Registration');
+    const bodyLines = [
+      'Hello,',
+      '',
+      'Attached are your Polaris client license codes. Save the CSV and share codes with eligible clients. Each code is single-use and expires as configured.',
+      '',
+      'Download CSV: ' + url,
+      '',
+      'Registration link: https://polaris-requirements.preview.emergentagent.com (Sign Up → Enter 10-digit license code)',
+      '',
+      'Best regards,',
+      'Your Agency Team'
+    ];
+    const body = encodeURIComponent(bodyLines.join('\n'));
+
+    navigator.clipboard.writeText('Polaris Registration: https://polaris-requirements.preview.emergentagent.com\nInclude the CSV attachment downloaded from your browser.');
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'polaris_licenses.csv';
+    a.click();
+
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+
+    setTimeout(()=>URL.revokeObjectURL(url), 10000);
+  };
+
+  return (
+    <button className="btn btn-sm" onClick={handleClick} disabled={!licenses || licenses.length===0}>
+      Generate & Email Codes
+    </button>
+  );
+}
+
 
 function StatTile({ label, value }) {
   return (
