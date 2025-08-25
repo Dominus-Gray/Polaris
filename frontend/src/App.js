@@ -5369,6 +5369,11 @@ function ProviderHome(){
               <div className="grid grid-cols-1 gap-4">
                 {myOrders.length > 0 ? myOrders.map((order, idx) => (
                   <div key={idx} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
+              {/* Requests Center enhancements */}
+              <div className="bg-white border rounded-lg p-6">
+                <ProviderRequestsCenter />
+              </div>
+
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h4 className="text-lg font-semibold text-slate-900 mb-2">{order.title}</h4>
