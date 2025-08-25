@@ -12,7 +12,6 @@ import AssessmentResultsPage from './pages/AssessmentResultsPage';
 import ReadinessDashboard from './pages/ReadinessDashboard';
 import CapabilityStatementBuilder from './pages/CapabilityStatementBuilder';
 import ProviderVerification from './pages/ProviderVerification';
-import RevenueOptimization from './pages/RevenueOptimization';
 import ActionPlanPage from './pages/ActionPlanPage';
 import CertificationCenter from './pages/CertificationCenter';
 
