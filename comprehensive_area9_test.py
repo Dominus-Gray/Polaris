@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 QA_EMAIL = "client.qa@polaris.example.com"
 QA_PASSWORD = "Polaris#2025!"
 

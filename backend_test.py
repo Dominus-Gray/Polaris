@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 
 # Test credentials - using QA credentials from test_result.md
 TEST_CREDENTIALS = {

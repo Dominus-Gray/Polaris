@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 
 def log_test(message, status="INFO"):
     """Log test messages with timestamp"""

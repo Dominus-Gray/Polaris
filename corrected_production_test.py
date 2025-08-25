@@ -12,7 +12,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BASE_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
@@ -390,7 +390,7 @@ class CorrectedProductionReadinessTester:
         try:
             payment_data = {
                 "package_id": "knowledge_base_all",
-                "origin_url": "https://polaris-inspector.preview.emergentagent.com"
+                "origin_url": "https://polaris-requirements.preview.emergentagent.com"
             }
             response = requests.post(f"{BASE_URL}/payments/knowledge-base", 
                                    json=payment_data, 

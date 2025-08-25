@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"}

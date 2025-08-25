@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 
 def approve_qa_users():
     """Approve existing QA users"""

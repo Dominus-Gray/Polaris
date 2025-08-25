@@ -5,7 +5,7 @@ Re-run focused backend checks after the bugfix as per review request:
 1) Login as existing client and provider created in previous test (do not re-create)
 2) Create a fresh service request via POST /api/service-requests/professional-help (area5)
 3) As provider respond to this new request via POST /api/provider/respond-to-request
-4) As client, call POST /api/payments/service-request with the new request_id, provider_id from response, agreed_fee=1500, origin_url='https://polaris-inspector.preview.emergentagent.com'
+4) As client, call POST /api/payments/service-request with the new request_id, provider_id from response, agreed_fee=1500, origin_url='https://polaris-requirements.preview.emergentagent.com'
 5) Expect 503 Service unavailable due to Stripe, but confirm the endpoint passes validation
 """
 
@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-inspector.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-requirements.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing payment bugfix at: {API_BASE}")
@@ -148,7 +148,7 @@ def test_payment_endpoint(client_token, request_id, provider_id):
             "request_id": request_id,
             "provider_id": provider_id,
             "agreed_fee": 1500,
-            "origin_url": "https://polaris-inspector.preview.emergentagent.com"
+            "origin_url": "https://polaris-requirements.preview.emergentagent.com"
         }
         
         headers = {"Authorization": f"Bearer {client_token}"}

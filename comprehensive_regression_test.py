@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import os
 
 # Configuration
-BACKEND_URL = "https://polaris-inspector.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
 
 # QA Credentials from test_result.md
 QA_CREDENTIALS = {
