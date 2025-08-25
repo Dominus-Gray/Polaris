@@ -9607,8 +9607,8 @@ function ServiceDetailsPage() {
       </div>
       
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-        <h3 className="text-lg font-medium text-slate-900 mb-2">Gig Public View</h3>
-        <p className="text-slate-600 mb-4">Gig ID: {gigId}</p>
+        <h3 className="text-lg font-medium text-slate-900 mb-2">Service Public View</h3>
+        <p className="text-slate-600 mb-4">Service ID: {serviceId}</p>
         <p className="text-slate-500">This is how clients will see your service listing with packages, reviews, and ordering options.</p>
       </div>
     </div>
