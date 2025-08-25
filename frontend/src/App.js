@@ -1430,7 +1430,7 @@ function AssessmentPage(){
                 
                 {/* Evidence Upload (single, canonical) */}
                 {answers[question.id] === 'yes' && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
                     <div className="text-sm font-medium text-green-900 mb-2">Upload Evidence (Optional)</div>
                     <p className="text-sm text-green-700 mb-3">
                       Upload documentation to support your attestation for this requirement.
