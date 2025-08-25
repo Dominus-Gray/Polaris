@@ -3992,6 +3992,20 @@ function ClientHome(){
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [assessmentData, setAssessmentData] = useState(null);
   const [serviceRequests, setServiceRequests] = useState([]);
+  const refreshServiceRequests = async ()=>{
+    try{
+      const authHeaders = { headers: { Authorization: `Bearer ${localStorage.getItem('polaris_token')}` } };
+      const requests = await axios.get(`${API}/engagements/my-services`, authHeaders);
+      setServiceRequests(requests.data.engagements || []);
+    }catch(e){ /* no-op */ }
+  };
+  const updateEngagementStatus = async (eid, status) => {
+    try{
+      await axios.post(`${API}/engagements/${eid}/update`, { status });
+      toast.success(`Updated to ${status}`);
+      refreshServiceRequests();
+    }catch(e){ toast.error('Failed to update', { description: e.response?.data?.detail || e.message }); }
+  };
   const [sponsoringAgency, setSponsoringAgency] = useState(null);
   const [gaps, setGaps] = useState([]);
   const [freeServices, setFreeServices] = useState([]);
