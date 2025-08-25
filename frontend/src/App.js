@@ -5277,7 +5277,7 @@ function ProviderHome(){
                   className="btn btn-primary"
                   onClick={createNewService}
                 >
-                  Create New Gig
+                  Create New Service
                 </button>
               </div>
 
