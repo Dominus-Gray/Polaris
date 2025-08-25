@@ -5390,7 +5390,7 @@ function ProviderHome(){
                       <div className="text-right">
                         <button 
                           className="btn btn-primary btn-sm"
-                          onClick={() => viewOrder(order.order_id)}
+                          onClick={() => navigate(`/engagements/${order.engagement_id || order.order_id}`)}
                         >
                           Manage Order
                         </button>
