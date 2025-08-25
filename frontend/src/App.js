@@ -1129,7 +1129,7 @@ function AssessmentPage(){
                       gap_area: currentAreaData.id
                     });
                     toast.success('Free resources logged');
-                    navigate('/free-resources');
+                    navigate(`/external-resources/${currentAreaData.id}`);
                   } catch (e) {
                     console.warn('Analytics logging failed', e);
                     toast.error('Could not log to analytics');
