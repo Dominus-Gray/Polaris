@@ -2310,7 +2310,16 @@ class AIResourcesResp(BaseModel):
     resources: List[ResourceItem]
 
 @api.post("/ai/resources", response_model=AIResourcesResp)
-async def ai_resources(req: AIResourcesReq, current=Depends(require_user)):
+async def ai_resources(req: AIResourcesReq, request: Request, current=Depends(require_user)):
+    # Idempotency and de-dupe to prevent repetitive AI calls
+    try:
+        body_sig = hashlib.sha256(f"ai_resources|{current['id']}|{req.area_id}|{req.question_id}|{req.locality}|{req.count}|{req.prefer}".encode()).hexdigest()
+        idem_key = request.headers.get("x-idempotency-key") or body_sig
+        cached = await db.ai_requests.find_one({"user_id": current["id"], "key": idem_key})
+        if cached and (datetime.utcnow() - cached.get("created_at", datetime.utcnow())).total_seconds() < 30:
+            return AIResourcesResp(resources=[ResourceItem(**r) for r in cached.get("response", [])])
+    except Exception:
+        pass
     llm_key = os.environ.get("EMERGENT_LLM_KEY")
     if not llm_key or not EMERGENT_OK:
         return AIResourcesResp(resources=[
