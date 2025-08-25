@@ -4619,6 +4619,91 @@ async def get_agency_info(agency_id: str, current=Depends(require_user)):
         "created_at": agency.get("created_at", datetime.utcnow())
     }
 
+
+# ---------------- Agency Sponsored Clients APIs ----------------
+@api.get("/agency/clients/accepted")
+async def agency_clients_accepted(current=Depends(require_role("agency"))):
+    """Return accepted sponsored clients for the current agency with minimal company info."""
+    invites = await db.agency_invitations.find({
+        "agency_user_id": current["id"],
+        "status": "accepted"
+    }).to_list(2000)
+    results = []
+    for inv in invites:
+        cid = inv.get("client_user_id")
+        if not cid:
+            continue
+        user = await db.users.find_one({"_id": cid})
+        profile = await db.business_profiles.find_one({"user_id": cid}) or {}
+        results.append({
+            "id": cid,
+            "email": (user or {}).get("email", ""),
+            "business_name": profile.get("company_name") or profile.get("business_name") or "",
+            "accepted_at": inv.get("accepted_at"),
+            "created_at": (user or {}).get("created_at"),
+            "license_code": (user or {}).get("license_code", "")
+        })
+    return {"clients": results}
+
+@api.get("/agency/clients/{client_user_id}/assessment")
+async def agency_client_assessment(client_user_id: str, current=Depends(require_role("agency"))):
+    """Allow sponsoring agency to view client's assessment progress (read-only)."""
+    inv = await db.agency_invitations.find_one({
+        "agency_user_id": current["id"],
+        "client_user_id": client_user_id,
+        "status": "accepted"
+    })
+    if not inv:
+        raise HTTPException(status_code=403, detail="Not authorized to access this client's assessment")
+
+    # Reuse logic similar to /assessment/progress/{user_id}
+    answers = await db.assessment_answers.find({"user_id": client_user_id}).to_list(200)
+    answers_dict = {a.get("question_id"): a.get("answer") for a in answers}
+
+    total_questions = 24
+    completed_questions = len([a for a in answers_dict.values() if a])
+    completion_percentage = int((completed_questions / total_questions) * 100) if total_questions > 0 else 0
+
+    area_names = {
+        'area1': 'Business Formation & Registration',
+        'area2': 'Financial Operations & Management', 
+        'area3': 'Legal & Contracting Compliance',
+        'area4': 'Quality Management & Standards',
+        'area5': 'Technology & Security Infrastructure',
+        'area6': 'Human Resources & Capacity',
+        'area7': 'Performance Tracking & Reporting',
+        'area8': 'Risk Management & Business Continuity',
+        'area9': 'Supply Chain Management & Vendor Relations'
+    }
+    gaps = []
+    for qid, ans in answers_dict.items():
+        if not qid:
+            continue
+        area_id = qid.split('_')[0]
+        if not ans or str(ans).lower() in ("no_help",):
+            existing = next((g for g in gaps if g['area_id'] == area_id), None)
+            if not existing:
+                gaps.append({
+                    'area_id': area_id,
+                    'area_name': area_names.get(area_id, area_id),
+                    'question_ids': [qid],
+                    'severity': 'high' if str(ans).lower() == 'no_help' else 'medium'
+                })
+            else:
+                existing['question_ids'].append(qid)
+                if str(ans).lower() == 'no_help':
+                    existing['severity'] = 'high'
+
+    return {
+        "user_id": client_user_id,
+        "answers": answers_dict,
+        "completion_percentage": completion_percentage,
+        "total_questions": total_questions,
+        "completed_questions": completed_questions,
+        "gaps": gaps,
+        "last_updated": max([a.get("created_at", datetime.utcnow()) for a in answers], default=datetime.utcnow())
+    }
+
 @api.get("/free-resources/recommendations")
 async def get_free_resources_recommendations(gaps: str = "", current=Depends(require_user)):
     """Get free resource recommendations based on gaps"""
