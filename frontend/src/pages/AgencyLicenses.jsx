@@ -169,6 +169,10 @@ function AgencyLicenses() {
       {/* List */}
       <div className="bg-white rounded-lg border p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-slate-600"><input type="checkbox" className="mr-2" onChange={(e)=>{/* handled at export/generate time */}} />Include only available codes</label>
+          <button className="btn btn-sm" onClick={()=>navigator.clipboard.writeText('Polaris Registration: https://polaris-requirements.preview.emergentagent.com\nUse the attached CSV of codes (single-use).')}>Copy Email Body</button>
+        </div>
           <h3 className="text-lg font-semibold text-slate-900">License Codes</h3>
           <div className="flex gap-2">
             <InviteCompanyPanel licenses={licenses} />
