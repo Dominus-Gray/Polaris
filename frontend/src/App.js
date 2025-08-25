@@ -1029,6 +1029,9 @@ function AssessmentPage(){
       toast.success(`Successfully uploaded ${response.data.files.length} evidence files`);
     } catch (e) {
       toast.error('Failed to upload evidence', { description: e.response?.data?.detail || e.message });
+    } finally {
+      // Clear progress after short delay
+      setTimeout(() => setEvidenceProgress(prev => ({ ...prev, [questionId]: undefined })), 1000);
     }
   };
 
