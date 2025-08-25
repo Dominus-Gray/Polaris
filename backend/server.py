@@ -3413,6 +3413,37 @@ class KBArticleUpdate(BaseModel):
     content: Optional[str] = None
     area_ids: Optional[List[str]] = None
     tags: Optional[List[str]] = None
+
+# ---------------- Planner (Micro-Tasks) ----------------
+class PlannerQuickTaskIn(BaseModel):
+    area_id: str
+    title: str
+    steps: List[str] = []
+
+@api.post("/planner/quick-task")
+async def planner_quick_task(payload: PlannerQuickTaskIn, current=Depends(require_user)):
+    try:
+        DataValidator.validate_service_area(payload.area_id)
+        tid = str(uuid.uuid4())
+        doc = {
+            "_id": tid,
+            "id": tid,
+            "user_id": current["id"],
+            "area_id": payload.area_id,
+            "title": DataValidator.sanitize_text(payload.title, 200),
+            "steps": [DataValidator.sanitize_text(s, 200) for s in (payload.steps or [])],
+            "status": "open",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        await db.planner_tasks.insert_one(doc)
+        return {"ok": True, "task_id": tid}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to add quick task: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add quick task")
+
     content_type: Optional[str] = None
     status: Optional[str] = None
     difficulty_level: Optional[str] = None
