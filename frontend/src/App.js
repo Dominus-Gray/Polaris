@@ -966,6 +966,7 @@ function AssessmentPage(){
     }
   };
 
+  const [evidenceProgress, setEvidenceProgress] = useState({});
   const handleEvidenceUpload = async (questionId, files) => {
     // Elevate to chunked upload for large files > 8MB total
     const CHUNK_THRESHOLD = 8 * 1024 * 1024;
