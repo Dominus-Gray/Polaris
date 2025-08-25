@@ -995,8 +995,7 @@ function AssessmentPage(){
             onUploadProgress: (e) => {
               uploaded = Math.min(file.size, start + e.loaded);
               const percent = Math.round((uploaded / file.size) * 100);
-              // You can wire this to a progress bar UI if desired
-              console.debug(`Uploading evidence... ${percent}%`);
+              setEvidenceProgress(prev => ({ ...prev, [questionId]: percent }));
             }
           });
         }
