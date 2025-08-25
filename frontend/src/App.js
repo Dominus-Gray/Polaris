@@ -1434,13 +1434,20 @@ function AssessmentPage(){
                     <p className="text-sm text-green-700 mb-3">
                       Upload documentation to support your attestation for this requirement.
                     </p>
-                    <input 
-                      type="file" 
-                      className="text-sm"
-                      multiple
-                      accept=".pdf,.doc,.docx,.jpg,.png"
-                      onChange={(e) => handleEvidenceUpload(question.id, e.target.files)}
-                    />
+                    <div className="space-y-2">
+                      <input 
+                        type="file" 
+                        className="text-sm"
+                        multiple
+                        accept=".pdf,.doc,.docx,.jpg,.png"
+                        onChange={(e) => handleEvidenceUpload(question.id, e.target.files)}
+                      />
+                      {evidenceProgress[question.id] > 0 && (
+                        <div className="w-full bg-slate-200 rounded h-2 overflow-hidden">
+                          <div className="bg-blue-600 h-2 transition-all" style={{ width: `${evidenceProgress[question.id]}%` }} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
