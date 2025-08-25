@@ -6563,6 +6563,7 @@ function AgencyHome(){
 
           {activeTab === 'branding' && <AgencyThemeManager />}
           {activeTab === 'licenses' && <AgencyLicenses />}
+          {activeTab === 'issue_cert' && <AgencyIssueCertificate />}
           
           {activeTab === 'system' && <SystemHealthDashboard />}
         </div>
