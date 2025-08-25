@@ -5267,7 +5267,7 @@ function ProviderHome(){
           )}
 
           {/* Services Management Tab */}
-          {activeTab === 'gigs' && (
+          {activeTab === 'services' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-slate-900">My Services</h3>
