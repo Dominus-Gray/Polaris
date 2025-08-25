@@ -9078,7 +9078,7 @@ function CertificateVerification({ certificateId }) {
   );
 }
 
-// ================= GIG CREATION COMPONENT =================
+// ================= SERVICE CREATION COMPONENT =================
 function ServiceCreatePage() {
   const [serviceData, setServiceData] = useState({
     title: '',
