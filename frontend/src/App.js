@@ -4134,6 +4134,24 @@ function ClientHome(){
   };
 
   const downloadAreaTemplate = async (areaId, resourceType) => {
+    // Micro-planner: prompt to add quick steps after download
+    const addToPlan = async () => {
+      try {
+        await axios.post(`${API}/planner/quick-task`, {
+          area_id: areaId,
+          title: `Use ${resourceType} template`,
+          steps: [
+            'Review document',
+            'Customize for your business',
+            'Upload as evidence when complete'
+          ]
+        });
+        toast.success('Added to your action plan');
+      } catch (e) {
+        console.warn('Planner add failed', e);
+      }
+    };
+
     try {
       const response = await axios.get(
         `${API}/knowledge-base/generate-template/${areaId}/${resourceType}`,
@@ -4157,6 +4175,13 @@ function ClientHome(){
       window.URL.revokeObjectURL(url);
       
       toast.success(`Downloaded ${resourceType} for ${areaId}`);
+
+      // Ask to add to plan after successful download
+      setTimeout(() => {
+        if (window.confirm('Add this template to your action plan with quick steps?')) {
+          addToPlan();
+        }
+      }, 100);
     } catch (e) {
       console.error('Download failed:', e);
       toast.error('Download failed', { 
