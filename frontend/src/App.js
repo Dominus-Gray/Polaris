@@ -5354,7 +5354,7 @@ function ProviderHome(){
           {activeTab === 'orders' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900">My Orders</h3>
+                <h3 className="text-lg font-semibold text-slate-900">Service Requests</h3>
                 <div className="flex gap-2">
                   <select className="input text-sm">
                     <option value="">All Statuses</option>
