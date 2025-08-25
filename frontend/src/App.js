@@ -5857,6 +5857,8 @@ function NavigatorHome(){
 
           {/* Approvals Tab */}
           {activeTab === 'approvals' && (
+            <NavigatorApprovals />
+          )}
             <div className="space-y-6">
               {/* Provider Approvals */}
               <div className="bg-white border rounded-lg p-6">
