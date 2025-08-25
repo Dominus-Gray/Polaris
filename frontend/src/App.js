@@ -7140,7 +7140,7 @@ function ServiceRequestPage(){
 }
 
 // ---------------- Provider Proposal Composer ----------------
-function ProviderProposalsPage(){
+function ProviderServiceRequestsPage(){
   const [eligible, setEligible] = useState([]);
   const [notes, setNotes] = useState({});
   const [attachments, setAttachments] = useState({}); // responseId -> files[] local
