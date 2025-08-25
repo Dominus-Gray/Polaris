@@ -607,7 +607,9 @@ The user has identified multiple critical issues and requirements that need to b
 
 ## test_plan:
   current_focus:
-    - "Maturity Status Endpoints and Frontend Integration Contract"
+    - "Provider Requests Center UI Testing"
+    - "Navigator Approvals UI Testing" 
+    - "Client Engagement Details UI Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
