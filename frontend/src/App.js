@@ -4435,7 +4435,21 @@ function ClientHome(){
                     'Risk Management': 'https://www.ready.gov/business',
                     'Supply Chain Management': 'https://www.ptac.org/locate-your-ptac/'
                   };
-                  const url = map[service.area_name] || 'https://www.sba.gov/local-assistance';
+                  // Localize by city/state if available from profile
+                  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+                  const profile = JSON.parse(localStorage.getItem('polaris_profile')||'null');
+                  let url = map[service.area_name] || 'https://www.sba.gov/local-assistance';
+                  const city = profile?.city || profile?.business_city;
+                  const state = profile?.state || profile?.business_state;
+                  if (state) {
+                    const stateLower = encodeURIComponent(state.toLowerCase());
+                    const cityQuery = city ? `&city=${encodeURIComponent(city)}` : '';
+                    // Prefer PTAC/APTAC for local procurement help
+                    url = `https://www.sba.gov/local-assistance?state=${stateLower}${cityQuery}`;
+                    if (service.area_name?.includes('Supply')) {
+                      url = 'https://www.aptac-us.org/contracting-assistance/find-us/';
+                    }
+                  }
                   window.open(url, '_blank', 'noopener');
                 }}
               >
