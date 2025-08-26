@@ -21,6 +21,7 @@ import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
 import AgencySponsoredClients from './pages/AgencySponsoredClients';
+import AgencySponsorKPIs from './components/AgencySponsorKPIs';
 
 
 import EngagementDetails from './pages/EngagementDetails';
