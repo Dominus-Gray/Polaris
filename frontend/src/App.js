@@ -6292,6 +6292,8 @@ function AgencyHome(){
         <div className="p-6">
           {activeTab === 'overview' && (
             <div>
+              <AgencySponsorKPIs />
+
               <div className="dashboard-grid mb-6">
         <div className="tile">
           <div className="tile-title">
