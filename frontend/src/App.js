@@ -4438,7 +4438,7 @@ function ClientHome(){
               <button
                 key={idx}
                 className="text-left bg-white border border-green-200 rounded-lg p-3 hover:bg-green-50 transition-colors"
-                onClick={() => {
+                onClick={async () => {
                   // Log resource access for navigator analytics
                   axios.post(`${API}/analytics/resource-access`, { resource_id: service.id, gap_area: service.area });
                   // Call backend localized resources to determine best link
