@@ -82,6 +82,8 @@ function AgencyLicenses() {
   };
 
   const exportCSV = () => {
+    const onlyAvailable = document.querySelector('#polaris_only_available_codes')?.checked;
+    const list = onlyAvailable ? licenses.filter(l=>l.status==='available') : licenses;
     if (!licenses.length) return;
     const headers = ['license_code', 'status', 'created_at', 'expires_at', 'used_by', 'used_at'];
     const rows = licenses.map(l => ([
