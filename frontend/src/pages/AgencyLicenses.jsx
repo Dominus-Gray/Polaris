@@ -86,7 +86,7 @@ function AgencyLicenses() {
     const list = onlyAvailable ? licenses.filter(l=>l.status==='available') : licenses;
     if (!licenses.length) return;
     const headers = ['license_code', 'status', 'created_at', 'expires_at', 'used_by', 'used_at'];
-    const rows = licenses.map(l => ([
+    const rows = list.map(l => ([
       l.license_code,
       l.status,
       l.created_at ? new Date(l.created_at).toISOString() : '',
