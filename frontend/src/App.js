@@ -16,6 +16,9 @@ import ActionPlanPage from './pages/ActionPlanPage';
 import CertificationCenter from './pages/CertificationCenter';
 
 // Enhanced error boundary for production stability
+import ClientRemediationFilters from './components/ClientRemediationFilters';
+import AssessmentTierSelector from './components/AssessmentTierSelector';
+
 
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
