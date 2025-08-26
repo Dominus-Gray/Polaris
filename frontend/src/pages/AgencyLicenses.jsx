@@ -231,7 +231,9 @@ function InviteCompanyPanel({ licenses }){
 
   const prepareEmail = () => {
     if(!email){ toast.error('Enter recipient email'); return; }
-    const selected = available.slice(0, Math.max(1, Math.min(count, available.length)));
+    const onlyAvailable = document.querySelector('#polaris_only_available_codes')?.checked;
+    const pool = onlyAvailable ? available : (licenses||[]);
+    const selected = pool.filter(l=> onlyAvailable ? l.status==='available' : true).slice(0, Math.max(1, Math.min(count, pool.length)));
     if(selected.length===0){ toast.error('No available codes to include'); return; }
 
     const headers = ['license_code','expires_at'];
