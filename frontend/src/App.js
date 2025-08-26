@@ -2181,7 +2181,7 @@ function KnowledgeBasePage(){
                         onClick={() => navigate(`/area-deliverables/${area.id}`)}
                         style={{ color: 'white !important' }}
                       >
-                        <span style={{ color: 'white' }}>View All Resources</span>
+                        <span style={{ color: 'white' }}>View Local Directory</span>
                       </button>
                     </div>
                     
