@@ -5609,6 +5609,60 @@ async def get_free_external_resources(current=Depends(require_user)):
         "additional_support": "After registering with these organizations, return to Polaris to unlock premium templates and AI-powered guidance specific to your business needs."
     }
 
+
+@api.get("/free-resources/localized")
+async def get_localized_resources(current=Depends(require_user)):
+    """Return localized external resources based on the client's business profile city/state.
+    Safe, read-only, non-breaking. Falls back to national resources when location is missing.
+    """
+    # Get business profile
+    profile = await db.business_profiles.find_one({"user_id": current["id"]})
+    city = (profile or {}).get("city") or (profile or {}).get("business_city")
+    state = (profile or {}).get("state") or (profile or {}).get("business_state")
+
+    def national_defaults():
+        return [
+            {"name": "SBA Local Assistance", "url": "https://www.sba.gov/local-assistance", "type": "sba"},
+            {"name": "APEX Accelerator (PTAC) Locator", "url": "https://apexaccelerators.us/locator", "type": "ptac"},
+            {"name": "SBDC Locator", "url": "https://americassbdc.org/small-business-consulting-and-training/find-your-sbdc/", "type": "sbdc"},
+            {"name": "SCORE Chapters", "url": "https://www.score.org/find-mentor", "type": "score"}
+        ]
+
+    # Normalize
+    city_l = (city or "").strip().lower()
+    state_l = (state or "").strip().lower()
+
+    # San Antonio, TX special set
+    if city_l == "san antonio" and state_l in ("tx", "texas"):
+        resources = [
+            {"name": "City of San Antonio Vendor (Bonfire)", "url": "https://sanantonio.bonfirehub.com/portal", "type": "city_vendor"},
+            {"name": "San Antonio Airport System Procurement", "url": "https://www.sanantonio.gov/aviation/business/opportunities", "type": "airport"},
+            {"name": "San Antonio Housing Authority (SAHA)", "url": "https://www.saha.org/business/procurement/", "type": "housing"},
+            {"name": "Bexar County Purchasing", "url": "https://www.bexar.org/3430/Purchasing", "type": "county_vendor"},
+            {"name": "CPS Energy Procurement", "url": "https://www.cpsenergy.com/about/procurement.html", "type": "utility"},
+            {"name": "SAWS Procurement", "url": "https://www.saws.org/business-center/purchasing/", "type": "utility"},
+            {"name": "VIA Metro Transit Procurements", "url": "https://www.viainfo.net/current-procurements/", "type": "transit"},
+            {"name": "UTSA SBDC (South Central Texas)", "url": "https://sasbdc.org/", "type": "sbdc"},
+            {"name": "SCORE San Antonio", "url": "https://www.score.org/sanantonio", "type": "score"},
+            {"name": "APEX Accelerator (PTAC) Locator", "url": "https://apexaccelerators.us/locator", "type": "ptac"},
+            {"name": "Texas CMBL Vendor List", "url": "https://comptroller.texas.gov/purchasing/vendor/cmbl/", "type": "state_vendor"},
+            {"name": "TxDOT Letting/Procurement", "url": "https://www.txdot.gov/business/let.htm", "type": "state_transport"}
+        ]
+        return {"resources": resources, "city": city, "state": state}
+
+    # Texas, other cities
+    if state_l in ("tx", "texas"):
+        resources = [
+            {"name": "Texas CMBL Vendor List", "url": "https://comptroller.texas.gov/purchasing/vendor/cmbl/", "type": "state_vendor"},
+            {"name": "APEX Accelerator (PTAC) Locator", "url": "https://apexaccelerators.us/locator", "type": "ptac"},
+            {"name": "SBDC Texas Locator", "url": "https://txsbdc.org/locator/", "type": "sbdc"},
+            {"name": "SBA Local Assistance (TX)", "url": f"https://www.sba.gov/local-assistance?state={state}", "type": "sba"}
+        ]
+        return {"resources": resources, "city": city, "state": state}
+
+    # Default national set
+    return {"resources": national_defaults(), "city": city, "state": state}
+
 # ---------------- Matching Core Endpoints ----------------
 class MatchRequestIn(BaseModel):
     budget: float
