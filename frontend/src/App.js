@@ -4477,7 +4477,7 @@ function ClientHome(){
           {freeServices.length > 6 && (
             <button 
               className="mt-3 text-green-700 text-sm hover:text-green-800"
-              onClick={() => navigate('/free-resources')}
+              onClick={() => navigate('/local-directory')}
             >
               View all {freeServices.length} recommended resources →
             </button>
