@@ -17,6 +17,8 @@ import CertificationCenter from './pages/CertificationCenter';
 
 // Enhanced error boundary for production stability
 
+import ClientLocalDirectory from './pages/ClientLocalDirectory';
+
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
 import AgencySponsoredClients from './pages/AgencySponsoredClients';
 
