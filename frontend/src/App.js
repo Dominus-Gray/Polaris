@@ -4441,33 +4441,28 @@ function ClientHome(){
                 onClick={() => {
                   // Log resource access for navigator analytics
                   axios.post(`${API}/analytics/resource-access`, { resource_id: service.id, gap_area: service.area });
-                  const map = {
-                    'Business Formation': 'https://www.sba.gov/business-guide/plan-your-business/choose-business-structure',
-                    'Financial Operations': 'https://www.sba.gov/funding-programs',
-                    'Legal Compliance': 'https://www.sba.gov/business-guide/launch-your-business',
-                    'Quality Management': 'https://www.iso.org/home.html',
-                    'Technology & Security': 'https://www.cisa.gov/resources-tools',
-                    'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
-                    'Performance Tracking': 'https://www.score.org/templates-tools',
-                    'Risk Management': 'https://www.ready.gov/business',
-                    'Supply Chain Management': 'https://www.ptac.org/locate-your-ptac/'
-                  };
-                  // Localize by city/state if available from profile
-                  const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
-                  const profile = JSON.parse(localStorage.getItem('polaris_profile')||'null');
-                  let url = map[service.area_name] || 'https://www.sba.gov/local-assistance';
-                  const city = profile?.city || profile?.business_city;
-                  const state = profile?.state || profile?.business_state;
-                  if (state) {
-                    const stateLower = encodeURIComponent(state.toLowerCase());
-                    const cityQuery = city ? `&city=${encodeURIComponent(city)}` : '';
-                    // Prefer PTAC/APTAC for local procurement help
-                    url = `https://www.sba.gov/local-assistance?state=${stateLower}${cityQuery}`;
-                    if (service.area_name?.includes('Supply')) {
-                      url = 'https://www.aptac-us.org/contracting-assistance/find-us/';
-                    }
+                  // Call backend localized resources to determine best link
+                  try {
+                    const { data } = await axios.get(`${API}/free-resources/localized`);
+                    const localized = (data?.resources || []);
+                    // Use area-specific national fallback if localized list is generic
+                    const map = {
+                      'Business Formation': 'https://www.sba.gov/business-guide/plan-your-business/choose-business-structure',
+                      'Financial Operations': 'https://www.sba.gov/funding-programs',
+                      'Legal Compliance': 'https://www.sba.gov/business-guide/launch-your-business',
+                      'Quality Management': 'https://www.iso.org/home.html',
+                      'Technology & Security': 'https://www.cisa.gov/resources-tools',
+                      'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
+                      'Performance Tracking': 'https://www.score.org/templates-tools',
+                      'Risk Management': 'https://www.ready.gov/business',
+                      'Supply Chain Management': 'https://apexaccelerators.us/locator'
+                    };
+                    const url = (localized[0]?.url) || map[service.area_name] || 'https://www.sba.gov/local-assistance';
+                    window.open(url, '_blank', 'noopener');
+                  } catch {
+                    const fallback = 'https://www.sba.gov/local-assistance';
+                    window.open(fallback, '_blank', 'noopener');
                   }
-                  window.open(url, '_blank', 'noopener');
                 }}
               >
                 <div className="font-medium text-green-800 text-sm">{service.title}</div>
