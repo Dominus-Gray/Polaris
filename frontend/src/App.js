@@ -4814,8 +4814,9 @@ function ClientHome(){
             <div>
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-2">Assessment Progress</h3>
-                <p className="text-slate-600">Complete your procurement readiness assessment across 8 key business areas</p>
+                <p className="text-slate-600">Complete your procurement readiness assessment across 9 business areas and choose a tier to start</p>
               </div>
+              <AssessmentTierSelector />
               
               {/* Assessment Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
