@@ -7752,6 +7752,7 @@ function AppShell(){
           <Route path="/readiness-dashboard" element={<ReadinessDashboard />} />
           <Route path="/tools/capability-statement" element={<CapabilityStatementBuilder />} />
           <Route path="/certifications" element={<CertificationCenter />} />
+          <Route path="/local-directory" element={<ClientLocalDirectory />} />
           <Route path="/engagements/:engagementId" element={<EngagementDetails />} />
           <Route path="/provider/verification" element={<ProviderVerification />} />
           <Route path="/provider/revenue-optimization" element={<RevenueOptimization />} />
