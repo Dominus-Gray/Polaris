@@ -19,6 +19,8 @@ import CertificationCenter from './pages/CertificationCenter';
 import ClientRemediationFilters from './components/ClientRemediationFilters';
 import AssessmentTierSelector from './components/AssessmentTierSelector';
 
+import AgencyContractMatching from './pages/AgencyContractMatching';
+
 
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
