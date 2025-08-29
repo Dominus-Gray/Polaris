@@ -10162,7 +10162,7 @@ async def get_my_service_offerings(current=Depends(get_current_user)):
         if current["role"] != "provider":
             raise HTTPException(status_code=403, detail="Only service providers can access this endpoint")
         
-        services = await db.service_offerings.find({"provider_id": current["user_id"]}).to_list(length=None)
+        services = await db.service_offerings.find({"provider_id": current["id"]}).to_list(length=None)
         
         return {"services": services}
         
