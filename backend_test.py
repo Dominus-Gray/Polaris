@@ -115,20 +115,20 @@ class EnhancedIntegrationTester:
                 self.log_result("Realtime Dashboard Update - Authentication", False, "No client token available")
                 return False
             
-            # Test dashboard update payload
+            # Test dashboard update payload - using form data as expected by endpoint
             update_payload = {
                 "user_id": "test_client_id",
                 "update_type": "assessment_progress",
-                "data": {
+                "data": json.dumps({
                     "completion_percentage": 75,
                     "areas_completed": ["area1", "area2", "area3"],
                     "critical_gaps_identified": 2,
                     "timestamp": datetime.now().isoformat()
-                }
+                })
             }
             
             response = self.session.post(f"{BASE_URL}/realtime/dashboard-update", 
-                                       json=update_payload, headers=headers)
+                                       data=update_payload, headers=headers)
             
             if response.status_code in [200, 201]:
                 update_result = response.json()
