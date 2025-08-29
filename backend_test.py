@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for 95%+ Success Rate Verification
-Focus: AI Localized Resources, Tier-based Assessment, Overall System Reliability
-After litellm dependency installation
+Comprehensive Data Flow Analysis and Integration Testing
+Focus: Assessment Data Integration, Service Provider Marketplace, Agency BI, Knowledge Base, Cross-Platform Analytics
 """
 
 import requests
 import json
 import time
-import sys
-import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 
-# Configuration
+# Test Configuration
 BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
-
-# QA Test Credentials from review request
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"}
+    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
+    "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},
+    "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"}
 }
 
 class ComprehensiveBackendTester:
