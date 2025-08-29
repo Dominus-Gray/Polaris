@@ -379,9 +379,10 @@ function TierBasedAssessmentPage() {
     );
   }
 
-  // Assessment in progress
-  const currentQuestion = questions[currentQuestionIndex];
-  const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+  // Assessment in progress - use filtered questions
+  const activeQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+  const currentQuestion = activeQuestions[currentQuestionIndex];
+  const progressPercentage = activeQuestions.length > 0 ? ((currentQuestionIndex + 1) / activeQuestions.length) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
