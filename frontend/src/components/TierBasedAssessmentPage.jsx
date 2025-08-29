@@ -554,7 +554,106 @@ function TierBasedAssessmentPage() {
         </div>
       </div>
     </div>
+
+    {/* Integrated Action Modal */}
+    {showActionModal && completionResults && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-96 overflow-y-auto">
+          <div className="p-6">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
+                completionResults.completion_info?.tier_completion_score >= 80 
+                  ? 'bg-green-100' : 'bg-orange-100'
+              }`}>
+                <span className={`text-2xl font-bold ${
+                  completionResults.completion_info?.tier_completion_score >= 80 
+                    ? 'text-green-600' : 'text-orange-600'
+                }`}>
+                  {completionResults.completion_info?.tier_completion_score || 0}%
+                </span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Complete!</h2>
+              <p className="text-gray-600">
+                {completionResults.area_info?.area_title} - {completionResults.area_info?.tier_name}
+              </p>
+            </div>
+
+            {/* Recommendations */}
+            {completionResults.hasGaps && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommended Next Steps</h3>
+                <div className="space-y-3">
+                  {completionResults.recommendations?.immediate_actions?.map((action, idx) => (
+                    <div 
+                      key={idx}
+                      className={`p-4 rounded-lg border-l-4 cursor-pointer hover:bg-gray-50 ${
+                        action.priority === 'high' ? 'border-red-400 bg-red-50' :
+                        action.priority === 'medium' ? 'border-yellow-400 bg-yellow-50' :
+                        'border-blue-400 bg-blue-50'
+                      }`}
+                      onClick={() => handleRecommendedAction(action.action)}
+                    >
+                      <h4 className="font-medium text-gray-900">{action.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{action.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => navigate(`/assessment/results/${completionResults.session_id}`)}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+              >
+                View Detailed Results
+              </button>
+              <button
+                onClick={() => {
+                  setShowActionModal(false);
+                  navigate('/assessment');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+              >
+                Take Another Assessment
+              </button>
+              <button
+                onClick={() => {
+                  setShowActionModal(false);
+                  navigate('/home');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+              >
+                Return to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
   );
+
+  // Handle recommended actions
+  const handleRecommendedAction = (actionType) => {
+    setShowActionModal(false);
+    
+    switch (actionType) {
+      case 'view_resources':
+        navigate('/home#resources');
+        break;
+      case 'create_service_request':
+        navigate('/services/create');
+        break;
+      case 'next_assessment':
+        navigate('/assessment');
+        break;
+      default:
+        navigate('/home');
+    }
+  };
 }
 
 export default TierBasedAssessmentPage;
