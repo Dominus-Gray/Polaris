@@ -9,7 +9,7 @@ import json
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
+BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
 
 def get_navigator_token():
     """Get token for navigator.qa@polaris.example.com"""

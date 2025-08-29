@@ -16,12 +16,12 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env (should now be the correct URL)
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polaris-requirements.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quality-match-1.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"🔧 TESTING FIXED BACKEND AUTHENTICATION")
 print(f"Backend URL: {API_BASE}")
-print(f"Expected URL: https://polaris-requirements.preview.emergentagent.com/api")
+print(f"Expected URL: https://quality-match-1.preview.emergentagent.com/api")
 
 def test_fixed_user_credentials():
     """Create and verify the exact working credentials requested in review"""
@@ -210,7 +210,7 @@ def test_url_configuration():
     print("🔍 VERIFYING URL CONFIGURATION FIX")
     print("="*70)
     
-    expected_url = "https://polaris-requirements.preview.emergentagent.com"
+    expected_url = "https://quality-match-1.preview.emergentagent.com"
     actual_url = BASE_URL
     
     print(f"Expected backend URL: {expected_url}")

@@ -10,7 +10,7 @@ import sys
 from typing import Dict, Any, Optional
 
 # Backend URL from environment
-BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
+BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
 
 # QA Credentials to test
 QA_CREDENTIALS = [

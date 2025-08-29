@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://polaris-requirements.preview.emergentagent.com/api"
+BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
 
 # Test credentials
 PROVIDER_CREDENTIALS = {
