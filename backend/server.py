@@ -2142,7 +2142,7 @@ async def get_tier_based_assessment_schema(current_user: dict = Depends(get_curr
 @api.post("/assessment/tier-session")
 async def create_tier_based_session(
     area_id: str = Form(...),
-    tier_level: int = Form(...),
+    tier_level: Optional[int] = Form(None),
     current_user: dict = Depends(get_current_user)
 ):
     """Create a new tier-based assessment session"""
