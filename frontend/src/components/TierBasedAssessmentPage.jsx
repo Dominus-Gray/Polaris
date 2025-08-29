@@ -88,19 +88,7 @@ function TierBasedAssessmentPage() {
     }
   };
 
-  // Filter questions by tier when tier filter changes
-  useEffect(() => {
-    if (questions.length > 0) {
-      if (tierFilter === 'all') {
-        setFilteredQuestions(questions);
-      } else {
-        const tierNum = parseInt(tierFilter);
-        const filtered = questions.filter(q => q.tier_level === tierNum);
-        setFilteredQuestions(filtered);
-        setCurrentQuestionIndex(0); // Reset to first question
-      }
-    }
-  }, [questions, tierFilter]);
+
 
   // Create assessment session
   const createSession = async () => {
