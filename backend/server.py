@@ -6738,7 +6738,7 @@ async def get_unified_client_dashboard(current=Depends(require_role("client"))):
             "user_info": {
                 "user_id": current["id"],
                 "role": current["role"],
-                "last_login": current.get("last_login"),
+                "last_login": current.get("last_login").isoformat() if current.get("last_login") else None,
             },
             "assessment_overview": {
                 "completed_areas": len([a for a in assessment_progress if a.get("status") == "completed"]),
