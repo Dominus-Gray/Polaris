@@ -304,8 +304,23 @@ function TierBasedAssessmentPage() {
           {selectedArea && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Available Tiers for {selectedArea.area_title}
+                Available Tiers for {selectedArea.area_number}. {selectedArea.area_title}
               </h2>
+              
+              {/* Current Progress Display */}
+              {selectedArea.progress_text && selectedArea.progress_text !== '0/0 questions' && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-800 font-medium">Current Progress</span>
+                    <span className="text-blue-600">{selectedArea.progress_text}</span>
+                  </div>
+                  {selectedArea.completion_score && (
+                    <div className="mt-1 text-sm text-blue-600">
+                      Latest Score: {selectedArea.completion_score}%
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="grid md:grid-cols-3 gap-4">
                 {selectedArea.available_tiers.map((tier) => (
