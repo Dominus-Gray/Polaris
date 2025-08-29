@@ -6946,6 +6946,45 @@ def generate_compliance_next_steps(critical_gaps: List[Dict], completion_rate: f
     
     return next_steps
 
+async def get_latest_provider_responses(user_id: str) -> List[Dict[str, Any]]:
+    """Get latest provider responses for client's service requests"""
+    try:
+        # Get client's service requests
+        service_requests = await db.service_requests.find({
+            "client_id": user_id
+        }).to_list(None)
+        
+        if not service_requests:
+            return []
+        
+        request_ids = [req.get("request_id") or req.get("_id") for req in service_requests]
+        
+        # Get latest provider responses
+        responses = await db.provider_responses.find({
+            "request_id": {"$in": request_ids}
+        }).sort("created_at", -1).limit(5).to_list(None)
+        
+        # Clean up the responses to avoid ObjectId serialization issues
+        cleaned_responses = []
+        for response in responses:
+            cleaned_response = {
+                "response_id": str(response.get("_id", "")),
+                "request_id": str(response.get("request_id", "")),
+                "provider_id": str(response.get("provider_id", "")),
+                "proposed_fee": response.get("proposed_fee", 0),
+                "estimated_timeline": response.get("estimated_timeline", ""),
+                "proposal_note": response.get("proposal_note", ""),
+                "status": response.get("status", "pending"),
+                "created_at": response.get("created_at").isoformat() if response.get("created_at") else None
+            }
+            cleaned_responses.append(cleaned_response)
+        
+        return cleaned_responses
+        
+    except Exception as e:
+        logger.error(f"Error getting latest provider responses: {e}")
+        return []
+
 async def generate_quick_actions(user_id: str) -> List[Dict[str, Any]]:
     """Generate contextual quick actions for the user"""
     try:
