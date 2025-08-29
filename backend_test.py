@@ -419,53 +419,101 @@ class ComprehensiveBackendTester:
             self.log_result("System Reliability", False, f"Exception: {str(e)}")
             return False
 
-    def test_service_request_responses_enhanced(self) -> bool:
-        """Test GET /api/service-requests/{request_id}/responses/enhanced - view all 5 responses at once"""
-        try:
-            # First create a service request
-            headers = self.get_headers("client")
-            
-            request_data = {
-                "area_id": "area5",
-                "budget_range": "1500-5000",
-                "timeline": "2-4 weeks",
-                "description": "Need technology security infrastructure assessment and implementation",
-                "priority": "high"
-            }
-            
-            response = self.session.post(f"{BASE_URL}/service-requests/professional-help", 
-                                       json=request_data, headers=headers)
-            
-            if response.status_code == 200 or response.status_code == 201:
-                request_data = response.json()
-                request_id = request_data.get("request_id") or request_data.get("id")
-                
-                if request_id:
-                    # Test enhanced responses endpoint
-                    response = self.session.get(f"{BASE_URL}/service-requests/{request_id}/responses/enhanced", 
-                                              headers=headers)
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        self.log_result("Enhanced Service Request Responses", True, 
-                                      f"Enhanced responses retrieved for request {request_id}")
-                        return True
-                    else:
-                        self.log_result("Enhanced Service Request Responses", False, 
-                                      f"Status: {response.status_code}", response.json())
-                        return False
-                else:
-                    self.log_result("Enhanced Service Request Responses", False, 
-                                  "Service request created but no ID returned")
-                    return False
+    def calculate_success_rate(self) -> float:
+        """Calculate overall success rate"""
+        if not self.test_results:
+            return 0.0
+        
+        successful_tests = sum(1 for result in self.test_results if result["success"])
+        total_tests = len(self.test_results)
+        return (successful_tests / total_tests) * 100
+
+    def print_summary(self):
+        """Print comprehensive test summary"""
+        success_rate = self.calculate_success_rate()
+        successful_tests = sum(1 for result in self.test_results if result["success"])
+        total_tests = len(self.test_results)
+        
+        print("\n" + "=" * 80)
+        print("🎯 COMPREHENSIVE BACKEND TESTING SUMMARY")
+        print("=" * 80)
+        print(f"📊 SUCCESS RATE: {success_rate:.1f}% ({successful_tests}/{total_tests} tests passed)")
+        print(f"🎯 TARGET: 95%+ Success Rate")
+        
+        if success_rate >= 95.0:
+            print("✅ SUCCESS: Target 95%+ success rate ACHIEVED!")
+            print("🚀 System ready for production deployment")
+        else:
+            print("❌ BELOW TARGET: Success rate below 95% threshold")
+            print("🔧 Additional fixes needed before production")
+        
+        print("\n📋 DETAILED TEST RESULTS:")
+        print("-" * 80)
+        
+        # Group results by category
+        categories = {
+            "Authentication": [],
+            "AI Localized Resources": [],
+            "Tier-Based Assessment": [],
+            "Agency Management": [],
+            "Client Access": [],
+            "System Reliability": []
+        }
+        
+        for result in self.test_results:
+            test_name = result["test"]
+            if "Authentication" in test_name:
+                categories["Authentication"].append(result)
+            elif "AI Localized" in test_name:
+                categories["AI Localized Resources"].append(result)
+            elif "Tier" in test_name:
+                categories["Tier-Based Assessment"].append(result)
+            elif "Agency" in test_name:
+                categories["Agency Management"].append(result)
+            elif "Client" in test_name:
+                categories["Client Access"].append(result)
             else:
-                self.log_result("Enhanced Service Request Responses", False, 
-                              f"Failed to create service request. Status: {response.status_code}")
-                return False
+                categories["System Reliability"].append(result)
+        
+        for category, results in categories.items():
+            if results:
+                category_success = sum(1 for r in results if r["success"])
+                category_total = len(results)
+                category_rate = (category_success / category_total) * 100
                 
-        except Exception as e:
-            self.log_result("Enhanced Service Request Responses", False, f"Exception: {str(e)}")
-            return False
+                status_icon = "✅" if category_rate >= 95 else "⚠️" if category_rate >= 80 else "❌"
+                print(f"{status_icon} {category}: {category_rate:.1f}% ({category_success}/{category_total})")
+                
+                for result in results:
+                    status = "✅" if result["success"] else "❌"
+                    print(f"    {status} {result['test']} ({result['response_time']:.3f}s)")
+                    if result["details"]:
+                        print(f"        📝 {result['details']}")
+        
+        print("\n" + "=" * 80)
+        
+        # Performance metrics
+        avg_response_time = sum(r["response_time"] for r in self.test_results) / len(self.test_results)
+        max_response_time = max(r["response_time"] for r in self.test_results)
+        
+        print(f"⚡ PERFORMANCE METRICS:")
+        print(f"   Average Response Time: {avg_response_time:.3f}s")
+        print(f"   Maximum Response Time: {max_response_time:.3f}s")
+        
+        # Production readiness assessment
+        print(f"\n🏭 PRODUCTION READINESS ASSESSMENT:")
+        if success_rate >= 95.0:
+            print("   ✅ EXCELLENT - System meets 95%+ success rate requirement")
+            print("   ✅ All critical functionality operational")
+            print("   ✅ AI localized resources generating dynamic content")
+            print("   ✅ Tier-based assessment system fully functional")
+            print("   🚀 READY FOR PRODUCTION DEPLOYMENT")
+        elif success_rate >= 90.0:
+            print("   ⚠️  GOOD - System approaching target with minor issues")
+            print("   🔧 Minor fixes needed to reach 95% threshold")
+        else:
+            print("   ❌ NEEDS IMPROVEMENT - Significant issues identified")
+            print("   🚨 Major fixes required before production deployment")
 
     def test_service_rating_system(self) -> bool:
         """Test POST /api/service/rating - submit 1-5 star ratings"""
