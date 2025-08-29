@@ -255,74 +255,99 @@ class ComprehensiveBackendTester:
             self.log_result("Tier-Based Assessment System", False, f"Exception: {str(e)}")
             return False
 
-    def test_submit_tier_response(self) -> bool:
-        """Test POST /api/assessment/tier-session/{session_id}/response - submit responses"""
+    def test_agency_tier_management(self) -> bool:
+        """Test Agency Tier Management endpoints"""
         try:
-            if "tier_session" not in self.session_ids:
-                self.log_result("Submit Tier Response", False, "No tier session available")
+            print("\n🏢 Testing Agency Tier Management...")
+            
+            # Switch to agency credentials
+            if not self.authenticate_user("agency"):
                 return False
-                
-            headers = self.get_headers("client")
-            session_id = self.session_ids["tier_session"]
             
-            # Test response data
-            response_data = {
-                "question_id": "q1",
-                "response": "yes",
-                "evidence_provided": True,
-                "evidence_url": "https://example.com/evidence.pdf",
-                "tier_level": 2
-            }
-            
-            response = self.session.post(f"{BASE_URL}/assessment/tier-session/{session_id}/response", 
-                                       json=response_data, headers=headers)
-            
-            if response.status_code == 200 or response.status_code == 201:
-                data = response.json()
-                self.log_result("Submit Tier Response", True, 
-                              f"Response submitted successfully")
-                return True
-            else:
-                self.log_result("Submit Tier Response", False, 
-                              f"Status: {response.status_code}", response.json())
-                return False
-                
-        except Exception as e:
-            self.log_result("Submit Tier Response", False, f"Exception: {str(e)}")
-            return False
-
-    def test_tier_session_progress(self) -> bool:
-        """Test GET /api/assessment/tier-session/{session_id}/progress - get session progress"""
-        try:
-            if "tier_session" not in self.session_ids:
-                self.log_result("Tier Session Progress", False, "No tier session available")
-                return False
-                
-            headers = self.get_headers("client")
-            session_id = self.session_ids["tier_session"]
-            
-            response = self.session.get(f"{BASE_URL}/assessment/tier-session/{session_id}/progress", 
-                                      headers=headers)
+            # Test 1: Agency Tier Configuration
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/agency/tier-configuration")
+            response_time = time.time() - start_time
             
             if response.status_code == 200:
-                data = response.json()
-                
-                # Validate progress structure
-                if "completion_percentage" in data or "progress" in data:
-                    self.log_result("Tier Session Progress", True, 
-                                  f"Progress retrieved successfully")
-                    return True
+                config_data = response.json()
+                tier_levels = config_data.get("tier_access_levels", {})
+                if len(tier_levels) >= 10:
+                    self.log_result("Agency Tier Configuration", True,
+                                  f"Retrieved config for {len(tier_levels)} areas", response_time)
                 else:
-                    self.log_result("Tier Session Progress", False, 
-                                  "Progress data missing expected fields", data)
+                    self.log_result("Agency Tier Configuration", False,
+                                  f"Incomplete config: {len(tier_levels)} areas", response_time)
                     return False
             else:
-                self.log_result("Tier Session Progress", False, 
-                              f"Status: {response.status_code}", response.json())
+                self.log_result("Agency Tier Configuration", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
                 return False
-                
+
+            # Test 2: Agency Billing Usage
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/agency/billing/usage")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                billing_data = response.json()
+                self.log_result("Agency Billing Usage", True,
+                              f"Retrieved billing data", response_time)
+            else:
+                self.log_result("Agency Billing Usage", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            return True
+            
         except Exception as e:
-            self.log_result("Tier Session Progress", False, f"Exception: {str(e)}")
+            self.log_result("Agency Tier Management", False, f"Exception: {str(e)}")
+            return False
+
+    def test_client_tier_access(self) -> bool:
+        """Test Client Tier Access functionality"""
+        try:
+            print("\n👤 Testing Client Tier Access...")
+            
+            # Switch back to client credentials
+            if not self.authenticate_user("client"):
+                return False
+            
+            # Test Client Tier Access
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/client/tier-access")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                access_data = response.json()
+                tier_access = access_data.get("tier_access", {})
+                
+                if len(tier_access) >= 10:
+                    # Check that all areas have proper tier access structure
+                    valid_areas = 0
+                    for area_id, access_info in tier_access.items():
+                        if isinstance(access_info, dict) and "max_tier_access" in access_info:
+                            valid_areas += 1
+                    
+                    if valid_areas >= 10:
+                        self.log_result("Client Tier Access", True,
+                                      f"Valid tier access for {valid_areas} areas", response_time)
+                        return True
+                    else:
+                        self.log_result("Client Tier Access", False,
+                                      f"Invalid structure for some areas", response_time)
+                        return False
+                else:
+                    self.log_result("Client Tier Access", False,
+                                  f"Incomplete access data: {len(tier_access)} areas", response_time)
+                    return False
+            else:
+                self.log_result("Client Tier Access", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+            
+        except Exception as e:
+            self.log_result("Client Tier Access", False, f"Exception: {str(e)}")
             return False
 
     def test_enhanced_provider_profile(self) -> bool:
