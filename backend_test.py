@@ -401,9 +401,11 @@ class ComprehensiveBackendTester:
             
             if response.status_code == 200:
                 schema_data = response.json()
-                if schema_data.get("areas"):
+                schema = schema_data.get("schema", {})
+                areas = schema.get("areas", [])
+                if len(areas) > 0:
                     self.log_result("Database Connectivity", True,
-                                  "Database queries working", response_time)
+                                  f"Database queries working - {len(areas)} areas", response_time)
                 else:
                     self.log_result("Database Connectivity", False,
                                   "Empty schema response", response_time)
