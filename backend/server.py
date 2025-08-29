@@ -6928,6 +6928,17 @@ async def get_user_service_request_ids(user_id: str) -> List[str]:
     except:
         return []
 
+async def notify_matching_providers(service_area: str, request_id: str):
+    """Notify providers who match the service area about new service requests"""
+    try:
+        # Implementation would go here
+        # This function would find providers who specialize in the given service area
+        # and send them notifications about the new service request
+        pass
+    except Exception as e:
+        logger.error(f"Error notifying matching providers: {e}")
+        return False
+
 # ---------------- Business Intelligence for Agencies ----------------
 
 @api.get("/agency/business-intelligence/assessments")
