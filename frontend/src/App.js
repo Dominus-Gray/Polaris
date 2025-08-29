@@ -7776,7 +7776,7 @@ function AppShell(){
           <Route path="/provider/services/edit/:serviceId" element={<ServiceEditPage />} />
           <Route path="/provider/orders/:orderId" element={<OrderManagementPage />} />
           <Route path="/marketplace/service/:serviceId" element={<ServiceDetailsPage />} />
-          <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/assessment" element={<TierBasedAssessmentPage />} />
           <Route path="/agency" element={<AgencyHome />} />
           <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
           {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
