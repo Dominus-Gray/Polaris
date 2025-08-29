@@ -254,22 +254,48 @@ function TierBasedAssessmentPage() {
                 </h3>
                 <p className="text-gray-600 text-sm mb-4">{area.area_description}</p>
                 
-                {/* Tier Access Indicators */}
-                <div className="flex items-center justify-between">
+                {/* Status and Progress Indicators */}
+                <div className="flex items-center justify-between mb-3">
                   <span className="text-sm text-gray-500">Max Access: Tier {area.max_tier_access}</span>
                   <div className="flex space-x-1">
                     {[1, 2, 3].map((tier) => (
                       <div
                         key={tier}
-                        className={`w-3 h-3 rounded-full ${
+                        className={`w-4 h-4 rounded-full border-2 ${
                           tier <= area.max_tier_access 
-                            ? 'bg-green-400' 
-                            : 'bg-gray-300'
+                            ? tier <= (area.highest_tier_completed || 0) 
+                              ? area.status_color || 'bg-green-400'
+                              : 'bg-gray-200 border-gray-400'
+                            : 'bg-gray-300 border-gray-300'
                         }`}
+                        title={`Tier ${tier} ${tier <= area.max_tier_access ? 'Available' : 'Not Available'}`}
                       />
                     ))}
                   </div>
                 </div>
+
+                {/* Progress Information */}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">
+                    Status: <span className={`font-medium ${
+                      area.status === 'compliant' ? 'text-green-600' :
+                      area.status === 'nearing_completion' ? 'text-orange-600' :
+                      area.status === 'incomplete' ? 'text-yellow-600' : 'text-gray-600'
+                    }`}>
+                      {area.status === 'compliant' ? 'Compliant' :
+                       area.status === 'nearing_completion' ? 'Nearing Completion' :
+                       area.status === 'incomplete' ? 'In Progress' : 'Not Started'}
+                    </span>
+                  </span>
+                  <span className="text-gray-500">{area.progress_text || '0/0 questions'}</span>
+                </div>
+
+                {/* Completion Score if available */}
+                {area.completion_score && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    Score: {area.completion_score}%
+                  </div>
+                )}
               </div>
             ))}
           </div>
