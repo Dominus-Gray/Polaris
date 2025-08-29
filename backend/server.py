@@ -6931,12 +6931,189 @@ async def get_user_service_request_ids(user_id: str) -> List[str]:
 async def notify_matching_providers(service_area: str, request_id: str):
     """Notify providers who match the service area about new service requests"""
     try:
-        # Implementation would go here
-        # This function would find providers who specialize in the given service area
-        # and send them notifications about the new service request
-        pass
+        # Find providers with matching service areas
+        matching_providers = await db.enhanced_provider_profiles.find({
+            "service_areas": {"$in": [service_area]},
+            "profile_status": "active"
+        }).to_list(None)
+        
+        # Get service request details
+        service_request = await db.service_requests.find_one({"_id": request_id})
+        if not service_request:
+            return False
+        
+        notifications_sent = 0
+        for provider in matching_providers:
+            # Create notification record
+            notification_doc = {
+                "_id": str(uuid.uuid4()),
+                "provider_id": provider["provider_id"],
+                "request_id": request_id,
+                "service_area": service_area,
+                "client_budget": service_request.get("budget", 0),
+                "notification_type": "new_service_request",
+                "status": "pending",
+                "created_at": datetime.utcnow(),
+                "expires_at": datetime.utcnow() + timedelta(hours=48)  # 48-hour response window
+            }
+            
+            await db.provider_notifications.insert_one(notification_doc)
+            notifications_sent += 1
+            
+            # Update provider dashboard (real-time sync)
+            await update_provider_dashboard_notifications(provider["provider_id"], notification_doc)
+        
+        logger.info(f"Sent {notifications_sent} notifications for service request {request_id}")
+        return True
+        
     except Exception as e:
         logger.error(f"Error notifying matching providers: {e}")
+        return False
+
+async def update_provider_dashboard_notifications(provider_id: str, notification_data: dict):
+    """Update provider dashboard with new notification"""
+    try:
+        # Store real-time update for provider dashboard
+        update_doc = {
+            "_id": str(uuid.uuid4()),
+            "user_id": provider_id,
+            "update_type": "new_service_request_notification",
+            "data": notification_data,
+            "timestamp": datetime.utcnow(),
+            "processed": False
+        }
+        
+        await db.dashboard_updates.insert_one(update_doc)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating provider dashboard: {e}")
+        return False
+
+async def update_agency_service_tracking(user_id: str, request_id: str):
+    """Update agency dashboard with client service request tracking"""
+    try:
+        # Find client's sponsoring agency
+        client = await db.users.find_one({"id": user_id})
+        if not client:
+            return False
+            
+        license_code = client.get("license_code")
+        if not license_code:
+            return False
+            
+        license_record = await db.agency_licenses.find_one({"license_code": license_code})
+        if not license_record:
+            return False
+            
+        agency_id = license_record.get("agency_user_id") or license_record.get("agency_id")
+        if not agency_id:
+            return False
+        
+        # Update agency tracking record
+        tracking_doc = {
+            "_id": str(uuid.uuid4()),
+            "agency_id": agency_id,
+            "client_id": user_id,
+            "service_request_id": request_id,
+            "tracking_type": "service_request_created",
+            "timestamp": datetime.utcnow(),
+            "status": "active"
+        }
+        
+        await db.agency_service_tracking.insert_one(tracking_doc)
+        
+        # Update agency dashboard
+        await update_agency_dashboard_stats(agency_id)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating agency service tracking: {e}")
+        return False
+
+async def update_agency_dashboard_stats(agency_id: str):
+    """Update agency dashboard statistics"""
+    try:
+        # Get current month stats
+        month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Count active service requests from sponsored clients
+        agency_licenses = await db.agency_licenses.find({"agency_user_id": agency_id}).to_list(None)
+        client_ids = [license.get("used_by") for license in agency_licenses if license.get("used_by")]
+        
+        active_requests = await db.service_requests.count_documents({
+            "client_id": {"$in": client_ids},
+            "created_at": {"$gte": month_start},
+            "status": {"$in": ["pending", "in_progress"]}
+        })
+        
+        # Update agency stats
+        stats_doc = {
+            "agency_id": agency_id,
+            "month": month_start,
+            "active_service_requests": active_requests,
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.agency_monthly_stats.update_one(
+            {"agency_id": agency_id, "month": month_start},
+            {"$set": stats_doc},
+            upsert=True
+        )
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating agency dashboard stats: {e}")
+        return False
+
+async def update_navigator_analytics(user_id: str, activity_type: str, data: dict):
+    """Update navigator analytics with client activity"""
+    try:
+        # Find client's navigator through agency relationship
+        client = await db.users.find_one({"id": user_id})
+        if not client:
+            return False
+            
+        # Create analytics record
+        analytics_doc = {
+            "_id": str(uuid.uuid4()),
+            "client_id": user_id,
+            "activity_type": activity_type,
+            "data": data,
+            "timestamp": datetime.utcnow(),
+            "processed": False
+        }
+        
+        await db.navigator_analytics.insert_one(analytics_doc)
+        
+        # Update navigator dashboard metrics
+        await update_navigator_dashboard_metrics(activity_type, data)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating navigator analytics: {e}")
+        return False
+
+async def update_navigator_dashboard_metrics(activity_type: str, data: dict):
+    """Update navigator dashboard with aggregated metrics"""
+    try:
+        current_date = datetime.now().date()
+        
+        # Update daily metrics
+        await db.navigator_daily_metrics.update_one(
+            {"date": current_date},
+            {
+                "$inc": {f"activities.{activity_type}": 1},
+                "$set": {"updated_at": datetime.utcnow()}
+            },
+            upsert=True
+        )
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating navigator dashboard metrics: {e}")
         return False
 
 # ---------------- Business Intelligence for Agencies ----------------
