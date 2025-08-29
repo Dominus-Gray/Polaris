@@ -379,10 +379,9 @@ function TierBasedAssessmentPage() {
     );
   }
 
-  // Assessment in progress - use filtered questions
-  const activeQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
-  const currentQuestion = activeQuestions[currentQuestionIndex];
-  const progressPercentage = activeQuestions.length > 0 ? ((currentQuestionIndex + 1) / activeQuestions.length) * 100 : 0;
+  // Assessment in progress - all questions for selected tier (cumulative)
+  const currentQuestion = questions[currentQuestionIndex];
+  const progressPercentage = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
