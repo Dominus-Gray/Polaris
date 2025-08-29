@@ -9102,7 +9102,7 @@ async def submit_verification(
             raise HTTPException(status_code=403, detail="Only providers can submit verification")
         
         verification = {
-            "user_id": current["user_id"],
+            "user_id": current["id"],
             "verification_data": verification_data,
             "status": "pending",
             "submitted_at": datetime.utcnow(),
@@ -9110,14 +9110,14 @@ async def submit_verification(
         }
         
         await db.provider_verifications.update_one(
-            {"user_id": current["user_id"]},
+            {"user_id": current["id"]},
             {"$set": verification},
             upsert=True
         )
         
         # Update user profile to reflect verification submission
         await db.users.update_one(
-            {"_id": current["user_id"]},
+            {"_id": current["id"]},
             {"$set": {"verification_status": "pending", "verification_submitted_at": datetime.utcnow()}}
         )
         
