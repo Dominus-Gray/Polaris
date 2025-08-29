@@ -323,13 +323,13 @@ class ComprehensiveBackendTester:
             
             if response.status_code == 200:
                 access_data = response.json()
-                tier_access = access_data.get("tier_access", {})
+                areas = access_data.get("areas", [])
                 
-                if len(tier_access) >= 10:
+                if len(areas) >= 10:
                     # Check that all areas have proper tier access structure
                     valid_areas = 0
-                    for area_id, access_info in tier_access.items():
-                        if isinstance(access_info, dict) and "max_tier_access" in access_info:
+                    for area_info in areas:
+                        if isinstance(area_info, dict) and "max_tier_access" in area_info:
                             valid_areas += 1
                     
                     if valid_areas >= 10:
@@ -342,7 +342,7 @@ class ComprehensiveBackendTester:
                         return False
                 else:
                     self.log_result("Client Tier Access", False,
-                                  f"Incomplete access data: {len(tier_access)} areas", response_time)
+                                  f"Incomplete access data: {len(areas)} areas", response_time)
                     return False
             else:
                 self.log_result("Client Tier Access", False,
