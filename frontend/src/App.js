@@ -4479,7 +4479,8 @@ function ClientHome(){
                       'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
                       'Performance Tracking': 'https://www.score.org/templates-tools',
                       'Risk Management': 'https://www.ready.gov/business',
-                      'Supply Chain Management': 'https://apexaccelerators.us/locator'
+                      'Supply Chain Management': 'https://apexaccelerators.us/locator',
+                      'Competitive Advantage': 'https://www.sba.gov/business-guide/grow-your-business/market-research-competitive-analysis'
                     };
                     const url = (localized[0]?.url) || map[service.area_name] || 'https://www.sba.gov/local-assistance';
                     window.open(url, '_blank', 'noopener');
