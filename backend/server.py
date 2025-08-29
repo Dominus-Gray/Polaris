@@ -6591,57 +6591,109 @@ async def get_free_external_resources(current=Depends(require_user)):
 
 
 @api.get("/free-resources/localized")
-async def get_localized_resources(current=Depends(require_user)):
-    """Return localized external resources based on the client's business profile city/state.
-    Safe, read-only, non-breaking. Falls back to national resources when location is missing.
+async def get_ai_powered_localized_resources(
+    area_id: Optional[str] = Query(None, description="Business area ID for context-specific resources"),
+    maturity_gaps: Optional[str] = Query(None, description="Comma-separated list of maturity gaps"),
+    current=Depends(require_user)
+):
+    """AI-powered localized external resources based on client's city, business area, and maturity gaps.
+    Returns dynamic, accurate, and relevant local resources using AI intelligence.
     """
-    # Get business profile
-    profile = await db.business_profiles.find_one({"user_id": current["id"]})
-    city = (profile or {}).get("city") or (profile or {}).get("business_city")
-    state = (profile or {}).get("state") or (profile or {}).get("business_state")
+    try:
+        # Get business profile for location
+        profile = await db.business_profiles.find_one({"user_id": current["id"]})
+        city = (profile or {}).get("city") or (profile or {}).get("business_city") or "Unknown"
+        state = (profile or {}).get("state") or (profile or {}).get("business_state") or "Unknown"
+        
+        # Get assessment context if available
+        assessment_context = ""
+        if area_id:
+            area_name = ASSESSMENT_SCHEMA.get("areas", [{}])[int(area_id.replace("area", "")) - 1] if area_id.startswith("area") else None
+            assessment_context = f"Business Area: {area_name.get('title', 'General')} - {area_name.get('description', '')}" if area_name else ""
+        
+        gaps_context = ""
+        if maturity_gaps:
+            gaps_list = maturity_gaps.split(",")
+            gaps_context = f"Specific maturity gaps identified: {', '.join(gaps_list)}"
 
-    def national_defaults():
-        return [
-            {"name": "SBA Local Assistance", "url": "https://www.sba.gov/local-assistance", "type": "sba"},
-            {"name": "APEX Accelerator (PTAC) Locator", "url": "https://apexaccelerators.us/locator", "type": "ptac"},
-            {"name": "SBDC Locator", "url": "https://americassbdc.org/small-business-consulting-and-training/find-your-sbdc/", "type": "sbdc"},
-            {"name": "SCORE Chapters", "url": "https://www.score.org/find-mentor", "type": "score"}
+        # AI-powered resource generation
+        if EMERGENT_OK:
+            ai_resources = await generate_ai_localized_resources(city, state, assessment_context, gaps_context)
+            
+            if ai_resources:
+                return {
+                    "resources": ai_resources,
+                    "city": city,
+                    "state": state,
+                    "generated_by": "ai",
+                    "area_context": assessment_context,
+                    "gaps_context": gaps_context,
+                    "last_updated": datetime.utcnow().isoformat()
+                }
+        
+        # Fallback to enhanced static resources with location awareness
+        fallback_resources = generate_enhanced_static_resources(city, state, assessment_context)
+        
+        return {
+            "resources": fallback_resources,
+            "city": city,
+            "state": state,
+            "generated_by": "static_enhanced",
+            "area_context": assessment_context,
+            "gaps_context": gaps_context,
+            "last_updated": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating localized resources: {e}")
+        # Ultimate fallback to national resources
+        national_resources = [
+            {
+                "name": "Small Business Administration (SBA)",
+                "description": "Federal agency providing small business support and contracting opportunities",
+                "url": "https://www.sba.gov/local-assistance",
+                "type": "federal_agency",
+                "contact_method": "website",
+                "services": ["Business counseling", "Loan programs", "Government contracting support"],
+                "target_audience": "All small businesses"
+            },
+            {
+                "name": "APEX Accelerator (PTAC) Network",
+                "description": "Local procurement technical assistance for government contracting",
+                "url": "https://apexaccelerators.us/locator",
+                "type": "technical_assistance",
+                "contact_method": "locator_website",
+                "services": ["Proposal writing", "Compliance assistance", "Market research"],
+                "target_audience": "Businesses seeking government contracts"
+            },
+            {
+                "name": "Small Business Development Centers (SBDC)",
+                "description": "University-based consulting and training for small business growth",
+                "url": "https://americassbdc.org/small-business-consulting-and-training/find-your-sbdc/",
+                "type": "consulting_training",
+                "contact_method": "locator_website",
+                "services": ["Business consulting", "Market research", "Training programs"],
+                "target_audience": "Small business owners and entrepreneurs"
+            },
+            {
+                "name": "SCORE Mentorship Program",
+                "description": "Free business mentoring from experienced entrepreneurs",
+                "url": "https://www.score.org/find-mentor",
+                "type": "mentorship",
+                "contact_method": "website_matching",
+                "services": ["One-on-one mentoring", "Workshops", "Resources"],
+                "target_audience": "Entrepreneurs and small business owners"
+            }
         ]
-
-    # Normalize
-    city_l = (city or "").strip().lower()
-    state_l = (state or "").strip().lower()
-
-    # San Antonio, TX special set
-    if city_l == "san antonio" and state_l in ("tx", "texas"):
-        resources = [
-            {"name": "City of San Antonio Vendor (Bonfire)", "url": "https://sanantonio.bonfirehub.com/portal", "type": "city_vendor"},
-            {"name": "San Antonio Airport System Procurement", "url": "https://www.sanantonio.gov/aviation/business/opportunities", "type": "airport"},
-            {"name": "San Antonio Housing Authority (SAHA)", "url": "https://www.saha.org/business/procurement/", "type": "housing"},
-            {"name": "Bexar County Purchasing", "url": "https://www.bexar.org/3430/Purchasing", "type": "county_vendor"},
-            {"name": "CPS Energy Procurement", "url": "https://www.cpsenergy.com/about/procurement.html", "type": "utility"},
-            {"name": "SAWS Procurement", "url": "https://www.saws.org/business-center/purchasing/", "type": "utility"},
-            {"name": "VIA Metro Transit Procurements", "url": "https://www.viainfo.net/current-procurements/", "type": "transit"},
-            {"name": "UTSA SBDC (South Central Texas)", "url": "https://sasbdc.org/", "type": "sbdc"},
-            {"name": "SCORE San Antonio", "url": "https://www.score.org/sanantonio", "type": "score"},
-            {"name": "APEX Accelerator (PTAC) Locator", "url": "https://apexaccelerators.us/locator", "type": "ptac"},
-            {"name": "Texas CMBL Vendor List", "url": "https://comptroller.texas.gov/purchasing/vendor/cmbl/", "type": "state_vendor"},
-            {"name": "TxDOT Letting/Procurement", "url": "https://www.txdot.gov/business/let.htm", "type": "state_transport"}
-        ]
-        return {"resources": resources, "city": city, "state": state}
-
-    # Texas, other cities
-    if state_l in ("tx", "texas"):
-        resources = [
-            {"name": "Texas CMBL Vendor List", "url": "https://comptroller.texas.gov/purchasing/vendor/cmbl/", "type": "state_vendor"},
-            {"name": "APEX Accelerator (PTAC) Locator", "url": "https://apexaccelerators.us/locator", "type": "ptac"},
-            {"name": "SBDC Texas Locator", "url": "https://txsbdc.org/locator/", "type": "sbdc"},
-            {"name": "SBA Local Assistance (TX)", "url": f"https://www.sba.gov/local-assistance?state={state}", "type": "sba"}
-        ]
-        return {"resources": resources, "city": city, "state": state}
-
-    # Default national set
-    return {"resources": national_defaults(), "city": city, "state": state}
+        
+        return {
+            "resources": national_resources,
+            "city": city,
+            "state": state,
+            "generated_by": "fallback_national",
+            "error": "AI generation temporarily unavailable",
+            "last_updated": datetime.utcnow().isoformat()
+        }
 
 # ---------------- Matching Core Endpoints ----------------
 class MatchRequestIn(BaseModel):
