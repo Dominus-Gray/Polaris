@@ -1,53 +1,75 @@
 #!/usr/bin/env python3
 """
-Comprehensive Data Flow Analysis and Integration Testing
-Focus: Assessment Data Integration, Service Provider Marketplace, Agency BI, Knowledge Base, Cross-Platform Analytics
+Enhanced Platform Integration and Complete Feature Journey Testing
+Testing the enhanced integration endpoints and cross-platform workflows
 """
 
 import requests
 import json
 import time
-from datetime import datetime
-from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+import uuid
 
-# Test Configuration
+# Configuration
 BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},
+    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"}
 }
 
-class DataFlowTester:
+class EnhancedIntegrationTester:
     def __init__(self):
         self.tokens = {}
         self.test_results = []
-        self.session_data = {}
+        self.session = requests.Session()
         
-    def log_result(self, test_name: str, success: bool, details: str, data: dict = None):
-        """Log test result with timestamp"""
+    def log_result(self, test_name, success, details="", response_data=None):
+        """Log test results with detailed information"""
         result = {
             "test": test_name,
             "success": success,
-            "details": details,
             "timestamp": datetime.now().isoformat(),
-            "data": data or {}
+            "details": details,
+            "response_data": response_data
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name} - {details}")
-        
-    def authenticate_all_users(self) -> bool:
-        """Authenticate all QA user types"""
-        print("\n=== AUTHENTICATION PHASE ===")
-        all_success = True
-        
-        for role, creds in QA_CREDENTIALS.items():
-            try:
-                response = requests.post(f"{BASE_URL}/auth/login", json=creds)
-                if response.status_code == 200:
-                    token_data = response.json()
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"   Details: {details}")
+        if not success and response_data:
+            print(f"   Response: {response_data}")
+        print()
+
+    def authenticate_user(self, role):
+        """Authenticate user and store token"""
+        try:
+            creds = QA_CREDENTIALS[role]
+            response = self.session.post(f"{BASE_URL}/auth/login", json=creds)
+            
+            if response.status_code == 200:
+                token_data = response.json()
+                self.tokens[role] = token_data["access_token"]
+                self.log_result(f"Authentication - {role.title()}", True, 
+                              f"Successfully authenticated {creds['email']}")
+                return True
+            else:
+                error_detail = response.json() if response.content else {"detail": "No response content"}
+                self.log_result(f"Authentication - {role.title()}", False, 
+                              f"Failed to authenticate {creds['email']}: {response.status_code}",
+                              error_detail)
+                return False
+        except Exception as e:
+            self.log_result(f"Authentication - {role.title()}", False, f"Exception: {str(e)}")
+            return False
+
+    def get_headers(self, role):
+        """Get authorization headers for role"""
+        if role not in self.tokens:
+            return {}
+        return {"Authorization": f"Bearer {self.tokens[role]}"}
                     self.tokens[role] = token_data["access_token"]
                     self.log_result(f"Auth_{role}", True, f"Successfully authenticated {role}")
                 else:
