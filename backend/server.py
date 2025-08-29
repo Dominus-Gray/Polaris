@@ -8896,7 +8896,7 @@ async def get_assessment_results(session_id: str, current=Depends(get_current_us
     """Get comprehensive assessment results with analysis"""
     try:
         # Get assessment session
-        session = await db.assessment_sessions.find_one({"session_id": session_id, "user_id": current["user_id"]})
+        session = await db.assessment_sessions.find_one({"session_id": session_id, "user_id": current["id"]})
         if not session:
             raise HTTPException(status_code=404, detail="Assessment session not found")
         
