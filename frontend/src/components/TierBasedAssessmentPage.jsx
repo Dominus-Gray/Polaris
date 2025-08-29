@@ -142,8 +142,8 @@ function TierBasedAssessmentPage() {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
-        // Assessment complete - redirect to results
-        navigate(`/assessment/results/${currentSession.session_id}`);
+        // Assessment complete - trigger integrated workflow
+        await handleAssessmentCompletion(currentSession.session_id);
       }
       
     } catch (error) {
