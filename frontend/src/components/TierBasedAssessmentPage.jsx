@@ -11,10 +11,8 @@ function TierBasedAssessmentPage() {
   const [assessmentProgress, setAssessmentProgress] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedTier, setSelectedTier] = useState(1);
-  const [tierFilter, setTierFilter] = useState('all');
   const [currentSession, setCurrentSession] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [sessionLoading, setSessionLoading] = useState(false);
