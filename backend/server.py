@@ -35,6 +35,93 @@ def get_cached_assessment_schema():
     """Cache assessment schema to reduce repeated computations"""
     return ASSESSMENT_SCHEMA.copy()
 
+# Helper functions for tier-based assessment system
+async def get_client_tier_access(user_id: str) -> Dict[str, int]:
+    """Get client's maximum tier access levels based on their agency configuration"""
+    try:
+        # Get client's agency through license code
+        user = await db.users.find_one({"id": user_id})
+        if not user or user.get("role") != "client":
+            return {}
+        
+        license_code = user.get("license_code")
+        if not license_code:
+            # Default to tier 1 for all areas
+            return {f"area{i}": 1 for i in range(1, 11)}
+        
+        # Get agency from license
+        license_record = await db.agency_licenses.find_one({"license_code": license_code})
+        if not license_record:
+            return {f"area{i}": 1 for i in range(1, 11)}
+        
+        agency_user_id = license_record.get("agency_user_id")
+        if not agency_user_id:
+            return {f"area{i}": 1 for i in range(1, 11)}
+        
+        # Get agency tier configuration
+        agency_config = await db.agency_tier_configurations.find_one({"agency_id": agency_user_id})
+        if not agency_config:
+            # Default configuration: all agencies start with tier 1 access
+            default_config = {f"area{i}": 1 for i in range(1, 11)}
+            await db.agency_tier_configurations.insert_one({
+                "_id": str(uuid.uuid4()),
+                "agency_id": agency_user_id,
+                "tier_access_levels": default_config,
+                "pricing_per_tier": {"tier1": 25.0, "tier2": 50.0, "tier3": 100.0},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            })
+            return default_config
+        
+        return agency_config.get("tier_access_levels", {f"area{i}": 1 for i in range(1, 11)})
+        
+    except Exception as e:
+        logger.error(f"Error getting client tier access: {e}")
+        # Return default tier 1 access as fallback
+        return {f"area{i}": 1 for i in range(1, 11)}
+
+def calculate_tier_completion_score(responses: List[Dict], tier_level: int) -> float:
+    """Calculate completion score for a tier-based assessment"""
+    if not responses:
+        return 0.0
+    
+    total_score = 0
+    max_score = 0
+    
+    for response in responses:
+        # Base scoring
+        if response["response"].lower() in ["yes", "true", "1"]:
+            response_score = 100
+        elif response["response"].lower() in ["no", "false", "0"]:
+            response_score = 0
+        elif response["response"].lower() in ["partial", "in_progress"]:
+            response_score = 50
+        else:
+            response_score = 25  # "No, I need help" or other
+        
+        # Tier-specific scoring multipliers
+        if tier_level == 1:
+            multiplier = 1.0  # Self assessment
+        elif tier_level == 2:
+            # Evidence required - higher weight for documented responses
+            if response.get("evidence_provided") or response.get("evidence_url"):
+                multiplier = 1.2
+            else:
+                multiplier = 0.8  # Penalize lack of evidence
+        else:  # tier_level == 3
+            # Verification tier - highest standards
+            if response.get("verification_status") == "verified":
+                multiplier = 1.5
+            elif response.get("evidence_provided") or response.get("evidence_url"):
+                multiplier = 1.0
+            else:
+                multiplier = 0.6
+        
+        total_score += response_score * multiplier
+        max_score += 100 * multiplier
+    
+    return round((total_score / max_score * 100), 2) if max_score > 0 else 0.0
+
 # Optimize database queries with indexes (MongoDB commands to run separately)
 # db.users.createIndex({"email": 1, "role": 1})
 # db.assessment_sessions.createIndex({"user_id": 1, "created_at": -1})
