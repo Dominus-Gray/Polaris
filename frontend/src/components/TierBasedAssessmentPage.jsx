@@ -153,7 +153,7 @@ function TierBasedAssessmentPage() {
       setAnswers(newAnswers);
 
       // Move to next question or complete
-      if (currentQuestionIndex < activeQuestions.length - 1) {
+      if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
         // Assessment complete - redirect to results
