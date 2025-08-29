@@ -286,11 +286,11 @@ function TierBasedAssessmentPage() {
             ))}
           </div>
 
-          {/* Tier Selection */}
+          {/* Assessment Start Section */}
           {selectedArea && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Available Tiers for {selectedArea.area_number}. {selectedArea.area_title}
+                {selectedArea.area_number}. {selectedArea.area_title}
               </h2>
               
               {/* Current Progress Display */}
@@ -307,57 +307,65 @@ function TierBasedAssessmentPage() {
                   )}
                 </div>
               )}
-              
-              <div className="grid md:grid-cols-3 gap-4">
-                {selectedArea.available_tiers.map((tier) => (
-                  <div
-                    key={tier.tier_level}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
-                      selectedTier === tier.tier_level
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => setSelectedTier(tier.tier_level)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Tier {tier.tier_level}</h3>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        tier.effort_level === 'low_moderate' ? 'bg-green-100 text-green-800' :
-                        tier.effort_level === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-orange-100 text-orange-800'
-                      }`}>
-                        {tier.effort_level.replace('_', ' ')}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">{tier.tier_name}</p>
-                    <p className="text-sm text-gray-600 mb-2">{tier.description}</p>
-                    <p className="text-xs text-gray-500">{tier.questions_count} questions</p>
+
+              {/* Assessment Information */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="font-medium text-gray-900 mb-2">Your Assessment Access</h3>
+                <p className="text-gray-600 text-sm mb-3">{selectedArea.area_description}</p>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Maximum Tier Access:</span>
+                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                      Tier {selectedArea.max_tier_access}
+                    </span>
                   </div>
-                ))}
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Total Questions:</span>
+                    <span className="ml-2 text-sm text-gray-600">
+                      {selectedArea.max_tier_access === 1 ? '3 questions (Self Assessment)' :
+                       selectedArea.max_tier_access === 2 ? '6 questions (Self Assessment + Evidence Required)' :
+                       '9 questions (Self Assessment + Evidence Required + Verification)'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="mt-3">
+                  <span className="text-sm font-medium text-gray-700">Assessment Type:</span>
+                  <span className="ml-2 text-sm text-gray-600">
+                    {selectedArea.max_tier_access === 1 ? 'Self Assessment - Low to moderate effort maturity statements' :
+                     selectedArea.max_tier_access === 2 ? 'Evidence Required - Includes self assessment + documented evidence' :
+                     'Verification - Complete assessment with third-party validation requirements'}
+                  </span>
+                </div>
               </div>
 
               {/* Start Assessment Button */}
-              {selectedTier && (
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={createSession}
-                    disabled={sessionLoading}
-                    className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                  >
-                    {sessionLoading ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Starting Assessment...
-                      </>
-                    ) : (
-                      `Start Tier ${selectedTier} Assessment`
-                    )}
-                  </button>
-                </div>
-              )}
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setSelectedTier(selectedArea.max_tier_access);
+                    createSession();
+                  }}
+                  disabled={sessionLoading}
+                  className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {sessionLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Starting Assessment...
+                    </>
+                  ) : (
+                    `Start Assessment (Tier ${selectedArea.max_tier_access})`
+                  )}
+                </button>
+                <p className="mt-2 text-sm text-gray-500">
+                  You'll receive all questions for your tier access level
+                </p>
+              </div>
             </div>
           )}
         </div>
