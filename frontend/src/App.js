@@ -4463,30 +4463,67 @@ function ClientHome(){
                 key={idx}
                 className="text-left bg-white border border-green-200 rounded-lg p-3 hover:bg-green-50 transition-colors"
                 onClick={async () => {
-                  // Log resource access for navigator analytics
-                  axios.post(`${API}/analytics/resource-access`, { resource_id: service.id, gap_area: service.area });
-                  // Call backend localized resources to determine best link
+                  console.log('Free resource clicked:', service);
+                  
+                  // Area name mapping for direct resource access
+                  const resourceMap = {
+                    'Business Formation': 'https://www.sba.gov/business-guide/plan-your-business/choose-business-structure',
+                    'Financial Operations': 'https://www.sba.gov/funding-programs',
+                    'Legal Compliance': 'https://www.sba.gov/business-guide/launch-your-business',
+                    'Quality Management': 'https://www.iso.org/home.html',
+                    'Technology & Security': 'https://www.cisa.gov/resources-tools',
+                    'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
+                    'Performance Tracking': 'https://www.score.org/templates-tools',
+                    'Risk Management': 'https://www.ready.gov/business',
+                    'Supply Chain Management': 'https://apexaccelerators.us/locator',
+                    'Competitive Advantage': 'https://www.sba.gov/business-guide/grow-your-business/market-research-competitive-analysis'
+                  };
+                  
+                  // Try to get localized resources first, then fallback to direct mapping
                   try {
-                    const { data } = await axios.get(`${API}/free-resources/localized`);
-                    const localized = (data?.resources || []);
-                    // Use area-specific national fallback if localized list is generic
-                    const map = {
-                      'Business Formation': 'https://www.sba.gov/business-guide/plan-your-business/choose-business-structure',
-                      'Financial Operations': 'https://www.sba.gov/funding-programs',
-                      'Legal Compliance': 'https://www.sba.gov/business-guide/launch-your-business',
-                      'Quality Management': 'https://www.iso.org/home.html',
-                      'Technology & Security': 'https://www.cisa.gov/resources-tools',
-                      'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
-                      'Performance Tracking': 'https://www.score.org/templates-tools',
-                      'Risk Management': 'https://www.ready.gov/business',
-                      'Supply Chain Management': 'https://apexaccelerators.us/locator',
-                      'Competitive Advantage': 'https://www.sba.gov/business-guide/grow-your-business/market-research-competitive-analysis'
+                    const authHeaders = {
+                      headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('polaris_token')}`
+                      }
                     };
-                    const url = (localized[0]?.url) || map[service.area_name] || 'https://www.sba.gov/local-assistance';
-                    window.open(url, '_blank', 'noopener');
-                  } catch {
-                    const fallback = 'https://www.sba.gov/local-assistance';
-                    window.open(fallback, '_blank', 'noopener');
+                    
+                    // Log resource access for analytics
+                    try {
+                      await axios.post(`${API}/api/analytics/resource-access`, { 
+                        resource_id: service.id || service.title, 
+                        gap_area: service.area || service.area_name,
+                        timestamp: new Date().toISOString()
+                      }, authHeaders);
+                    } catch (logError) {
+                      console.warn('Analytics logging failed:', logError);
+                    }
+                    
+                    // Get localized resources
+                    const response = await axios.get(`${API}/api/free-resources/localized`, authHeaders);
+                    const localized = response.data?.resources || [];
+                    
+                    // Use localized resource if available, otherwise use mapped resource
+                    let targetUrl = resourceMap[service.area_name] || resourceMap[service.title] || 'https://www.sba.gov/local-assistance';
+                    
+                    if (localized.length > 0) {
+                      // Try to find matching resource
+                      const matchingResource = localized.find(r => 
+                        r.name && (service.area_name || service.title).toLowerCase().includes(r.name.toLowerCase().split(' ')[0])
+                      );
+                      if (matchingResource && matchingResource.url) {
+                        targetUrl = matchingResource.url;
+                      }
+                    }
+                    
+                    console.log('Opening resource URL:', targetUrl);
+                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                    
+                  } catch (error) {
+                    console.error('Error accessing localized resources:', error);
+                    // Fallback to direct mapping
+                    const fallbackUrl = resourceMap[service.area_name] || resourceMap[service.title] || 'https://www.sba.gov/local-assistance';
+                    console.log('Opening fallback URL:', fallbackUrl);
+                    window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
                   }
                 }}
               >
