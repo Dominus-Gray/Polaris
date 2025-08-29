@@ -394,7 +394,7 @@ function TierBasedAssessmentPage() {
               <p className="text-sm text-gray-600">{currentSession.tier_name}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {activeQuestions.length}</p>
+              <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {questions.length}</p>
               <p className="text-xs text-gray-500">{Math.round(progressPercentage)}% Complete</p>
             </div>
           </div>
