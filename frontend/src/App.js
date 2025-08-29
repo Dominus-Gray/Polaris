@@ -4141,7 +4141,8 @@ function ClientHome(){
       'area6': 'Human Resources & Capacity',
       'area7': 'Performance Tracking & Reporting',
       'area8': 'Risk Management & Business Continuity',
-      'area9': 'Supply Chain Management & Vendor Relations'
+      'area9': 'Supply Chain Management & Vendor Relations',
+      'area10': 'Competitive Advantage & Market Position'
     };
 
     Object.entries(answers).forEach(([questionId, answer]) => {
