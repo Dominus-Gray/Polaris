@@ -88,6 +88,97 @@ function TierBasedAssessmentPage() {
     }
   };
 
+  // Comprehensive assessment completion handler with integrated workflow
+  const handleAssessmentCompletion = async (sessionId) => {
+    try {
+      console.log('Assessment completed, triggering integrated workflow...');
+      
+      // 1. Get assessment results
+      const resultsResponse = await axios.get(`${API}/api/assessment/results/${sessionId}`, authHeaders);
+      const results = resultsResponse.data;
+      
+      // 2. Trigger dashboard updates
+      await axios.post(`${API}/api/realtime/dashboard-update`, {
+        user_id: me.id,
+        update_type: 'assessment_completed',
+        data: {
+          session_id: sessionId,
+          area_id: results.area_info?.area_id,
+          score: results.completion_info?.tier_completion_score,
+          tier_level: results.area_info?.tier_level
+        }
+      }, authHeaders);
+      
+      // 3. Check for gaps and generate recommendations
+      const score = results.completion_info?.tier_completion_score || 0;
+      const hasGaps = score < 80;
+      
+      if (hasGaps) {
+        // Show integrated action modal
+        setShowActionModal(true);
+        setCompletionResults({
+          ...results,
+          hasGaps,
+          recommendations: await generateActionRecommendations(results)
+        });
+      } else {
+        // Navigate to results for high-scoring assessments
+        navigate(`/assessment/results/${sessionId}`);
+      }
+      
+    } catch (error) {
+      console.error('Error in assessment completion workflow:', error);
+      // Fallback to simple results page
+      navigate(`/assessment/results/${sessionId}`);
+    }
+  };
+
+  // Generate action recommendations based on assessment results
+  const generateActionRecommendations = async (results) => {
+    const recommendations = {
+      immediate_actions: [],
+      resource_suggestions: [],
+      service_providers: []
+    };
+    
+    const areaId = results.area_info?.area_id;
+    const score = results.completion_info?.tier_completion_score || 0;
+    
+    // Immediate actions based on score
+    if (score < 50) {
+      recommendations.immediate_actions.push({
+        title: 'Access Free Resources',
+        description: `Get immediate help with ${results.area_info?.area_title}`,
+        action: 'view_resources',
+        priority: 'high'
+      });
+      
+      recommendations.immediate_actions.push({
+        title: 'Request Professional Help',
+        description: 'Connect with certified service providers',
+        action: 'create_service_request',
+        priority: 'high'
+      });
+    } else if (score < 80) {
+      recommendations.immediate_actions.push({
+        title: 'Improve Your Score',
+        description: 'Access targeted resources for improvement',
+        action: 'view_resources',
+        priority: 'medium'
+      });
+    }
+    
+    // Always suggest next assessment
+    recommendations.immediate_actions.push({
+      title: 'Continue Assessment Journey',
+      description: 'Complete assessments for other business areas',
+      action: 'next_assessment',
+      priority: 'medium'
+    });
+    
+    return recommendations;
+  };
+
 
 
   // Create assessment session
