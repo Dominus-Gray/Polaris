@@ -794,19 +794,9 @@ class EnhancedServiceRequest(StandardizedEngagementRequest):
     evaluation_criteria: List[str] = Field(default=[], description="How client will evaluate proposals")
     communication_preference: str = Field(default="email", pattern="^(email|phone|video|in_person)$")
     
-    @validator('estimated_timeline')
-    def validate_timeline(cls, v):
+    @validator('preferred_timeline')
+    def validate_preferred_timeline(cls, v):
         return DataValidator.validate_timeline(v)
-    
-    @validator('proposal_note')
-    def validate_proposal(cls, v):
-        return DataValidator.sanitize_text(v, max_length=1500)
-    
-    @validator('proposed_fee')
-    def validate_fee(cls, v):
-        if v <= 0:
-            raise ValueError('Proposed fee must be greater than 0')
-        return round(float(v), 2)
 
 class StandardizedEngagementUpdate(BaseModel):
     """Standardized model for engagement status updates"""
