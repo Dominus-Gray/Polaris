@@ -2147,10 +2147,15 @@ async def create_tier_based_session(
 ):
     """Create a new tier-based assessment session"""
     try:
-        # Validate tier access
+        # Get client's tier access and use maximum available tier if not specified
         client_tier_access = await get_client_tier_access(current_user["id"])
         max_tier = client_tier_access.get(area_id, 1)
         
+        # If no tier level specified, use the maximum available tier
+        if tier_level is None:
+            tier_level = max_tier
+        
+        # Validate tier access
         if tier_level > max_tier:
             raise HTTPException(
                 status_code=403, 
