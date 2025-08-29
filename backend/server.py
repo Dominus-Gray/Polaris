@@ -1774,6 +1774,250 @@ async def get_assessment_schema():
         logger.error(f"Error getting assessment schema: {e}")
         raise HTTPException(status_code=500, detail="Failed to load assessment schema")
 
+# Enhanced Tier-Based Assessment System API Endpoints
+@api.get("/assessment/schema/tier-based")
+async def get_tier_based_assessment_schema(current_user: dict = Depends(get_current_user)):
+    """Get the tier-based assessment schema with client's tier access levels"""
+    try:
+        # Get client's agency tier configuration
+        client_tier_access = await get_client_tier_access(current_user["id"])
+        
+        enhanced_schema = {
+            "areas": [],
+            "client_access": client_tier_access
+        }
+        
+        for area in ASSESSMENT_SCHEMA["areas"]:
+            area_data = {
+                "id": area["id"],
+                "title": area["title"],
+                "description": area["description"],
+                "tiers": []
+            }
+            
+            max_tier = client_tier_access.get(area["id"], 1)
+            
+            for tier_num in range(1, min(4, max_tier + 1)):
+                tier_key = f"tier{tier_num}"
+                if tier_key in area["tiers"]:
+                    tier_data = area["tiers"][tier_key].copy()
+                    tier_data["tier_level"] = tier_num
+                    tier_data["accessible"] = tier_num <= max_tier
+                    area_data["tiers"].append(tier_data)
+            
+            enhanced_schema["areas"].append(area_data)
+        
+        return enhanced_schema
+    except Exception as e:
+        logger.error(f"Error getting tier-based assessment schema: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load tier-based assessment schema")
+
+@api.post("/assessment/tier-session")
+async def create_tier_based_session(
+    area_id: str = Form(...),
+    tier_level: int = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new tier-based assessment session"""
+    try:
+        # Validate tier access
+        client_tier_access = await get_client_tier_access(current_user["id"])
+        max_tier = client_tier_access.get(area_id, 1)
+        
+        if tier_level > max_tier:
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Access denied: Your agency only provides access to Tier {max_tier} for this area"
+            )
+        
+        # Get area and tier data
+        area_data = None
+        for area in ASSESSMENT_SCHEMA["areas"]:
+            if area["id"] == area_id:
+                area_data = area
+                break
+        
+        if not area_data:
+            raise HTTPException(status_code=404, detail="Business area not found")
+        
+        tier_key = f"tier{tier_level}"
+        if tier_key not in area_data["tiers"]:
+            raise HTTPException(status_code=404, detail="Tier level not found")
+        
+        # Create session
+        session_id = str(uuid.uuid4())
+        tier_data = area_data["tiers"][tier_key]
+        
+        # Include questions from all lower tiers plus current tier
+        all_questions = []
+        for t in range(1, tier_level + 1):
+            tier_questions = area_data["tiers"][f"tier{t}"]["questions"]
+            all_questions.extend(tier_questions)
+        
+        session_doc = {
+            "_id": session_id,
+            "session_id": session_id,
+            "user_id": current_user["id"],
+            "area_id": area_id,
+            "tier_level": tier_level,
+            "area_title": area_data["title"],
+            "tier_name": tier_data["name"],
+            "questions": all_questions,
+            "responses": [],
+            "status": "active",
+            "started_at": datetime.utcnow(),
+            "completed_at": None,
+            "tier_completion_score": None
+        }
+        
+        await db.tier_assessment_sessions.insert_one(session_doc)
+        
+        return {
+            "session_id": session_id,
+            "area_id": area_id,
+            "area_title": area_data["title"],
+            "tier_level": tier_level,
+            "tier_name": tier_data["name"],
+            "total_questions": len(all_questions),
+            "questions": all_questions
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating tier-based session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create tier-based assessment session")
+
+@api.post("/assessment/tier-session/{session_id}/response")
+async def submit_tier_response(
+    session_id: str,
+    question_id: str = Form(...),
+    response: str = Form(...),
+    evidence_provided: Optional[str] = Form(None),
+    evidence_url: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Submit response to a tier-based assessment question"""
+    try:
+        # Get session
+        session = await db.tier_assessment_sessions.find_one({
+            "_id": session_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        if session["status"] != "active":
+            raise HTTPException(status_code=400, detail="Assessment session is not active")
+        
+        # Update or add response
+        responses = session.get("responses", [])
+        existing_response_index = None
+        
+        for i, resp in enumerate(responses):
+            if resp["question_id"] == question_id:
+                existing_response_index = i
+                break
+        
+        response_data = {
+            "question_id": question_id,
+            "response": response,
+            "evidence_provided": evidence_provided,
+            "evidence_url": evidence_url,
+            "submitted_at": datetime.utcnow(),
+            "verification_status": "pending" if session["tier_level"] >= 2 else None
+        }
+        
+        if existing_response_index is not None:
+            responses[existing_response_index] = response_data
+        else:
+            responses.append(response_data)
+        
+        # Update session
+        await db.tier_assessment_sessions.update_one(
+            {"_id": session_id},
+            {
+                "$set": {
+                    "responses": responses,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Check if assessment is complete
+        total_questions = len(session["questions"])
+        completed_questions = len(responses)
+        
+        if completed_questions >= total_questions:
+            # Calculate completion score
+            tier_score = calculate_tier_completion_score(responses, session["tier_level"])
+            
+            await db.tier_assessment_sessions.update_one(
+                {"_id": session_id},
+                {
+                    "$set": {
+                        "status": "completed",
+                        "completed_at": datetime.utcnow(),
+                        "tier_completion_score": tier_score
+                    }
+                }
+            )
+        
+        return {
+            "success": True,
+            "completed_questions": completed_questions,
+            "total_questions": total_questions,
+            "assessment_complete": completed_questions >= total_questions
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting tier response: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit response")
+
+@api.get("/assessment/tier-session/{session_id}/progress")
+async def get_tier_session_progress(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get progress for a tier-based assessment session"""
+    try:
+        session = await db.tier_assessment_sessions.find_one({
+            "_id": session_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        total_questions = len(session["questions"])
+        completed_questions = len(session.get("responses", []))
+        progress_percentage = (completed_questions / total_questions * 100) if total_questions > 0 else 0
+        
+        return {
+            "session_id": session_id,
+            "area_id": session["area_id"],
+            "area_title": session["area_title"],
+            "tier_level": session["tier_level"],
+            "tier_name": session["tier_name"],
+            "status": session["status"],
+            "progress_percentage": progress_percentage,
+            "completed_questions": completed_questions,
+            "total_questions": total_questions,
+            "responses": session.get("responses", []),
+            "tier_completion_score": session.get("tier_completion_score"),
+            "started_at": session["started_at"],
+            "completed_at": session.get("completed_at")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting tier session progress: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get session progress")
+
 @api.post("/assessment/session")
 async def create_assessment_session(current_user: dict = Depends(get_current_user)):
     """Create a new assessment session for the user"""
