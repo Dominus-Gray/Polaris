@@ -5770,6 +5770,266 @@ async def respond_to_service_request(response_data: StandardizedProviderResponse
         logger.error(f"Provider response creation failed: {e}")
         raise create_polaris_error("POL-3003", f"Failed to create provider response: {str(e)}", 500)
 
+# ---------------- Enhanced Service Provider Marketplace System ----------------
+
+@api.post("/provider/profile/enhanced")
+async def create_enhanced_provider_profile(
+    profile_data: EnhancedProviderProfile, 
+    current=Depends(require_role("provider"))
+):
+    """Create or update enhanced provider profile for better marketplace visibility"""
+    try:
+        profile_doc = {
+            "_id": str(uuid.uuid4()),
+            "provider_id": current["id"],
+            "business_name": profile_data.business_name,
+            "tagline": profile_data.tagline,
+            "overview": profile_data.overview,
+            "service_areas": profile_data.service_areas,
+            "specializations": profile_data.specializations,
+            "certifications": profile_data.certifications,
+            "years_experience": profile_data.years_experience,
+            "team_size": profile_data.team_size,
+            "pricing_model": profile_data.pricing_model,
+            "availability": profile_data.availability,
+            "location": profile_data.location,
+            "portfolio_highlights": profile_data.portfolio_highlights,
+            "client_testimonials": profile_data.client_testimonials,
+            "response_time_avg": profile_data.response_time_avg,
+            "success_metrics": profile_data.success_metrics,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "profile_status": "active"
+        }
+        
+        # Upsert profile (create or update)
+        await db.enhanced_provider_profiles.update_one(
+            {"provider_id": current["id"]},
+            {"$set": profile_doc},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "Enhanced provider profile updated successfully",
+            "profile_status": "active"
+        }
+        
+    except Exception as e:
+        logger.error(f"Enhanced provider profile creation failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create enhanced provider profile")
+
+@api.get("/provider/profile/enhanced")
+async def get_enhanced_provider_profile(current=Depends(require_role("provider"))):
+    """Get provider's enhanced profile"""
+    try:
+        profile = await db.enhanced_provider_profiles.find_one({"provider_id": current["id"]})
+        if not profile:
+            return {"message": "No enhanced profile found", "has_profile": False}
+        
+        return {"profile": profile, "has_profile": True}
+        
+    except Exception as e:
+        logger.error(f"Error getting enhanced provider profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get provider profile")
+
+@api.get("/service-requests/{request_id}/responses/enhanced")
+async def get_enhanced_service_responses(
+    request_id: str, 
+    current=Depends(require_role("client"))
+):
+    """Get enhanced provider responses with detailed profiles (view all 5 at once)"""
+    try:
+        # Verify request ownership
+        req = await db.service_requests.find_one({"_id": request_id, "client_id": current["id"]})
+        if not req:
+            raise HTTPException(status_code=404, detail="Service request not found")
+        
+        # Get provider responses (limit to first 5)
+        responses = await db.provider_responses.find({
+            "request_id": request_id
+        }).sort("created_at", 1).to_list(5)
+        
+        enhanced_responses = []
+        for response in responses:
+            # Get provider's enhanced profile
+            enhanced_profile = await db.enhanced_provider_profiles.find_one({
+                "provider_id": response["provider_id"]
+            })
+            
+            # Get provider's basic info
+            provider_user = await db.users.find_one({"_id": response["provider_id"]})
+            business_profile = await db.business_profiles.find_one({"user_id": response["provider_id"]})
+            
+            # Calculate average rating
+            ratings = await db.service_ratings.find({"provider_id": response["provider_id"]}).to_list(None)
+            avg_rating = sum(r["overall_rating"] for r in ratings) / len(ratings) if ratings else None
+            total_ratings = len(ratings)
+            
+            enhanced_response = {
+                "response_id": response["_id"],
+                "provider_id": response["provider_id"],
+                "proposed_fee": response.get("proposed_fee"),
+                "fee_formatted": f"${response.get('proposed_fee', 0):,.2f}",
+                "estimated_timeline": response.get("estimated_timeline"),
+                "proposal_note": response.get("proposal_note"),
+                "status": response.get("status", "pending"),
+                "submitted_at": response.get("created_at"),
+                
+                # Enhanced provider info
+                "provider_info": {
+                    "business_name": enhanced_profile.get("business_name", "Unknown Business") if enhanced_profile else business_profile.get("company_name", "Unknown Business"),
+                    "tagline": enhanced_profile.get("tagline", "") if enhanced_profile else "",
+                    "overview": enhanced_profile.get("overview", "") if enhanced_profile else "",
+                    "years_experience": enhanced_profile.get("years_experience", 0) if enhanced_profile else 0,
+                    "team_size": enhanced_profile.get("team_size", "Not specified") if enhanced_profile else "Not specified",
+                    "location": enhanced_profile.get("location", "Not specified") if enhanced_profile else "Not specified",
+                    "specializations": enhanced_profile.get("specializations", []) if enhanced_profile else [],
+                    "certifications": enhanced_profile.get("certifications", []) if enhanced_profile else [],
+                    "portfolio_highlights": enhanced_profile.get("portfolio_highlights", []) if enhanced_profile else [],
+                    "response_time_avg": enhanced_profile.get("response_time_avg", "Not specified") if enhanced_profile else "Not specified",
+                    "pricing_model": enhanced_profile.get("pricing_model", "Not specified") if enhanced_profile else "Not specified",
+                    "availability": enhanced_profile.get("availability", "Unknown") if enhanced_profile else "Unknown"
+                },
+                
+                # Ratings and reviews
+                "rating_summary": {
+                    "average_rating": round(avg_rating, 1) if avg_rating else None,
+                    "total_ratings": total_ratings,
+                    "rating_display": f"{avg_rating:.1f}/5.0 ({total_ratings} reviews)" if avg_rating else "No ratings yet"
+                }
+            }
+            
+            enhanced_responses.append(enhanced_response)
+        
+        return {
+            "request_id": request_id,
+            "request_title": req.get("area_name", "Service Request"),
+            "total_responses": len(responses),
+            "responses": enhanced_responses,
+            "response_limit_reached": len(responses) >= 5
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting enhanced service responses: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get enhanced responses")
+
+@api.post("/service/rating")
+async def submit_service_rating(
+    service_request_id: str = Form(...),
+    provider_id: str = Form(...),
+    overall_rating: int = Form(..., ge=1, le=5),
+    quality_rating: int = Form(..., ge=1, le=5),
+    communication_rating: int = Form(..., ge=1, le=5),
+    timeliness_rating: int = Form(..., ge=1, le=5),
+    value_rating: int = Form(..., ge=1, le=5),
+    review_text: Optional[str] = Form(None),
+    would_recommend: bool = Form(...),
+    current=Depends(require_role("client"))
+):
+    """Submit rating and review for a completed service"""
+    try:
+        # Verify the client can rate this service
+        service_request = await db.service_requests.find_one({
+            "_id": service_request_id,
+            "client_id": current["id"]
+        })
+        
+        if not service_request:
+            raise HTTPException(status_code=404, detail="Service request not found")
+        
+        # Check if already rated
+        existing_rating = await db.service_ratings.find_one({
+            "service_request_id": service_request_id,
+            "client_id": current["id"],
+            "provider_id": provider_id
+        })
+        
+        if existing_rating:
+            raise HTTPException(status_code=400, detail="Service has already been rated")
+        
+        # Create rating
+        rating_doc = {
+            "_id": str(uuid.uuid4()),
+            "rating_id": str(uuid.uuid4()),
+            "service_request_id": service_request_id,
+            "client_id": current["id"],
+            "provider_id": provider_id,
+            "overall_rating": overall_rating,
+            "quality_rating": quality_rating,
+            "communication_rating": communication_rating,
+            "timeliness_rating": timeliness_rating,
+            "value_rating": value_rating,
+            "review_text": review_text,
+            "would_recommend": would_recommend,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.service_ratings.insert_one(rating_doc)
+        
+        return {
+            "success": True,
+            "message": "Rating submitted successfully",
+            "rating_summary": {
+                "overall_rating": overall_rating,
+                "would_recommend": would_recommend
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting service rating: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit rating")
+
+@api.get("/provider/ratings")
+async def get_provider_ratings(current=Depends(require_role("provider"))):
+    """Get all ratings for the current provider"""
+    try:
+        ratings = await db.service_ratings.find({"provider_id": current["id"]}).sort("created_at", -1).to_list(None)
+        
+        if not ratings:
+            return {
+                "ratings": [],
+                "summary": {
+                    "total_ratings": 0,
+                    "average_overall": None,
+                    "average_quality": None,
+                    "average_communication": None,
+                    "average_timeliness": None,
+                    "average_value": None,
+                    "recommendation_rate": None
+                }
+            }
+        
+        # Calculate averages
+        total_ratings = len(ratings)
+        avg_overall = sum(r["overall_rating"] for r in ratings) / total_ratings
+        avg_quality = sum(r["quality_rating"] for r in ratings) / total_ratings
+        avg_communication = sum(r["communication_rating"] for r in ratings) / total_ratings
+        avg_timeliness = sum(r["timeliness_rating"] for r in ratings) / total_ratings
+        avg_value = sum(r["value_rating"] for r in ratings) / total_ratings
+        recommendation_rate = sum(1 for r in ratings if r["would_recommend"]) / total_ratings * 100
+        
+        return {
+            "ratings": ratings,
+            "summary": {
+                "total_ratings": total_ratings,
+                "average_overall": round(avg_overall, 1),
+                "average_quality": round(avg_quality, 1),
+                "average_communication": round(avg_communication, 1),
+                "average_timeliness": round(avg_timeliness, 1),
+                "average_value": round(avg_value, 1),
+                "recommendation_rate": round(recommendation_rate, 1)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting provider ratings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get ratings")
+
 # ---------------- Knowledge Base Payment Unlock ----------------
 # QA override for knowledge base access for a specific test user
 @api.post("/qa/grant/knowledge-base")
