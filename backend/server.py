@@ -1,8 +1,7 @@
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends, Header, Query, Request, Response
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse, FileResponse, RedirectResponse, Response
+from fastapi.responses import JSONResponse, FileResponse, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -27,7 +26,6 @@ from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_
 
 # Enhanced caching for Knowledge Base content
 from functools import lru_cache
-import asyncio
 
 # Cache Knowledge Base areas for 1 hour to reduce database queries
 @lru_cache(maxsize=128)
@@ -219,7 +217,7 @@ def generate_resource_url(resource_name: str, resource_type: str, city: str, sta
     elif resource_type == "ptac":
         return "https://apexaccelerators.us/locator"
     elif resource_type == "sbdc":
-        return f"https://www.sba.gov/local-assistance/resource-partners/small-business-development-centers-sbdc"
+        return "https://www.sba.gov/local-assistance/resource-partners/small-business-development-centers-sbdc"
     elif resource_type == "score":
         return f"https://www.score.org/{city_lower}" if city_lower else "https://www.score.org/find-mentor"
     elif resource_type == "chamber":
@@ -239,7 +237,7 @@ def generate_enhanced_static_resources(city: str, state: str, area_context: str)
         {
             "name": "Small Business Administration (SBA)",
             "description": "Federal agency providing comprehensive support for small businesses including loans, counseling, and government contracting opportunities.",
-            "url": f"https://www.sba.gov/local-assistance",
+            "url": "https://www.sba.gov/local-assistance",
             "type": "federal_agency",
             "contact_method": "website",
             "services": ["Business loans", "Counseling", "Government contracting", "Training"],
@@ -2505,8 +2503,8 @@ async def get_ai_explanation(
         # Generate AI explanation (simplified for MVP)
         explanations = {
             "deliverables": f"For '{question_text}', the key deliverables include documented processes, compliance certificates, and evidence of implementation.",
-            "why_it_matters": f"This requirement is critical for procurement readiness because it demonstrates your business capability and reduces risk for contracting officers.",
-            "acceptable_alternatives": f"Alternative approaches may include third-party certifications, equivalent documentation, or phased implementation plans.",
+            "why_it_matters": "This requirement is critical for procurement readiness because it demonstrates your business capability and reduces risk for contracting officers.",
+            "acceptable_alternatives": "Alternative approaches may include third-party certifications, equivalent documentation, or phased implementation plans.",
             "free_resources": [
                 "SBA.gov procurement resources",
                 "SCORE business mentoring", 
@@ -5012,7 +5010,7 @@ async def get_ai_assistance(http_request: Request, request: AIAssistanceRequest,
             if not has_area_access and request.area_id:
                 raise HTTPException(
                     status_code=402,
-                    detail=f"AI Assistant for this business area requires Knowledge Base access. Please unlock area access to continue."
+                    detail="AI Assistant for this business area requires Knowledge Base access. Please unlock area access to continue."
                 )
         
         # Build context from user's assessment data and business profile
@@ -9339,7 +9337,7 @@ async def export_capability_statement_pdf(
         return Response(
             content=pdf_content,
             media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=capability-statement.pdf"}
+            headers={"Content-Disposition": "attachment; filename=capability-statement.pdf"}
         )
         
     except Exception as e:
