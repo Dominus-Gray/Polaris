@@ -6656,6 +6656,278 @@ async def get_client_tier_access_info(current=Depends(require_role("client"))):
         logger.error(f"Error getting client tier access info: {e}")
         raise HTTPException(status_code=500, detail="Failed to get tier access information")
 
+# ---------------- Real-Time Dashboard Integration ----------------
+
+@api.post("/realtime/dashboard-update")
+async def trigger_dashboard_update(
+    user_id: str = Form(...),
+    update_type: str = Form(...),
+    data: dict = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Trigger real-time dashboard updates across the platform"""
+    try:
+        # Store dashboard update for real-time sync
+        update_doc = {
+            "_id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "update_type": update_type,
+            "data": data,
+            "triggered_by": current_user["id"],
+            "timestamp": datetime.utcnow(),
+            "processed": False
+        }
+        
+        await db.dashboard_updates.insert_one(update_doc)
+        
+        # Trigger updates to all related users
+        if update_type == "assessment_completed":
+            # Update client dashboard
+            await update_client_dashboard_progress(user_id)
+            
+            # Update agency dashboard if client has sponsor
+            await update_agency_client_progress(user_id)
+            
+            # Update navigator analytics
+            await update_navigator_analytics(user_id, "assessment_completion", data)
+        
+        elif update_type == "service_request_created":
+            # Notify matching providers
+            await notify_matching_providers(data.get("service_area"), data.get("request_id"))
+            
+            # Update agency dashboard
+            await update_agency_service_tracking(user_id, data.get("request_id"))
+        
+        return {"success": True, "update_triggered": True}
+        
+    except Exception as e:
+        logger.error(f"Error triggering dashboard update: {e}")
+        raise HTTPException(status_code=500, detail="Failed to trigger dashboard update")
+
+@api.get("/client/unified-dashboard")
+async def get_unified_client_dashboard(current=Depends(require_role("client"))):
+    """Get comprehensive unified dashboard with all integrated data"""
+    try:
+        # Get assessment progress with recommendations
+        assessment_progress = await db.tier_assessment_sessions.find({
+            "user_id": current["id"]
+        }).sort("started_at", -1).to_list(10)
+        
+        # Get active service requests with provider responses
+        service_requests = await db.service_requests.find({
+            "client_id": current["id"]
+        }).sort("created_at", -1).to_list(5)
+        
+        # Get personalized recommendations
+        recommendations = await generate_personalized_recommendations(current["id"])
+        
+        # Get recent activity across all features
+        recent_activity = await get_client_recent_activity(current["id"])
+        
+        # Get compliance insights
+        compliance_status = await get_client_compliance_status(current["id"])
+        
+        unified_dashboard = {
+            "user_info": {
+                "user_id": current["id"],
+                "role": current["role"],
+                "last_login": current.get("last_login"),
+            },
+            "assessment_overview": {
+                "completed_areas": len([a for a in assessment_progress if a.get("status") == "completed"]),
+                "total_areas": 10,
+                "latest_scores": [a.get("tier_completion_score", 0) for a in assessment_progress[:5]],
+                "next_recommended_area": recommendations.get("next_assessment")
+            },
+            "service_requests": {
+                "active_requests": len([s for s in service_requests if s.get("status") in ["pending", "in_progress"]]),
+                "total_requests": len(service_requests),
+                "latest_responses": await get_latest_provider_responses(current["id"])
+            },
+            "personalized_recommendations": recommendations,
+            "recent_activity": recent_activity,
+            "compliance_status": compliance_status,
+            "quick_actions": await generate_quick_actions(current["id"])
+        }
+        
+        return unified_dashboard
+        
+    except Exception as e:
+        logger.error(f"Error getting unified client dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get unified dashboard")
+
+# Helper functions for dashboard integration
+async def update_client_dashboard_progress(user_id: str):
+    """Update client dashboard progress after assessment completion"""
+    try:
+        # Calculate updated progress metrics
+        sessions = await db.tier_assessment_sessions.find({"user_id": user_id}).to_list(None)
+        completed_count = len([s for s in sessions if s.get("status") == "completed"])
+        
+        # Update client progress record
+        await db.client_progress.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "completed_assessments": completed_count,
+                    "last_activity": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error updating client dashboard progress: {e}")
+        return False
+
+async def generate_personalized_recommendations(user_id: str) -> Dict[str, Any]:
+    """Generate AI-powered personalized recommendations"""
+    try:
+        # Get user's assessment history
+        sessions = await db.tier_assessment_sessions.find({
+            "user_id": user_id,
+            "status": "completed"
+        }).to_list(None)
+        
+        # Analyze gaps and completion patterns
+        completed_areas = set(s["area_id"] for s in sessions)
+        all_areas = {f"area{i}" for i in range(1, 11)}
+        remaining_areas = all_areas - completed_areas
+        
+        # Get low-scoring areas for improvement
+        low_scores = [s for s in sessions if s.get("tier_completion_score", 0) < 70]
+        
+        recommendations = {
+            "next_assessment": list(remaining_areas)[0] if remaining_areas else None,
+            "improvement_areas": [s["area_id"] for s in low_scores[:3]],
+            "suggested_services": [],
+            "recommended_resources": [],
+            "priority_actions": []
+        }
+        
+        # Add gap-based service recommendations
+        if low_scores:
+            for session in low_scores[:2]:
+                area_title = session.get("area_title", "Unknown Area")
+                recommendations["suggested_services"].append({
+                    "area": area_title,
+                    "service_type": "consultation",
+                    "priority": "high"
+                })
+        
+        return recommendations
+        
+    except Exception as e:
+        logger.error(f"Error generating recommendations: {e}")
+        return {}
+
+async def get_client_recent_activity(user_id: str) -> List[Dict[str, Any]]:
+    """Get client's recent activity across all platform features"""
+    try:
+        activities = []
+        
+        # Recent assessments
+        recent_assessments = await db.tier_assessment_sessions.find({
+            "user_id": user_id
+        }).sort("started_at", -1).limit(5).to_list(None)
+        
+        for assessment in recent_assessments:
+            activities.append({
+                "type": "assessment",
+                "title": f"Assessment: {assessment.get('area_title', 'Unknown')}",
+                "status": assessment.get("status", "unknown"),
+                "timestamp": assessment.get("started_at"),
+                "details": f"Tier {assessment.get('tier_level', 1)} - Score: {assessment.get('tier_completion_score', 'N/A')}%"
+            })
+        
+        # Recent service requests
+        recent_services = await db.service_requests.find({
+            "client_id": user_id
+        }).sort("created_at", -1).limit(3).to_list(None)
+        
+        for service in recent_services:
+            activities.append({
+                "type": "service_request",
+                "title": f"Service Request: {service.get('area_name', 'Unknown')}",
+                "status": service.get("status", "unknown"),
+                "timestamp": service.get("created_at"),
+                "details": f"Budget: ${service.get('budget', 'N/A')}"
+            })
+        
+        # Sort by timestamp
+        activities.sort(key=lambda x: x.get("timestamp", datetime.min), reverse=True)
+        return activities[:10]
+        
+    except Exception as e:
+        logger.error(f"Error getting client recent activity: {e}")
+        return []
+
+async def generate_quick_actions(user_id: str) -> List[Dict[str, Any]]:
+    """Generate contextual quick actions for the user"""
+    try:
+        quick_actions = []
+        
+        # Check for incomplete assessments
+        incomplete_sessions = await db.tier_assessment_sessions.find({
+            "user_id": user_id,
+            "status": "active"
+        }).to_list(None)
+        
+        if incomplete_sessions:
+            quick_actions.append({
+                "title": "Complete Pending Assessment",
+                "description": f"{len(incomplete_sessions)} assessment(s) in progress",
+                "action": "continue_assessment",
+                "url": f"/assessment",
+                "priority": "high"
+            })
+        
+        # Check for service requests needing review
+        pending_responses = await db.provider_responses.find({
+            "request_id": {"$in": await get_user_service_request_ids(user_id)},
+            "status": "pending"
+        }).to_list(None)
+        
+        if pending_responses:
+            quick_actions.append({
+                "title": "Review Provider Responses",
+                "description": f"{len(pending_responses)} new response(s) available",
+                "action": "review_responses",
+                "url": "/services/responses",
+                "priority": "medium"
+            })
+        
+        # Always suggest starting new assessment
+        completed_areas = await db.tier_assessment_sessions.distinct("area_id", {
+            "user_id": user_id,
+            "status": "completed"
+        })
+        
+        if len(completed_areas) < 10:
+            quick_actions.append({
+                "title": "Start New Assessment",
+                "description": f"{10 - len(completed_areas)} area(s) remaining",
+                "action": "start_assessment",
+                "url": "/assessment",
+                "priority": "medium"
+            })
+        
+        return quick_actions[:5]
+        
+    except Exception as e:
+        logger.error(f"Error generating quick actions: {e}")
+        return []
+
+async def get_user_service_request_ids(user_id: str) -> List[str]:
+    """Get all service request IDs for a user"""
+    try:
+        requests = await db.service_requests.find({"client_id": user_id}).to_list(None)
+        return [req["_id"] for req in requests]
+    except:
+        return []
+
 # ---------------- Business Intelligence for Agencies ----------------
 
 @api.get("/agency/business-intelligence/assessments")
