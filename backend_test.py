@@ -54,22 +54,29 @@ class ComprehensiveBackendTester:
         print()
 
     def authenticate_user(self, role: str) -> bool:
-        """Authenticate user and store token"""
+        """Authenticate QA user and store token"""
         try:
+            start_time = time.time()
             creds = QA_CREDENTIALS[role]
             response = self.session.post(f"{BASE_URL}/auth/login", json=creds)
+            response_time = time.time() - start_time
             
             if response.status_code == 200:
                 data = response.json()
-                self.tokens[role] = data["access_token"]
-                self.log_result(f"Authentication - {role}", True, f"Token obtained for {creds['email']}")
-                return True
-            else:
-                self.log_result(f"Authentication - {role}", False, f"Status: {response.status_code}", response.json())
-                return False
-                
+                token = data.get("access_token")
+                if token:
+                    self.tokens[role] = token
+                    self.session.headers.update({"Authorization": f"Bearer {token}"})
+                    self.log_result(f"QA {role.title()} Authentication", True, 
+                                  f"Successfully authenticated {creds['email']}", response_time)
+                    return True
+            
+            self.log_result(f"QA {role.title()} Authentication", False, 
+                          f"Failed: {response.status_code}", response_time, response.json())
+            return False
+            
         except Exception as e:
-            self.log_result(f"Authentication - {role}", False, f"Exception: {str(e)}")
+            self.log_result(f"QA {role.title()} Authentication", False, f"Exception: {str(e)}")
             return False
 
     def get_headers(self, role: str) -> Dict[str, str]:
