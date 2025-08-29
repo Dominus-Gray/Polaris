@@ -91,12 +91,15 @@ class ComprehensiveBackendTester:
         try:
             print("\n🤖 Testing AI Localized Resources...")
             
-            # Test 1: AI Assistance with location context
+            # Test 1: AI Assistance with proper context structure
             start_time = time.time()
             ai_payload = {
                 "question": "What local resources are available for small business licensing in San Antonio, Texas?",
                 "area_id": "area1",
-                "context": "Business Formation & Registration"
+                "context": {
+                    "location": "San Antonio, Texas",
+                    "business_area": "Business Formation & Registration"
+                }
             }
             
             response = self.session.post(f"{BASE_URL}/knowledge-base/ai-assistance", json=ai_payload)
