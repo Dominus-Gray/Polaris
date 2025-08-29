@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-Polaris Backend Testing Suite - Tier-Based Assessment System
-Testing the enhanced tier-based assessment system and service provider features
+Comprehensive Backend Testing for 95%+ Success Rate Verification
+Focus: AI Localized Resources, Tier-based Assessment, Overall System Reliability
+After litellm dependency installation
 """
 
 import requests
 import json
 import time
 import sys
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 
 # Configuration
 BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
 
-# QA Test Credentials
+# QA Test Credentials from review request
 QA_CREDENTIALS = {
-    "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
-    "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"}
+    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"}
 }
 
 class TierBasedAssessmentTester:
