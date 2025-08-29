@@ -448,6 +448,20 @@ function TierBasedAssessmentPage() {
 
         {/* Question Card */}
         <div className="bg-white rounded-lg shadow-md p-8">
+          {/* Question Tier Indicator */}
+          {currentQuestion?.tier_level && (
+            <div className="flex items-center gap-2 mb-4">
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                currentQuestion.tier_level === 1 ? 'bg-blue-100 text-blue-800' :
+                currentQuestion.tier_level === 2 ? 'bg-orange-100 text-orange-800' :
+                'bg-purple-100 text-purple-800'
+              }`}>
+                Tier {currentQuestion.tier_level}
+              </span>
+              <span className="text-sm text-gray-500">{currentQuestion.tier_name}</span>
+            </div>
+          )}
+          
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             {currentQuestion?.text}
           </h2>
