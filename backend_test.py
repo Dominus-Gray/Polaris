@@ -115,17 +115,16 @@ class TierBasedAssessmentTester:
     def test_create_tier_session(self) -> bool:
         """Test POST /api/assessment/tier-session - create tier-based assessment sessions"""
         try:
-            headers = self.get_headers("client")
+            headers = {"Authorization": f"Bearer {self.tokens['client']}"}
             
-            # Test data for tier-based session
+            # Test data for tier-based session (using form data)
             session_data = {
                 "area_id": "area1",
-                "tier_level": 2,
-                "session_type": "tier_based"
+                "tier_level": 1  # Use tier 1 since client has access to tier 1
             }
             
             response = self.session.post(f"{BASE_URL}/assessment/tier-session", 
-                                       json=session_data, headers=headers)
+                                       data=session_data, headers=headers)
             
             if response.status_code == 200 or response.status_code == 201:
                 data = response.json()
