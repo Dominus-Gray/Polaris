@@ -179,39 +179,80 @@ class ComprehensiveBackendTester:
             self.log_result("Tier-Based Assessment Schema", False, f"Exception: {str(e)}")
             return False
 
-    def test_create_tier_session(self) -> bool:
-        """Test POST /api/assessment/tier-session - create tier-based assessment sessions"""
+    def test_tier_based_assessment_system(self) -> bool:
+        """Test Tier-based Assessment System with form data format"""
         try:
-            headers = {"Authorization": f"Bearer {self.tokens['client']}"}
+            print("\n📊 Testing Tier-Based Assessment System...")
             
-            # Test data for tier-based session (using form data)
+            # Test 1: Create Tier-Based Session (Form Data Format)
+            start_time = time.time()
             session_data = {
                 "area_id": "area1",
-                "tier_level": 1  # Use tier 1 since client has access to tier 1
+                "tier_level": "1",
+                "client_context": "Small business seeking government contracts"
             }
             
-            response = self.session.post(f"{BASE_URL}/assessment/tier-session", 
-                                       data=session_data, headers=headers)
+            # Use form data format as specified in review
+            response = self.session.post(f"{BASE_URL}/assessment/tier-session", data=session_data)
+            response_time = time.time() - start_time
             
-            if response.status_code == 200 or response.status_code == 201:
-                data = response.json()
-                
-                if "session_id" in data:
-                    self.session_ids["tier_session"] = data["session_id"]
-                    self.log_result("Create Tier-Based Session", True, 
-                                  f"Session created: {data['session_id']}")
-                    return True
+            if response.status_code == 200:
+                session_response = response.json()
+                session_id = session_response.get("session_id")
+                if session_id:
+                    self.session_ids["tier_session"] = session_id
+                    self.log_result("Tier Session Creation (Form Data)", True,
+                                  f"Created session: {session_id}", response_time)
                 else:
-                    self.log_result("Create Tier-Based Session", False, 
-                                  "Session created but no session_id returned", data)
+                    self.log_result("Tier Session Creation (Form Data)", False,
+                                  "No session ID returned", response_time)
                     return False
             else:
-                self.log_result("Create Tier-Based Session", False, 
-                              f"Status: {response.status_code}", response.json())
+                self.log_result("Tier Session Creation (Form Data)", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
                 return False
-                
+
+            # Test 2: Submit Tier Response (Form Data Format)
+            start_time = time.time()
+            response_data = {
+                "statement_id": "area1_tier1_stmt1",
+                "response": "yes",
+                "confidence_level": "high",
+                "notes": "We have completed business registration"
+            }
+            
+            # Use form data format for tier response submission
+            response = self.session.post(f"{BASE_URL}/assessment/tier-session/{session_id}/response", 
+                                       data=response_data)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                self.log_result("Tier Response Submission (Form Data)", True,
+                              "Successfully submitted tier response", response_time)
+            else:
+                self.log_result("Tier Response Submission (Form Data)", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            # Test 3: Get Session Progress
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/assessment/tier-session/{session_id}/progress")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                progress_data = response.json()
+                completion_rate = progress_data.get("completion_percentage", 0)
+                self.log_result("Tier Session Progress", True,
+                              f"Progress: {completion_rate}% complete", response_time)
+            else:
+                self.log_result("Tier Session Progress", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            return True
+            
         except Exception as e:
-            self.log_result("Create Tier-Based Session", False, f"Exception: {str(e)}")
+            self.log_result("Tier-Based Assessment System", False, f"Exception: {str(e)}")
             return False
 
     def test_submit_tier_response(self) -> bool:
