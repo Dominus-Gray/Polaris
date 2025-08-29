@@ -51,7 +51,8 @@ async def get_client_tier_access(user_id: str) -> Dict[str, int]:
         if not license_record:
             return {f"area{i}": 1 for i in range(1, 11)}
         
-        agency_user_id = license_record.get("agency_id")  # Fixed: use agency_id not agency_user_id
+        # Try both possible field names for backward compatibility
+        agency_user_id = license_record.get("agency_user_id") or license_record.get("agency_id")
         if not agency_user_id:
             return {f"area{i}": 1 for i in range(1, 11)}
         
