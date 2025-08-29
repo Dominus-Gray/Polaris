@@ -1,18 +1,35 @@
 ## user_problem_statement: 
-The user has identified multiple critical issues and requirements that need to be implemented:
+**ENHANCED TIER-BASED ASSESSMENT SYSTEM & UI/UX UPGRADES (2025 UPDATE)**
 
-1. **Dashboard Navigation Issue**: Dashboard navigates to Business Profile instead of Client Home
-2. **Client Home Requirements**: Need comprehensive dashboard with assessment status, gaps, service requests, agency info, and dynamic free services
-3. **Knowledge Base Integration**: Not properly integrated into client user journey
-4. **Assessment System Enhancements**: 
-   - Missing evidence upload functionality
-   - Gap identification logic (no answer OR "No, I need help" = gap)
-   - "No, I need help" should be highlighted red
-   - Free resources flow after gap identification
-   - Professional help flow with service provider matching
-5. **Service Provider Matching System**: Complete marketplace with notifications and matching
-6. **Business Profile**: Remove "describe your services in detail"
-7. **Analytics**: Resource usage tracking for navigators
+The user requested comprehensive enhancements to ensure consistent high-standard UI/UX design and quality user experience:
+
+1. **3-Tier Assessment System Enhancement**: 
+   - Add "Competitive Advantage" as area10 (business development, market position, capture processes)
+   - Implement 3-tier framework for ALL 10 business areas:
+     * Tier 1 (Self Assessment): 3 low-moderate effort statements
+     * Tier 2 (Evidence Required): Tier 1 + 3 moderate effort statements  
+     * Tier 3 (Verification): Tier 1 + Tier 2 + 3 moderate effort statements
+   - Clients only access tier levels provided by their sponsoring agency
+   - Modified financial model: pay-per-assessment tier pricing for agencies
+
+2. **Service Provider Marketplace Enhancements**:
+   - Creative matching system: first 5 providers responding sent to client
+   - Enhanced provider profiles for better advertising and visibility
+   - Simple 1-5 star rating system
+   - Interactive service tracking and onboarding mechanism
+   - "View all 5 responses at once" interface for client selection
+
+3. **AI-Powered Localized Resources**:
+   - Dynamic resource generation based on client's city location
+   - Integration with maturity statements and assessment context
+   - External links to SBA, Apex Accelerator, NGOs, government agencies
+   - AI-powered accuracy and relevance
+
+4. **UI/UX Consistency Requirements**:
+   - Maintain high design standards throughout platform
+   - Consistent branding and user experience
+   - Don't break existing infrastructure
+   - Verify all integrations work with high quality
 
 ## backend:
   - task: "Custom Polaris Error Codes Implementation"
