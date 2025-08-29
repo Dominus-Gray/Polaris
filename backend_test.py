@@ -207,16 +207,15 @@ class EnhancedIntegrationTester:
             if not notification_id:
                 notification_id = str(uuid.uuid4())
             
-            # Test notification response payload
+            # Test notification response payload - using form data as expected by endpoint
             response_payload = {
-                "response_type": "accepted",
-                "message": "I can help with this service request",
+                "proposed_fee": 1500.00,
                 "estimated_timeline": "2-3 weeks",
-                "proposed_fee": 1500.00
+                "proposal_note": "I can help with this service request and provide comprehensive support"
             }
             
             response = self.session.post(f"{BASE_URL}/provider/notifications/{notification_id}/respond", 
-                                       json=response_payload, headers=headers)
+                                       data=response_payload, headers=headers)
             
             if response.status_code in [200, 201, 404]:  # 404 is acceptable for test ID
                 if response.status_code == 404:
