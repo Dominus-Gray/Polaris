@@ -7336,6 +7336,142 @@ async def get_agency_compliance_insights(current=Depends(require_role("agency"))
         logger.error(f"Error getting compliance insights: {e}")
         raise HTTPException(status_code=500, detail="Failed to get compliance insights")
 
+@api.get("/provider/notifications")
+async def get_provider_notifications(current=Depends(require_role("provider"))):
+    """Get real-time notifications for service provider"""
+    try:
+        # Get active notifications
+        notifications = await db.provider_notifications.find({
+            "provider_id": current["id"],
+            "status": "pending",
+            "expires_at": {"$gt": datetime.utcnow()}
+        }).sort("created_at", -1).to_list(20)
+        
+        # Get service request details for each notification
+        enriched_notifications = []
+        for notification in notifications:
+            service_request = await db.service_requests.find_one({
+                "_id": notification["request_id"]
+            })
+            
+            if service_request:
+                enriched_notifications.append({
+                    "notification_id": notification["_id"],
+                    "request_id": notification["request_id"],
+                    "service_area": notification["service_area"],
+                    "client_budget": notification["client_budget"],
+                    "created_at": notification["created_at"],
+                    "expires_at": notification["expires_at"],
+                    "service_details": {
+                        "area_name": service_request.get("area_name"),
+                        "description": service_request.get("description"),
+                        "timeline": service_request.get("timeline"),
+                        "budget": service_request.get("budget")
+                    }
+                })
+        
+        return {
+            "notifications": enriched_notifications,
+            "total_count": len(enriched_notifications),
+            "unread_count": len([n for n in notifications if n.get("read_at") is None])
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting provider notifications: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get provider notifications")
+
+@api.post("/provider/notifications/{notification_id}/respond")
+async def respond_to_service_notification(
+    notification_id: str,
+    proposed_fee: float = Form(..., ge=0, le=50000),
+    estimated_timeline: str = Form(...),
+    proposal_note: str = Form(..., max_length=2000),
+    current=Depends(require_role("provider"))
+):
+    """Respond to a service request notification"""
+    try:
+        # Get notification
+        notification = await db.provider_notifications.find_one({
+            "_id": notification_id,
+            "provider_id": current["id"],
+            "status": "pending"
+        })
+        
+        if not notification:
+            raise HTTPException(status_code=404, detail="Notification not found or expired")
+        
+        # Create provider response
+        response_doc = {
+            "_id": str(uuid.uuid4()),
+            "request_id": notification["request_id"],
+            "provider_id": current["id"],
+            "proposed_fee": proposed_fee,
+            "estimated_timeline": estimated_timeline,
+            "proposal_note": proposal_note,
+            "status": "pending",
+            "created_at": datetime.utcnow(),
+            "notification_id": notification_id
+        }
+        
+        await db.provider_responses.insert_one(response_doc)
+        
+        # Mark notification as responded
+        await db.provider_notifications.update_one(
+            {"_id": notification_id},
+            {
+                "$set": {
+                    "status": "responded",
+                    "responded_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Update client dashboard with new response
+        service_request = await db.service_requests.find_one({"_id": notification["request_id"]})
+        if service_request:
+            await update_client_dashboard_service_response(
+                service_request["client_id"], 
+                notification["request_id"],
+                response_doc
+            )
+        
+        return {
+            "success": True,
+            "response_id": response_doc["_id"],
+            "message": "Response submitted successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error responding to service notification: {e}")
+        raise HTTPException(status_code=500, detail="Failed to respond to notification")
+
+async def update_client_dashboard_service_response(client_id: str, request_id: str, response_data: dict):
+    """Update client dashboard when new provider response is received"""
+    try:
+        # Create dashboard update for client
+        update_doc = {
+            "_id": str(uuid.uuid4()),
+            "user_id": client_id,
+            "update_type": "new_provider_response",
+            "data": {
+                "request_id": request_id,
+                "provider_id": response_data["provider_id"],
+                "proposed_fee": response_data["proposed_fee"],
+                "response_id": response_data["_id"]
+            },
+            "timestamp": datetime.utcnow(),
+            "processed": False
+        }
+        
+        await db.dashboard_updates.insert_one(update_doc)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating client dashboard for service response: {e}")
+        return False
+
 # ---------------- Knowledge Base Payment Unlock ----------------
 # QA override for knowledge base access for a specific test user
 @api.post("/qa/grant/knowledge-base")
