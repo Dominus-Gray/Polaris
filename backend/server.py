@@ -2175,11 +2175,19 @@ async def create_tier_based_session(
         session_id = str(uuid.uuid4())
         tier_data = area_data["tiers"][tier_key]
         
-        # Include questions from all lower tiers plus current tier
+        # Include questions based on tier access:
+        # Tier 1 = ONLY Tier 1 questions
+        # Tier 2 = Tier 1 + Tier 2 questions 
+        # Tier 3 = Tier 1 + Tier 2 + Tier 3 questions
         all_questions = []
         for t in range(1, tier_level + 1):
             tier_questions = area_data["tiers"][f"tier{t}"]["questions"]
-            all_questions.extend(tier_questions)
+            # Add tier level to each question for filtering
+            for question in tier_questions:
+                question_with_tier = question.copy()
+                question_with_tier["tier_level"] = t
+                question_with_tier["tier_name"] = area_data["tiers"][f"tier{t}"]["name"]
+                all_questions.append(question_with_tier)
         
         session_doc = {
             "_id": session_id,
