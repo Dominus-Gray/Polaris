@@ -218,10 +218,10 @@ class ComprehensiveBackendTester:
             # Test 2: Submit Tier Response (Form Data Format)
             start_time = time.time()
             response_data = {
-                "statement_id": "area1_tier1_stmt1",
+                "question_id": "area1_tier1_q1",
                 "response": "yes",
-                "confidence_level": "high",
-                "notes": "We have completed business registration"
+                "evidence_provided": "true",
+                "evidence_url": "https://example.com/evidence.pdf"
             }
             
             # Use form data format for tier response submission
