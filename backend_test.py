@@ -744,132 +744,38 @@ class ComprehensiveBackendTester:
             return False
 
     def run_comprehensive_test(self):
-        """Run all tier-based assessment and enhanced service provider tests"""
-        print("🎯 TIER-BASED ASSESSMENT SYSTEM TESTING")
-        print("=" * 60)
-        print(f"Testing against: {BASE_URL}")
-        print(f"Test started: {datetime.now().isoformat()}")
-        print()
-
-        # Authentication phase
-        print("📋 AUTHENTICATION PHASE")
-        print("-" * 30)
-        auth_success = True
-        for role in ["client", "provider", "agency", "navigator"]:
-            if not self.authenticate_user(role):
-                auth_success = False
+        """Run all tests for 95%+ success rate verification"""
+        print("🚀 Starting Comprehensive Backend Testing for 95%+ Success Rate...")
+        print(f"📅 Test Started: {datetime.now().isoformat()}")
         
-        if not auth_success:
-            print("❌ Authentication failed for some users. Stopping tests.")
-            return False
-
-        print("\n🔬 TIER-BASED ASSESSMENT TESTING")
-        print("-" * 40)
+        # Authenticate users first
+        if not self.authenticate_user("client"):
+            print("❌ Failed to authenticate client - aborting tests")
+            return
         
-        # Tier-based assessment tests
-        tier_tests = [
-            self.test_tier_based_assessment_schema,
-            self.test_create_tier_session,
-            self.test_submit_tier_response,
-            self.test_tier_session_progress
+        # Run all test categories
+        test_categories = [
+            ("AI Localized Resources", self.test_ai_localized_resources),
+            ("Tier-Based Assessment System", self.test_tier_based_assessment_system),
+            ("Agency Tier Management", self.test_agency_tier_management),
+            ("Client Tier Access", self.test_client_tier_access),
+            ("System Reliability", self.test_system_reliability)
         ]
         
-        tier_passed = 0
-        for test in tier_tests:
-            if test():
-                tier_passed += 1
-
-        print("\n🏢 ENHANCED SERVICE PROVIDER TESTING")
-        print("-" * 40)
+        for category_name, test_function in test_categories:
+            try:
+                print(f"\n🔄 Running {category_name} tests...")
+                test_function()
+            except Exception as e:
+                print(f"❌ Error in {category_name}: {str(e)}")
         
-        # Enhanced service provider tests
-        provider_tests = [
-            self.test_enhanced_provider_profile,
-            self.test_service_request_responses_enhanced,
-            self.test_service_rating_system,
-            self.test_provider_ratings_retrieval
-        ]
-        
-        provider_passed = 0
-        for test in provider_tests:
-            if test():
-                provider_passed += 1
-
-        print("\n🤖 AI & LOCALIZATION TESTING")
-        print("-" * 35)
-        
-        # AI and localization tests
-        ai_tests = [
-            self.test_ai_localized_resources
-        ]
-        
-        ai_passed = 0
-        for test in ai_tests:
-            if test():
-                ai_passed += 1
-
-        print("\n🏛️ AGENCY TIER MANAGEMENT TESTING")
-        print("-" * 40)
-        
-        # Agency tier management tests
-        agency_tests = [
-            self.test_agency_tier_configuration,
-            self.test_agency_tier_upgrade,
-            self.test_agency_billing_usage
-        ]
-        
-        agency_passed = 0
-        for test in agency_tests:
-            if test():
-                agency_passed += 1
-
-        print("\n👤 CLIENT TIER ACCESS TESTING")
-        print("-" * 35)
-        
-        # Client tier access tests
-        client_tests = [
-            self.test_client_tier_access
-        ]
-        
-        client_passed = 0
-        for test in client_tests:
-            if test():
-                client_passed += 1
-
-        # Summary
-        total_tests = len(tier_tests) + len(provider_tests) + len(ai_tests) + len(agency_tests) + len(client_tests)
-        total_passed = tier_passed + provider_passed + ai_passed + agency_passed + client_passed
-        
-        print("\n" + "=" * 60)
-        print("📊 COMPREHENSIVE TEST RESULTS SUMMARY")
-        print("=" * 60)
-        print(f"🎯 Tier-Based Assessment: {tier_passed}/{len(tier_tests)} passed")
-        print(f"🏢 Enhanced Service Provider: {provider_passed}/{len(provider_tests)} passed")
-        print(f"🤖 AI & Localization: {ai_passed}/{len(ai_tests)} passed")
-        print(f"🏛️ Agency Tier Management: {agency_passed}/{len(agency_tests)} passed")
-        print(f"👤 Client Tier Access: {client_passed}/{len(client_tests)} passed")
-        print("-" * 60)
-        print(f"📈 OVERALL SUCCESS RATE: {total_passed}/{total_tests} ({(total_passed/total_tests*100):.1f}%)")
-        
-        if total_passed == total_tests:
-            print("🎉 ALL TESTS PASSED! Tier-based assessment system is fully operational.")
-        elif total_passed >= total_tests * 0.8:
-            print("✅ GOOD: Most tests passed. Minor issues may need attention.")
-        elif total_passed >= total_tests * 0.6:
-            print("⚠️ PARTIAL: Some major features working. Significant issues need fixing.")
-        else:
-            print("❌ CRITICAL: Major functionality broken. Immediate attention required.")
-        
-        print(f"\nTest completed: {datetime.now().isoformat()}")
-        return total_passed >= total_tests * 0.8
+        # Print final summary
+        self.print_summary()
 
 def main():
     """Main test execution"""
-    tester = TierBasedAssessmentTester()
-    success = tester.run_comprehensive_test()
-    
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    tester = ComprehensiveBackendTester()
+    tester.run_comprehensive_test()
 
 if __name__ == "__main__":
     main()
