@@ -471,169 +471,168 @@ function TierBasedAssessmentPage() {
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Progress Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{currentSession.area_title}</h1>
-              <p className="text-sm text-gray-600">{currentSession.tier_name}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {questions.length}</p>
-              <p className="text-xs text-gray-500">{Math.round(progressPercentage)}% Complete</p>
-            </div>
-          </div>
-
-
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Question Card */}
-        <div className="bg-white rounded-lg shadow-md p-8">
-          {/* Question Tier Indicator */}
-          {currentQuestion?.tier_level && (
-            <div className="flex items-center gap-2 mb-4">
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                currentQuestion.tier_level === 1 ? 'bg-blue-100 text-blue-800' :
-                currentQuestion.tier_level === 2 ? 'bg-orange-100 text-orange-800' :
-                'bg-purple-100 text-purple-800'
-              }`}>
-                Tier {currentQuestion.tier_level}
-              </span>
-              <span className="text-sm text-gray-500">{currentQuestion.tier_name}</span>
-            </div>
-          )}
-          
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            {currentQuestion?.text}
-          </h2>
-
-          {/* Answer Options */}
-          <div className="space-y-3">
-            {['Yes', 'No', 'Partial', 'No, I need help'].map((option) => (
-              <button
-                key={option}
-                onClick={() => submitAnswer(option)}
-                disabled={submitLoading}
-                className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">{option}</span>
-                  {submitLoading ? (
-                    <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Question Info */}
-          {currentQuestion?.type && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Question Type:</span> {currentQuestion.type.replace('_', ' ')}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-
-    {/* Integrated Action Modal */}
-    {showActionModal && completionResults && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-96 overflow-y-auto">
-          <div className="p-6">
-            {/* Header */}
-            <div className="text-center mb-6">
-              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                completionResults.completion_info?.tier_completion_score >= 80 
-                  ? 'bg-green-100' : 'bg-orange-100'
-              }`}>
-                <span className={`text-2xl font-bold ${
-                  completionResults.completion_info?.tier_completion_score >= 80 
-                    ? 'text-green-600' : 'text-orange-600'
-                }`}>
-                  {completionResults.completion_info?.tier_completion_score || 0}%
-                </span>
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-2xl mx-auto">
+          {/* Progress Header */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">{currentSession.area_title}</h1>
+                <p className="text-sm text-gray-600">{currentSession.tier_name}</p>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Complete!</h2>
-              <p className="text-gray-600">
-                {completionResults.area_info?.area_title} - {completionResults.area_info?.tier_name}
-              </p>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {questions.length}</p>
+                <p className="text-xs text-gray-500">{Math.round(progressPercentage)}% Complete</p>
+              </div>
             </div>
+            
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
+            </div>
+          </div>
 
-            {/* Recommendations */}
-            {completionResults.hasGaps && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommended Next Steps</h3>
-                <div className="space-y-3">
-                  {completionResults.recommendations?.immediate_actions?.map((action, idx) => (
-                    <div 
-                      key={idx}
-                      className={`p-4 rounded-lg border-l-4 cursor-pointer hover:bg-gray-50 ${
-                        action.priority === 'high' ? 'border-red-400 bg-red-50' :
-                        action.priority === 'medium' ? 'border-yellow-400 bg-yellow-50' :
-                        'border-blue-400 bg-blue-50'
-                      }`}
-                      onClick={() => handleRecommendedAction(action.action)}
-                    >
-                      <h4 className="font-medium text-gray-900">{action.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{action.description}</p>
-                    </div>
-                  ))}
-                </div>
+          {/* Question Card */}
+          <div className="bg-white rounded-lg shadow-md p-8">
+            {/* Question Tier Indicator */}
+            {currentQuestion?.tier_level && (
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  currentQuestion.tier_level === 1 ? 'bg-blue-100 text-blue-800' :
+                  currentQuestion.tier_level === 2 ? 'bg-orange-100 text-orange-800' :
+                  'bg-purple-100 text-purple-800'
+                }`}>
+                  Tier {currentQuestion.tier_level}
+                </span>
+                <span className="text-sm text-gray-500">{currentQuestion.tier_name}</span>
               </div>
             )}
+            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              {currentQuestion?.text}
+            </h2>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => navigate(`/assessment/results/${completionResults.session_id}`)}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
-              >
-                View Detailed Results
-              </button>
-              <button
-                onClick={() => {
-                  setShowActionModal(false);
-                  navigate('/assessment');
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
-              >
-                Take Another Assessment
-              </button>
-              <button
-                onClick={() => {
-                  setShowActionModal(false);
-                  navigate('/home');
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
-              >
-                Return to Dashboard
-              </button>
+            {/* Answer Options */}
+            <div className="space-y-3">
+              {['Yes', 'No', 'Partial', 'No, I need help'].map((option) => (
+                <button
+                  key={option}
+                  onClick={() => submitAnswer(option)}
+                  disabled={submitLoading}
+                  className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900">{option}</span>
+                    {submitLoading ? (
+                      <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
+
+            {/* Question Info */}
+            {currentQuestion?.type && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Question Type:</span> {currentQuestion.type.replace('_', ' ')}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    )}
-  </div>
+
+      {/* Integrated Action Modal */}
+      {showActionModal && completionResults && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
+                  completionResults.completion_info?.tier_completion_score >= 80 
+                    ? 'bg-green-100' : 'bg-orange-100'
+                }`}>
+                  <span className={`text-2xl font-bold ${
+                    completionResults.completion_info?.tier_completion_score >= 80 
+                      ? 'text-green-600' : 'text-orange-600'
+                  }`}>
+                    {completionResults.completion_info?.tier_completion_score || 0}%
+                  </span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Complete!</h2>
+                <p className="text-gray-600">
+                  {completionResults.area_info?.area_title} - {completionResults.area_info?.tier_name}
+                </p>
+              </div>
+
+              {/* Recommendations */}
+              {completionResults.hasGaps && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommended Next Steps</h3>
+                  <div className="space-y-3">
+                    {completionResults.recommendations?.immediate_actions?.map((action, idx) => (
+                      <div 
+                        key={idx}
+                        className={`p-4 rounded-lg border-l-4 cursor-pointer hover:bg-gray-50 ${
+                          action.priority === 'high' ? 'border-red-400 bg-red-50' :
+                          action.priority === 'medium' ? 'border-yellow-400 bg-yellow-50' :
+                          'border-blue-400 bg-blue-50'
+                        }`}
+                        onClick={() => handleRecommendedAction(action.action)}
+                      >
+                        <h4 className="font-medium text-gray-900">{action.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{action.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => navigate(`/assessment/results/${completionResults.session_id}`)}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+                >
+                  View Detailed Results
+                </button>
+                <button
+                  onClick={() => {
+                    setShowActionModal(false);
+                    navigate('/assessment');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+                >
+                  Take Another Assessment
+                </button>
+                <button
+                  onClick={() => {
+                    setShowActionModal(false);
+                    navigate('/home');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+                >
+                  Return to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 
   // Handle recommended actions
