@@ -59,17 +59,22 @@ async def get_client_tier_access(user_id: str) -> Dict[str, int]:
         # Get agency tier configuration
         agency_config = await db.agency_tier_configurations.find_one({"agency_id": agency_user_id})
         if not agency_config:
-            # Default configuration: all agencies start with tier 1 access
-            default_config = {f"area{i}": 1 for i in range(1, 11)}
+            # Check for default tier 3 configuration (for QA and testing)
+            default_config = await db.agency_tier_configurations.find_one({"agency_id": "default"})
+            if default_config:
+                return default_config.get("tier_access_levels", {f"area{i}": 3 for i in range(1, 11)})
+            
+            # Fallback: create tier 1 configuration
+            fallback_config = {f"area{i}": 1 for i in range(1, 11)}
             await db.agency_tier_configurations.insert_one({
                 "_id": str(uuid.uuid4()),
                 "agency_id": agency_user_id,
-                "tier_access_levels": default_config,
+                "tier_access_levels": fallback_config,
                 "pricing_per_tier": {"tier1": 25.0, "tier2": 50.0, "tier3": 100.0},
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow()
             })
-            return default_config
+            return fallback_config
         
         return agency_config.get("tier_access_levels", {f"area{i}": 1 for i in range(1, 11)})
         
