@@ -9303,7 +9303,7 @@ async def save_capability_statement(
     """Save capability statement data"""
     try:
         capability_statement = {
-            "user_id": current["user_id"],
+            "user_id": current["id"],
             "capability_data": capability_data,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
@@ -9311,7 +9311,7 @@ async def save_capability_statement(
         
         # Upsert capability statement
         await db.capability_statements.update_one(
-            {"user_id": current["user_id"]},
+            {"user_id": current["id"]},
             {"$set": capability_statement},
             upsert=True
         )
