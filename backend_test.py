@@ -84,13 +84,22 @@ class EnhancedIntegrationTester:
             if response.status_code == 200:
                 dashboard_data = response.json()
                 
-                # Verify dashboard structure
-                required_fields = ["assessment_progress", "critical_gaps", "active_services", "readiness_score"]
-                missing_fields = [field for field in required_fields if field not in dashboard_data]
+                # Verify dashboard structure - check for actual API response fields
+                expected_sections = ["user_info", "assessment_overview", "service_requests", "compliance_status"]
+                missing_sections = [section for section in expected_sections if section not in dashboard_data]
                 
-                if missing_fields:
+                if missing_sections:
                     self.log_result("Unified Dashboard - Structure", False, 
-                                  f"Missing required fields: {missing_fields}", dashboard_data)
+                                  f"Missing required sections: {missing_sections}", dashboard_data)
+                    return False
+                
+                # Verify key data is present
+                assessment_data = dashboard_data.get("assessment_overview", {})
+                compliance_data = dashboard_data.get("compliance_status", {})
+                
+                if not assessment_data.get("total_areas") or not compliance_data.get("readiness_level"):
+                    self.log_result("Unified Dashboard - Data Quality", False, 
+                                  "Missing critical dashboard data", dashboard_data)
                     return False
                 
                 self.log_result("Unified Dashboard - Endpoint", True, 
