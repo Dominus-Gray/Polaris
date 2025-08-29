@@ -6220,6 +6220,253 @@ async def get_provider_ratings(current=Depends(require_role("provider"))):
         logger.error(f"Error getting provider ratings: {e}")
         raise HTTPException(status_code=500, detail="Failed to get ratings")
 
+# ---------------- Agency Tier Management System ----------------
+
+@api.get("/agency/tier-configuration")
+async def get_agency_tier_configuration(current=Depends(require_role("agency"))):
+    """Get current tier configuration and pricing for the agency"""
+    try:
+        config = await db.agency_tier_configurations.find_one({"agency_id": current["id"]})
+        
+        if not config:
+            # Create default configuration
+            default_config = {
+                "_id": str(uuid.uuid4()),
+                "agency_id": current["id"],
+                "tier_access_levels": {f"area{i}": 1 for i in range(1, 11)},  # Default to tier 1 for all areas
+                "pricing_per_tier": {
+                    "tier1": 25.0,   # Self Assessment - $25
+                    "tier2": 50.0,   # Evidence Required - $50
+                    "tier3": 100.0   # Verification - $100
+                },
+                "monthly_assessments_limit": 50,  # Default limit
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            await db.agency_tier_configurations.insert_one(default_config)
+            config = default_config
+        
+        return {
+            "agency_id": config["agency_id"],
+            "tier_access_levels": config["tier_access_levels"],
+            "pricing_per_tier": config["pricing_per_tier"],
+            "monthly_assessments_limit": config.get("monthly_assessments_limit"),
+            "created_at": config["created_at"],
+            "updated_at": config["updated_at"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting agency tier configuration: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get tier configuration")
+
+@api.post("/agency/tier-configuration/upgrade")
+async def upgrade_agency_tier_access(
+    area_id: str = Form(...),
+    target_tier: int = Form(..., ge=1, le=3),
+    current=Depends(require_role("agency"))
+):
+    """Upgrade tier access for a specific business area"""
+    try:
+        if area_id not in [f"area{i}" for i in range(1, 11)]:
+            raise HTTPException(status_code=400, detail="Invalid business area ID")
+        
+        # Get current configuration
+        config = await db.agency_tier_configurations.find_one({"agency_id": current["id"]})
+        
+        if not config:
+            raise HTTPException(status_code=404, detail="Agency tier configuration not found")
+        
+        current_tier = config["tier_access_levels"].get(area_id, 1)
+        
+        if target_tier <= current_tier:
+            return {
+                "success": True,
+                "message": f"Area {area_id} already has tier {current_tier} access or higher",
+                "current_tier": current_tier
+            }
+        
+        # Calculate upgrade cost (difference between tiers)
+        pricing = config["pricing_per_tier"]
+        upgrade_cost = 0
+        
+        for tier in range(current_tier + 1, target_tier + 1):
+            upgrade_cost += pricing.get(f"tier{tier}", 0)
+        
+        # Update tier access
+        new_tier_levels = config["tier_access_levels"].copy()
+        new_tier_levels[area_id] = target_tier
+        
+        await db.agency_tier_configurations.update_one(
+            {"agency_id": current["id"]},
+            {
+                "$set": {
+                    "tier_access_levels": new_tier_levels,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Log the upgrade for billing
+        await db.tier_upgrades.insert_one({
+            "_id": str(uuid.uuid4()),
+            "agency_id": current["id"],
+            "area_id": area_id,
+            "from_tier": current_tier,
+            "to_tier": target_tier,
+            "upgrade_cost": upgrade_cost,
+            "upgraded_at": datetime.utcnow()
+        })
+        
+        return {
+            "success": True,
+            "message": f"Successfully upgraded {area_id} to tier {target_tier}",
+            "area_id": area_id,
+            "previous_tier": current_tier,
+            "new_tier": target_tier,
+            "upgrade_cost": upgrade_cost
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error upgrading agency tier access: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upgrade tier access")
+
+@api.get("/agency/billing/usage")
+async def get_agency_usage_billing(
+    month: Optional[int] = Query(None, description="Month (1-12)"),
+    year: Optional[int] = Query(None, description="Year"),
+    current=Depends(require_role("agency"))
+):
+    """Get agency's assessment usage and billing for tier-based pricing"""
+    try:
+        # Default to current month/year if not specified
+        now = datetime.utcnow()
+        target_month = month or now.month
+        target_year = year or now.year
+        
+        # Get month start/end dates
+        month_start = datetime(target_year, target_month, 1)
+        if target_month == 12:
+            month_end = datetime(target_year + 1, 1, 1)
+        else:
+            month_end = datetime(target_year, target_month + 1, 1)
+        
+        # Get agency's clients (through license codes)
+        agency_licenses = await db.agency_licenses.find({"agency_user_id": current["id"]}).to_list(None)
+        client_ids = [license.get("used_by") for license in agency_licenses if license.get("used_by")]
+        
+        # Get tier-based assessments for the month
+        assessments = await db.tier_assessment_sessions.find({
+            "user_id": {"$in": client_ids},
+            "started_at": {"$gte": month_start, "$lt": month_end},
+            "status": "completed"
+        }).to_list(None)
+        
+        # Calculate usage by tier and area
+        usage_summary = {
+            "month": target_month,
+            "year": target_year,
+            "total_assessments": len(assessments),
+            "usage_by_tier": {
+                "tier1": 0,
+                "tier2": 0,
+                "tier3": 0
+            },
+            "usage_by_area": {},
+            "total_cost": 0,
+            "assessments_detail": []
+        }
+        
+        # Get pricing configuration
+        config = await db.agency_tier_configurations.find_one({"agency_id": current["id"]})
+        pricing = config.get("pricing_per_tier", {"tier1": 25.0, "tier2": 50.0, "tier3": 100.0}) if config else {"tier1": 25.0, "tier2": 50.0, "tier3": 100.0}
+        
+        for assessment in assessments:
+            tier_level = assessment.get("tier_level", 1)
+            area_id = assessment.get("area_id", "unknown")
+            area_title = assessment.get("area_title", "Unknown Area")
+            
+            tier_key = f"tier{tier_level}"
+            tier_cost = pricing.get(tier_key, 0)
+            
+            usage_summary["usage_by_tier"][tier_key] += 1
+            
+            if area_id not in usage_summary["usage_by_area"]:
+                usage_summary["usage_by_area"][area_id] = {
+                    "area_title": area_title,
+                    "tier1": 0,
+                    "tier2": 0,
+                    "tier3": 0,
+                    "total_cost": 0
+                }
+            
+            usage_summary["usage_by_area"][area_id][tier_key] += 1
+            usage_summary["usage_by_area"][area_id]["total_cost"] += tier_cost
+            usage_summary["total_cost"] += tier_cost
+            
+            usage_summary["assessments_detail"].append({
+                "assessment_id": assessment.get("session_id"),
+                "client_id": assessment.get("user_id"),
+                "area_id": area_id,
+                "area_title": area_title,
+                "tier_level": tier_level,
+                "tier_cost": tier_cost,
+                "completed_at": assessment.get("completed_at"),
+                "completion_score": assessment.get("tier_completion_score")
+            })
+        
+        return usage_summary
+        
+    except Exception as e:
+        logger.error(f"Error getting agency usage billing: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get usage billing")
+
+@api.get("/client/tier-access")
+async def get_client_tier_access_info(current=Depends(require_role("client"))):
+    """Get client's available tier access levels based on their agency"""
+    try:
+        tier_access = await get_client_tier_access(current["id"])
+        
+        # Get area information with tier details
+        areas_info = []
+        for area in ASSESSMENT_SCHEMA["areas"]:
+            area_id = area["id"]
+            max_tier = tier_access.get(area_id, 1)
+            
+            area_info = {
+                "area_id": area_id,
+                "area_title": area["title"],
+                "area_description": area["description"],
+                "max_tier_access": max_tier,
+                "available_tiers": []
+            }
+            
+            for tier_num in range(1, max_tier + 1):
+                tier_key = f"tier{tier_num}"
+                if tier_key in area["tiers"]:
+                    tier_data = area["tiers"][tier_key]
+                    area_info["available_tiers"].append({
+                        "tier_level": tier_num,
+                        "tier_name": tier_data["name"],
+                        "description": tier_data["description"],
+                        "effort_level": tier_data["effort_level"],
+                        "questions_count": len(tier_data["questions"])
+                    })
+            
+            areas_info.append(area_info)
+        
+        return {
+            "client_id": current["id"],
+            "areas": areas_info,
+            "total_areas": len(areas_info)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting client tier access info: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get tier access information")
+
 # ---------------- Knowledge Base Payment Unlock ----------------
 # QA override for knowledge base access for a specific test user
 @api.post("/qa/grant/knowledge-base")
