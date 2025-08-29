@@ -546,6 +546,9 @@ except Exception:
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Environment variables
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+
 # Prometheus metrics
 REQUEST_COUNT = Counter('polaris_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
 REQUEST_DURATION = Histogram('polaris_request_duration_seconds', 'HTTP request duration', ['method', 'endpoint'])
