@@ -36,16 +36,31 @@ function TierBasedAssessmentPage() {
   useEffect(() => {
     const loadTierAccess = async () => {
       try {
+        console.log('Loading tier access from:', `${API}/api/client/tier-access`);
+        console.log('Auth headers:', authHeaders);
+        
         const response = await axios.get(`${API}/api/client/tier-access`, authHeaders);
-        setAvailableAreas(response.data.areas || []);
+        console.log('Tier access response:', response.data);
+        
+        if (response.data && response.data.areas) {
+          setAvailableAreas(response.data.areas);
+          console.log(`Loaded ${response.data.areas.length} areas:`, response.data.areas.map(a => a.area_title));
+        } else {
+          console.error('Invalid response structure:', response.data);
+        }
         setLoading(false);
       } catch (error) {
         console.error('Error loading tier access:', error);
+        console.error('Error response:', error.response?.data);
         setLoading(false);
       }
     };
 
-    loadTierAccess();
+    if (me && me.role === 'client') {
+      loadTierAccess();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   // Create assessment session
