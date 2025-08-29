@@ -8910,33 +8910,67 @@ async def get_assessment_results(session_id: str, current=Depends(get_current_us
         if not session.get("completed_at"):
             raise HTTPException(status_code=400, detail="Assessment not completed")
         
-        # Calculate scores and analysis
-        assessment_data = session.get("assessment_data", [])
-        area_scores = []
-        total_score = 0
-        
-        for area_data in assessment_data:
-            area_name = area_data.get("area", "Unknown")
-            responses = area_data.get("responses", [])
+        if is_tier_session:
+            # Handle tier-based assessment results
+            area_id = session.get("area_id", "area1")
+            area_name = session.get("area_title", AREA_NAMES.get(area_id, "Unknown Area"))
+            responses = session.get("responses", [])
+            tier_level = session.get("tier_level", 1)
+            tier_score = session.get("tier_completion_score", 0)
             
+            # Calculate score based on responses
             if responses:
-                # Calculate score for this area (example scoring logic)
-                positive_responses = sum(1 for r in responses if r.get("selected_option") in ["yes", "always", "excellent"])
+                positive_responses = sum(1 for r in responses if r.get("response", "").lower() in ["yes", "true", "1"])
                 area_score = int((positive_responses / len(responses)) * 100)
+            else:
+                area_score = 0
+            
+            area_scores = [{
+                "area_name": area_name,
+                "area": area_id,
+                "score": area_score,
+                "tier_level": tier_level,
+                "tier_score": tier_score,
+                "description": f"Tier {tier_level} assessment of {area_name} capabilities",
+                "key_findings": [
+                    f"Completed {len(responses)} questions in tier {tier_level}",
+                    f"Tier completion score: {tier_score:.1f}%",
+                    f"Performance level: {'strong' if area_score >= 80 else 'moderate' if area_score >= 60 else 'needs improvement'}"
+                ]
+            }]
+            
+            overall_score = area_score
+            total_questions = len(responses)
+            
+        else:
+            # Handle regular assessment results
+            assessment_data = session.get("assessment_data", [])
+            area_scores = []
+            total_score = 0
+            
+            for area_data in assessment_data:
+                area_name = area_data.get("area", "Unknown")
+                responses = area_data.get("responses", [])
                 
-                area_scores.append({
-                    "area_name": AREA_NAMES.get(area_name, area_name),
-                    "area": area_name,
-                    "score": area_score,
-                    "description": f"Assessment of {AREA_NAMES.get(area_name, area_name)} capabilities",
-                    "key_findings": [
-                        f"Completed {len(responses)} questions in this area",
-                        f"Score indicates {'strong' if area_score >= 80 else 'moderate' if area_score >= 60 else 'improvement needed'} performance"
-                    ]
-                })
-                total_score += area_score
-        
-        overall_score = int(total_score / len(area_scores)) if area_scores else 0
+                if responses:
+                    # Calculate score for this area (example scoring logic)
+                    positive_responses = sum(1 for r in responses if r.get("selected_option") in ["yes", "always", "excellent"])
+                    area_score = int((positive_responses / len(responses)) * 100)
+                    
+                    area_scores.append({
+                        "area_name": AREA_NAMES.get(area_name, area_name),
+                        "area": area_name,
+                        "score": area_score,
+                        "description": f"Assessment of {AREA_NAMES.get(area_name, area_name)} capabilities",
+                        "key_findings": [
+                            f"Completed {len(responses)} questions in this area",
+                            f"Score indicates {'strong' if area_score >= 80 else 'moderate' if area_score >= 60 else 'improvement needed'} performance"
+                        ]
+                    })
+                    total_score += area_score
+            
+            overall_score = int(total_score / len(area_scores)) if area_scores else 0
+            total_questions = sum(len(area.get("responses", [])) for area in assessment_data)
         
         # Generate strengths and improvement areas
         strengths = []
@@ -8950,12 +8984,13 @@ async def get_assessment_results(session_id: str, current=Depends(get_current_us
         
         return {
             "session_id": session_id,
+            "session_type": "tier_based" if is_tier_session else "regular",
             "overall_score": overall_score,
             "completed_at": session["completed_at"],
             "area_scores": area_scores,
             "strengths": strengths[:5],  # Top 5 strengths
             "improvement_areas": improvement_areas[:5],  # Top 5 improvement areas
-            "total_questions": sum(len(area.get("responses", [])) for area in assessment_data),
+            "total_questions": total_questions,
             "completion_time": "45 minutes"  # Could calculate actual time
         }
         
