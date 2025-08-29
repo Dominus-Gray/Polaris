@@ -19,6 +19,8 @@ function TierBasedAssessmentPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [completionResults, setCompletionResults] = useState(null);
 
   // Authentication header
   const authHeaders = {
