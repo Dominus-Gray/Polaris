@@ -549,7 +549,60 @@ class StandardizedProviderResponse(BaseModel):
     request_id: str = Field(..., description="Service request identifier")
     proposed_fee: float = Field(..., ge=0, le=50000, description="Proposed service fee in USD")
     estimated_timeline: str = Field(..., description="Estimated completion timeline")
-    proposal_note: str = Field(..., min_length=20, max_length=1500, description="Detailed proposal description")
+    proposal_note: str = Field(..., max_length=2000, description="Detailed proposal explanation")
+
+# Enhanced Service Provider Models
+class EnhancedProviderProfile(BaseModel):
+    """Enhanced service provider profile for better advertising and selection"""
+    provider_id: str
+    business_name: str
+    tagline: str = Field(..., max_length=100, description="Short marketing tagline")
+    overview: str = Field(..., max_length=500, description="Business overview")
+    service_areas: List[str] = Field(..., description="Business areas they serve")
+    specializations: List[str] = Field(default=[], description="Specific specializations")
+    certifications: List[str] = Field(default=[], description="Professional certifications")
+    years_experience: int = Field(..., ge=0, le=50)
+    team_size: str = Field(..., description="Team size category")
+    pricing_model: str = Field(..., description="Pricing approach")
+    availability: str = Field(..., description="Current availability status")
+    location: str = Field(..., description="Primary service location")
+    portfolio_highlights: List[str] = Field(default=[], max_items=5)
+    client_testimonials: List[str] = Field(default=[], max_items=3)
+    response_time_avg: str = Field(default="24 hours", description="Average response time")
+    success_metrics: Dict[str, Any] = Field(default={})
+
+class ServiceRating(BaseModel):
+    """Simple 1-5 star rating system for services"""
+    rating_id: str
+    service_request_id: str
+    client_id: str
+    provider_id: str
+    overall_rating: int = Field(..., ge=1, le=5)
+    quality_rating: int = Field(..., ge=1, le=5)
+    communication_rating: int = Field(..., ge=1, le=5)
+    timeliness_rating: int = Field(..., ge=1, le=5)
+    value_rating: int = Field(..., ge=1, le=5)
+    review_text: Optional[str] = Field(None, max_length=1000)
+    would_recommend: bool
+    created_at: datetime
+
+class ServiceTrackingMilestone(BaseModel):
+    """Interactive service tracking milestones"""
+    milestone_id: str
+    title: str
+    description: str
+    status: str = Field(..., pattern="^(pending|in_progress|completed|blocked)$")
+    due_date: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class EnhancedServiceRequest(StandardizedEngagementRequest):
+    """Enhanced service request with additional fields for better matching"""
+    urgency_level: str = Field(default="normal", pattern="^(low|normal|high|urgent)$")
+    preferred_timeline: str = Field(..., description="Client's preferred timeline")
+    specific_requirements: List[str] = Field(default=[], description="Specific requirements or constraints")
+    evaluation_criteria: List[str] = Field(default=[], description="How client will evaluate proposals")
+    communication_preference: str = Field(default="email", pattern="^(email|phone|video|in_person)$")
     
     @validator('estimated_timeline')
     def validate_timeline(cls, v):
