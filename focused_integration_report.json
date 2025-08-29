@@ -1,0 +1,166 @@
+{
+  "overall_summary": {
+    "total_tests": 12,
+    "passed_tests": 10,
+    "failed_tests": 2,
+    "success_rate": "83.3%"
+  },
+  "integration_categories": {
+    "Authentication": {
+      "passed": 4,
+      "total": 4,
+      "success_rate": "100.0%"
+    },
+    "Assessment Integration": {
+      "passed": 0,
+      "total": 1,
+      "success_rate": "0.0%"
+    },
+    "Service Provider Integration": {
+      "passed": 1,
+      "total": 1,
+      "success_rate": "100.0%"
+    },
+    "Agency Business Intelligence": {
+      "passed": 2,
+      "total": 3,
+      "success_rate": "66.7%"
+    },
+    "Knowledge Base Integration": {
+      "passed": 1,
+      "total": 1,
+      "success_rate": "100.0%"
+    },
+    "Analytics Integration": {
+      "passed": 2,
+      "total": 2,
+      "success_rate": "100.0%"
+    }
+  },
+  "working_integrations": [
+    "Auth_client",
+    "Auth_agency",
+    "Auth_provider",
+    "Auth_navigator",
+    "Agency Tier Configuration",
+    "Agency Billing Integration",
+    "Knowledge Base Areas Access",
+    "Analytics Data Posting",
+    "Navigator Analytics Integration",
+    "Provider Notification Integration"
+  ],
+  "broken_integrations": [
+    "Assessment Session Creation",
+    "Agency-Client Data Integration"
+  ],
+  "session_data": {},
+  "detailed_results": [
+    {
+      "test": "Auth_client",
+      "success": true,
+      "details": "Successfully authenticated client user",
+      "timestamp": "2025-08-29T21:37:04.173536",
+      "data": {}
+    },
+    {
+      "test": "Auth_agency",
+      "success": true,
+      "details": "Successfully authenticated agency user",
+      "timestamp": "2025-08-29T21:37:04.247060",
+      "data": {}
+    },
+    {
+      "test": "Auth_provider",
+      "success": true,
+      "details": "Successfully authenticated provider user",
+      "timestamp": "2025-08-29T21:37:04.320981",
+      "data": {}
+    },
+    {
+      "test": "Auth_navigator",
+      "success": true,
+      "details": "Successfully authenticated navigator user",
+      "timestamp": "2025-08-29T21:37:04.396702",
+      "data": {}
+    },
+    {
+      "test": "Assessment Session Creation",
+      "success": false,
+      "details": "Session creation failed: 422",
+      "timestamp": "2025-08-29T21:37:04.457486",
+      "data": {}
+    },
+    {
+      "test": "Agency Tier Configuration",
+      "success": true,
+      "details": "Agency has 10 areas configured with 3 pricing tiers",
+      "timestamp": "2025-08-29T21:37:04.517528",
+      "data": {
+        "areas_configured": 10,
+        "pricing_tiers": 3
+      }
+    },
+    {
+      "test": "Agency Billing Integration",
+      "success": true,
+      "details": "Billing tracks 0 assessments with tier usage: {'tier1': 0, 'tier2': 0, 'tier3': 0}",
+      "timestamp": "2025-08-29T21:37:04.573885",
+      "data": {
+        "total_assessments": 0,
+        "tier_usage": {
+          "tier1": 0,
+          "tier2": 0,
+          "tier3": 0
+        }
+      }
+    },
+    {
+      "test": "Agency-Client Data Integration",
+      "success": false,
+      "details": "Client tier access properly reflects agency configuration (0/0 areas match)",
+      "timestamp": "2025-08-29T21:37:04.629273",
+      "data": {
+        "matching_areas": 0,
+        "total_areas": 0
+      }
+    },
+    {
+      "test": "Knowledge Base Areas Access",
+      "success": true,
+      "details": "Accessed 9 KB areas, 0 unlocked for QA user",
+      "timestamp": "2025-08-29T21:37:04.708229",
+      "data": {
+        "total_areas": 9,
+        "unlocked_areas": 0
+      }
+    },
+    {
+      "test": "Analytics Data Posting",
+      "success": true,
+      "details": "Successfully posted client activity analytics",
+      "timestamp": "2025-08-29T21:37:04.766701",
+      "data": {}
+    },
+    {
+      "test": "Navigator Analytics Integration",
+      "success": true,
+      "details": "Navigator sees 14 total interactions, area5 has 0 interactions",
+      "timestamp": "2025-08-29T21:37:05.824622",
+      "data": {
+        "total_interactions": 14,
+        "area5_count": 0
+      }
+    },
+    {
+      "test": "Provider Notification Integration",
+      "success": true,
+      "details": "Provider has 0 total notifications, 0 service-related",
+      "timestamp": "2025-08-29T21:37:05.881741",
+      "data": {
+        "total_notifications": 0,
+        "service_notifications": 0
+      }
+    }
+  ],
+  "timestamp": "2025-08-29T21:37:05.886433"
+}
