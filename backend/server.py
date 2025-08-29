@@ -9140,7 +9140,7 @@ async def get_revenue_analytics(current=Depends(get_current_user)):
             raise HTTPException(status_code=403, detail="Only providers can access revenue analytics")
         
         # Get provider's orders and calculate analytics
-        orders = await db.service_orders.find({"provider_id": current["user_id"]}).to_list(length=None)
+        orders = await db.service_orders.find({"provider_id": current["id"]}).to_list(length=None)
         
         # Calculate metrics (mock data for demo)
         current_month_revenue = 8500
@@ -9150,7 +9150,7 @@ async def get_revenue_analytics(current=Depends(get_current_user)):
         
         # Get active proposals
         active_proposals = await db.service_requests.count_documents({
-            "responded_providers": current["user_id"],
+            "responded_providers": current["id"],
             "status": {"$in": ["open", "in_progress"]}
         })
         
