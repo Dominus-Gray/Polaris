@@ -207,7 +207,10 @@ function TierBasedAssessmentPage() {
                 }`}
                 onClick={() => setSelectedArea(area)}
               >
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{area.area_title}</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <span className="text-blue-600 font-bold mr-2">{area.area_id.replace('area', '')}</span>
+                  {area.area_title}
+                </h3>
                 <p className="text-gray-600 text-sm mb-4">{area.area_description}</p>
                 
                 {/* Tier Access Indicators */}
