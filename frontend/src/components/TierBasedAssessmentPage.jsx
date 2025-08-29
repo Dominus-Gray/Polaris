@@ -400,42 +400,7 @@ function TierBasedAssessmentPage() {
             </div>
           </div>
 
-          {/* Tier Filter */}
-          {questions.length > 3 && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Tier</label>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setTierFilter('all')}
-                  className={`px-3 py-1 text-sm rounded-full ${
-                    tierFilter === 'all' 
-                      ? 'bg-blue-100 text-blue-800 border border-blue-300' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  All Questions ({questions.length})
-                </button>
-                {[1, 2, 3].map(tier => {
-                  const tierQuestions = questions.filter(q => q.tier_level === tier);
-                  if (tierQuestions.length === 0) return null;
-                  
-                  return (
-                    <button
-                      key={tier}
-                      onClick={() => setTierFilter(tier.toString())}
-                      className={`px-3 py-1 text-sm rounded-full ${
-                        tierFilter === tier.toString()
-                          ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      Tier {tier} ({tierQuestions.length})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+
           
           {/* Progress Bar */}
           <div className="w-full bg-gray-200 rounded-full h-2">
