@@ -35,36 +35,74 @@ function TierBasedAssessmentPage() {
     return null;
   }
 
-  // Load client's tier access information
+  // Load client's tier access information and progress
   useEffect(() => {
-    const loadTierAccess = async () => {
+    const loadAssessmentData = async () => {
       try {
-        console.log('Loading tier access from:', `${API}/api/client/tier-access`);
-        console.log('Auth headers:', authHeaders);
+        console.log('Loading assessment data...');
         
-        const response = await axios.get(`${API}/api/client/tier-access`, authHeaders);
-        console.log('Tier access response:', response.data);
+        // Load tier access
+        const tierResponse = await axios.get(`${API}/api/client/tier-access`, authHeaders);
+        console.log('Tier access response:', tierResponse.data);
         
-        if (response.data && response.data.areas) {
-          setAvailableAreas(response.data.areas);
-          console.log(`Loaded ${response.data.areas.length} areas:`, response.data.areas.map(a => a.area_title));
-        } else {
-          console.error('Invalid response structure:', response.data);
+        // Load assessment progress
+        const progressResponse = await axios.get(`${API}/api/client/assessment-progress`, authHeaders);
+        console.log('Progress response:', progressResponse.data);
+        
+        if (tierResponse.data && tierResponse.data.areas) {
+          // Merge tier access with progress data
+          const areasWithProgress = tierResponse.data.areas.map(area => {
+            const progress = progressResponse.data?.area_progress?.[area.area_id] || {};
+            return {
+              ...area,
+              ...progress,
+              status_color: getStatusColor(progress.status),
+              progress_text: `${progress.questions_answered || 0}/${progress.total_questions || 0} questions`
+            };
+          });
+          
+          setAvailableAreas(areasWithProgress);
+          setAssessmentProgress(progressResponse.data);
+          console.log(`Loaded ${areasWithProgress.length} areas with progress data`);
         }
+        
         setLoading(false);
       } catch (error) {
-        console.error('Error loading tier access:', error);
-        console.error('Error response:', error.response?.data);
+        console.error('Error loading assessment data:', error);
         setLoading(false);
       }
     };
 
     if (me && me.role === 'client') {
-      loadTierAccess();
+      loadAssessmentData();
     } else {
       setLoading(false);
     }
   }, []);
+
+  // Helper function to get status color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'compliant': return 'bg-green-400';
+      case 'nearing_completion': return 'bg-orange-400';  
+      case 'incomplete': return 'bg-yellow-400';
+      default: return 'bg-gray-300';
+    }
+  };
+
+  // Filter questions by tier when tier filter changes
+  useEffect(() => {
+    if (questions.length > 0) {
+      if (tierFilter === 'all') {
+        setFilteredQuestions(questions);
+      } else {
+        const tierNum = parseInt(tierFilter);
+        const filtered = questions.filter(q => q.tier_level === tierNum);
+        setFilteredQuestions(filtered);
+        setCurrentQuestionIndex(0); // Reset to first question
+      }
+    }
+  }, [questions, tierFilter]);
 
   // Create assessment session
   const createSession = async () => {
