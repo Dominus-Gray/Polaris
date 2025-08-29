@@ -6458,6 +6458,226 @@ async def get_client_tier_access_info(current=Depends(require_role("client"))):
         logger.error(f"Error getting client tier access info: {e}")
         raise HTTPException(status_code=500, detail="Failed to get tier access information")
 
+# ---------------- Business Intelligence for Agencies ----------------
+
+@api.get("/agency/business-intelligence/assessments")
+async def get_agency_assessment_intelligence(
+    period: Optional[str] = Query("current_month", description="Period: current_month, last_month, ytd"),
+    current=Depends(require_role("agency"))
+):
+    """Get comprehensive business intelligence on sponsored client assessments"""
+    try:
+        # Calculate date range
+        now = datetime.utcnow()
+        if period == "current_month":
+            start_date = datetime(now.year, now.month, 1)
+            end_date = now
+        elif period == "last_month":
+            if now.month == 1:
+                start_date = datetime(now.year - 1, 12, 1)
+                end_date = datetime(now.year, 1, 1)
+            else:
+                start_date = datetime(now.year, now.month - 1, 1)
+                end_date = datetime(now.year, now.month, 1)
+        else:  # ytd
+            start_date = datetime(now.year, 1, 1)
+            end_date = now
+
+        # Get agency's sponsored clients
+        agency_licenses = await db.agency_licenses.find({"agency_user_id": current["id"]}).to_list(None)
+        client_ids = [license.get("used_by") for license in agency_licenses if license.get("used_by")]
+
+        # Get assessment sessions for the period
+        sessions = await db.tier_assessment_sessions.find({
+            "user_id": {"$in": client_ids},
+            "started_at": {"$gte": start_date, "$lt": end_date}
+        }).to_list(None)
+
+        # Calculate intelligence metrics
+        intelligence = {
+            "period": period,
+            "date_range": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "total_clients": len(client_ids),
+            "assessment_overview": {
+                "total_sessions": len(sessions),
+                "completed_sessions": len([s for s in sessions if s.get("status") == "completed"]),
+                "active_sessions": len([s for s in sessions if s.get("status") == "active"]),
+                "completion_rate": 0
+            },
+            "business_area_breakdown": {},
+            "tier_utilization": {"tier1": 0, "tier2": 0, "tier3": 0},
+            "client_progress": [],
+            "top_gaps": [],
+            "compliance_insights": []
+        }
+
+        if len(sessions) > 0:
+            intelligence["assessment_overview"]["completion_rate"] = round(
+                intelligence["assessment_overview"]["completed_sessions"] / len(sessions) * 100, 1
+            )
+
+        # Analyze by business area
+        area_stats = {}
+        for session in sessions:
+            area_id = session.get("area_id")
+            if area_id not in area_stats:
+                area_stats[area_id] = {
+                    "area_title": session.get("area_title", f"Area {area_id}"),
+                    "total_sessions": 0,
+                    "completed": 0,
+                    "avg_score": 0,
+                    "scores": []
+                }
+            
+            area_stats[area_id]["total_sessions"] += 1
+            if session.get("status") == "completed":
+                area_stats[area_id]["completed"] += 1
+                score = session.get("tier_completion_score", 0)
+                area_stats[area_id]["scores"].append(score)
+
+        # Calculate averages and format
+        for area_id, stats in area_stats.items():
+            if stats["scores"]:
+                stats["avg_score"] = round(sum(stats["scores"]) / len(stats["scores"]), 1)
+            intelligence["business_area_breakdown"][area_id] = stats
+
+        # Tier utilization
+        for session in sessions:
+            tier_level = session.get("tier_level", 1)
+            tier_key = f"tier{tier_level}"
+            if tier_key in intelligence["tier_utilization"]:
+                intelligence["tier_utilization"][tier_key] += 1
+
+        # Client progress summary
+        client_progress = {}
+        for session in sessions:
+            client_id = session.get("user_id")
+            if client_id not in client_progress:
+                client_progress[client_id] = {
+                    "client_id": client_id,
+                    "total_areas_started": 0,
+                    "total_areas_completed": 0,
+                    "avg_completion_score": 0,
+                    "scores": [],
+                    "last_activity": None
+                }
+            
+            client_progress[client_id]["total_areas_started"] += 1
+            if session.get("status") == "completed":
+                client_progress[client_id]["total_areas_completed"] += 1
+                score = session.get("tier_completion_score", 0)
+                client_progress[client_id]["scores"].append(score)
+            
+            session_date = session.get("started_at")
+            if not client_progress[client_id]["last_activity"] or session_date > client_progress[client_id]["last_activity"]:
+                client_progress[client_id]["last_activity"] = session_date
+
+        # Calculate client averages
+        for client_id, progress in client_progress.items():
+            if progress["scores"]:
+                progress["avg_completion_score"] = round(sum(progress["scores"]) / len(progress["scores"]), 1)
+            intelligence["client_progress"].append(progress)
+
+        return intelligence
+
+    except Exception as e:
+        logger.error(f"Error getting agency assessment intelligence: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get assessment intelligence")
+
+@api.get("/agency/compliance-insights")
+async def get_agency_compliance_insights(current=Depends(require_role("agency"))):
+    """Get AI-powered compliance insights and gap analysis for sponsored clients"""
+    try:
+        # Get agency's clients
+        agency_licenses = await db.agency_licenses.find({"agency_user_id": current["id"]}).to_list(None)
+        client_ids = [license.get("used_by") for license in agency_licenses if license.get("used_by")]
+
+        # Get recent completed assessments
+        recent_assessments = await db.tier_assessment_sessions.find({
+            "user_id": {"$in": client_ids},
+            "status": "completed",
+            "completed_at": {"$gte": datetime.utcnow() - timedelta(days=90)}
+        }).sort("completed_at", -1).to_list(50)
+
+        insights = {
+            "summary": {
+                "total_assessments_analyzed": len(recent_assessments),
+                "average_compliance_score": 0,
+                "critical_gaps_identified": 0,
+                "clients_at_risk": 0
+            },
+            "critical_gaps": [],
+            "compliance_trends": {},
+            "recommendations": []
+        }
+
+        if len(recent_assessments) == 0:
+            return insights
+
+        # Analyze compliance scores
+        scores = [a.get("tier_completion_score", 0) for a in recent_assessments if a.get("tier_completion_score")]
+        if scores:
+            insights["summary"]["average_compliance_score"] = round(sum(scores) / len(scores), 1)
+
+        # Identify critical gaps (areas with scores < 60%)
+        gap_analysis = {}
+        for assessment in recent_assessments:
+            area_id = assessment.get("area_id")
+            score = assessment.get("tier_completion_score", 0)
+            
+            if area_id not in gap_analysis:
+                gap_analysis[area_id] = {
+                    "area_title": assessment.get("area_title", f"Area {area_id}"),
+                    "scores": [],
+                    "clients_affected": set()
+                }
+            
+            gap_analysis[area_id]["scores"].append(score)
+            gap_analysis[area_id]["clients_affected"].add(assessment.get("user_id"))
+
+        # Calculate gap severity
+        for area_id, data in gap_analysis.items():
+            avg_score = sum(data["scores"]) / len(data["scores"])
+            if avg_score < 60:  # Critical threshold
+                insights["critical_gaps"].append({
+                    "area_id": area_id,
+                    "area_title": data["area_title"],
+                    "avg_score": round(avg_score, 1),
+                    "clients_affected": len(data["clients_affected"]),
+                    "severity": "High" if avg_score < 40 else "Medium",
+                    "recommendation": f"Focus training and resources on {data['area_title'].lower()}"
+                })
+
+        insights["summary"]["critical_gaps_identified"] = len(insights["critical_gaps"])
+
+        # Add AI-powered recommendations
+        insights["recommendations"] = [
+            {
+                "priority": "High",
+                "category": "Training",
+                "title": "Implement targeted training programs",
+                "description": f"Focus on the {len(insights['critical_gaps'])} critical gap areas identified"
+            },
+            {
+                "priority": "Medium", 
+                "category": "Monitoring",
+                "title": "Increase assessment frequency",
+                "description": "Encourage quarterly assessments for continuous improvement"
+            },
+            {
+                "priority": "Medium",
+                "category": "Support",
+                "title": "Provide tier-specific resources",
+                "description": "Match resource complexity to client tier access levels"
+            }
+        ]
+
+        return insights
+
+    except Exception as e:
+        logger.error(f"Error getting compliance insights: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get compliance insights")
+
 # ---------------- Knowledge Base Payment Unlock ----------------
 # QA override for knowledge base access for a specific test user
 @api.post("/qa/grant/knowledge-base")
