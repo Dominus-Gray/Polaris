@@ -526,11 +526,11 @@ class TierBasedAssessmentTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Validate tier access structure
-                if ("tier_levels" in data or "access_levels" in data or 
-                    "available_tiers" in data):
+                # Validate tier access structure - check for areas with tier information
+                if ("areas" in data and isinstance(data["areas"], list) and 
+                    len(data["areas"]) > 0 and "max_tier_access" in data["areas"][0]):
                     self.log_result("Client Tier Access", True, 
-                                  f"Client tier access retrieved successfully")
+                                  f"Client tier access retrieved successfully for {len(data['areas'])} areas")
                     return True
                 else:
                     self.log_result("Client Tier Access", False, 
