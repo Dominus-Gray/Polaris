@@ -1,0 +1,258 @@
+{
+  "test_summary": {
+    "total_tests": 30,
+    "passed_tests": 11,
+    "failed_tests": 19,
+    "success_rate": "36.7%"
+  },
+  "critical_failures": [
+    "Endpoint Check: /client/dashboard",
+    "Endpoint Check: /client/gaps",
+    "Endpoint Check: /client/recommended-resources",
+    "Endpoint Check: /provider/profile",
+    "Endpoint Check: /agency/dashboard",
+    "Endpoint Check: /client/journey-analytics",
+    "Endpoint Check: /providers/search"
+  ],
+  "integration_issues": [
+    "Assessment\u2192Dashboard Integration",
+    "Gap\u2192Provider Matching",
+    "Assessment\u2192Resource Recommendations",
+    "Provider Profile\u2192Service Request",
+    "Rating System\u2192Search Ranking",
+    "Notification System\u2192Service Requests",
+    "Agency Dashboard\u2192Assessment Data",
+    "Billing\u2192Tier Usage Tracking",
+    "Compliance Insights\u2192Assessment Data",
+    "Payment System\u2192Content Unlock",
+    "AI Consultation\u2192Assessment Gaps",
+    "User Journey\u2192Data Flow Between Features"
+  ],
+  "working_features": [
+    "Auth_client",
+    "Auth_agency",
+    "Auth_provider",
+    "Auth_navigator",
+    "Navigator Analytics\u2192Client Interactions",
+    "Resource Usage\u2192Measurement & Reporting",
+    "Endpoint Check: /client/assessment-progress",
+    "Endpoint Check: /provider/notifications",
+    "Endpoint Check: /provider/ratings",
+    "Endpoint Check: /agency/compliance-insights",
+    "Endpoint Check: /navigator/analytics/resources"
+  ],
+  "detailed_results": [
+    {
+      "test": "Auth_client",
+      "success": true,
+      "details": "Successfully authenticated client",
+      "timestamp": "2025-08-29T21:34:51.544100",
+      "data": {}
+    },
+    {
+      "test": "Auth_agency",
+      "success": true,
+      "details": "Successfully authenticated agency",
+      "timestamp": "2025-08-29T21:34:51.619537",
+      "data": {}
+    },
+    {
+      "test": "Auth_provider",
+      "success": true,
+      "details": "Successfully authenticated provider",
+      "timestamp": "2025-08-29T21:34:51.696364",
+      "data": {}
+    },
+    {
+      "test": "Auth_navigator",
+      "success": true,
+      "details": "Successfully authenticated navigator",
+      "timestamp": "2025-08-29T21:34:51.767811",
+      "data": {}
+    },
+    {
+      "test": "Assessment\u2192Dashboard Integration",
+      "success": false,
+      "details": "Assessment session creation failed: 422",
+      "timestamp": "2025-08-29T21:34:51.823967",
+      "data": {}
+    },
+    {
+      "test": "Gap\u2192Provider Matching",
+      "success": false,
+      "details": "Gaps endpoint not accessible: 404",
+      "timestamp": "2025-08-29T21:34:51.881534",
+      "data": {}
+    },
+    {
+      "test": "Assessment\u2192Resource Recommendations",
+      "success": false,
+      "details": "Resources endpoint not accessible: 404",
+      "timestamp": "2025-08-29T21:34:51.992000",
+      "data": {}
+    },
+    {
+      "test": "Provider Profile\u2192Service Request",
+      "success": false,
+      "details": "Provider profile not accessible: 404",
+      "timestamp": "2025-08-29T21:34:52.052614",
+      "data": {}
+    },
+    {
+      "test": "Rating System\u2192Search Ranking",
+      "success": false,
+      "details": "Provider search not accessible: 404",
+      "timestamp": "2025-08-29T21:34:52.163018",
+      "data": {}
+    },
+    {
+      "test": "Notification System\u2192Service Requests",
+      "success": false,
+      "details": "Found 0 service request notifications",
+      "timestamp": "2025-08-29T21:34:52.216289",
+      "data": {}
+    },
+    {
+      "test": "Agency Dashboard\u2192Assessment Data",
+      "success": false,
+      "details": "Agency dashboard not accessible: 404",
+      "timestamp": "2025-08-29T21:34:52.275594",
+      "data": {}
+    },
+    {
+      "test": "Billing\u2192Tier Usage Tracking",
+      "success": false,
+      "details": "Billing tracks actual tier usage and completions: False",
+      "timestamp": "2025-08-29T21:34:52.331788",
+      "data": {}
+    },
+    {
+      "test": "Compliance Insights\u2192Assessment Data",
+      "success": false,
+      "details": "Compliance insights based on real assessment data: False",
+      "timestamp": "2025-08-29T21:34:52.386188",
+      "data": {}
+    },
+    {
+      "test": "Payment System\u2192Content Unlock",
+      "success": false,
+      "details": "Payment processing failed: 422",
+      "timestamp": "2025-08-29T21:34:52.517643",
+      "data": {}
+    },
+    {
+      "test": "AI Consultation\u2192Assessment Gaps",
+      "success": false,
+      "details": "Assessment gaps not accessible: 404",
+      "timestamp": "2025-08-29T21:34:52.568669",
+      "data": {}
+    },
+    {
+      "test": "Navigator Analytics\u2192Client Interactions",
+      "success": true,
+      "details": "Navigator analytics track real client interactions: 12 total",
+      "timestamp": "2025-08-29T21:34:52.631258",
+      "data": {}
+    },
+    {
+      "test": "Resource Usage\u2192Measurement & Reporting",
+      "success": true,
+      "details": "Resource usage measured and reported: 13 recent accesses",
+      "timestamp": "2025-08-29T21:34:53.781224",
+      "data": {}
+    },
+    {
+      "test": "User Journey\u2192Data Flow Between Features",
+      "success": false,
+      "details": "User journey data flows between features: ",
+      "timestamp": "2025-08-29T21:34:53.889253",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /client/dashboard",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:53.948568",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /client/gaps",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:54.004235",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /client/assessment-progress",
+      "success": true,
+      "details": "Accessible: 200",
+      "timestamp": "2025-08-29T21:34:54.060505",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /client/recommended-resources",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:54.115147",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /provider/profile",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:54.167979",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /provider/notifications",
+      "success": true,
+      "details": "Accessible: 200",
+      "timestamp": "2025-08-29T21:34:54.226073",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /provider/ratings",
+      "success": true,
+      "details": "Accessible: 200",
+      "timestamp": "2025-08-29T21:34:54.280111",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /agency/dashboard",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:54.335229",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /agency/compliance-insights",
+      "success": true,
+      "details": "Accessible: 200",
+      "timestamp": "2025-08-29T21:34:54.391207",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /navigator/analytics/resources",
+      "success": true,
+      "details": "Accessible: 200",
+      "timestamp": "2025-08-29T21:34:54.448288",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /client/journey-analytics",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:54.501745",
+      "data": {}
+    },
+    {
+      "test": "Endpoint Check: /providers/search",
+      "success": false,
+      "details": "Missing endpoint: 404",
+      "timestamp": "2025-08-29T21:34:54.558077",
+      "data": {}
+    }
+  ],
+  "session_data": {},
+  "timestamp": "2025-08-29T21:34:54.559524"
+}
