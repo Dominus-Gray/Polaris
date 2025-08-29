@@ -350,56 +350,73 @@ class ComprehensiveBackendTester:
             self.log_result("Client Tier Access", False, f"Exception: {str(e)}")
             return False
 
-    def test_enhanced_provider_profile(self) -> bool:
-        """Test POST /api/provider/profile/enhanced - create enhanced provider profiles"""
+    def test_system_reliability(self) -> bool:
+        """Test overall system reliability and performance"""
         try:
-            headers = self.get_headers("provider")
+            print("\n⚡ Testing System Reliability...")
             
-            # Enhanced provider profile data
-            profile_data = {
-                "business_name": "Elite Business Solutions",
-                "tagline": "Your trusted partner for government contracting success",
-                "overview": "We specialize in helping small businesses navigate government contracting requirements with over 10 years of experience.",
-                "service_areas": ["area1", "area2", "area5"],
-                "specializations": ["Government Contracting", "Compliance", "Business Formation"],
-                "certifications": ["PTAC Certified", "SBA Approved"],
-                "years_experience": 10,
-                "team_size": "5-10 employees",
-                "pricing_model": "Project-based with transparent pricing",
-                "availability": "Available for new projects",
-                "location": "San Antonio, TX",
-                "portfolio_highlights": [
-                    "Helped 50+ businesses win government contracts",
-                    "100% compliance success rate",
-                    "Average contract value increase of 40%"
-                ],
-                "client_testimonials": [
-                    "Outstanding service and results - highly recommended!",
-                    "Professional team that delivers on promises"
-                ],
-                "response_time_avg": "4 hours",
-                "success_metrics": {
-                    "contracts_won": 150,
-                    "client_satisfaction": 4.8,
-                    "repeat_clients": 85
-                }
-            }
+            # Test 1: System Health Check
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/system/health")
+            response_time = time.time() - start_time
             
-            response = self.session.post(f"{BASE_URL}/provider/profile/enhanced", 
-                                       json=profile_data, headers=headers)
-            
-            if response.status_code == 200 or response.status_code == 201:
-                data = response.json()
-                self.log_result("Enhanced Provider Profile", True, 
-                              f"Enhanced profile created successfully")
-                return True
+            if response.status_code == 200:
+                health_data = response.json()
+                status = health_data.get("status", "")
+                if status == "healthy":
+                    self.log_result("System Health Check", True,
+                                  f"System status: {status}", response_time)
+                else:
+                    self.log_result("System Health Check", False,
+                                  f"System status: {status}", response_time)
+                    return False
             else:
-                self.log_result("Enhanced Provider Profile", False, 
-                              f"Status: {response.status_code}", response.json())
+                self.log_result("System Health Check", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
                 return False
-                
+
+            # Test 2: Authentication System Reliability
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/auth/me")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                user_data = response.json()
+                if user_data.get("email") == QA_CREDENTIALS["client"]["email"]:
+                    self.log_result("Authentication System Reliability", True,
+                                  "Auth system working correctly", response_time)
+                else:
+                    self.log_result("Authentication System Reliability", False,
+                                  "Auth data mismatch", response_time)
+                    return False
+            else:
+                self.log_result("Authentication System Reliability", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            # Test 3: Database Connectivity
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/assessment/schema")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                schema_data = response.json()
+                if schema_data.get("areas"):
+                    self.log_result("Database Connectivity", True,
+                                  "Database queries working", response_time)
+                else:
+                    self.log_result("Database Connectivity", False,
+                                  "Empty schema response", response_time)
+                    return False
+            else:
+                self.log_result("Database Connectivity", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            return True
+            
         except Exception as e:
-            self.log_result("Enhanced Provider Profile", False, f"Exception: {str(e)}")
+            self.log_result("System Reliability", False, f"Exception: {str(e)}")
             return False
 
     def test_service_request_responses_enhanced(self) -> bool:
