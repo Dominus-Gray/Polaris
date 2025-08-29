@@ -6864,6 +6864,81 @@ async def get_client_recent_activity(user_id: str) -> List[Dict[str, Any]]:
         logger.error(f"Error getting client recent activity: {e}")
         return []
 
+async def get_client_compliance_status(user_id: str) -> Dict[str, Any]:
+    """Get client's compliance status and readiness metrics"""
+    try:
+        # Get completed assessments
+        completed_sessions = await db.tier_assessment_sessions.find({
+            "user_id": user_id,
+            "status": "completed"
+        }).to_list(None)
+        
+        # Calculate overall compliance score
+        total_areas = 10
+        completed_areas = len(completed_sessions)
+        completion_rate = (completed_areas / total_areas) * 100
+        
+        # Calculate average tier completion score
+        if completed_sessions:
+            avg_score = sum(s.get("tier_completion_score", 0) for s in completed_sessions) / len(completed_sessions)
+        else:
+            avg_score = 0
+        
+        # Identify critical gaps (areas with low scores)
+        critical_gaps = []
+        for session in completed_sessions:
+            if session.get("tier_completion_score", 0) < 50:
+                critical_gaps.append({
+                    "area_id": session.get("area_id"),
+                    "area_name": session.get("area_title", "Unknown Area"),
+                    "score": session.get("tier_completion_score", 0)
+                })
+        
+        # Determine readiness level
+        if completion_rate >= 80 and avg_score >= 70:
+            readiness_level = "high"
+        elif completion_rate >= 60 and avg_score >= 50:
+            readiness_level = "medium"
+        else:
+            readiness_level = "low"
+        
+        return {
+            "overall_score": round(avg_score, 1),
+            "completion_rate": round(completion_rate, 1),
+            "readiness_level": readiness_level,
+            "critical_gaps": critical_gaps[:5],  # Top 5 critical gaps
+            "areas_completed": completed_areas,
+            "total_areas": total_areas,
+            "next_steps": generate_compliance_next_steps(critical_gaps, completion_rate)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting client compliance status: {e}")
+        return {
+            "overall_score": 0,
+            "completion_rate": 0,
+            "readiness_level": "unknown",
+            "critical_gaps": [],
+            "areas_completed": 0,
+            "total_areas": 10,
+            "next_steps": []
+        }
+
+def generate_compliance_next_steps(critical_gaps: List[Dict], completion_rate: float) -> List[str]:
+    """Generate next steps based on compliance status"""
+    next_steps = []
+    
+    if completion_rate < 50:
+        next_steps.append("Complete initial assessment for all business areas")
+    
+    if critical_gaps:
+        next_steps.append(f"Address critical gaps in {critical_gaps[0]['area_name']}")
+    
+    if completion_rate >= 80:
+        next_steps.append("Consider advanced tier assessments for comprehensive readiness")
+    
+    return next_steps
+
 async def generate_quick_actions(user_id: str) -> List[Dict[str, Any]]:
     """Generate contextual quick actions for the user"""
     try:
