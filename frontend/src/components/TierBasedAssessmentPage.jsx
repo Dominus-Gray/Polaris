@@ -133,6 +133,42 @@ function TierBasedAssessmentPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-lg text-gray-600">Loading your tier access information...</p>
+          <p className="mt-2 text-sm text-gray-500">Connecting to enhanced assessment system...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show debug information if no areas loaded
+  if (availableAreas.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold text-yellow-800 mb-4">Tier Access Loading Issue</h2>
+            <p className="text-yellow-700 mb-4">
+              Unable to load tier-based assessment areas. This might be a temporary connection issue.
+            </p>
+            <div className="space-y-2 text-sm text-yellow-600">
+              <p><strong>Expected:</strong> 10 business areas with tier access information</p>
+              <p><strong>API Endpoint:</strong> {`${API}/api/client/tier-access`}</p>
+              <p><strong>User Role:</strong> {me?.role || 'Unknown'}</p>
+            </div>
+            <div className="mt-4">
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+              >
+                Retry Loading
+              </button>
+              <button 
+                onClick={() => navigate('/home')}
+                className="ml-3 px-4 py-2 border border-yellow-600 text-yellow-600 rounded-lg hover:bg-yellow-50"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
