@@ -2339,6 +2339,87 @@ async def get_tier_session_progress(
         logger.error(f"Error getting tier session progress: {e}")
         raise HTTPException(status_code=500, detail="Failed to get session progress")
 
+@api.get("/assessment/results/{session_id}")
+async def get_assessment_results(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get comprehensive results for a completed tier-based assessment"""
+    try:
+        # Get session
+        session = await db.tier_assessment_sessions.find_one({
+            "_id": session_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        # Calculate detailed results
+        results = {
+            "session_id": session_id,
+            "area_info": {
+                "area_id": session.get("area_id"),
+                "area_title": session.get("area_title"),
+                "tier_level": session.get("tier_level"),
+                "tier_name": session.get("tier_name")
+            },
+            "completion_info": {
+                "status": session.get("status"),
+                "started_at": session.get("started_at"),
+                "completed_at": session.get("completed_at"),
+                "total_questions": len(session.get("questions", [])),
+                "responses_submitted": len(session.get("responses", [])),
+                "tier_completion_score": session.get("tier_completion_score", 0)
+            },
+            "performance_analysis": {
+                "score_category": "",
+                "strengths": [],
+                "improvement_areas": [],
+                "next_steps": []
+            },
+            "responses_detail": session.get("responses", []),
+            "tier_progression": {
+                "current_tier": session.get("tier_level", 1),
+                "next_tier_available": False,
+                "tier_progression_score": 0
+            }
+        }
+        
+        # Analyze performance
+        score = results["completion_info"]["tier_completion_score"]
+        if score >= 90:
+            results["performance_analysis"]["score_category"] = "Excellent"
+            results["performance_analysis"]["strengths"].append("Strong compliance across all areas")
+            results["tier_progression"]["next_tier_available"] = True
+        elif score >= 75:
+            results["performance_analysis"]["score_category"] = "Good" 
+            results["performance_analysis"]["strengths"].append("Solid foundation with room for improvement")
+            results["tier_progression"]["next_tier_available"] = True
+        elif score >= 60:
+            results["performance_analysis"]["score_category"] = "Fair"
+            results["performance_analysis"]["improvement_areas"].append("Focus on documented processes")
+        else:
+            results["performance_analysis"]["score_category"] = "Needs Improvement"
+            results["performance_analysis"]["improvement_areas"].append("Significant gaps require attention")
+        
+        # Add tier-specific next steps
+        current_tier = session.get("tier_level", 1)
+        if current_tier == 1 and score >= 75:
+            results["performance_analysis"]["next_steps"].append("Consider advancing to Tier 2 (Evidence Required)")
+        elif current_tier == 2 and score >= 85:
+            results["performance_analysis"]["next_steps"].append("Consider advancing to Tier 3 (Verification)")
+        elif score < 70:
+            results["performance_analysis"]["next_steps"].append("Focus on improving current tier before advancing")
+        
+        return results
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting assessment results: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get assessment results")
+
 @api.post("/assessment/session")
 async def create_assessment_session(current_user: dict = Depends(get_current_user)):
     """Create a new assessment session for the user"""
