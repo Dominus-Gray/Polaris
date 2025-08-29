@@ -4830,10 +4830,96 @@ function ClientHome(){
           {activeTab === 'assessment' && (
             <div>
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Assessment Progress</h3>
-                <p className="text-slate-600">Complete your procurement readiness assessment across 9 business areas and choose a tier to start</p>
+                <h3 className="text-lg font-semibold mb-2">Enhanced Tier-Based Assessment System</h3>
+                <p className="text-slate-600">Complete your procurement readiness assessment across 10 business areas including the new Competitive Advantage area. Choose from 3 tiers based on your agency's access level.</p>
               </div>
-              <AssessmentTierSelector />
+              
+              {tierAccess ? (
+                <div>
+                  {/* Tier Access Overview */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-blue-900">Your Assessment Access</h4>
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        {tierAccess.total_areas} Business Areas Available
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">Tier 1</div>
+                        <div className="text-sm text-blue-600">Self Assessment</div>
+                        <div className="text-xs text-gray-500">Low to moderate effort</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">Tier 2</div>
+                        <div className="text-sm text-orange-600">Evidence Required</div>
+                        <div className="text-xs text-gray-500">Moderate effort</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">Tier 3</div>
+                        <div className="text-sm text-purple-600">Verification</div>
+                        <div className="text-xs text-gray-500">Highest assurance</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Areas Grid */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    {tierAccess.areas && tierAccess.areas.map((area) => (
+                      <div key={area.area_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <h5 className="font-semibold text-gray-900 mb-2">{area.area_title}</h5>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{area.area_description}</p>
+                        
+                        {/* Tier Indicators */}
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs text-gray-500">Max Tier Access:</span>
+                          <div className="flex space-x-1">
+                            {[1, 2, 3].map((tier) => (
+                              <div
+                                key={tier}
+                                className={`w-3 h-3 rounded-full ${
+                                  tier <= area.max_tier_access 
+                                    ? tier === 1 ? 'bg-blue-400' : tier === 2 ? 'bg-orange-400' : 'bg-purple-400'
+                                    : 'bg-gray-300'
+                                }`}
+                                title={`Tier ${tier} ${tier <= area.max_tier_access ? 'Available' : 'Not Available'}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Available Tiers */}
+                        <div className="space-y-1">
+                          {area.available_tiers && area.available_tiers.map((tier) => (
+                            <div key={tier.tier_level} className="text-xs text-gray-600">
+                              Tier {tier.tier_level}: {tier.questions_count} questions
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="text-center bg-white rounded-lg border p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Begin?</h4>
+                    <p className="text-gray-600 mb-4">
+                      Start your comprehensive tier-based assessment with enhanced business areas and progressive difficulty levels.
+                    </p>
+                    <button 
+                      onClick={() => navigate('/assessment')}
+                      className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Start Enhanced Assessment
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading your tier access information...</p>
+                </div>
+              )}
               
               {/* Assessment Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
