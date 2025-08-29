@@ -462,7 +462,8 @@ class DataValidator:
 
 # Stripe Payment Integration
 try:
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+    # Removed unused imports: CheckoutSessionResponse, CheckoutStatusResponse
     STRIPE_AVAILABLE = True
 except ImportError:
     STRIPE_AVAILABLE = False
