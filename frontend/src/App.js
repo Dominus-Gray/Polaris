@@ -19,6 +19,7 @@ import CertificationCenter from './pages/CertificationCenter';
 import ClientRemediationFilters from './components/ClientRemediationFilters';
 import AssessmentTierSelector from './components/AssessmentTierSelector';
 import TierBasedAssessmentPage from './components/TierBasedAssessmentPage';
+import AssessmentResults from './components/AssessmentResults';
 
 import AgencyContractMatching from './pages/AgencyContractMatching';
 
