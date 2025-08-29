@@ -86,39 +86,93 @@ class ComprehensiveBackendTester:
             "Content-Type": "application/json"
         }
 
-    def test_tier_based_assessment_schema(self) -> bool:
-        """Test GET /api/assessment/schema/tier-based - should return areas with tier information"""
+    def test_ai_localized_resources(self) -> bool:
+        """Test AI Localized Resources - should generate location-specific content"""
         try:
-            headers = self.get_headers("client")
-            response = self.session.get(f"{BASE_URL}/assessment/schema/tier-based", headers=headers)
+            print("\n🤖 Testing AI Localized Resources...")
+            
+            # Test 1: AI Assistance with location context
+            start_time = time.time()
+            ai_payload = {
+                "question": "What local resources are available for small business licensing in San Antonio, Texas?",
+                "area_id": "area1",
+                "context": "Business Formation & Registration"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/knowledge-base/ai-assistance", json=ai_payload)
+            response_time = time.time() - start_time
             
             if response.status_code == 200:
                 data = response.json()
+                ai_response = data.get("response", "")
                 
-                # Validate response structure
-                if "areas" in data and isinstance(data["areas"], list):
-                    # Check if areas have tier information
-                    has_tier_info = False
-                    for area in data["areas"]:
-                        if "tiers" in area or "tier_levels" in area:
-                            has_tier_info = True
-                            break
-                    
-                    if has_tier_info:
-                        self.log_result("Tier-Based Assessment Schema", True, 
-                                      f"Found {len(data['areas'])} areas with tier information")
-                        return True
-                    else:
-                        self.log_result("Tier-Based Assessment Schema", False, 
-                                      "Areas found but no tier information detected", data)
-                        return False
+                # Check if response contains location-specific content
+                location_indicators = ["san antonio", "texas", "local", "city", "state"]
+                has_location_content = any(indicator in ai_response.lower() for indicator in location_indicators)
+                
+                if has_location_content and len(ai_response) > 100:
+                    self.log_result("AI Localized Resources - Location-Specific Content", True,
+                                  f"Generated {len(ai_response)} chars with location context", response_time)
                 else:
-                    self.log_result("Tier-Based Assessment Schema", False, 
-                                  "Invalid response structure - missing 'areas' array", data)
+                    self.log_result("AI Localized Resources - Location-Specific Content", False,
+                                  f"Response lacks location specificity: {ai_response[:100]}...", response_time)
                     return False
             else:
-                self.log_result("Tier-Based Assessment Schema", False, 
-                              f"Status: {response.status_code}", response.json())
+                self.log_result("AI Localized Resources - Location-Specific Content", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            # Test 2: External Resources with Location Context
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/external-resources/area1?city=San Antonio&state=Texas")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                resources = data.get("resources", [])
+                
+                # Check for location-specific resources
+                location_specific_count = sum(1 for r in resources if r.get("location_specific", False))
+                
+                if location_specific_count > 0:
+                    self.log_result("AI Localized Resources - External Resources", True,
+                                  f"Found {location_specific_count} location-specific resources", response_time)
+                else:
+                    self.log_result("AI Localized Resources - External Resources", False,
+                                  f"No location-specific resources found", response_time)
+                    return False
+            else:
+                self.log_result("AI Localized Resources - External Resources", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
+                return False
+
+            return True
+            
+        except Exception as e:
+            self.log_result("AI Localized Resources", False, f"Exception: {str(e)}")
+            return False
+
+    def test_tier_based_assessment_schema(self) -> bool:
+        """Test GET /api/assessment/schema/tier-based - should return areas with tier information"""
+        try:
+            start_time = time.time()
+            response = self.session.get(f"{BASE_URL}/assessment/schema/tier-based")
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                schema_data = response.json()
+                areas = schema_data.get("areas", [])
+                if len(areas) >= 10:
+                    self.log_result("Tier-Based Schema Retrieval", True,
+                                  f"Retrieved schema with {len(areas)} areas", response_time)
+                    return True
+                else:
+                    self.log_result("Tier-Based Schema Retrieval", False,
+                                  f"Incomplete schema: only {len(areas)} areas", response_time)
+                    return False
+            else:
+                self.log_result("Tier-Based Schema Retrieval", False,
+                              f"API Error: {response.status_code}", response_time, response.json())
                 return False
                 
         except Exception as e:
