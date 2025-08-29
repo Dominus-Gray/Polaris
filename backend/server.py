@@ -6667,12 +6667,19 @@ async def trigger_dashboard_update(
 ):
     """Trigger real-time dashboard updates across the platform"""
     try:
+        # Parse JSON data
+        import json
+        try:
+            parsed_data = json.loads(data)
+        except json.JSONDecodeError:
+            parsed_data = {"raw_data": data}
+        
         # Store dashboard update for real-time sync
         update_doc = {
             "_id": str(uuid.uuid4()),
             "user_id": user_id,
             "update_type": update_type,
-            "data": data,
+            "data": parsed_data,
             "triggered_by": current_user["id"],
             "timestamp": datetime.utcnow(),
             "processed": False
