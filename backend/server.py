@@ -6662,7 +6662,7 @@ async def get_client_tier_access_info(current=Depends(require_role("client"))):
 async def trigger_dashboard_update(
     user_id: str = Form(...),
     update_type: str = Form(...),
-    data: dict = Form(...),
+    data: str = Form(...),
     current_user: dict = Depends(get_current_user)
 ):
     """Trigger real-time dashboard updates across the platform"""
