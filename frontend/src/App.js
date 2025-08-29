@@ -863,11 +863,16 @@ function ProfilePage(){
 function AssessmentPage(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
-  const [currentArea, setCurrentArea] = useState(0);
+  const [availableAreas, setAvailableAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [selectedTier, setSelectedTier] = useState(1);
+  const [currentSession, setCurrentSession] = useState(null);
   const [answers, setAnswers] = useState({});
   const [showResources, setShowResources] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showAreaNavigation, setShowAreaNavigation] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [tierAccess, setTierAccess] = useState({});
   
   // Redirect non-clients to home
   if (!me || me.role !== 'client') {
