@@ -4085,6 +4085,14 @@ function ClientHome(){
           setAssessmentData(assessmentRes.data);
         }
 
+        // Load tier-based assessment access
+        try {
+          const tierAccessRes = await axios.get(`${API}/client/tier-access`, authHeaders);
+          setTierAccess(tierAccessRes.data);
+        } catch (tierError) {
+          console.warn('Failed to load tier access:', tierError);
+        }
+
         // Load active service requests
         const requests = await axios.get(`${API}/engagements/my-services`, authHeaders);
         setServiceRequests(requests.data.engagements || []);
