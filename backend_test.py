@@ -300,7 +300,7 @@ class EnhancedIntegrationTester:
             
             # Step 2: Submit assessment responses
             response_payload = {
-                "statement_id": "area5_tier1_stmt1",
+                "question_id": "area5_tier1_stmt1",
                 "response": "No, I need help",
                 "evidence_provided": False
             }
