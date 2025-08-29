@@ -8895,8 +8895,15 @@ async def system_health_check():
 async def get_assessment_results(session_id: str, current=Depends(get_current_user)):
     """Get comprehensive assessment results with analysis"""
     try:
-        # Get assessment session
-        session = await db.assessment_sessions.find_one({"session_id": session_id, "user_id": current["id"]})
+        # Try to get tier-based assessment session first
+        session = await db.tier_assessment_sessions.find_one({"_id": session_id, "user_id": current["id"]})
+        is_tier_session = True
+        
+        # If not found, try regular assessment session
+        if not session:
+            session = await db.assessment_sessions.find_one({"session_id": session_id, "user_id": current["id"]})
+            is_tier_session = False
+        
         if not session:
             raise HTTPException(status_code=404, detail="Assessment session not found")
         
