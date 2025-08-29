@@ -2119,88 +2119,379 @@ async def approve_agency(payload: AgencyApprovalIn, current=Depends(require_role
     return AgencyApprovalOut(**approval_doc)
 
 # ---------------- Minimal Assessment Schema for readiness calc ----------------
+# Enhanced 3-Tier Assessment System
+# Each business area now has 3 tiers with progressive difficulty and requirements
 ASSESSMENT_SCHEMA: Dict[str, Dict] = {
     "areas": [
         {
             "id": "area1", 
             "title": "Business Formation & Registration", 
-            "questions": [
-                {"id": "q1_1", "text": "Do you have a valid business license in your jurisdiction?"},
-                {"id": "q1_2", "text": "Is your business registered with the appropriate state and local authorities?"},
-                {"id": "q1_3", "text": "Do you have proper business insurance coverage?"}
-            ]
+            "description": "Legal entity establishment, licensing, and regulatory compliance",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Low to moderate effort maturity statements for basic readiness",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q1_1_t1", "text": "Do you have a valid business license in your jurisdiction?", "type": "self_assessment"},
+                        {"id": "q1_2_t1", "text": "Is your business registered with the appropriate state authorities?", "type": "self_assessment"},
+                        {"id": "q1_3_t1", "text": "Do you have basic business insurance coverage?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Moderate effort statements requiring documentation and evidence",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q1_4_t2", "text": "Can you provide documentation of all required business licenses and permits?", "type": "evidence_required"},
+                        {"id": "q1_5_t2", "text": "Do you have comprehensive commercial liability insurance with adequate coverage limits?", "type": "evidence_required"},
+                        {"id": "q1_6_t2", "text": "Is your business structure optimized for government contracting (LLC, Corp, etc.)?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Highest assurance level requiring third-party verification",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q1_7_t3", "text": "Have you obtained professional verification of regulatory compliance from a certified consultant?", "type": "verification"},
+                        {"id": "q1_8_t3", "text": "Do you maintain annual compliance audits with documented corrective actions?", "type": "verification"},
+                        {"id": "q1_9_t3", "text": "Is your business formation documentation reviewed and certified as contract-ready?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area2", 
             "title": "Financial Operations & Management", 
-            "questions": [
-                {"id": "q2_1", "text": "Do you have a professional accounting system in place?"},
-                {"id": "q2_2", "text": "Are your financial records current and audit-ready?"},
-                {"id": "q2_3", "text": "Do you have established credit and banking relationships?"}
-            ]
+            "description": "Accounting systems, financial reporting, and fiscal responsibility",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic financial management and record keeping",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q2_1_t1", "text": "Do you have a professional accounting system in place?", "type": "self_assessment"},
+                        {"id": "q2_2_t1", "text": "Are your financial records current and organized?", "type": "self_assessment"},
+                        {"id": "q2_3_t1", "text": "Do you have established banking relationships?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented financial processes and audit-ready records",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q2_4_t2", "text": "Can you produce audited or reviewed financial statements for the past 2 years?", "type": "evidence_required"},
+                        {"id": "q2_5_t2", "text": "Do you have documented internal financial controls and procedures?", "type": "evidence_required"},
+                        {"id": "q2_6_t2", "text": "Is your accounting system capable of project-based cost tracking?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "CPA-verified financial management with advanced controls",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q2_7_t3", "text": "Have your financial systems been certified by a CPA as government contract-ready?", "type": "verification"},
+                        {"id": "q2_8_t3", "text": "Do you maintain separate cost accounting standards compliant with FAR requirements?", "type": "verification"},
+                        {"id": "q2_9_t3", "text": "Is your financial reporting system audited annually by an independent third party?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area3", 
             "title": "Legal & Contracting Compliance", 
-            "questions": [
-                {"id": "q3_1", "text": "Do you have standard service agreements and contracts?"},
-                {"id": "q3_2", "text": "Are you compliant with relevant industry regulations?"},
-                {"id": "q3_3", "text": "Do you have proper intellectual property protections?"}
-            ]
+            "description": "Contract management, regulatory compliance, and legal protections",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic legal compliance and contract awareness",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q3_1_t1", "text": "Do you have standard service agreements and contracts?", "type": "self_assessment"},
+                        {"id": "q3_2_t1", "text": "Are you aware of relevant industry regulations?", "type": "self_assessment"},
+                        {"id": "q3_3_t1", "text": "Do you have basic intellectual property protections?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented compliance processes and legal review",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q3_4_t2", "text": "Have your contracts been reviewed by qualified legal counsel?", "type": "evidence_required"},
+                        {"id": "q3_5_t2", "text": "Do you maintain documented compliance with all applicable regulations?", "type": "evidence_required"},
+                        {"id": "q3_6_t2", "text": "Is your intellectual property portfolio properly registered and protected?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Legal compliance verified by qualified counsel",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q3_7_t3", "text": "Do you have ongoing legal counsel verification of government contract compliance?", "type": "verification"},
+                        {"id": "q3_8_t3", "text": "Are your compliance processes audited and certified by legal professionals?", "type": "verification"},
+                        {"id": "q3_9_t3", "text": "Do you maintain professional liability insurance with legal compliance coverage?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area4", 
             "title": "Quality Management & Standards", 
-            "questions": [
-                {"id": "q4_1", "text": "Do you have documented quality control processes?"},
-                {"id": "q4_2", "text": "Are your services certified or accredited where applicable?"},
-                {"id": "q4_3", "text": "Do you have customer feedback and improvement systems?"}
-            ]
+            "description": "Quality assurance processes, certifications, and continuous improvement",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic quality control and customer feedback systems",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q4_1_t1", "text": "Do you have documented quality control processes?", "type": "self_assessment"},
+                        {"id": "q4_2_t1", "text": "Do you collect customer feedback regularly?", "type": "self_assessment"},
+                        {"id": "q4_3_t1", "text": "Are your services delivered consistently to standards?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Certified quality systems with documented improvements",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q4_4_t2", "text": "Are your services certified or accredited by recognized industry bodies?", "type": "evidence_required"},
+                        {"id": "q4_5_t2", "text": "Do you have documented quality management procedures with metrics?", "type": "evidence_required"},
+                        {"id": "q4_6_t2", "text": "Can you demonstrate continuous improvement based on customer feedback?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Third-party verified quality management systems",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q4_7_t3", "text": "Do you maintain ISO 9001 or equivalent quality management certification?", "type": "verification"},
+                        {"id": "q4_8_t3", "text": "Are your quality systems independently audited and verified annually?", "type": "verification"},
+                        {"id": "q4_9_t3", "text": "Do you have third-party validated customer satisfaction metrics above 95%?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area5", 
             "title": "Technology & Security Infrastructure", 
-            "questions": [
-                {"id": "q5_1", "text": "Do you have adequate cybersecurity measures in place?"},
-                {"id": "q5_2", "text": "Are your technology systems scalable for larger contracts?"},
-                {"id": "q5_3", "text": "Do you have data backup and recovery procedures?"}
-            ]
+            "description": "Cybersecurity, IT systems, and data protection capabilities",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic cybersecurity and IT infrastructure",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q5_1_t1", "text": "Do you have adequate cybersecurity measures in place?", "type": "self_assessment"},
+                        {"id": "q5_2_t1", "text": "Are your technology systems reliable and updated?", "type": "self_assessment"},
+                        {"id": "q5_3_t1", "text": "Do you have data backup procedures?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented security protocols and system scalability",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q5_4_t2", "text": "Do you have documented cybersecurity policies and incident response procedures?", "type": "evidence_required"},
+                        {"id": "q5_5_t2", "text": "Are your technology systems scalable for larger government contracts?", "type": "evidence_required"},
+                        {"id": "q5_6_t2", "text": "Do you maintain comprehensive data backup and recovery procedures?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Certified security compliance and enterprise-grade systems",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q5_7_t3", "text": "Do you maintain FedRAMP, SOC 2, or equivalent security certifications?", "type": "verification"},
+                        {"id": "q5_8_t3", "text": "Are your systems independently penetration tested and security certified?", "type": "verification"},
+                        {"id": "q5_9_t3", "text": "Do you have 24/7 security monitoring with professional incident response?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area6", 
             "title": "Human Resources & Capacity", 
-            "questions": [
-                {"id": "q6_1", "text": "Do you have sufficient staffing for project delivery?"},
-                {"id": "q6_2", "text": "Are your team members properly trained and certified?"},
-                {"id": "q6_3", "text": "Do you have employee onboarding and development programs?"}
-            ]
+            "description": "Staffing capabilities, training programs, and workforce development",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic staffing and team capabilities",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q6_1_t1", "text": "Do you have sufficient staffing for project delivery?", "type": "self_assessment"},
+                        {"id": "q6_2_t1", "text": "Are your team members properly trained?", "type": "self_assessment"},
+                        {"id": "q6_3_t1", "text": "Do you have basic employee onboarding processes?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented HR processes and professional development",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q6_4_t2", "text": "Do you have documented workforce capacity planning and management processes?", "type": "evidence_required"},
+                        {"id": "q6_5_t2", "text": "Are your team members professionally certified in their respective fields?", "type": "evidence_required"},
+                        {"id": "q6_6_t2", "text": "Do you maintain formal employee development and training programs?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Professional workforce development with third-party validation",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q6_7_t3", "text": "Do you have HR systems certified for government contractor workforce management?", "type": "verification"},
+                        {"id": "q6_8_t3", "text": "Are your professional development programs accredited by industry bodies?", "type": "verification"},
+                        {"id": "q6_9_t3", "text": "Do you maintain third-party verified employee satisfaction and retention metrics?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area7", 
             "title": "Performance Tracking & Reporting", 
-            "questions": [
-                {"id": "q7_1", "text": "Do you have KPI tracking and reporting systems?"},
-                {"id": "q7_2", "text": "Can you provide regular progress reports to clients?"},
-                {"id": "q7_3", "text": "Do you maintain project documentation and deliverables?"}
-            ]
+            "description": "KPI monitoring, project reporting, and performance analytics",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic performance tracking and reporting capabilities",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q7_1_t1", "text": "Do you have KPI tracking systems?", "type": "self_assessment"},
+                        {"id": "q7_2_t1", "text": "Can you provide progress reports to clients?", "type": "self_assessment"},
+                        {"id": "q7_3_t1", "text": "Do you maintain project documentation?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented performance management with analytics",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q7_4_t2", "text": "Do you have comprehensive KPI tracking and reporting systems with dashboards?", "type": "evidence_required"},
+                        {"id": "q7_5_t2", "text": "Can you provide real-time progress reports with detailed analytics?", "type": "evidence_required"},
+                        {"id": "q7_6_t2", "text": "Do you maintain complete project documentation with version control?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Enterprise-grade performance management with external validation",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q7_7_t3", "text": "Are your performance management systems independently audited and certified?", "type": "verification"},
+                        {"id": "q7_8_t3", "text": "Do you maintain third-party validated performance metrics with SLA compliance?", "type": "verification"},
+                        {"id": "q7_9_t3", "text": "Is your project management methodology certified (PMP, PRINCE2, etc.)?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area8", 
             "title": "Risk Management & Business Continuity", 
-            "questions": [
-                {"id": "q8_1", "text": "Do you have a business continuity plan?"},
-                {"id": "q8_2", "text": "Are you prepared for emergency situations and disruptions?"},
-                {"id": "q8_3", "text": "Do you have appropriate liability and professional insurance?"}
-            ]
+            "description": "Business continuity planning, risk mitigation, and emergency preparedness",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic risk awareness and continuity planning",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q8_1_t1", "text": "Do you have a business continuity plan?", "type": "self_assessment"},
+                        {"id": "q8_2_t1", "text": "Are you prepared for emergency situations?", "type": "self_assessment"},
+                        {"id": "q8_3_t1", "text": "Do you have appropriate business insurance?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented risk management with tested procedures",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q8_4_t2", "text": "Do you have a comprehensive, tested business continuity plan?", "type": "evidence_required"},
+                        {"id": "q8_5_t2", "text": "Are your emergency procedures documented and regularly practiced?", "type": "evidence_required"},
+                        {"id": "q8_6_t2", "text": "Do you maintain comprehensive liability and professional insurance coverage?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Third-party validated risk management and business continuity",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q8_7_t3", "text": "Is your business continuity plan certified by risk management professionals?", "type": "verification"},
+                        {"id": "q8_8_t3", "text": "Do you maintain third-party validated risk management processes?", "type": "verification"},
+                        {"id": "q8_9_t3", "text": "Are your insurance coverages reviewed and certified as adequate for government contracting?", "type": "verification"}
+                    ]
+                }
+            }
         },
         {
             "id": "area9", 
             "title": "Supply Chain Management & Vendor Relations", 
-            "questions": [
-                {"id": "q9_1", "text": "Do you have documented vendor qualification and selection processes?"},
-                {"id": "q9_2", "text": "Can you demonstrate supply chain resilience and risk mitigation strategies?"},
-                {"id": "q9_3", "text": "Do you maintain proper vendor contracts and performance monitoring?"}
-            ]
+            "description": "Vendor management, supply chain resilience, and procurement processes",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic vendor management and supply chain awareness",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q9_1_t1", "text": "Do you have vendor qualification processes?", "type": "self_assessment"},
+                        {"id": "q9_2_t1", "text": "Do you monitor supply chain risks?", "type": "self_assessment"},
+                        {"id": "q9_3_t1", "text": "Do you maintain vendor contracts?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented supply chain management with risk mitigation",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q9_4_t2", "text": "Do you have documented vendor qualification and selection processes?", "type": "evidence_required"},
+                        {"id": "q9_5_t2", "text": "Can you demonstrate supply chain resilience and risk mitigation strategies?", "type": "evidence_required"},
+                        {"id": "q9_6_t2", "text": "Do you maintain comprehensive vendor contracts with performance monitoring?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Professional supply chain management with third-party validation",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q9_7_t3", "text": "Are your supply chain processes certified by procurement professionals?", "type": "verification"},
+                        {"id": "q9_8_t3", "text": "Do you maintain third-party validated supply chain risk assessments?", "type": "verification"},
+                        {"id": "q9_9_t3", "text": "Is your vendor management system audited and certified for government contracting?", "type": "verification"}
+                    ]
+                }
+            }
+        },
+        {
+            "id": "area10", 
+            "title": "Competitive Advantage & Market Position", 
+            "description": "Business development, competitive positioning, and market capture processes",
+            "tiers": {
+                "tier1": {
+                    "name": "Self Assessment", 
+                    "description": "Basic competitive analysis and business development awareness",
+                    "effort_level": "low_moderate",
+                    "questions": [
+                        {"id": "q10_1_t1", "text": "Do you have a clear understanding of your competitive advantages?", "type": "self_assessment"},
+                        {"id": "q10_2_t1", "text": "Do you have basic business development processes?", "type": "self_assessment"},
+                        {"id": "q10_3_t1", "text": "Do you track market opportunities in your sector?", "type": "self_assessment"}
+                    ]
+                },
+                "tier2": {
+                    "name": "Evidence Required",
+                    "description": "Documented competitive strategy and market analysis",
+                    "effort_level": "moderate",
+                    "questions": [
+                        {"id": "q10_4_t2", "text": "Do you have documented competitive analysis and market positioning strategies?", "type": "evidence_required"},
+                        {"id": "q10_5_t2", "text": "Can you demonstrate systematic business development and capture processes?", "type": "evidence_required"},
+                        {"id": "q10_6_t2", "text": "Do you maintain market intelligence systems with opportunity tracking?", "type": "evidence_required"}
+                    ]
+                },
+                "tier3": {
+                    "name": "Verification",
+                    "description": "Professional business development with validated market position",
+                    "effort_level": "moderate_high",
+                    "questions": [
+                        {"id": "q10_7_t3", "text": "Have your competitive advantages been validated by independent market analysis?", "type": "verification"},
+                        {"id": "q10_8_t3", "text": "Are your business development processes certified by professional organizations?", "type": "verification"},
+                        {"id": "q10_9_t3", "text": "Do you maintain third-party validated win rates and market capture metrics?", "type": "verification"}
+                    ]
+                }
+            }
         }
     ]
 }
