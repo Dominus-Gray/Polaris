@@ -4005,6 +4005,7 @@ function ClientHome(){
   const [selectedCategory, setSelectedCategory] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [assessmentData, setAssessmentData] = useState(null);
+  const [tierAccess, setTierAccess] = useState(null);
   const [serviceRequests, setServiceRequests] = useState([]);
   const refreshServiceRequests = async ()=>{
     try{
