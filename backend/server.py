@@ -2498,10 +2498,54 @@ ASSESSMENT_SCHEMA: Dict[str, Dict] = {
 
 # ---------------- AI resources for "No" pathway ----------------
 
-# ---------------- Maturity Status Management ----------------
+# ---------------- Enhanced Tier-Based Assessment Models ----------------
+class AssessmentTier(BaseModel):
+    tier_level: int  # 1, 2, or 3
+    tier_name: str  # "Self Assessment", "Evidence Required", "Verification"
+    description: str
+    effort_level: str
+    questions_count: int
+
+class AssessmentAreaTier(BaseModel):
+    area_id: str
+    area_title: str
+    description: str
+    available_tiers: List[AssessmentTier]
+    client_tier_access: int  # Maximum tier this client can access (based on agency)
+
+class TierBasedAssessmentSession(BaseModel):
+    session_id: str
+    user_id: str
+    area_id: str
+    tier_level: int  # 1, 2, or 3
+    agency_id: Optional[str] = None
+    questions: List[Dict[str, Any]]
+    responses: Optional[List[Dict[str, Any]]] = None
+    status: str = "active"  # active, completed, expired
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    tier_completion_score: Optional[float] = None
+
+class TierBasedResponse(BaseModel):
+    question_id: str
+    response: str
+    evidence_provided: Optional[str] = None
+    evidence_url: Optional[str] = None
+    verification_status: Optional[str] = None
+    verification_notes: Optional[str] = None
+
+class AgencyTierConfiguration(BaseModel):
+    agency_id: str
+    tier_access_levels: Dict[str, int]  # area_id -> max_tier_level
+    pricing_per_tier: Dict[str, float]  # "tier1" -> price, "tier2" -> price, "tier3" -> price
+    monthly_assessments_limit: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+
 class MaturityPendingIn(BaseModel):
     area_id: str
     question_id: str
+    tier_level: int
     source: str  # 'free' or 'professional'
     detail: Optional[str] = None
     external_url: Optional[str] = None
@@ -2512,6 +2556,7 @@ class MaturityStatusOut(BaseModel):
     user_id: str
     area_id: str
     question_id: str
+    tier_level: int
     source: str
     status: str  # 'pending' or 'compliant'
     detail: Optional[str] = None
