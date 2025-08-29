@@ -22,29 +22,35 @@ QA_CREDENTIALS = {
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"}
 }
 
-class TierBasedAssessmentTester:
+class ComprehensiveBackendTester:
     def __init__(self):
         self.session = requests.Session()
         self.tokens = {}
         self.test_results = []
         self.session_ids = {}
         
-    def log_result(self, test_name: str, success: bool, details: str = "", response_data: dict = None):
-        """Log test result with timestamp"""
+        print(f"🎯 Backend Testing for 95%+ Success Rate Verification")
+        print(f"📍 Testing against: {BASE_URL}")
+        print(f"🔑 Using QA credentials for comprehensive testing")
+        print("=" * 80)
+        
+    def log_result(self, test_name: str, success: bool, details: str = "", response_time: float = 0, response_data: dict = None):
+        """Log test result with detailed information"""
         result = {
             "test": test_name,
             "success": success,
             "details": details,
+            "response_time": response_time,
             "timestamp": datetime.now().isoformat(),
             "response_data": response_data
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name}")
+        print(f"{status}: {test_name} ({response_time:.3f}s)")
         if details:
-            print(f"   Details: {details}")
+            print(f"   📝 {details}")
         if not success and response_data:
-            print(f"   Response: {response_data}")
+            print(f"   🔍 Response: {str(response_data)[:200]}...")
         print()
 
     def authenticate_user(self, role: str) -> bool:
