@@ -18,7 +18,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
 
 # Test Credentials
 PROVIDER_CREDENTIALS = {
@@ -389,7 +389,7 @@ import sys
 from datetime import datetime
 
 # Test Configuration
-BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BASE_URL = "https://providermatrix.preview.emergentagent.com/api"
 PROVIDER_EMAIL = "provider.qa@polaris.example.com"
 PROVIDER_PASSWORD = "Polaris#2025!"
 

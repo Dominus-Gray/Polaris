@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 # Configuration
-BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BASE_URL = "https://providermatrix.preview.emergentagent.com/api"
 
 # QA Test Credentials
 QA_CREDENTIALS = {

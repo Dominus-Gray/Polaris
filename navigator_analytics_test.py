@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quality-match-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://providermatrix.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing Navigator Analytics at: {API_BASE}")

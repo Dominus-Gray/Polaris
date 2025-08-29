@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BASE_URL = "https://providermatrix.preview.emergentagent.com/api"
 AGENCY_CREDENTIALS = {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"}
 
 def authenticate_agency():

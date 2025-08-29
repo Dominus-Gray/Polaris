@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
 
 # QA Test Credentials
 QA_CREDENTIALS = {

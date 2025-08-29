@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BASE_URL = "https://providermatrix.preview.emergentagent.com/api"
 
 def test_pol_1005():
     """Test POL-1005 error code for Knowledge Base access control"""

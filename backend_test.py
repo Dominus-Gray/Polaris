@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import uuid
 
 # Configuration
-BASE_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BASE_URL = "https://providermatrix.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},

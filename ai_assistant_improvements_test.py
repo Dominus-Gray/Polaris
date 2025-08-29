@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 
 # Configuration
-BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},

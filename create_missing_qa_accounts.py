@@ -9,7 +9,7 @@ import json
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://quality-match-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
 
 # Missing QA accounts to create
 MISSING_ACCOUNTS = [

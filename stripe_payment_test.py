@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quality-match-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://providermatrix.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing Stripe Payment Integration at: {API_BASE}")
@@ -81,7 +81,7 @@ def test_checkout_session_creation(client_token):
         
         payload = {
             "package_id": "assessment_fee",
-            "origin_url": "https://quality-match-1.preview.emergentagent.com",
+            "origin_url": "https://providermatrix.preview.emergentagent.com",
             "metadata": {}
         }
         
@@ -191,7 +191,7 @@ def test_service_request_payment(client_token):
             "request_id": request_id,
             "provider_id": provider_id,
             "agreed_fee": 1500.00,
-            "origin_url": "https://quality-match-1.preview.emergentagent.com"
+            "origin_url": "https://providermatrix.preview.emergentagent.com"
         }
         
         response = requests.post(
@@ -235,7 +235,7 @@ def test_knowledge_base_payment(client_token):
         
         payload = {
             "package_id": "knowledge_base_all",
-            "origin_url": "https://quality-match-1.preview.emergentagent.com",
+            "origin_url": "https://providermatrix.preview.emergentagent.com",
             "metadata": {}
         }
         
@@ -674,7 +674,7 @@ def test_error_scenarios(client_token):
         
         payload = {
             "package_id": "invalid_package",
-            "origin_url": "https://quality-match-1.preview.emergentagent.com",
+            "origin_url": "https://providermatrix.preview.emergentagent.com",
             "metadata": {}
         }
         

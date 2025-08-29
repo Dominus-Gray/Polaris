@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quality-match-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://providermatrix.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing E2E Approval and License Flow at: {API_BASE}")
@@ -534,7 +534,7 @@ def step6_service_request_flow(creds):
             "request_id": service_request_id,
             "provider_id": provider_id,
             "agreed_fee": 1500.0,
-            "origin_url": "https://quality-match-1.preview.emergentagent.com"
+            "origin_url": "https://providermatrix.preview.emergentagent.com"
         }
         
         response = requests.post(
