@@ -2434,6 +2434,104 @@ async def get_assessment_results(
         logger.error(f"Error getting assessment results: {e}")
         raise HTTPException(status_code=500, detail="Failed to get assessment results")
 
+@api.get("/client/assessment-progress")
+async def get_client_assessment_progress(current=Depends(require_role("client"))):
+    """Get comprehensive assessment progress for all business areas"""
+    try:
+        # Get all assessment sessions for this client
+        sessions = await db.tier_assessment_sessions.find({
+            "user_id": current["id"]
+        }).to_list(None)
+        
+        progress_data = {
+            "overall_stats": {
+                "total_areas": 10,
+                "areas_started": 0,
+                "areas_completed": 0,
+                "overall_completion_rate": 0
+            },
+            "area_progress": {}
+        }
+        
+        # Initialize all 10 areas
+        for i in range(1, 11):
+            area_id = f"area{i}"
+            area_titles = {
+                "area1": "Business Formation & Registration",
+                "area2": "Financial Operations & Management", 
+                "area3": "Legal & Contracting Compliance",
+                "area4": "Quality Management & Standards",
+                "area5": "Technology & Security Infrastructure",
+                "area6": "Human Resources & Capacity",
+                "area7": "Performance Tracking & Reporting",
+                "area8": "Risk Management & Business Continuity",
+                "area9": "Supply Chain Management & Vendor Relations",
+                "area10": "Competitive Advantage & Market Position"
+            }
+            
+            progress_data["area_progress"][area_id] = {
+                "area_id": area_id,
+                "area_title": area_titles.get(area_id, f"Area {i}"),
+                "area_number": i,
+                "status": "not_started",  # not_started, incomplete, nearing_completion, compliant
+                "questions_answered": 0,
+                "total_questions": 0,
+                "completion_percentage": 0,
+                "highest_tier_completed": 0,
+                "last_activity": None,
+                "completion_score": None
+            }
+        
+        # Process existing sessions
+        for session in sessions:
+            area_id = session.get("area_id")
+            if area_id in progress_data["area_progress"]:
+                area_progress = progress_data["area_progress"][area_id]
+                
+                # Update progress data
+                total_questions = len(session.get("questions", []))
+                responses = session.get("responses", [])
+                questions_answered = len(responses)
+                
+                area_progress["total_questions"] = max(area_progress["total_questions"], total_questions)
+                area_progress["questions_answered"] = max(area_progress["questions_answered"], questions_answered)
+                area_progress["last_activity"] = session.get("started_at")
+                
+                if total_questions > 0:
+                    area_progress["completion_percentage"] = round(questions_answered / total_questions * 100, 1)
+                
+                # Determine status based on completion and score
+                if session.get("status") == "completed":
+                    score = session.get("tier_completion_score", 0)
+                    area_progress["completion_score"] = score
+                    area_progress["highest_tier_completed"] = session.get("tier_level", 1)
+                    
+                    if score >= 80:
+                        area_progress["status"] = "compliant"  # Green
+                    elif score >= 60:
+                        area_progress["status"] = "nearing_completion"  # Orange  
+                    else:
+                        area_progress["status"] = "incomplete"  # Yellow
+                else:
+                    area_progress["status"] = "incomplete"  # Yellow
+        
+        # Calculate overall stats
+        areas_started = len([a for a in progress_data["area_progress"].values() if a["questions_answered"] > 0])
+        areas_completed = len([a for a in progress_data["area_progress"].values() if a["status"] == "compliant"])
+        
+        progress_data["overall_stats"]["areas_started"] = areas_started
+        progress_data["overall_stats"]["areas_completed"] = areas_completed
+        
+        if areas_started > 0:
+            total_completion = sum(a["completion_percentage"] for a in progress_data["area_progress"].values())
+            progress_data["overall_stats"]["overall_completion_rate"] = round(total_completion / 10, 1)
+        
+        return progress_data
+        
+    except Exception as e:
+        logger.error(f"Error getting client assessment progress: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get assessment progress")
+
 @api.post("/assessment/session")
 async def create_assessment_session(current_user: dict = Depends(get_current_user)):
     """Create a new assessment session for the user"""
