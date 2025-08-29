@@ -10098,7 +10098,7 @@ async def create_service_offering(service_data: Dict[str, Any], current=Depends(
         
         service = {
             "service_id": str(uuid.uuid4()),
-            "provider_id": current["user_id"],
+            "provider_id": current["id"],
             "title": service_data["title"],
             "description": service_data["description"],
             "category": service_data["category"],
