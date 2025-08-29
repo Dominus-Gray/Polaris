@@ -122,6 +122,196 @@ def calculate_tier_completion_score(responses: List[Dict], tier_level: int) -> f
     
     return round((total_score / max_score * 100), 2) if max_score > 0 else 0.0
 
+# AI-Powered Localized Resource Generation
+async def generate_ai_localized_resources(city: str, state: str, area_context: str, gaps_context: str) -> List[Dict]:
+    """Generate localized resources using AI based on city, business area, and maturity gaps"""
+    try:
+        if not EMERGENT_OK:
+            return None
+        
+        # Create AI prompt for resource generation
+        prompt = f"""You are a small business resource specialist. Generate a list of 6-8 specific, real, and actionable local resources for small businesses in {city}, {state}.
+
+Context:
+- Location: {city}, {state}
+- Business focus: {area_context if area_context else "General small business development"}
+- Specific needs: {gaps_context if gaps_context else "General business support and government contracting readiness"}
+
+Requirements:
+1. Focus on actual organizations that exist (SBA offices, PTACs, SBDCs, chambers of commerce, local agencies)
+2. Include both government and non-profit organizations
+3. Provide specific, actionable resources relevant to the location
+4. Include local/regional variations of national programs when available
+5. Focus on procurement readiness, government contracting, and small business development
+
+For each resource, provide:
+- Name (specific to the location when possible)
+- Description (2-3 sentences about what they offer)
+- Type (sba, ptac, sbdc, chamber, local_agency, nonprofit, etc.)
+- Services (list of 2-4 key services)
+- Target audience (who would benefit most)
+
+Format as a JSON array of objects with these fields: name, description, type, services (array), target_audience.
+Do not include URLs - those will be handled separately.
+
+Generate realistic, helpful resources that would actually exist in {city}, {state}."""
+
+        # Initialize AI chat
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"resources_{city}_{state}_{int(time.time())}",
+            system_message="You are a knowledgeable small business resource specialist with expertise in local business development programs and government contracting support."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        # Send message
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        if response and response.strip():
+            # Try to parse JSON response
+            import json
+            try:
+                # Clean response (remove markdown formatting if present)
+                clean_response = response.strip()
+                if clean_response.startswith("```json"):
+                    clean_response = clean_response[7:]
+                if clean_response.endswith("```"):
+                    clean_response = clean_response[:-3]
+                
+                ai_resources = json.loads(clean_response.strip())
+                
+                # Add standard URLs and additional fields
+                enhanced_resources = []
+                for resource in ai_resources:
+                    enhanced_resource = {
+                        "name": resource.get("name", "Unknown Resource"),
+                        "description": resource.get("description", "Local business support resource"),
+                        "url": generate_resource_url(resource.get("name", ""), resource.get("type", ""), city, state),
+                        "type": resource.get("type", "local_resource"),
+                        "contact_method": "website",
+                        "services": resource.get("services", ["Business support"]),
+                        "target_audience": resource.get("target_audience", "Small businesses"),
+                        "location_specific": True,
+                        "ai_generated": True
+                    }
+                    enhanced_resources.append(enhanced_resource)
+                
+                return enhanced_resources[:8]  # Limit to 8 resources
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse AI resource response: {e}")
+                return None
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"AI resource generation failed: {e}")
+        return None
+
+def generate_resource_url(resource_name: str, resource_type: str, city: str, state: str) -> str:
+    """Generate appropriate URLs for different types of resources"""
+    city_lower = city.lower().replace(" ", "")
+    state_lower = state.lower()
+    
+    # Map resource types to URL patterns
+    if resource_type == "sba":
+        return f"https://www.sba.gov/local-assistance/resource-partners/{state_lower}"
+    elif resource_type == "ptac":
+        return "https://apexaccelerators.us/locator"
+    elif resource_type == "sbdc":
+        return f"https://www.sba.gov/local-assistance/resource-partners/small-business-development-centers-sbdc"
+    elif resource_type == "score":
+        return f"https://www.score.org/{city_lower}" if city_lower else "https://www.score.org/find-mentor"
+    elif resource_type == "chamber":
+        return f"https://{city_lower}chamber.com"
+    elif resource_type == "local_agency" and state_lower == "texas":
+        return f"https://www.{city_lower}.gov/business"
+    elif resource_type == "local_agency":
+        return f"https://www.{city_lower}.gov"
+    else:
+        return f"https://www.google.com/search?q={resource_name.replace(' ', '+')}"
+
+def generate_enhanced_static_resources(city: str, state: str, area_context: str) -> List[Dict]:
+    """Generate enhanced static resources with location awareness when AI is unavailable"""
+    
+    # Base national resources
+    resources = [
+        {
+            "name": "Small Business Administration (SBA)",
+            "description": "Federal agency providing comprehensive support for small businesses including loans, counseling, and government contracting opportunities.",
+            "url": f"https://www.sba.gov/local-assistance",
+            "type": "federal_agency",
+            "contact_method": "website",
+            "services": ["Business loans", "Counseling", "Government contracting", "Training"],
+            "target_audience": "All small businesses",
+            "location_specific": False
+        },
+        {
+            "name": "APEX Accelerator (PTAC) Network",
+            "description": "Provides procurement technical assistance to help businesses compete effectively for government contracts.",
+            "url": "https://apexaccelerators.us/locator",
+            "type": "technical_assistance",
+            "contact_method": "locator_website",
+            "services": ["Proposal writing", "Market research", "Compliance assistance", "Bid matching"],
+            "target_audience": "Businesses seeking government contracts",
+            "location_specific": False
+        }
+    ]
+    
+    # Add state-specific resources
+    state_lower = state.lower()
+    if state_lower in ["tx", "texas"]:
+        resources.extend([
+            {
+                "name": "Texas SBDC Network",
+                "description": "University-based consulting and training specifically for Texas small businesses.",
+                "url": "https://txsbdc.org/locator/",
+                "type": "sbdc",
+                "contact_method": "website",
+                "services": ["Business consulting", "Market analysis", "Financial planning", "Export assistance"],
+                "target_audience": "Texas small business owners",
+                "location_specific": True
+            },
+            {
+                "name": "Texas Historically Underutilized Business (HUB) Program",
+                "description": "State certification program for minority, women, and disadvantaged business enterprises.",
+                "url": "https://comptroller.texas.gov/purchasing/vendor/hub/",
+                "type": "certification",
+                "contact_method": "website",
+                "services": ["HUB certification", "Vendor registration", "Contracting opportunities"],
+                "target_audience": "Minority and women-owned businesses in Texas",
+                "location_specific": True
+            }
+        ])
+    
+    # Add city-specific resources for major cities
+    city_lower = city.lower()
+    if city_lower == "san antonio" and state_lower in ["tx", "texas"]:
+        resources.extend([
+            {
+                "name": "City of San Antonio Business Portal",
+                "description": "Official portal for San Antonio business registration, licensing, and procurement opportunities.",
+                "url": "https://www.sanantonio.gov/business",
+                "type": "local_government",
+                "contact_method": "website",
+                "services": ["Business licensing", "Procurement opportunities", "Permits", "Economic incentives"],
+                "target_audience": "San Antonio area businesses",
+                "location_specific": True
+            },
+            {
+                "name": "San Antonio Economic Development Foundation",
+                "description": "Local organization focused on economic development and business growth in the San Antonio region.",
+                "url": "https://www.sanantonioedf.com/",
+                "type": "economic_development",
+                "contact_method": "website",
+                "services": ["Business attraction", "Workforce development", "Site selection", "Incentive programs"],
+                "target_audience": "Growing businesses in San Antonio metro",
+                "location_specific": True
+            }
+        ])
+    
+    return resources
+
 # Optimize database queries with indexes (MongoDB commands to run separately)
 # db.users.createIndex({"email": 1, "role": 1})
 # db.assessment_sessions.createIndex({"user_id": 1, "created_at": -1})
