@@ -9038,7 +9038,7 @@ async def get_verification_status(current=Depends(get_current_user)):
         if current["role"] != "provider":
             raise HTTPException(status_code=403, detail="Only providers can access verification status")
         
-        verification = await db.provider_verifications.find_one({"user_id": current["user_id"]})
+        verification = await db.provider_verifications.find_one({"user_id": current["id"]})
         
         if not verification:
             return {
