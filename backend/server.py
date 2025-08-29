@@ -8973,7 +8973,7 @@ async def get_readiness_dashboard(
             cutoff_date = cutoff_date - timedelta(days=365)
         
         assessments = await db.assessment_sessions.find({
-            "user_id": current["user_id"],
+            "user_id": current["id"],
             "completed_at": {"$exists": True, "$gte": cutoff_date}
         }).sort("completed_at", -1).to_list(length=None)
         
