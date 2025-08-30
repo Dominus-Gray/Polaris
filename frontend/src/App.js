@@ -3025,15 +3025,13 @@ function ExternalResourcesPage() {
       const token = localStorage.getItem('polaris_token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      const response = await axios.post(`${API}/api/ai/external-resources`, {
-        area_id: areaId,
-        city: city,
-        state: state,
-        user_context: {
-          business_stage: profile.business_stage || 'startup',
-          industry: profile.industry || 'general'
+      const response = await axios.get(`${API}/api/free-resources/localized`, {
+        headers,
+        params: {
+          area_id: areaId,
+          maturity_gaps: profile.maturity_gaps || ''
         }
-      }, { headers });
+      });
       
       if (response.data && response.data.resources) {
         setResources(response.data.resources);
