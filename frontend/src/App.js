@@ -3565,7 +3565,7 @@ function ExternalResourcesPage() {
                                     area_id: areaId,
                                     question_id: questionId,
                                     source: 'ai_generated',
-                                    detail: `AI-generated resource: ${resource.title}`,
+                                    detail: 'AI-generated resource: ' + resource.title,
                                     external_url: resource.url
                                   });
                                 }
