@@ -294,11 +294,11 @@ class CriticalStressTester:
         
         # Test multi-tenant endpoints
         multitenant_endpoints = [
-            ("GET", "/agency/theme"),
+            ("GET", "/agency/theme", None),
             ("POST", "/agency/theme", {"primary_color": "#007bff", "secondary_color": "#6c757d"}),
-            ("GET", "/agency/theme/public"),
+            ("GET", "/agency/theme/public", None),
             ("POST", "/certificates/generate-branded", {"assessment_id": "test_id"}),
-            ("GET", "/system/health")
+            ("GET", "/system/health", None)
         ]
         
         implemented_count = 0
