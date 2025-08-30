@@ -868,6 +868,7 @@ function AssessmentPage(){
   const [availableAreas, setAvailableAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedTier, setSelectedTier] = useState(1);
+  const [currentArea, setCurrentArea] = useState(0);
   const [currentSession, setCurrentSession] = useState(null);
   const [answers, setAnswers] = useState({});
   const [showResources, setShowResources] = useState(false);
