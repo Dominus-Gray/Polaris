@@ -216,9 +216,9 @@ class CriticalStressTester:
             
             # Test notification endpoints
             notification_endpoints = [
-                ("GET", "/notifications"),
+                ("GET", "/notifications", None),
                 ("POST", "/notifications/mark-read", {"notification_id": "test_id"}),
-                ("GET", "/notifications/unread-count")
+                ("GET", "/notifications/unread-count", None)
             ]
             
             for method, endpoint, data in notification_endpoints:
