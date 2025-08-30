@@ -3464,109 +3464,57 @@ function ExternalResourcesPage() {
           </div>
 
           {/* Resources Grid */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {resources.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                <div className="max-w-sm mx-auto">
-                  <div className="text-gray-400 text-4xl mb-4">🔍</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Resources Found</h3>
-                  <p className="text-gray-600 text-sm mb-6">
-                    Our AI couldn't find specific resources for this area right now. 
-                    This might be due to your location or current business stage.
-                  </p>
-                  <div className="space-y-3">
-                    <button 
-                      className="btn btn-primary w-full"
-                      onClick={loadAIExternalResources}
-                    >
-                      🔄 Try Again
-                    </button>
-                    <p className="text-xs text-gray-500">
-                      Or try selecting a different business area
-                    </p>
-                  </div>
-                </div>
+              <div className="text-center py-12 bg-white rounded-xl border border-gray-300">
+                <div className="text-gray-400 text-4xl mb-4">🔍</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Resources Found</h3>
+                <p className="text-gray-600 text-sm mb-6">
+                  Our AI could not find specific resources for this area right now.
+                </p>
+                <button 
+                  className="btn btn-primary"
+                  onClick={loadAIExternalResources}
+                >
+                  Try Again
+                </button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Found {resources.length} Local Resources
-                  </h3>
-                  <button 
-                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                    onClick={loadAIExternalResources}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Refresh
-                  </button>
-                </div>
-                
-                {resources.map((resource, index) => (
-                  <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg">
-                              <span className="text-xl">{getTypeIcon(resource.type)}</span>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-900 text-lg">{resource.title}</h3>
-                              <div className="flex gap-2 mt-1">
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                                  {resource.type}
-                                </span>
-                                {resource.location && (
-                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                                    📍 {resource.location}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <p className="text-gray-600 text-sm mb-4 leading-relaxed">{resource.description}</p>
-                          
-                          <div className="flex items-center gap-6 text-xs text-gray-500 mb-4">
-                            <div className="flex items-center gap-2">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                              </svg>
-                              <span>{resource.location || 'Local Area'}</span>
-                            </div>
-                            {resource.contact && (
-                              <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                                </svg>
-                                <span>Contact Available</span>
-                              </div>
+              resources.map((resource, index) => (
+                <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-xl">{getTypeIcon(resource.type)}</span>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{resource.title}</h3>
+                          <div className="flex gap-2 mt-1">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              {resource.type}
+                            </span>
+                            {resource.location && (
+                              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                📍 {resource.location}
+                              </span>
                             )}
                           </div>
                         </div>
-                        
-                        <div className="ml-6 flex flex-col gap-2">
-                          <a
-                            href={resource.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                          >
-                            <span>Visit Website</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                          </a>
-                        </div>
                       </div>
+                      <p className="text-gray-600 text-sm mb-4">{resource.description}</p>
+                    </div>
+                    <div className="ml-6">
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary btn-sm"
+                      >
+                        Visit Website
+                      </a>
                     </div>
                   </div>
-                ))
-              </div>
+                </div>
+              ))
             )}
           </div>
 
