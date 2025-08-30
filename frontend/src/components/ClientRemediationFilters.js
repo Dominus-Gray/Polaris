@@ -37,23 +37,15 @@ const ClientRemediationFilters = () => {
     { id: 'soc2', name: 'SOC 2 Compliance' }
   ];
 
-  const handleCertificationToggle = (certId) => {
-    setCertifications(prev => 
-      prev.includes(certId) 
-        ? prev.filter(id => id !== certId)
-        : [...prev, certId]
-    );
-  };
-
   const handleSearch = () => {
     const filters = {
       area: selectedArea,
       minRating,
       maxBudget,
-      certifications
+      certification: selectedCertification
     };
     console.log('Searching with filters:', filters);
-    // TODO: Implement search logic
+    // TODO: Implement search logic with backend call
   };
 
   return (
