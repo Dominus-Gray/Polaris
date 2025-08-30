@@ -798,27 +798,33 @@ All critical functionality operational, performance metrics excellent, security 
 
   - task: "Business Certification Dropdown in Service Request Form"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Enhanced service request form with business certification dropdown including options like SBA 8(a), HUBZone, WOSB, VOSB, ISO certifications, etc. Need to test dropdown functionality and form submission."
+      - working: true
+        agent: "testing"
+        comment: "✅ BUSINESS CERTIFICATION DROPDOWN TEST PASSED: Successfully tested the enhanced service request form with business certification dropdown. TESTING RESULTS: 1) **Login Successful** ✅ - Successfully logged in as client.qa@polaris.example.com / Polaris#2025!, 2) **Navigation Successful** ✅ - Successfully navigated to Service Request page (/service-request), 3) **Certification Dropdown Found** ✅ - Found 'Required Business Certification' dropdown with 15 comprehensive options, 4) **All Expected Options Present** ✅ - Verified all 6 expected certification options including: 'No specific certification required' (default), 'SBA 8(a) Business Development', 'HUBZone Certified', 'Women-Owned Small Business (WOSB)', 'Veteran-Owned Small Business (VOSB)', 'ISO certifications' (ISO 9001, ISO 27001), plus additional options like SDVOSB, MBE, WBE, DBE, SBE, CMMI, NIST, SOC 2, 5) **Dropdown Functionality Working** ✅ - Successfully tested 6 different dropdown selections with proper value changes, 6) **Form Submission Ready** ✅ - Found submit button and form is complete with certification field included. COMPREHENSIVE RESULTS: All certification dropdown requirements met with 15 total options available. Dropdown functionality is fully operational and form includes certification field for submission. Enhancement successfully implemented and working as specified."
 
   - task: "AI-Powered External Resources Navigation"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented AI-powered external resources page with dynamic navigation from dashboard 'Free Resources Available for Your Gaps' section. Need to test navigation flow, AI-generated content display, and external link functionality."
+      - working: false
+        agent: "testing"
+        comment: "❌ AI-POWERED EXTERNAL RESOURCES NAVIGATION PARTIAL FAIL: Successfully found the 'Free Resources Available for Your Gaps' section and business area selection, but navigation behavior differs from expected requirements. TESTING RESULTS: 1) **Dashboard Section Found** ✅ - Successfully located 'Free Resources Available for Your Gaps' section on client dashboard, 2) **Business Area Selection** ✅ - Found 18 business area elements including 'Business Registration Guide' for 'Business Formation & Registration', 3) **Click Functionality** ✅ - Successfully clicked on business area resource, 4) **Navigation Issue** ❌ - Instead of navigating to /external-resources/:areaId page, the system opens external URLs directly (e.g., https://www.sba.gov/business-guide/plan-your-business/choose-business-structure), 5) **API Endpoint Issues** ❌ - Backend API calls failing with 404 errors due to double '/api' in URLs (/api/api/analytics/resource-access and /api/api/free-resources/localized), 6) **AI-Generated Content Missing** ❌ - No AI-powered page with 'AI-Powered Community Resources' header, '🤖 AI-Generated' notice, or 'Visit Website' buttons found. CRITICAL ISSUES: The current implementation bypasses the AI-powered internal page and opens external resources directly. The expected flow should navigate to /external-resources/:areaId with AI-generated content, but instead it opens external URLs immediately. Backend API endpoints have incorrect URL paths causing 404 errors. RECOMMENDATION: Fix API endpoint URLs (remove double /api) and implement proper navigation to AI-powered internal page before opening external resources."
 
 ## metadata:
   created_by: "main_agent"
