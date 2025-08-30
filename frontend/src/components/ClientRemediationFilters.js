@@ -5,6 +5,7 @@ const ClientRemediationFilters = () => {
   const [minRating, setMinRating] = useState('');
   const [maxBudget, setMaxBudget] = useState('');
   const [certifications, setCertifications] = useState([]);
+  const [selectedCertification, setSelectedCertification] = useState('');
 
   const businessAreas = [
     { id: 'area1', name: '1. Business Formation & Registration' },
@@ -19,13 +20,21 @@ const ClientRemediationFilters = () => {
     { id: 'area10', name: '10. Competitive Advantage & Market Position' }
   ];
 
-  const availableCertifications = [
-    { id: 'mbe', name: 'MBE (Minority Business Enterprise)' },
-    { id: 'wosb', name: 'WOSB (Women-Owned Small Business)' },
-    { id: 'vob', name: 'VOB (Veteran-Owned Business)' },
-    { id: 'sdb', name: 'SDB (Small Disadvantaged Business)' },
+  const businessCertifications = [
+    { id: '8a', name: 'SBA 8(a) Business Development' },
     { id: 'hubzone', name: 'HUBZone Certified' },
-    { id: 'sdvosb', name: 'SDVOSB (Service-Disabled Veteran-Owned)' }
+    { id: 'wosb', name: 'Women-Owned Small Business (WOSB)' },
+    { id: 'vosb', name: 'Veteran-Owned Small Business (VOSB)' },
+    { id: 'sdvosb', name: 'Service-Disabled Veteran-Owned (SDVOSB)' },
+    { id: 'mbe', name: 'Minority Business Enterprise (MBE)' },
+    { id: 'wbe', name: 'Women Business Enterprise (WBE)' },
+    { id: 'dbe', name: 'Disadvantaged Business Enterprise (DBE)' },
+    { id: 'sbe', name: 'Small Business Enterprise (SBE)' },
+    { id: 'iso9001', name: 'ISO 9001 Quality Management' },
+    { id: 'iso27001', name: 'ISO 27001 Information Security' },
+    { id: 'cmmi', name: 'CMMI Process Certification' },
+    { id: 'nist', name: 'NIST Cybersecurity Framework' },
+    { id: 'soc2', name: 'SOC 2 Compliance' }
   ];
 
   const handleCertificationToggle = (certId) => {
