@@ -3394,30 +3394,54 @@ function ExternalResourcesPage() {
               ← Back to Assessment
             </button>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
-              Free Local Resources
+              AI-Powered Community Resources
             </h1>
             {areaInfo && (
-              <p className="text-slate-600">
-                External resources for {areaInfo.name} from local and government organizations
-              </p>
+              <>
+                <p className="text-slate-600 mb-2">
+                  Personalized external resources for {areaInfo.name}
+                </p>
+                <div className="text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <span className="font-medium">🤖 AI-Generated:</span> These resources are dynamically curated based on your location and business context to provide the most relevant local support options.
+                </div>
+              </>
             )}
           </div>
 
           {/* Resources Grid */}
           <div className="space-y-4">
-            {resources.map((resource, index) => (
-              <div key={index} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-xl">{getTypeIcon(resource.type)}</span>
-                      <div>
-                        <h3 className="font-semibold text-slate-900">{resource.title}</h3>
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          {resource.type}
-                        </span>
+            {resources.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-slate-400 text-lg mb-2">🔍</div>
+                <p className="text-slate-600">No resources found for this area.</p>
+                <button 
+                  className="btn btn-primary mt-4"
+                  onClick={loadAIExternalResources}
+                >
+                  Refresh Resources
+                </button>
+              </div>
+            ) : (
+              resources.map((resource, index) => (
+                <div key={index} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xl">{getTypeIcon(resource.type)}</span>
+                        <div>
+                          <h3 className="font-semibold text-slate-900">{resource.title}</h3>
+                          <div className="flex gap-2 mt-1">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              {resource.type}
+                            </span>
+                            {resource.location && (
+                              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                📍 {resource.location}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
                     <p className="text-slate-600 text-sm mb-3">{resource.description}</p>
                     <div className="flex items-center gap-4 text-xs text-slate-500">
                       <div className="flex items-center gap-1">
