@@ -6910,6 +6910,30 @@ function ServiceRequestPage(){
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Required Business Certification</label>
+                  <select className="input w-full" value={req.certification || ''} onChange={e=>setReq({...req, certification:e.target.value})}>
+                    <option value="">No specific certification required</option>
+                    <option value="8a">SBA 8(a) Business Development</option>
+                    <option value="hubzone">HUBZone Certified</option>
+                    <option value="wosb">Women-Owned Small Business (WOSB)</option>
+                    <option value="vosb">Veteran-Owned Small Business (VOSB)</option>
+                    <option value="sdvosb">Service-Disabled Veteran-Owned (SDVOSB)</option>
+                    <option value="mbe">Minority Business Enterprise (MBE)</option>
+                    <option value="wbe">Women Business Enterprise (WBE)</option>
+                    <option value="dbe">Disadvantaged Business Enterprise (DBE)</option>
+                    <option value="sbe">Small Business Enterprise (SBE)</option>
+                    <option value="iso9001">ISO 9001 Quality Management</option>
+                    <option value="iso27001">ISO 27001 Information Security</option>
+                    <option value="cmmi">CMMI Process Certification</option>
+                    <option value="nist">NIST Cybersecurity Framework</option>
+                    <option value="soc2">SOC 2 Compliance</option>
+                  </select>
+                  <div className="text-xs text-slate-500 mt-1">
+                    Select if you need providers with specific business certifications
+                  </div>
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-2">Project Description *</label>
                   <textarea 
