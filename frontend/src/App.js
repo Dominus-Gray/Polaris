@@ -4581,21 +4581,24 @@ function ClientHome(){
                 onClick={async () => {
                   console.log('Free resource clicked:', service);
                   
-                  // Area name mapping for direct resource access
-                  const resourceMap = {
-                    'Business Formation': 'https://www.sba.gov/business-guide/plan-your-business/choose-business-structure',
-                    'Financial Operations': 'https://www.sba.gov/funding-programs',
-                    'Legal Compliance': 'https://www.sba.gov/business-guide/launch-your-business',
-                    'Quality Management': 'https://www.iso.org/home.html',
-                    'Technology & Security': 'https://www.cisa.gov/resources-tools',
-                    'Human Resources': 'https://www.dol.gov/agencies/whd/employers',
-                    'Performance Tracking': 'https://www.score.org/templates-tools',
-                    'Risk Management': 'https://www.ready.gov/business',
-                    'Supply Chain Management': 'https://apexaccelerators.us/locator',
-                    'Competitive Advantage': 'https://www.sba.gov/business-guide/grow-your-business/market-research-competitive-analysis'
+                  // Map service area to area ID for navigation
+                  const areaMapping = {
+                    'Business Formation': 'area1',
+                    'Financial Operations': 'area2', 
+                    'Legal Compliance': 'area3',
+                    'Quality Management': 'area4',
+                    'Technology & Security': 'area5',
+                    'Human Resources': 'area6',
+                    'Performance Tracking': 'area7',
+                    'Risk Management': 'area8',
+                    'Supply Chain Management': 'area9',
+                    'Competitive Advantage': 'area10'
                   };
                   
-                  // Try to get localized resources first, then fallback to direct mapping
+                  // Get the area ID for navigation
+                  const areaId = areaMapping[service.area_name] || areaMapping[service.title] || 'area1';
+                  
+                  // Log resource access for analytics
                   try {
                     const authHeaders = {
                       headers: {
@@ -4603,44 +4606,17 @@ function ClientHome(){
                       }
                     };
                     
-                    // Log resource access for analytics
-                    try {
-                      await axios.post(`${API}/api/analytics/resource-access`, { 
-                        resource_id: service.id || service.title, 
-                        gap_area: service.area || service.area_name,
-                        timestamp: new Date().toISOString()
-                      }, authHeaders);
-                    } catch (logError) {
-                      console.warn('Analytics logging failed:', logError);
-                    }
-                    
-                    // Get localized resources
-                    const response = await axios.get(`${API}/api/free-resources/localized`, authHeaders);
-                    const localized = response.data?.resources || [];
-                    
-                    // Use localized resource if available, otherwise use mapped resource
-                    let targetUrl = resourceMap[service.area_name] || resourceMap[service.title] || 'https://www.sba.gov/local-assistance';
-                    
-                    if (localized.length > 0) {
-                      // Try to find matching resource
-                      const matchingResource = localized.find(r => 
-                        r.name && (service.area_name || service.title).toLowerCase().includes(r.name.toLowerCase().split(' ')[0])
-                      );
-                      if (matchingResource && matchingResource.url) {
-                        targetUrl = matchingResource.url;
-                      }
-                    }
-                    
-                    console.log('Opening resource URL:', targetUrl);
-                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
-                    
-                  } catch (error) {
-                    console.error('Error accessing localized resources:', error);
-                    // Fallback to direct mapping
-                    const fallbackUrl = resourceMap[service.area_name] || resourceMap[service.title] || 'https://www.sba.gov/local-assistance';
-                    console.log('Opening fallback URL:', fallbackUrl);
-                    window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+                    await axios.post(`${API}/analytics/resource-access`, { 
+                      resource_id: service.id || service.title, 
+                      gap_area: service.area || service.area_name,
+                      timestamp: new Date().toISOString()
+                    }, authHeaders);
+                  } catch (logError) {
+                    console.warn('Analytics logging failed:', logError);
                   }
+                  
+                  // Navigate to AI-powered external resources page
+                  navigate(`/external-resources/${areaId}`);
                 }}
               >
                 <div className="font-medium text-green-800 text-sm">{service.title}</div>
