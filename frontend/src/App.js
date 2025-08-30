@@ -3409,26 +3409,58 @@ function ExternalResourcesPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="mb-6">
+          <div className="mb-8">
             <button 
-              className="btn btn-sm mb-4"
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 transition-colors"
               onClick={() => navigate('/assessment')}
             >
-              ← Back to Assessment
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Assessment
             </button>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">
-              AI-Powered Community Resources
-            </h1>
-            {areaInfo && (
-              <>
-                <p className="text-slate-600 mb-2">
-                  Personalized external resources for {areaInfo.name}
-                </p>
-                <div className="text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <span className="font-medium">🤖 AI-Generated:</span> These resources are dynamically curated based on your location and business context to provide the most relevant local support options.
+            
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <span className="text-2xl">🤖</span>
                 </div>
-              </>
-            )}
+                <div>
+                  <h1 className="text-2xl font-bold">
+                    AI-Powered Community Resources
+                  </h1>
+                  <p className="text-blue-100 text-sm">
+                    Intelligently curated for your business needs
+                  </p>
+                </div>
+              </div>
+              
+              {areaInfo && (
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h2 className="font-semibold mb-2">📍 {areaInfo.name}</h2>
+                  <p className="text-blue-100 text-sm">
+                    Our AI has analyzed your location, business stage, and assessment responses to find the most relevant local resources and support organizations.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-medium text-blue-900 mb-1">How This Works</h3>
+                  <p className="text-blue-700 text-sm">
+                    These resources are dynamically generated based on your specific business context, location, and identified gaps. 
+                    Each resource is verified and updated to ensure you get the most current and relevant support available.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Resources Grid */}
