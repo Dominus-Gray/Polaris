@@ -457,9 +457,9 @@ class CriticalStressTester:
             # Very long strings
             ("POST", "/service-requests", {"description": "A" * 10000}),
             # Invalid UUIDs
-            ("GET", "/service-requests/invalid-uuid-format"),
+            ("GET", "/service-requests/invalid-uuid-format", None),
             # Non-existent resources
-            ("GET", "/service-requests/99999999-9999-9999-9999-999999999999")
+            ("GET", "/service-requests/99999999-9999-9999-9999-999999999999", None)
         ]
         
         for method, endpoint, data in edge_cases:
