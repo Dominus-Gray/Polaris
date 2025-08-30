@@ -42,7 +42,7 @@ const ClientRemediationFilters = () => {
       area: selectedArea,
       minRating,
       maxBudget,
-      certification: selectedCertification
+      certifications
     };
     console.log('Searching with filters:', filters);
     // TODO: Implement search logic with backend call
