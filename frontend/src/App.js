@@ -3596,9 +3596,9 @@ function ExternalResourcesPage() {
                     </div>
                   </div>
                 ))
-              )}
-            )
-          }
+              </div>
+            )}
+          </div>
 
           {/* Call to Action */}
           <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
