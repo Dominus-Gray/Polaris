@@ -59,6 +59,8 @@ class TierAssessmentResultsDebugger:
         if response.status_code == 200:
             data = response.json()
             self.session_id = data.get("session_id")
+            # Store questions from session creation for later use
+            self.session_questions = data.get("questions", [])
             print(f"✅ Tier-based session created successfully")
             print(f"📋 Session ID: {self.session_id}")
             print(f"📊 Session data: {json.dumps(data, indent=2)}")
