@@ -57,7 +57,7 @@ const ClientRemediationFilters = () => {
         Search for certified service providers based on your business needs and budget.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
         {/* Business Area Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
