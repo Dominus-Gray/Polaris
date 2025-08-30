@@ -17,7 +17,10 @@ function AssessmentResultsPage() {
 
   const loadAssessmentResults = async () => {
     try {
-      const response = await axios.get(`${API}/assessment/results/${sessionId}`);
+      const token = localStorage.getItem('polaris_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      const response = await axios.get(`${API}/api/assessment/results/${sessionId}`, { headers });
       setResults(response.data);
     } catch (error) {
       console.error('Error loading assessment results:', error);
