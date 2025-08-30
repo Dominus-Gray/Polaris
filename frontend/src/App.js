@@ -3554,29 +3554,11 @@ function ExternalResourcesPage() {
                             href={resource.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg"
-                            onClick={async () => {
-                              try {
-                                // Record resource access for analytics
-                                const params = new URLSearchParams(window.location.search);
-                                const questionId = params.get('question');
-                                if (questionId) {
-                                  await axios.post(API + '/assessment/maturity/pending', {
-                                    area_id: areaId,
-                                    question_id: questionId,
-                                    source: 'ai_generated',
-                                    detail: 'AI-generated resource: ' + resource.title,
-                                    external_url: resource.url
-                                  });
-                                }
-                              } catch (e) {
-                                console.warn('Failed to record resource access', e);
-                              }
-                            }}
+                            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                           >
                             <span>Visit Website</span>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                             </svg>
                           </a>
                         </div>
