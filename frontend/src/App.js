@@ -3582,7 +3582,7 @@ function ExternalResourcesPage() {
                           
                           {resource.phone && (
                             <a
-                              href={`tel:${resource.phone}`}
+                              href={`tel:${resource.phone.replace(/[^0-9+]/g, '')}`}
                               className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
                             >
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
