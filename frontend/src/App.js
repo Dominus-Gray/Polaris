@@ -3561,7 +3561,7 @@ function ExternalResourcesPage() {
                                 const params = new URLSearchParams(window.location.search);
                                 const questionId = params.get('question');
                                 if (questionId) {
-                                  await axios.post(`${API}/assessment/maturity/pending`, {
+                                  await axios.post(API + '/assessment/maturity/pending', {
                                     area_id: areaId,
                                     question_id: questionId,
                                     source: 'ai_generated',
