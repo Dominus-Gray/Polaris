@@ -3025,7 +3025,7 @@ function ExternalResourcesPage() {
       const token = localStorage.getItem('polaris_token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      const response = await axios.get(`${API}/api/free-resources/localized`, {
+      const response = await axios.get(`${API}/free-resources/localized`, {
         headers,
         params: {
           area_id: areaId,
