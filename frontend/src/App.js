@@ -3004,12 +3004,71 @@ function ExternalResourcesPage() {
   const navigate = useNavigate();
   const [resources, setResources] = useState([]);
   const [areaInfo, setAreaInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadExternalResources();
+    loadAIExternalResources();
   }, [areaId]);
 
-  const loadExternalResources = () => {
+  const loadAIExternalResources = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Get user location from profile or use default
+      const profile = JSON.parse(localStorage.getItem('polaris_me') || '{}');
+      const city = profile.city || 'San Antonio';
+      const state = profile.state || 'Texas';
+      
+      // Call AI-powered external resources endpoint
+      const token = localStorage.getItem('polaris_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      const response = await axios.post(`${API}/api/ai/external-resources`, {
+        area_id: areaId,
+        city: city,
+        state: state,
+        user_context: {
+          business_stage: profile.business_stage || 'startup',
+          industry: profile.industry || 'general'
+        }
+      }, { headers });
+      
+      if (response.data && response.data.resources) {
+        setResources(response.data.resources);
+        setAreaInfo({
+          name: response.data.area_name || getAreaName(areaId),
+          description: response.data.area_description || ''
+        });
+      } else {
+        // Fallback to static resources if AI fails
+        loadStaticExternalResources();
+      }
+    } catch (error) {
+      console.error('AI resources failed, falling back to static:', error);
+      // Fallback to static resources
+      loadStaticExternalResources();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAreaName = (areaId) => {
+    const areaNames = {
+      area1: "Business Formation & Registration",
+      area2: "Financial Operations & Management", 
+      area3: "Legal & Contracting Compliance",
+      area4: "Quality Management & Standards",
+      area5: "Technology & Security Infrastructure",
+      area6: "Human Resources & Capacity",
+      area7: "Performance Tracking & Reporting",
+      area8: "Risk Management & Business Continuity"
+    };
+    return areaNames[areaId] || "Business Resources";
+  };
+
+  const loadStaticExternalResources = () => {
     const EXTERNAL_RESOURCES = {
       area1: {
         name: "Business Formation & Registration",
