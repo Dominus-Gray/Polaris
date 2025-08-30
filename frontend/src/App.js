@@ -6660,7 +6660,7 @@ function HomeRouter(){
 // ---------------- Enhanced Service Request with Payment Integration ----------------
 function ServiceRequestPage(){
   const location = useLocation();
-  const [req, setReq] = useState({ budget: '', timeline: '', area_id: 'area1', description: '', urgency: 'standard', deliverables: '' });
+  const [req, setReq] = useState({ budget: '', timeline: '', area_id: 'area1', description: '', urgency: 'standard', deliverables: '', certification: '' });
   const [requestId, setRequestId] = useState('');
   const [matches, setMatches] = useState([]);
   const [responses, setResponses] = useState([]);
