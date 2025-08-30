@@ -3332,11 +3332,36 @@ function ExternalResourcesPage() {
 
   if (loading) {
     return (
-      <div className="container mt-6 max-w-4xl">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span>Loading AI-powered community resources...</span>
+      <div className="app-shell">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg border border-blue-200 p-8">
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl">🤖</span>
+                  </div>
+                </div>
+                <div className="mt-6 text-center">
+                  <h2 className="text-xl font-semibold text-blue-900 mb-2">
+                    AI is Finding Your Local Resources
+                  </h2>
+                  <p className="text-blue-700">
+                    Analyzing your location and business needs to find the most relevant community resources...
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-2 text-sm text-blue-600">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                  <span>Curating personalized recommendations</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
