@@ -10025,10 +10025,10 @@ async def system_health_check():
             "timestamp": datetime.utcnow().isoformat()
         }
 
-# Assessment Results and Analytics Endpoints
-@api.get("/assessment/results/{session_id}")
-async def get_assessment_results(session_id: str, current=Depends(get_current_user)):
-    """Get comprehensive assessment results with analysis"""
+# Comprehensive Assessment Analytics Endpoints (Consolidated)
+@api.get("/assessment/analytics/{session_id}")  
+async def get_assessment_analytics(session_id: str, current=Depends(get_current_user)):
+    """Get comprehensive assessment analytics and insights"""
     try:
         # Try to get tier-based assessment session first
         session = await db.tier_assessment_sessions.find_one({"_id": session_id, "user_id": current["id"]})
@@ -10046,7 +10046,7 @@ async def get_assessment_results(session_id: str, current=Depends(get_current_us
             raise HTTPException(status_code=400, detail="Assessment not completed")
         
         if is_tier_session:
-            # Handle tier-based assessment results
+            # Handle tier-based assessment analytics
             area_id = session.get("area_id", "area1")
             area_name = session.get("area_title", AREA_NAMES.get(area_id, "Unknown Area"))
             responses = session.get("responses", [])
