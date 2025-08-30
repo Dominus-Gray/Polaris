@@ -341,7 +341,7 @@ class FinalCriticalTester:
         # Test malformed requests
         edge_cases = [
             ("POST", "/assessment/session", "invalid_json"),
-            ("GET", "/service-requests/invalid-uuid"),
+            ("GET", "/service-requests/invalid-uuid", None),
             ("POST", "/knowledge-base/ai-assistance", {"question": ""}),  # Empty question
         ]
         
