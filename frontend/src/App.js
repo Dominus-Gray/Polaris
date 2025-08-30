@@ -3332,6 +3332,38 @@ function ExternalResourcesPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span>Loading AI-powered community resources...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="text-center">
+            <div className="text-red-600 mb-2">⚠️ Error Loading Resources</div>
+            <p className="text-slate-600 mb-4">{error}</p>
+            <button 
+              className="btn btn-primary"
+              onClick={loadAIExternalResources}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const getTypeIcon = (type) => {
     const icons = {
       Government: '🏛️',
