@@ -146,7 +146,7 @@ const ClientRemediationFilters = () => {
       </div>
 
       {/* Active Filters Display */}
-      {(selectedArea || minRating || maxBudget || selectedCertification) && (
+      {(selectedArea || minRating || maxBudget || certifications.length > 0) && (
         <div className="border-t pt-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-medium text-gray-700">Active Filters:</span>
@@ -155,7 +155,7 @@ const ClientRemediationFilters = () => {
                 setSelectedArea('');
                 setMinRating('');
                 setMaxBudget('');
-                setSelectedCertification('');
+                setCertifications([]);
               }}
               className="text-xs text-blue-600 hover:text-blue-800"
             >
@@ -178,11 +178,11 @@ const ClientRemediationFilters = () => {
                 Under ${parseInt(maxBudget).toLocaleString()}
               </span>
             )}
-            {selectedCertification && (
-              <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                {businessCertifications.find(c => c.id === selectedCertification)?.name}
+            {certifications.map(certId => (
+              <span key={certId} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                {businessCertifications.find(c => c.id === certId)?.name}
               </span>
-            )}
+            ))}
           </div>
         </div>
       )}
