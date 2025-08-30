@@ -3484,7 +3484,8 @@ function ExternalResourcesPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Call to Action */}
