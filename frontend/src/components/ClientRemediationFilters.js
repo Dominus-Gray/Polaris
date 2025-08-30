@@ -139,30 +139,8 @@ const ClientRemediationFilters = () => {
         </div>
       </div>
 
-      {/* Certifications Filter */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Business Certifications
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {availableCertifications.map(cert => (
-            <button
-              key={cert.id}
-              onClick={() => handleCertificationToggle(cert.id)}
-              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                certifications.includes(cert.id)
-                  ? 'bg-blue-100 text-blue-800 border-blue-200'
-                  : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              {cert.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Active Filters Display */}
-      {(selectedArea || minRating || maxBudget || certifications.length > 0) && (
+      {(selectedArea || minRating || maxBudget || selectedCertification) && (
         <div className="border-t pt-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-medium text-gray-700">Active Filters:</span>
