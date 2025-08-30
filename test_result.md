@@ -828,9 +828,8 @@ All critical functionality operational, performance metrics excellent, security 
 
 ## test_plan:
   current_focus:
-    - "Provider Requests Center UI Testing"
-    - "Navigator Approvals UI Testing" 
-    - "Client Engagement Details UI Testing"
+    - "Business Certification Dropdown in Service Request Form"
+    - "AI-Powered External Resources Navigation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
