@@ -127,6 +127,16 @@ const ClientRemediationFilters = () => {
             ))}
           </select>
         </div>
+
+        {/* Search Button */}
+        <div className="flex items-end">
+          <button
+            onClick={handleSearch}
+            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Search Providers
+          </button>
+        </div>
       </div>
 
       {/* Certifications Filter */}
