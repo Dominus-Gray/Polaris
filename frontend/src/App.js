@@ -1477,7 +1477,8 @@ function AssessmentPage(){
                   </div>
                 )}
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
