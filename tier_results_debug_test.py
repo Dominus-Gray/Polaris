@@ -80,8 +80,14 @@ class TierAssessmentResultsDebugger:
         if response.status_code == 200:
             data = response.json()
             questions = data.get("questions", [])
-            print(f"✅ Retrieved {len(questions)} questions")
-            print(f"📊 Questions structure: {json.dumps(data, indent=2)}")
+            print(f"✅ Retrieved {len(questions)} questions from progress endpoint")
+            print(f"📊 Progress data: {json.dumps(data, indent=2)}")
+            
+            # If no questions in progress, use the ones from session creation
+            if not questions and hasattr(self, 'session_questions'):
+                print(f"📋 Using questions from session creation: {len(self.session_questions)} questions")
+                return self.session_questions
+            
             return questions
         else:
             print(f"❌ Failed to get questions: {response.status_code} - {response.text}")
