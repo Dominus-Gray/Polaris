@@ -149,7 +149,7 @@ const ClientRemediationFilters = () => {
                 setSelectedArea('');
                 setMinRating('');
                 setMaxBudget('');
-                setCertifications([]);
+                setSelectedCertification('');
               }}
               className="text-xs text-blue-600 hover:text-blue-800"
             >
@@ -172,11 +172,11 @@ const ClientRemediationFilters = () => {
                 Under ${parseInt(maxBudget).toLocaleString()}
               </span>
             )}
-            {certifications.map(certId => (
-              <span key={certId} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                {availableCertifications.find(c => c.id === certId)?.name}
+            {selectedCertification && (
+              <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                {businessCertifications.find(c => c.id === selectedCertification)?.name}
               </span>
-            ))}
+            )}
           </div>
         </div>
       )}
