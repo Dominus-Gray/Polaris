@@ -147,88 +147,56 @@ function EnhancedPolarisBrand() {
   );
 }
 
-function useAuthHeader(){
-  useEffect(()=>{
-    const setupAxiosAuth = () => {
-      const token = localStorage.getItem('polaris_token');
-      if (token) {
-        // Set default authorization header for all axios requests
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        // Also set on window.axios if available for backwards compatibility
-        if (typeof window !== 'undefined' && window.axios) {
-          window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-      } else {
-        // Clear authorization headers when no token
-        delete axios.defaults.headers.common['Authorization'];
-        if (typeof window !== 'undefined' && window.axios) {
-          delete window.axios.defaults.headers.common['Authorization'];
-        }
-      }
-    };
-
-    // Initial setup
-    setupAxiosAuth();
-
-    // Set up interceptor to ensure token is always fresh
-    const requestInterceptor = axios.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem('polaris_token');
-        if (token && !config.headers.Authorization) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Set up response interceptor to handle 401 errors
-    const responseInterceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          console.warn('401 Unauthorized - clearing auth token');
-          localStorage.removeItem('polaris_token');
-          localStorage.removeItem('polaris_me');
-          delete axios.defaults.headers.common['Authorization'];
-          
-          // Redirect to login if not already there
-          if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
-            window.location.href = '/';
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    // Cleanup interceptors on unmount
-    return () => {
-      axios.interceptors.request.eject(requestInterceptor);
-      axios.interceptors.response.eject(responseInterceptor);
-    };
-  },[]);
+// Axios configuration and authentication setup
+const setupAxiosAuth = () => {
+  // Clear any existing interceptors to prevent duplicates
+  axios.interceptors.request.handlers = [];
+  axios.interceptors.response.handlers = [];
   
-  // Also set up a listener for localStorage changes to update auth header
-  useEffect(() => {
-    const handleStorageChange = () => {
+  // Request interceptor - add token to every request
+  axios.interceptors.request.use(
+    (config) => {
       const token = localStorage.getItem('polaris_token');
       if (token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        if (typeof window !== 'undefined' && window.axios) {
-          window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-      } else {
-        delete axios.defaults.headers.common['Authorization'];
-        if (typeof window !== 'undefined' && window.axios) {
-          delete window.axios.defaults.headers.common['Authorization'];
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  // Response interceptor - handle 401 errors
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        // Token is invalid, clear authentication
+        localStorage.removeItem('polaris_token');
+        localStorage.removeItem('polaris_me');
+        
+        // Only redirect if not already on login page
+        if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+          console.warn('Authentication expired, redirecting to login');
+          window.location.href = '/';
         }
       }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+      return Promise.reject(error);
+    }
+  );
+};
+
+// Call setup once when app loads
+setupAxiosAuth();
+
+function useAuthHeader(){
+  // Simple token check on mount, no interceptor setup in useEffect
+  useEffect(() => {
+    const token = localStorage.getItem('polaris_token');
+    if (token) {
+      // Ensure axios has the token for immediate requests
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, []); // Empty dependency array - only run once on mount
 }
 
 function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
