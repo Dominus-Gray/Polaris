@@ -11782,10 +11782,135 @@ async def get_provider_analytics(current=Depends(require_role("provider"))):
         logger.error(f"Error getting provider analytics: {e}")
         raise HTTPException(status_code=500, detail="Failed to get analytics")
 
-@api.get("/metrics")
-async def get_prometheus_metrics():
-    """Prometheus metrics endpoint"""
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+# Production Health Check Endpoints
+@api.get("/health/system")
+async def system_health_check():
+    """System health check for production monitoring"""
+    try:
+        start_time = time.time()
+        
+        # Check database connectivity
+        await db.admin.command('ping')
+        db_response_time = time.time() - start_time
+        
+        # Check memory usage (basic)
+        import psutil
+        memory_usage = psutil.virtual_memory().percent
+        cpu_usage = psutil.cpu_percent()
+        
+        # Service status
+        status = {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "services": {
+                "database": {
+                    "status": "healthy",
+                    "response_time_ms": round(db_response_time * 1000, 2)
+                },
+                "api": {
+                    "status": "healthy",
+                    "uptime_seconds": time.time()
+                }
+            },
+            "resources": {
+                "memory_usage_percent": memory_usage,
+                "cpu_usage_percent": cpu_usage
+            }
+        }
+        
+        # Determine overall health
+        if db_response_time > 1.0 or memory_usage > 90 or cpu_usage > 90:
+            status["status"] = "degraded"
+        
+        return status
+        
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": str(e)
+        }
+
+@api.get("/health/database")
+async def database_health_check():
+    """Database connectivity and performance health check"""
+    try:
+        start_time = time.time()
+        
+        # Test basic connectivity
+        await db.admin.command('ping')
+        ping_time = time.time() - start_time
+        
+        # Test read operation
+        start_time = time.time()
+        await db.users.count_documents({})
+        read_time = time.time() - start_time
+        
+        # Test write operation (lightweight)
+        start_time = time.time()
+        health_doc = {
+            "_id": f"health_check_{int(time.time())}",
+            "timestamp": datetime.utcnow(),
+            "type": "health_check"
+        }
+        await db.system_health.insert_one(health_doc)
+        write_time = time.time() - start_time
+        
+        # Clean up test document
+        await db.system_health.delete_one({"_id": health_doc["_id"]})
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "metrics": {
+                "ping_ms": round(ping_time * 1000, 2),
+                "read_ms": round(read_time * 1000, 2),
+                "write_ms": round(write_time * 1000, 2)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": str(e)
+        }
+
+@api.get("/health/external")
+async def external_services_health_check():
+    """External services health check"""
+    services = {}
+    
+    # Check Stripe connectivity
+    try:
+        # Test Stripe API with a simple call
+        import stripe
+        stripe.api_key = os.environ.get('STRIPE_API_KEY')
+        stripe.Account.retrieve()
+        services["stripe"] = {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    except Exception as e:
+        services["stripe"] = {"status": "unhealthy", "error": str(e)}
+    
+    # Check Emergent LLM
+    try:
+        if EMERGENT_LLM_KEY and EMERGENT_OK:
+            services["emergent_llm"] = {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+        else:
+            services["emergent_llm"] = {"status": "unavailable", "reason": "API key not configured"}
+    except Exception as e:
+        services["emergent_llm"] = {"status": "unhealthy", "error": str(e)}
+    
+    overall_status = "healthy"
+    if any(service.get("status") == "unhealthy" for service in services.values()):
+        overall_status = "degraded"
+    
+    return {
+        "status": overall_status,
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": services
+    }
 
 # Include router
 app.include_router(api)
