@@ -1593,12 +1593,8 @@ function KnowledgeBasePage(){
 
   const loadKnowledgeBaseAreas = async () => {
     try {
-      const token = localStorage.getItem('polaris_token');
-      const authHeaders = token ? {
-        headers: { Authorization: `Bearer ${token}` }
-      } : {};
-      
-      const { data } = await axios.get(`${API}/knowledge-base/areas`, authHeaders);
+      // Use axios defaults - no need for manual auth headers
+      const { data } = await axios.get(`${API}/knowledge-base/areas`);
       setAreas(data.areas || []);
     } catch (e) {
       console.error('Failed to load knowledge base areas:', e);
