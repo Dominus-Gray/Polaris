@@ -50,14 +50,14 @@ const ClientRemediationFilters = () => {
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
-      <h4 className="text-lg font-semibold text-gray-900 mb-4">
+      <h4 className="text-lg font-semibold text-gray-900 mb-4 text-center">
         🔍 Find Local Service Providers
       </h4>
-      <p className="text-gray-600 text-sm mb-4">
-        Search for certified service providers based on your business needs and budget.
+      <p className="text-gray-600 text-sm mb-6 text-center max-w-2xl mx-auto">
+        Search for certified service providers based on your business needs, certifications, and budget.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         {/* Business Area Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
