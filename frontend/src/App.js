@@ -4255,11 +4255,11 @@ function ClientHome(){
         const meLocal = JSON.parse(localStorage.getItem('polaris_me')||'null');
         
         // Load certificates
-        const certs = await axios.get(`${API}/client/certificates`, authHeaders);
+        const certs = await axios.get(`${API}/client/certificates`);
         setCertificates(certs.data.certificates || []);
         
         // Load matched services for the client
-        const services = await axios.get(`${API}/client/matched-services`, authHeaders);
+        const services = await axios.get(`${API}/client/matched-services`);
         setMatchedServices(services.data.services || []);
 
         // Load available services for client discovery
@@ -4270,25 +4270,25 @@ function ClientHome(){
         const userId = meLocal?.id;
         let assessmentRes = null;
         if (userId) {
-          assessmentRes = await axios.get(`${API}/assessment/progress/${userId}`, authHeaders);
+          assessmentRes = await axios.get(`${API}/assessment/progress/${userId}`);
           setAssessmentData(assessmentRes.data);
         }
 
         // Load tier-based assessment access
         try {
-          const tierAccessRes = await axios.get(`${API}/client/tier-access`, authHeaders);
+          const tierAccessRes = await axios.get(`${API}/client/tier-access`);
           setTierAccess(tierAccessRes.data);
         } catch (tierError) {
           console.warn('Failed to load tier access:', tierError);
         }
 
         // Load active service requests
-        const requests = await axios.get(`${API}/engagements/my-services`, authHeaders);
+        const requests = await axios.get(`${API}/engagements/my-services`);
         setServiceRequests(requests.data.engagements || []);
 
         // Load sponsoring agency info (from license code)
         if (data.sponsoring_agency_id) {
-          const agency = await axios.get(`${API}/agency/info/${data.sponsoring_agency_id}`, authHeaders);
+          const agency = await axios.get(`${API}/agency/info/${data.sponsoring_agency_id}`);
           setSponsoringAgency(agency.data);
         }
 
@@ -4299,7 +4299,6 @@ function ClientHome(){
           
           // Load dynamic free services based on gaps
           const freeServicesRes = await axios.get(`${API}/free-resources/recommendations`, {
-            ...authHeaders,
             params: { gaps: calculatedGaps.map(g => g.area_id).join(',') }
           });
           setFreeServices(freeServicesRes.data.resources || []);
