@@ -3767,28 +3767,30 @@ SERVICE_PACKAGES = {
 }
 
 class PaymentTransactionIn(BaseModel):
-    package_id: str
-    origin_url: str
-    metadata: Optional[Dict[str, str]] = {}
+    package_id: str = Field(..., description="Knowledge base package identifier")
+    origin_url: str = Field(..., description="Origin URL for transaction tracking")
+    payment_method: str = Field(..., description="Stripe payment method ID")
+    metadata: Optional[Dict[str, str]] = Field(default={}, description="Additional metadata")
 
 class PaymentTransactionOut(BaseModel):
     id: str
     user_id: str
     package_id: str
+    origin_url: str
+    payment_method: str
     amount: float
-    currency: str = "USD"
-    stripe_session_id: str
-    payment_status: str
+    currency: str
     status: str
-    metadata: Dict[str, str]
+    stripe_payment_intent_id: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 
 class ServiceRequestPaymentIn(BaseModel):
-    request_id: str
-    provider_id: str
-    agreed_fee: float
-    origin_url: str
+    request_id: str = Field(..., description="Service request identifier")
+    provider_id: str = Field(..., description="Selected provider ID")
+    agreed_fee: float = Field(..., gt=0, description="Agreed service fee")
+    payment_method: str = Field(..., description="Stripe payment method ID")
+    origin_url: str = Field(..., description="Origin URL for transaction tracking")
 
 class ServiceTrackingUpdate(BaseModel):
     status: str  # 'active', 'in_progress', 'under_review', 'completed', 'cancelled'
