@@ -1625,13 +1625,8 @@ function KnowledgeBasePage(){
 
   const loadAreaResources = async (areaId) => {
     try {
-      const token = localStorage.getItem('polaris_token');
-      const authHeaders = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
-      
-      // Load the area-specific content
-      const { data } = await axios.get(`${API}/knowledge-base/${areaId}/content`, authHeaders);
+      // Use axios defaults - no need for manual auth headers
+      const { data } = await axios.get(`${API}/knowledge-base/${areaId}/content`);
       
       // Create comprehensive resources structure for the area
       const AREA_DELIVERABLES = {
