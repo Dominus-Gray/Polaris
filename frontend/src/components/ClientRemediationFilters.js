@@ -135,12 +135,12 @@ const ClientRemediationFilters = () => {
         </div>
 
         {/* Search Button */}
-        <div className="flex items-end">
+        <div className="md:col-span-2 lg:col-span-4 flex justify-center mt-4">
           <button
             onClick={handleSearch}
-            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
           >
-            Search Providers
+            🔍 Search Providers
           </button>
         </div>
       </div>
