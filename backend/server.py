@@ -6796,6 +6796,49 @@ async def update_client_dashboard_progress(user_id: str):
         logger.error(f"Error updating client dashboard progress: {e}")
         return False
 
+async def update_agency_client_progress(user_id: str):
+    """Update agency dashboard with client progress"""
+    try:
+        # Get client's license code to find their agency
+        user = await db.users.find_one({"id": user_id})
+        if not user or user.get("role") != "client":
+            return False
+        
+        license_code = user.get("license_code")
+        if not license_code:
+            return False
+        
+        # Get agency from license
+        license_record = await db.agency_licenses.find_one({"license_code": license_code})
+        if not license_record:
+            return False
+        
+        agency_user_id = license_record.get("agency_user_id") or license_record.get("agency_id")
+        if not agency_user_id:
+            return False
+        
+        # Calculate client progress
+        sessions = await db.tier_assessment_sessions.find({"user_id": user_id}).to_list(None)
+        completed_count = len([s for s in sessions if s.get("status") == "completed"])
+        
+        # Update agency client tracking
+        await db.agency_client_progress.update_one(
+            {"agency_id": agency_user_id, "client_id": user_id},
+            {
+                "$set": {
+                    "completed_assessments": completed_count,
+                    "last_activity": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error updating agency client progress: {e}")
+        return False
+
 async def generate_personalized_recommendations(user_id: str) -> Dict[str, Any]:
     """Generate AI-powered personalized recommendations"""
     try:
