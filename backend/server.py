@@ -11887,7 +11887,7 @@ async def database_health_check():
         start_time = time.time()
         
         # Test basic connectivity
-        await db.admin.command('ping')
+        await db.command('ping')
         ping_time = time.time() - start_time
         
         # Test read operation
