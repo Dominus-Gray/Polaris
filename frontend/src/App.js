@@ -4241,18 +4241,16 @@ function ClientHome(){
   useEffect(()=>{ 
     const load=async()=>{ 
       try {
+        // Check if token exists
         const token = localStorage.getItem('polaris_token');
         if (!token) {
           console.error('No authentication token found');
           return;
         }
         
-        const authHeaders = {
-          headers: { Authorization: `Bearer ${token}` }
-        };
-        
+        // Use axios defaults - auth headers handled automatically
         const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
-        const {data} = await axios.get(`${API}/home/client`, authHeaders); 
+        const {data} = await axios.get(`${API}/home/client`); 
         setData(data); 
         const meLocal = JSON.parse(localStorage.getItem('polaris_me')||'null');
         
