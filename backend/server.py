@@ -11837,9 +11837,14 @@ async def system_health_check():
         db_response_time = time.time() - start_time
         
         # Check memory usage (basic)
-        import psutil
-        memory_usage = psutil.virtual_memory().percent
-        cpu_usage = psutil.cpu_percent()
+        try:
+            import psutil
+            memory_usage = psutil.virtual_memory().percent
+            cpu_usage = psutil.cpu_percent()
+        except ImportError:
+            # Fallback if psutil is not available
+            memory_usage = 0
+            cpu_usage = 0
         
         # Service status
         status = {
