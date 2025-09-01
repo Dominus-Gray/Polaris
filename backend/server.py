@@ -3298,14 +3298,9 @@ class TierBasedResponse(BaseModel):
     verification_notes: Optional[str] = None
 
 class TierResponseSubmission(BaseModel):
-    question_id: str
-    response: str
-    evidence_provided: Optional[str] = None
-
-class TierResponseSubmission(BaseModel):
-    question_id: str
-    response: str
-    evidence_provided: Optional[str] = None
+    question_id: str = Field(..., description="Assessment question identifier")
+    response: str = Field(..., description="User response (yes/no/partial)")
+    evidence_provided: Optional[str] = Field(None, description="Optional evidence text or file path")
 
 class AgencyTierConfiguration(BaseModel):
     agency_id: str
