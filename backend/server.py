@@ -11833,7 +11833,7 @@ async def system_health_check():
         start_time = time.time()
         
         # Check database connectivity
-        await db.admin.command('ping')
+        await db.command('ping')
         db_response_time = time.time() - start_time
         
         # Check memory usage (basic)
