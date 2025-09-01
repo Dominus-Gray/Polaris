@@ -3302,6 +3302,11 @@ class TierResponseSubmission(BaseModel):
     response: str
     evidence_provided: Optional[str] = None
 
+class TierResponseSubmission(BaseModel):
+    question_id: str
+    response: str
+    evidence_provided: Optional[str] = None
+
 class AgencyTierConfiguration(BaseModel):
     agency_id: str
     tier_access_levels: Dict[str, int]  # area_id -> max_tier_level
