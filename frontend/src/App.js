@@ -5038,38 +5038,80 @@ function ClientHome(){
                     </div>
                   </div>
 
-                  {/* Business Areas Grid */}
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {/* Enhanced Business Areas Grid with Direct Navigation */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {tierAccess.areas && tierAccess.areas.map((area) => (
-                      <div key={area.area_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <h5 className="font-semibold text-gray-900 mb-2">{area.area_title}</h5>
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{area.area_description}</p>
+                      <div 
+                        key={area.area_id} 
+                        className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer group transform hover:scale-105"
+                        onClick={() => {
+                          // Navigate directly to assessment for this specific area
+                          navigate(`/assessment?area=${area.area_id}&focus=true`);
+                        }}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-900 mb-2 text-lg group-hover:text-blue-600 transition-colors">
+                              {area.area_number}. {area.area_title}
+                            </h5>
+                            <p className="text-sm text-gray-600 mb-3 leading-relaxed">{area.area_description}</p>
+                          </div>
+                          <div className="ml-3 p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </div>
                         
-                        {/* Tier Indicators */}
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs text-gray-500">Max Tier Access:</span>
-                          <div className="flex space-x-1">
-                            {[1, 2, 3].map((tier) => (
-                              <div
-                                key={tier}
-                                className={`w-3 h-3 rounded-full ${
-                                  tier <= area.max_tier_access 
-                                    ? tier === 1 ? 'bg-blue-400' : tier === 2 ? 'bg-orange-400' : 'bg-purple-400'
-                                    : 'bg-gray-300'
-                                }`}
-                                title={`Tier ${tier} ${tier <= area.max_tier_access ? 'Available' : 'Not Available'}`}
-                              />
-                            ))}
+                        {/* Enhanced Status Indicators */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-gray-500">Max Tier:</span>
+                            <div className="flex space-x-1">
+                              {[1, 2, 3].map((tier) => (
+                                <div
+                                  key={tier}
+                                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                                    tier <= area.max_tier_access 
+                                      ? tier === 1 
+                                        ? 'bg-blue-500 text-white border-blue-500' 
+                                        : tier === 2 
+                                        ? 'bg-orange-500 text-white border-orange-500' 
+                                        : 'bg-purple-500 text-white border-purple-500'
+                                      : 'bg-gray-200 border-gray-300 text-gray-400'
+                                  }`}
+                                  title={`Tier ${tier} ${tier <= area.max_tier_access ? 'Available' : 'Not Available'}`}
+                                >
+                                  {tier}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-gray-900">{area.completion_percentage || 0}%</div>
+                            <div className="text-xs text-gray-500">Complete</div>
                           </div>
                         </div>
 
-                        {/* Available Tiers */}
-                        <div className="space-y-1">
+                        {/* Question Count Summary */}
+                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                          <div className="text-xs text-gray-600 mb-2">Available Assessment:</div>
                           {area.available_tiers && area.available_tiers.map((tier) => (
-                            <div key={tier.tier_level} className="text-xs text-gray-600">
-                              Tier {tier.tier_level}: {tier.questions_count} questions
+                            <div key={tier.tier_level} className="flex justify-between items-center text-sm">
+                              <span className="text-gray-700">Tier {tier.tier_level}:</span>
+                              <span className="font-medium">{tier.questions_count} questions</span>
                             </div>
                           ))}
+                        </div>
+
+                        {/* Direct Action Button */}
+                        <div className="pt-2 border-t border-gray-100">
+                          <div className="flex items-center justify-center gap-2 text-blue-600 font-medium text-sm group-hover:text-blue-700">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span>Start Assessment</span>
+                          </div>
                         </div>
                       </div>
                     ))}
