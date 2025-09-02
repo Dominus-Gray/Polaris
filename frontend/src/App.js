@@ -3421,10 +3421,10 @@ function ExternalResourcesPage() {
       <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
+          {/* Enhanced AI-Powered Community Resources Header */}
           <div className="mb-8">
             <button 
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 transition-colors"
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 transition-colors font-medium"
               onClick={() => navigate('/assessment')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3433,45 +3433,67 @@ function ExternalResourcesPage() {
               Back to Assessment
             </button>
             
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <span className="text-2xl">🤖</span>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold">
-                    AI-Powered Community Resources
-                  </h1>
-                  <p className="text-blue-100 text-sm">
-                    Intelligently curated for your business needs
-                  </p>
-                </div>
-              </div>
-              
-              {areaInfo && (
-                <div className="bg-white/10 rounded-lg p-4">
-                  <h2 className="font-semibold mb-2">📍 {areaInfo.name}</h2>
-                  <p className="text-blue-100 text-sm">
-                    Our AI has analyzed your location, business stage, and assessment responses to find the most relevant local resources and support organizations.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 text-white mb-8 shadow-xl">
+              <div className="flex items-start gap-6">
+                <div className="p-4 bg-white/20 backdrop-blur rounded-xl border border-white/30">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="font-medium text-blue-900 mb-1">How This Works</h3>
-                  <p className="text-blue-700 text-sm">
-                    These resources are dynamically generated based on your specific business context, location, and identified gaps. 
-                    Each resource is verified and updated to ensure you get the most current and relevant support available.
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold mb-3">
+                    🤖 AI-Powered Community Resources
+                  </h1>
+                  <p className="text-blue-100 text-lg mb-4 leading-relaxed">
+                    Intelligently curated local resources and support organizations tailored specifically for your business needs and location.
                   </p>
+                  {areaInfo && (
+                    <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
+                        <h2 className="font-semibold text-white">Focus Area: {areaInfo.name}</h2>
+                      </div>
+                      <p className="text-blue-100 text-sm leading-relaxed">
+                        Our AI has analyzed your assessment results, business location, and industry context to identify the most relevant local support organizations and resources for addressing gaps in this specific area.
+                      </p>
+                    </div>
+                  )}
                 </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 text-center">
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-green-900 mb-2">Location-Based</h3>
+                <p className="text-green-700 text-sm">Resources matched to your geographic location and local regulations</p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-6 text-center">
+                <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-purple-900 mb-2">AI-Curated</h3>
+                <p className="text-purple-700 text-sm">Intelligent matching based on your specific assessment gaps and needs</p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 text-center">
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-blue-900 mb-2">Real-Time</h3>
+                <p className="text-blue-700 text-sm">Up-to-date resources with current availability and contact information</p>
               </div>
             </div>
           </div>
