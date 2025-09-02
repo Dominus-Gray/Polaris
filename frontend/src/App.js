@@ -4492,60 +4492,64 @@ function ClientHome(){
         <h1 className="text-2xl font-bold mb-2">Welcome to Your Procurement Readiness Dashboard</h1>
         <p className="opacity-90">Track your assessment progress, manage gaps, and access professional services</p>
         
-        {/* Quick Status Indicators */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-white/90 backdrop-blur rounded-xl p-4 border border-gray-200 hover:bg-white transition-all shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Enhanced Dashboard Statistics with Proper Contrast */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold text-slate-900">{assessmentData?.completion_percentage || 0}%</div>
-                <div className="text-sm text-slate-600">Assessment Complete</div>
+                <div className="text-3xl font-bold text-slate-900">{assessmentData?.completion_percentage || 0}%</div>
+                <div className="text-sm font-medium text-slate-600">Assessment Complete</div>
+                <div className="text-xs text-slate-500 mt-1">10 Business Areas</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-white/90 backdrop-blur rounded-xl p-4 border border-gray-200 hover:bg-white transition-all shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-md">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold text-slate-900">{gaps.length}</div>
-                <div className="text-sm text-slate-600">Critical Gaps</div>
+                <div className="text-3xl font-bold text-slate-900">{gaps.length}</div>
+                <div className="text-sm font-medium text-slate-600">Critical Gaps</div>
+                <div className="text-xs text-slate-500 mt-1">Require Attention</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-white/90 backdrop-blur rounded-xl p-4 border border-gray-200 hover:bg-white transition-all shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold text-slate-900">{serviceRequests.filter(r => r.status === 'active').length}</div>
-                <div className="text-sm text-slate-600">Active Services</div>
+                <div className="text-3xl font-bold text-slate-900">{serviceRequests.filter(r => r.status === 'active').length}</div>
+                <div className="text-sm font-medium text-slate-600">Active Services</div>
+                <div className="text-xs text-slate-500 mt-1">In Progress</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-white/90 backdrop-blur rounded-xl p-4 border border-gray-200 hover:bg-white transition-all shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-md">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold text-slate-900">{data.readiness || 0}%</div>
-                <div className="text-sm text-slate-600">Readiness Score</div>
+                <div className="text-3xl font-bold text-slate-900">{data.readiness || 0}%</div>
+                <div className="text-sm font-medium text-slate-600">Readiness Score</div>
+                <div className="text-xs text-slate-500 mt-1">Procurement Ready</div>
               </div>
             </div>
           </div>
