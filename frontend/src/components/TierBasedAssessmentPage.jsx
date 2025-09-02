@@ -532,31 +532,108 @@ function TierBasedAssessmentPage() {
               {currentQuestion?.text}
             </h2>
 
-            {/* Answer Options */}
-            <div className="space-y-3">
-              {['Yes', 'No', 'Partial', 'No, I need help'].map((option) => (
-                <button
-                  key={option}
-                  onClick={() => submitAnswer(option)}
-                  disabled={submitLoading}
-                  className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900">{option}</span>
-                    {submitLoading ? (
-                      <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            {/* Updated Assessment Response Options */}
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg">
+                <label className="flex items-center gap-4 p-4 cursor-pointer hover:bg-green-100 transition-colors">
+                  <input
+                    type="radio"
+                    name={`question_${currentQuestion.id}`}
+                    value="compliant"
+                    checked={answers[currentQuestion.id] === 'compliant'}
+                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                    className="w-5 h-5 text-green-600 focus:ring-green-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    )}
+                      <span className="font-medium text-green-900">Compliant</span>
+                    </div>
+                    <p className="text-sm text-green-700 mt-1">This requirement is fully met and documented</p>
                   </div>
-                </button>
-              ))}
+                </label>
+              </div>
+
+              <div className="bg-red-50 border border-red-200 rounded-lg">
+                <label className="flex items-center gap-4 p-4 cursor-pointer hover:bg-red-100 transition-colors">
+                  <input
+                    type="radio"
+                    name={`question_${currentQuestion.id}`}
+                    value="gap_exists"
+                    checked={answers[currentQuestion.id] === 'gap_exists'}
+                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                    className="w-5 h-5 text-red-600 focus:ring-red-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <span className="font-medium text-red-900">Gap Exists - I Need Help</span>
+                    </div>
+                    <p className="text-sm text-red-700 mt-1">This requirement is not met and I need assistance</p>
+                  </div>
+                </label>
+              </div>
             </div>
+
+            {/* Gap Solution Pathway Selection */}
+            {answers[currentQuestion.id] === 'gap_exists' && (
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h4 className="font-medium text-yellow-900 mb-3">🎯 Select Your Preferred Solution Path:</h4>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 p-3 bg-white border border-yellow-200 rounded-lg cursor-pointer hover:bg-yellow-50 transition-colors">
+                    <input
+                      type="radio"
+                      name={`solution_${currentQuestion.id}`}
+                      value="service_provider"
+                      onChange={(e) => handleSolutionPathChange(currentQuestion.id, e.target.value)}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span className="font-medium text-gray-900">Service Provider Matchmaking</span>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-3 bg-white border border-yellow-200 rounded-lg cursor-pointer hover:bg-yellow-50 transition-colors">
+                    <input
+                      type="radio"
+                      name={`solution_${currentQuestion.id}`}
+                      value="knowledge_base"
+                      onChange={(e) => handleSolutionPathChange(currentQuestion.id, e.target.value)}
+                      className="w-4 h-4 text-purple-600"
+                    />
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                      <span className="font-medium text-gray-900">Knowledge Base Resources</span>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-3 bg-white border border-yellow-200 rounded-lg cursor-pointer hover:bg-yellow-50 transition-colors">
+                    <input
+                      type="radio"
+                      name={`solution_${currentQuestion.id}`}
+                      value="external_resources"
+                      onChange={(e) => handleSolutionPathChange(currentQuestion.id, e.target.value)}
+                      className="w-4 h-4 text-green-600"
+                    />
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                      </svg>
+                      <span className="font-medium text-gray-900">AI-Powered External Resources</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
 
             {/* Question Info */}
             {currentQuestion?.type && (
