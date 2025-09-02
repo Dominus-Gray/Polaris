@@ -247,6 +247,22 @@ function TierBasedAssessmentPage() {
     }
   };
 
+  // Handle answer change for radio inputs
+  const handleAnswerChange = (questionId, value) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  // Handle solution path change for gap resolution
+  const handleSolutionPathChange = (questionId, solutionPath) => {
+    setAnswers(prev => ({
+      ...prev,
+      [`solution_${questionId}`]: solutionPath
+    }));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
