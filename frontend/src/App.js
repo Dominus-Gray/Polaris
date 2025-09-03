@@ -6830,15 +6830,25 @@ function AgencyHome(){
             </div>
           )}
 
-          {activeTab === 'branding' && <AgencyThemeManager />}
-          {activeTab === 'licenses' && <AgencyLicenses />}
+          {activeTab === 'business_intelligence' && (
+            <BusinessIntelligenceTab impact={impact} />
+          )}
+          
+          {activeTab === 'license_distribution' && (
+            <LicenseDistributionTab impact={impact} tierInfo={tierInfo} />
+          )}
+          
+          {activeTab === 'ai_matching' && (
+            <AIContractMatchingTab />
+          )}
+          
           {activeTab === 'sponsored' && <AgencySponsoredClients />}
           {activeTab === 'matching' && <AgencyContractMatching />}
           {activeTab === 'issue_cert' && <AgencyIssueCertificate />}
-          {activeTab === 'business_intelligence' && <AgencyBusinessIntelligenceDashboard />}
-          {activeTab === 'license_distribution' && <AgencyLicenseDistribution />}
-          {activeTab === 'ai_matching' && <AgencyAIContractMatching />}
-          {activeTab === 'settings' && <AgencyAccountSettings />}
+          
+          {activeTab === 'settings' && (
+            <AccountSettingsTab />
+          )}
         </div>
       </div>
     </div>
