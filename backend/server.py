@@ -10103,7 +10103,7 @@ async def get_pending_evidence(current=Depends(require_role("navigator"))):
         raise HTTPException(status_code=500, detail="Failed to get pending evidence")
 
 class EvidenceReviewIn(BaseModel):
-    review_status: str = Field(..., regex="^(approved|rejected|needs_clarification)$")
+    review_status: str = Field(..., pattern="^(approved|rejected|needs_clarification)$")
     review_comments: Optional[str] = None
     follow_up_required: bool = False
 
