@@ -2233,11 +2233,11 @@ async def submit_tier_response(
     session_id: str,
     question_id: str = Form(...),
     response: str = Form(...),
-    evidence_provided: Optional[str] = Form(None),
+    evidence_provided: Optional[str] = Form("false"),
     evidence_url: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user)
 ):
-    """Submit response to a tier-based assessment question"""
+    """Submit response to tier-based assessment question with evidence enforcement"""
     try:
         # Get session
         session = await db.tier_assessment_sessions.find_one({
@@ -2251,6 +2251,36 @@ async def submit_tier_response(
         if session["status"] != "active":
             raise HTTPException(status_code=400, detail="Assessment session is not active")
         
+        # Find the question in the session to get tier level
+        question = None
+        for q in session.get("questions", []):
+            if q["id"] == question_id:
+                question = q
+                break
+        
+        if not question:
+            raise HTTPException(status_code=404, detail="Question not found in session")
+        
+        # CRITICAL: Evidence Upload Enforcement for Tier 2 & 3
+        tier_level = question.get("tier_level", session.get("tier_level", 1))
+        if response == "compliant" and tier_level >= 2:
+            # Check if evidence was provided
+            evidence_provided_bool = evidence_provided.lower() == "true"
+            
+            if not evidence_provided_bool and not evidence_url:
+                # Check if evidence exists in database
+                evidence_record = await db.assessment_evidence.find_one({
+                    "session_id": session_id,
+                    "question_id": question_id,
+                    "user_id": current_user["id"]
+                })
+                
+                if not evidence_record:
+                    raise HTTPException(
+                        status_code=422, 
+                        detail=f"Evidence upload is required for Tier {tier_level} compliant responses. Please upload supporting documentation before submitting your response."
+                    )
+        
         # Update or add response
         responses = session.get("responses", [])
         existing_response_index = None
@@ -2263,10 +2293,12 @@ async def submit_tier_response(
         response_data = {
             "question_id": question_id,
             "response": response,
-            "evidence_provided": evidence_provided,
+            "tier_level": tier_level,
+            "evidence_required": tier_level >= 2 and response == "compliant",
+            "evidence_provided": evidence_provided.lower() == "true" if evidence_provided else False,
             "evidence_url": evidence_url,
             "submitted_at": datetime.utcnow(),
-            "verification_status": "pending" if session["tier_level"] >= 2 else None
+            "verification_status": "pending" if tier_level >= 2 else None
         }
         
         if existing_response_index is not None:
@@ -2291,7 +2323,7 @@ async def submit_tier_response(
         
         if completed_questions >= total_questions:
             # Calculate completion score
-            tier_score = calculate_tier_completion_score(responses, session["tier_level"])
+            tier_score = calculate_tier_completion_score(responses, tier_level)
             
             await db.tier_assessment_sessions.update_one(
                 {"_id": session_id},
@@ -2304,12 +2336,22 @@ async def submit_tier_response(
                 }
             )
         
-        return {
+        # Return appropriate response based on evidence requirements
+        result = {
             "success": True,
             "completed_questions": completed_questions,
             "total_questions": total_questions,
-            "assessment_complete": completed_questions >= total_questions
+            "assessment_complete": completed_questions >= total_questions,
+            "tier_level": tier_level
         }
+        
+        if tier_level >= 2 and response == "compliant":
+            result["evidence_required"] = True
+            result["evidence_status"] = "provided" if (evidence_provided.lower() == "true" or evidence_url) else "required"
+            if not (evidence_provided.lower() == "true" or evidence_url):
+                result["message"] = f"Response recorded with evidence verification pending for Tier {tier_level}"
+        
+        return result
         
     except HTTPException:
         raise
