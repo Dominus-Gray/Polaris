@@ -6514,13 +6514,10 @@ function AgencyHome(){
         <div className="border-b p-4">
           <nav className="flex gap-6">
             {[
-              { id: 'overview', label: 'Overview', icon: '📊' },
+              { id: 'agency_portal', label: 'Agency Portal', icon: '🏛️' },
               { id: 'business_intelligence', label: 'Business Intelligence', icon: '📊' },
-              { id: 'license_distribution', label: 'License Distribution', icon: '📧' },
-              { id: 'ai_matching', label: 'AI Contract Matching', icon: '🤖' },
-              { id: 'sponsored', label: 'Sponsored Companies', icon: '🏷️' },
-              { id: 'matching', label: 'Contract Matching', icon: '🤝' },
-              { id: 'issue_cert', label: 'Issue Certificates', icon: '✅' },
+              { id: 'opportunities', label: 'Opportunities', icon: '🎯' },
+              { id: 'sponsored_companies', label: 'Sponsored Companies', icon: '🏢' },
               { id: 'settings', label: 'Account Settings', icon: '⚙️' }
             ].map((tab) => (
               <button
