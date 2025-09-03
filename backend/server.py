@@ -10565,6 +10565,10 @@ async def get_agency_branding(current=Depends(require_role("agency"))):
             }
             await db.agency_branding.insert_one(branding)
         
+        # Convert ObjectId to string for JSON serialization
+        if branding and "_id" in branding:
+            branding["_id"] = str(branding["_id"])
+        
         return branding
         
     except Exception as e:
