@@ -268,15 +268,15 @@ class CriticalBusinessLogicTester:
                 response_with_evidence = {
                     "question_id": "area1_q1",
                     "response": "compliant",
-                    "evidence_provided": True,
-                    "evidence_file_id": upload_response.get('file_id')
+                    "evidence_provided": "true",
+                    "evidence_url": f"evidence/{upload_response.get('evidence_id')}"
                 }
                 
                 response = self.make_request(
                     'POST', 
                     f'/assessment/tier-session/{self.test_session_id}/response', 
                     token=self.client_token, 
-                    json=response_with_evidence
+                    data=response_with_evidence  # Use form data
                 )
                 
                 if response and response.status_code == 200:
