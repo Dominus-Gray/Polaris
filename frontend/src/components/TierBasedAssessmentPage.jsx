@@ -524,6 +524,31 @@ function TierBasedAssessmentPage() {
   const currentQuestion = questions[currentQuestionIndex];
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
+  // Safety check for questions
+  if (currentSession && (!questions.length || !currentQuestion)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading Assessment Questions</h2>
+            <p className="text-gray-600">
+              Session ID: {currentSession.session_id}<br/>
+              Questions loaded: {questions.length}<br/>
+              Current index: {currentQuestionIndex}
+            </p>
+            <button 
+              className="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              onClick={() => setCurrentSession(null)}
+            >
+              Back to Area Selection
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
