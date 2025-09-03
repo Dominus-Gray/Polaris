@@ -196,7 +196,7 @@ class BackendTester:
                 response.json() if response else "No response"
             )
 
-        # Test response submission if session was created
+        # Test response submission if session was created - TEST BOTH JSON AND FORM DATA
         if session_id:
             response_data = {
                 "question_id": "area1_q1",
@@ -204,6 +204,7 @@ class BackendTester:
                 "evidence_provided": False
             }
             
+            # First try JSON format (frontend sends JSON)
             response = self.make_request(
                 'POST', 
                 f'/assessment/tier-session/{session_id}/response', 
@@ -213,18 +214,37 @@ class BackendTester:
             
             if response and response.status_code == 200:
                 self.log_test(
-                    "Assessment Response Submission", 
+                    "Assessment Response Submission (JSON)", 
                     True, 
-                    "Successfully submitted assessment response",
+                    "Successfully submitted assessment response using JSON format",
                     response.json()
                 )
             else:
-                self.log_test(
-                    "Assessment Response Submission", 
-                    False, 
-                    "Failed to submit assessment response",
-                    response.json() if response else "No response"
+                # If JSON fails, try form data format
+                form_response = self.make_request(
+                    'POST', 
+                    f'/assessment/tier-session/{session_id}/response', 
+                    token=self.client_token, 
+                    data=response_data
                 )
+                
+                if form_response and form_response.status_code == 200:
+                    self.log_test(
+                        "Assessment Response Submission (Form Data)", 
+                        True, 
+                        "Successfully submitted assessment response using form data format (JSON failed)",
+                        form_response.json()
+                    )
+                else:
+                    self.log_test(
+                        "Assessment Response Submission", 
+                        False, 
+                        f"Failed with both JSON (status: {response.status_code if response else 'None'}) and form data (status: {form_response.status_code if form_response else 'None'})",
+                        {
+                            "json_response": response.json() if response else "No response",
+                            "form_response": form_response.json() if form_response else "No response"
+                        }
+                    )
 
         return True
 
