@@ -255,6 +255,7 @@ function TierBasedAssessmentPage() {
     setSubmitLoading(true);
     
     try {
+      // First submit the answer
       const formData = new FormData();
       formData.append('question_id', currentQuestion.id);
       formData.append('response', answer);
@@ -264,6 +265,44 @@ function TierBasedAssessmentPage() {
         formData, 
         authHeaders
       );
+
+      // If there's evidence to upload for compliant responses
+      if (answer === 'compliant' && currentQuestion?.tier_level >= 2) {
+        const evidenceFiles = answers[`${currentQuestion.id}_evidence`];
+        const evidenceDescription = answers[`${currentQuestion.id}_evidence_description`];
+        
+        if (evidenceFiles && evidenceFiles.length > 0) {
+          const evidenceFormData = new FormData();
+          evidenceFormData.append('session_id', currentSession.session_id);
+          evidenceFormData.append('question_id', currentQuestion.id);
+          if (evidenceDescription) {
+            evidenceFormData.append('evidence_description', evidenceDescription);
+          }
+          
+          // Add all files
+          for (let file of evidenceFiles) {
+            evidenceFormData.append('files', file);
+          }
+          
+          try {
+            await axios.post(
+              `${API}/api/assessment/evidence/upload`,
+              evidenceFormData,
+              {
+                ...authHeaders,
+                headers: {
+                  ...authHeaders.headers,
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            console.log('Evidence uploaded successfully');
+          } catch (evidenceError) {
+            console.error('Error uploading evidence:', evidenceError);
+            alert('Answer submitted, but evidence upload failed. You can try uploading again later.');
+          }
+        }
+      }
 
       // Update local answers
       const newAnswers = { ...answers, [currentQuestion.id]: answer };
