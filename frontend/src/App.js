@@ -6844,7 +6844,7 @@ function AgencyHome(){
           {activeTab === 'matching' && <AgencyContractMatching />}
           {activeTab === 'issue_cert' && <AgencyIssueCertificate />}
           
-          {activeTab === 'system' && <SystemHealthDashboard />}
+          {activeTab === 'settings' && <SystemHealthDashboard />}
         </div>
       </div>
     </div>
