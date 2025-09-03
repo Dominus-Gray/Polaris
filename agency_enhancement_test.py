@@ -370,15 +370,13 @@ class AgencyEnhancementTester:
         # Test branding settings update
         branding_update = {
             "agency_name": "QA Test Agency Enhanced",
-            "tagline": "Excellence in Business Assessment",
             "primary_color": "#2563eb",
             "secondary_color": "#1e40af",
-            "accent_color": "#3b82f6",
             "logo_url": "https://example.com/qa-agency-logo.png",
-            "custom_messaging": {
-                "welcome_message": "Welcome to our enhanced assessment platform",
-                "completion_message": "Congratulations on completing your assessment!"
-            }
+            "contact_email": QA_AGENCY_EMAIL,
+            "website_url": "https://qa-test-agency.com",
+            "custom_domain": "assess.qa-test-agency.com",
+            "email_footer": "Powered by QA Test Agency - Excellence in Business Assessment"
         }
         
         response = self.make_request('PUT', '/agency/branding', token=self.agency_token, json=branding_update)
