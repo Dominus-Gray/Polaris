@@ -4647,7 +4647,7 @@ function ClientHome(){
                 onClick={async () => {
                   console.log('Free resource clicked:', service);
                   
-                  // Map service area to area ID for navigation
+                  // Navigate to assessment for the specific area instead of external resources
                   const areaMapping = {
                     'Business Formation': 'area1',
                     'Financial Operations': 'area2', 
@@ -4661,28 +4661,24 @@ function ClientHome(){
                     'Competitive Advantage': 'area10'
                   };
                   
-                  // Get the area ID for navigation
+                  // Get the area ID for assessment navigation
                   const areaId = areaMapping[service.area_name] || areaMapping[service.title] || 'area1';
+                  const maxTier = 3; // Default to tier 3 for most comprehensive assessment
                   
                   // Log resource access for analytics
                   try {
-                    const authHeaders = {
-                      headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('polaris_token')}`
-                      }
-                    };
-                    
                     await axios.post(`${API}/analytics/resource-access`, { 
                       resource_id: service.id || service.title, 
                       gap_area: service.area || service.area_name,
+                      action: 'navigate_to_assessment',
                       timestamp: new Date().toISOString()
-                    }, authHeaders);
+                    });
                   } catch (logError) {
                     console.warn('Analytics logging failed:', logError);
                   }
                   
-                  // Navigate to AI-powered external resources page
-                  navigate(`/external-resources/${areaId}`);
+                  // Navigate to assessment with proper parameters for auto-start
+                  navigate(`/assessment?area=${areaId}&tier=${maxTier}&focus=true`);
                 }}
               >
                 <div className="font-medium text-green-800 text-sm">{service.title}</div>
