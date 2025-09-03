@@ -392,6 +392,7 @@ class BackendTester:
         
         # Try different possible endpoints for provider search
         endpoints_to_try = [
+            '/providers/approved',
             '/providers/search',
             '/marketplace/providers',
             '/service-providers/search',
