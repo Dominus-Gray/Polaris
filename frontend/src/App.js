@@ -3001,7 +3001,7 @@ function AreaDeliverablesPage() {
                 className="btn bg-indigo-600 text-white hover:bg-indigo-700"
                 onClick={() => navigate(`/knowledge-base?area=${areaId}`)}
               >
-                <span style={{ color: 'white' }}>Start AI Consultation</span>
+                Start AI Consultation
               </button>
             </div>
           </div>
