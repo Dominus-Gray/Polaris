@@ -4908,9 +4908,9 @@ function ClientHome(){
                 <button 
                   className="btn bg-blue-600 text-white hover:bg-blue-700" 
                   onClick={()=>navigate('/assessment')}
-                  style={{ color: 'white !important' }}
+                  className="text-white"
                 >
-                  <span style={{ color: 'white' }}>Continue Assessment</span>
+                  Continue Assessment
                 </button>
                 <button className="btn" onClick={() => setActiveTab('marketplace')}>Find Professional Help</button>
               </div>
