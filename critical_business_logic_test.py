@@ -544,7 +544,7 @@ class CriticalBusinessLogicTester:
             self.log_test(
                 "Agency BI Access Control", 
                 access_denied, 
-                f"Client access to agency BI {'properly denied' if access_denied else 'incorrectly allowed'}",
+                f"Client access to agency BI {'properly denied' if access_denied else 'incorrectly allowed'} (Status: {client_bi_response.status_code if client_bi_response else 'None'})",
                 {"client_access_status": client_bi_response.status_code if client_bi_response else None}
             )
 
