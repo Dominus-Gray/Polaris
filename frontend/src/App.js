@@ -1231,9 +1231,9 @@ function AssessmentPage(){
             <button 
               className="btn bg-blue-600 text-white hover:bg-blue-700" 
               onClick={() => setShowResources(false)}
-              style={{ color: 'white !important' }}
+              className="text-white"
             >
-              <span style={{ color: 'white' }}>Continue Assessment</span>
+              Continue Assessment
             </button>
           </div>
         </div>
