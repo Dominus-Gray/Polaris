@@ -6073,7 +6073,7 @@ function NavigatorHome(){
               { id: 'approvals', label: 'Approvals', icon: '✅' },
               { id: 'analytics', label: 'Analytics', icon: '📈' },
               { id: 'content', label: 'Content Management', icon: '📚' },
-              { id: 'system', label: 'System Health', icon: '⚡' }
+              { id: 'settings', label: 'Account Settings', icon: '⚙️' }
             ].map((tab) => (
               <button
                 key={tab.id}
