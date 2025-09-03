@@ -235,13 +235,10 @@ class AgencyEnhancementTester:
 
         # Test license purchase with paywall
         purchase_data = {
-            "license_package": "starter",
-            "quantity": 10,
-            "payment_method": "stripe",
-            "billing_info": {
-                "company_name": "QA Test Agency",
-                "billing_email": QA_AGENCY_EMAIL
-            }
+            "tier1_count": 5,
+            "tier2_count": 3,
+            "tier3_count": 2,
+            "total_cost": 250.0
         }
         
         response = self.make_request('POST', '/agency/purchase-licenses', token=self.agency_token, json=purchase_data)
