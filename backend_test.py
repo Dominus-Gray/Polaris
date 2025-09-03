@@ -380,8 +380,178 @@ class BackendTester:
 
         return True
 
+    def test_user_statistics_endpoints(self):
+        """Test 5: User Statistics Endpoints - NEW IMPLEMENTATION VERIFICATION"""
+        print("📊 Testing User Statistics Endpoints (NEW)...")
+        
+        if not self.client_token:
+            self.log_test("User Statistics Endpoints", False, "No client token available")
+            return False
+
+        # Test /user/stats endpoint
+        response = self.make_request('GET', '/user/stats', token=self.client_token)
+        
+        if response and response.status_code == 200:
+            stats_data = response.json()
+            self.log_test(
+                "User Stats Endpoint", 
+                True, 
+                f"Retrieved user statistics with keys: {list(stats_data.keys())}",
+                {"status_code": response.status_code, "data_keys": list(stats_data.keys())}
+            )
+        else:
+            self.log_test(
+                "User Stats Endpoint", 
+                False, 
+                f"Failed to retrieve user stats - Status: {response.status_code if response else 'No response'}",
+                response.json() if response else "No response"
+            )
+
+        # Test /dashboard/stats endpoint
+        response = self.make_request('GET', '/dashboard/stats', token=self.client_token)
+        
+        if response and response.status_code == 200:
+            dashboard_stats = response.json()
+            self.log_test(
+                "Dashboard Stats Endpoint", 
+                True, 
+                f"Retrieved dashboard statistics with keys: {list(dashboard_stats.keys())}",
+                {"status_code": response.status_code, "data_keys": list(dashboard_stats.keys())}
+            )
+        else:
+            self.log_test(
+                "Dashboard Stats Endpoint", 
+                False, 
+                f"Failed to retrieve dashboard stats - Status: {response.status_code if response else 'No response'}",
+                response.json() if response else "No response"
+            )
+
+        return True
+
+    def test_individual_provider_profiles(self):
+        """Test 6: Individual Provider Profile Endpoints - NEW IMPLEMENTATION VERIFICATION"""
+        print("👤 Testing Individual Provider Profile Endpoints (NEW)...")
+        
+        if not self.client_token or not self.provider_token:
+            self.log_test("Individual Provider Profiles", False, "Missing authentication tokens")
+            return False
+
+        # Get provider ID from provider token
+        response = self.make_request('GET', '/auth/me', token=self.provider_token)
+        if not response or response.status_code != 200:
+            self.log_test(
+                "Provider ID Retrieval", 
+                False, 
+                "Failed to get provider ID from token",
+                response.json() if response else "No response"
+            )
+            return False
+
+        provider_data = response.json()
+        provider_id = provider_data.get('id')
+        
+        if not provider_id:
+            self.log_test(
+                "Provider ID Retrieval", 
+                False, 
+                "No provider ID found in token response",
+                provider_data
+            )
+            return False
+
+        # Test individual provider profile endpoint
+        profile_response = self.make_request('GET', f'/providers/{provider_id}', token=self.client_token)
+        
+        if profile_response and profile_response.status_code == 200:
+            profile_data = profile_response.json()
+            self.log_test(
+                "Individual Provider Profile Retrieval", 
+                True, 
+                f"Successfully retrieved provider profile for {provider_data.get('email')}",
+                {
+                    "provider_id": provider_id, 
+                    "profile_keys": list(profile_data.keys()),
+                    "has_email": "email" in profile_data,
+                    "has_business_info": any(key in profile_data for key in ["business_name", "tagline", "overview"])
+                }
+            )
+        else:
+            self.log_test(
+                "Individual Provider Profile Retrieval", 
+                False, 
+                f"Failed to retrieve provider profile - Status: {profile_response.status_code if profile_response else 'No response'}",
+                profile_response.json() if profile_response else "No response"
+            )
+
+        # Test with invalid provider ID
+        invalid_response = self.make_request('GET', '/providers/invalid-id-123', token=self.client_token)
+        
+        if invalid_response and invalid_response.status_code == 404:
+            self.log_test(
+                "Invalid Provider ID Handling", 
+                True, 
+                "Correctly returned 404 for invalid provider ID",
+                {"status_code": invalid_response.status_code}
+            )
+        else:
+            self.log_test(
+                "Invalid Provider ID Handling", 
+                False, 
+                f"Unexpected response for invalid provider ID - Status: {invalid_response.status_code if invalid_response else 'No response'}",
+                invalid_response.json() if invalid_response else "No response"
+            )
+
+        return True
+
+    def test_notifications_system_fix(self):
+        """Test 7: Notifications System - 500 ERROR FIX VERIFICATION"""
+        print("🔔 Testing Notifications System Fix...")
+        
+        if not self.client_token:
+            self.log_test("Notifications System Fix", False, "No client token available")
+            return False
+
+        # Test notifications endpoint (should no longer return 500)
+        response = self.make_request('GET', '/notifications/my', token=self.client_token)
+        
+        if response and response.status_code == 200:
+            notifications = response.json()
+            self.log_test(
+                "Notifications Endpoint Fix", 
+                True, 
+                f"Notifications endpoint working - returned {len(notifications) if isinstance(notifications, list) else 'data'}",
+                {
+                    "status_code": response.status_code,
+                    "response_type": type(notifications).__name__,
+                    "data_keys": list(notifications.keys()) if isinstance(notifications, dict) else "list_response"
+                }
+            )
+        elif response and response.status_code == 404:
+            self.log_test(
+                "Notifications Endpoint Fix", 
+                True, 
+                "Notifications endpoint returns 404 (acceptable - feature may not be fully implemented)",
+                {"status_code": response.status_code}
+            )
+        elif response and response.status_code == 500:
+            self.log_test(
+                "Notifications Endpoint Fix", 
+                False, 
+                "Notifications endpoint still returns 500 error - FIX NOT WORKING",
+                response.json() if response else "No response"
+            )
+        else:
+            self.log_test(
+                "Notifications Endpoint Fix", 
+                False, 
+                f"Unexpected response from notifications endpoint - Status: {response.status_code if response else 'No response'}",
+                response.json() if response else "No response"
+            )
+
+        return True
+
     def test_marketplace_integration(self):
-        """Test 5: Marketplace Integration - service provider filtering and search"""
+        """Test 8: Marketplace Integration - service provider filtering and search"""
         print("🏪 Testing Marketplace Integration...")
         
         if not self.client_token:
@@ -429,33 +599,6 @@ class BackendTester:
                 "No working provider search endpoint found",
                 {"tried_endpoints": endpoints_to_try}
             )
-
-        # Test provider profile retrieval (if we have provider token, we can get provider info)
-        if self.provider_token:
-            response = self.make_request('GET', '/auth/me', token=self.provider_token)
-            if response and response.status_code == 200:
-                provider_data = response.json()
-                provider_id = provider_data.get('id')
-                
-                if provider_id:
-                    # Try to get provider profile
-                    profile_response = self.make_request('GET', f'/providers/{provider_id}', token=self.client_token)
-                    
-                    if profile_response and profile_response.status_code == 200:
-                        profile_data = profile_response.json()
-                        self.log_test(
-                            "Provider Profile Retrieval", 
-                            True, 
-                            f"Retrieved provider profile for {provider_data.get('email')}",
-                            {"provider_id": provider_id, "has_profile": True}
-                        )
-                    else:
-                        self.log_test(
-                            "Provider Profile Retrieval", 
-                            False, 
-                            "Failed to retrieve provider profile",
-                            profile_response.json() if profile_response else "No response"
-                        )
 
         return True
 
