@@ -1379,7 +1379,7 @@ function AssessmentPage(){
                         </p>
                         <button 
                           className="btn btn-sm w-full"
-                          style={{ backgroundColor: 'rgb(22, 163, 74)', color: 'white' }}
+                          className="bg-green-600 hover:bg-green-700 text-white"
                           onClick={async () => {
                             // Mark as pending with free resources selected
                             const updatedAnswers = {...answers};
