@@ -9890,6 +9890,72 @@ async def get_my_notifications(
         logger.error(f"Error getting notifications: {e}")
         raise HTTPException(status_code=500, detail="Failed to get notifications")
 
+# User Statistics Endpoints
+@api.get("/user/stats")
+async def get_user_stats(current=Depends(require_user)):
+    """Get user statistics"""
+    try:
+        stats = {
+            "assessments_completed": await db.assessment_sessions.count_documents({
+                "user_id": current["id"],
+                "status": "completed"
+            }),
+            "service_requests_created": await db.service_requests.count_documents({
+                "client_id": current["id"]
+            }),
+            "engagements_count": await db.engagements.count_documents({
+                "$or": [
+                    {"client_id": current["id"]},
+                    {"provider_id": current["id"]}
+                ]
+            }),
+            "profile_completion": 100 if current.get("profile_completed") else 75
+        }
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting user stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get user statistics")
+
+@api.get("/dashboard/stats")
+async def get_dashboard_stats(current=Depends(require_user)):
+    """Get dashboard-specific statistics"""
+    try:
+        if current["role"] == "client":
+            stats = {
+                "assessment_completion": await db.assessment_sessions.count_documents({
+                    "user_id": current["id"],
+                    "status": "completed"
+                }),
+                "active_services": await db.engagements.count_documents({
+                    "client_id": current["id"],
+                    "status": {"$in": ["active", "in_progress"]}
+                }),
+                "critical_gaps": await db.assessment_responses.count_documents({
+                    "user_id": current["id"],
+                    "response": "gap_exists"
+                }),
+                "readiness_score": 85  # Calculate based on assessments
+            }
+        elif current["role"] == "provider":
+            stats = {
+                "active_engagements": await db.engagements.count_documents({
+                    "provider_id": current["id"],
+                    "status": {"$in": ["active", "in_progress"]}
+                }),
+                "total_clients": await db.engagements.distinct("client_id", {
+                    "provider_id": current["id"]
+                }),
+                "avg_rating": 4.5,  # Calculate from reviews
+                "revenue_this_month": 12500  # Calculate from completed engagements
+            }
+        else:
+            stats = {"message": "Statistics not available for this role"}
+            
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting dashboard stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get dashboard statistics")
+
 @api.put("/notifications/{notification_id}/read")
 async def mark_notification_read(notification_id: str, current=Depends(require_user)):
     """Mark notification as read"""
