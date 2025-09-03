@@ -70,6 +70,20 @@ function TierBasedAssessmentPage() {
           setAvailableAreas(areasWithProgress);
           setAssessmentProgress(progressResponse.data);
           console.log(`Loaded ${areasWithProgress.length} areas with progress data`);
+          
+          // Auto-start assessment if URL parameters are provided
+          if (autoFocus && focusArea) {
+            const targetArea = areasWithProgress.find(area => area.area_id === focusArea);
+            if (targetArea) {
+              console.log('Auto-starting assessment for area:', focusArea, 'tier:', focusTier || targetArea.max_tier_access);
+              setSelectedArea(targetArea);
+              setSelectedTier(focusTier || targetArea.max_tier_access);
+              // Automatically start the session after a brief delay
+              setTimeout(() => {
+                startNewSession(targetArea.area_id, focusTier || targetArea.max_tier_access);
+              }, 500);
+            }
+          }
         }
         
         setLoading(false);
