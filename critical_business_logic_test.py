@@ -548,15 +548,25 @@ class CriticalBusinessLogicTester:
         # Test agency credentials access control
         if self.client_token:
             # Test that client cannot access agency BI
-            client_bi_response = self.make_request('GET', '/agency/business-intelligence', token=self.client_token)
-            
-            access_denied = client_bi_response and client_bi_response.status_code in [401, 403]
-            self.log_test(
-                "Agency BI Access Control", 
-                access_denied, 
-                f"Client access to agency BI {'properly denied' if access_denied else 'incorrectly allowed'} (Status: {client_bi_response.status_code if client_bi_response else 'None'})",
-                {"client_access_status": client_bi_response.status_code if client_bi_response else None}
-            )
+            try:
+                import requests
+                headers = {'Authorization': f'Bearer {self.client_token}'}
+                client_bi_response = requests.get(f"{BASE_URL}/agency/business-intelligence", headers=headers)
+                
+                access_denied = client_bi_response.status_code in [401, 403]
+                self.log_test(
+                    "Agency BI Access Control", 
+                    access_denied, 
+                    f"Client access to agency BI {'properly denied' if access_denied else 'incorrectly allowed'} (Status: {client_bi_response.status_code})",
+                    {"client_access_status": client_bi_response.status_code}
+                )
+            except Exception as e:
+                self.log_test(
+                    "Agency BI Access Control", 
+                    False, 
+                    f"Failed to test access control: {e}",
+                    {"error": str(e)}
+                )
 
         return True
 
