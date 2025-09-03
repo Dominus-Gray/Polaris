@@ -249,7 +249,7 @@ class AgencyEnhancementTester:
                     "License Purchase Paywall", 
                     True, 
                     "License purchase correctly requires payment (paywall working)",
-                    {"status_code": response.status_code, "package": purchase_data['license_package']}
+                    {"status_code": response.status_code, "total_cost": purchase_data['total_cost']}
                 )
             else:
                 purchase_response = response.json()
