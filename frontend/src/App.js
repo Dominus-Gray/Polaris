@@ -5240,6 +5240,9 @@ function ClientHome(){
           {/* Marketplace Tab - Browse and Hire Service Providers */}
           {activeTab === 'marketplace' && (
             <div className="space-y-6">
+              {/* Enhanced Service Provider Filters */}
+              <ClientRemediationFilters />
+              
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">Professional Service Providers</h3>
