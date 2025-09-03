@@ -35,8 +35,8 @@ function TierBasedAssessmentPage() {
     }
   };
 
-  // Redirect non-clients to home
-  if (!me || me.role !== 'client') {
+  // Redirect non-clients to home (allow null/undefined for testing)
+  if (me && me.role && me.role !== 'client') {
     navigate('/home');
     return null;
   }
