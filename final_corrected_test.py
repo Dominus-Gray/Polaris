@@ -128,7 +128,7 @@ class FinalCorrectedTester:
                 f'/assessment/tier-session/{session_id}/response', 
                 token=self.client_token, 
                 data={
-                    "question_id": "area1_q4",
+                    "question_id": "q1_4_t2",  # Correct Tier 2 question ID
                     "response": "compliant",
                     "evidence_provided": "false"
                 }
