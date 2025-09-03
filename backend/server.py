@@ -10326,6 +10326,153 @@ async def download_evidence_file(
         logger.error(f"Error downloading evidence file: {e}")
         raise HTTPException(status_code=500, detail="Failed to download file")
 
+# Agency Business Intelligence Dashboard
+@api.get("/agency/business-intelligence")
+async def get_agency_business_intelligence(current=Depends(require_role("agency"))):
+    """Get comprehensive business intelligence dashboard for agency to track sponsored businesses"""
+    try:
+        # Get all clients sponsored by this agency
+        sponsored_clients = await db.users.find({
+            "role": "client",
+            "license_code": {"$exists": True}
+        }).to_list(None)
+        
+        # Filter clients that belong to this agency
+        agency_clients = []
+        for client in sponsored_clients:
+            if client.get("license_code"):
+                license_record = await db.license_codes.find_one({"code": client["license_code"]})
+                if license_record and license_record.get("agency_user_id") == current["id"]:
+                    agency_clients.append(client)
+        
+        # Calculate comprehensive metrics for each client
+        client_metrics = []
+        for client in agency_clients:
+            # Get tier-based assessment data
+            tier_sessions = await db.tier_assessment_sessions.find({
+                "user_id": client["id"]
+            }).to_list(None)
+            
+            # Calculate client metrics
+            total_areas = 10
+            completed_areas = 0
+            critical_gaps = 0
+            evidence_required = 0
+            evidence_submitted = 0
+            evidence_approved = 0
+            
+            for session in tier_sessions:
+                if session.get("status") == "completed":
+                    completed_areas += 1
+                
+                for response in session.get("responses", []):
+                    if response.get("response") in ["gap_exists", "no_help"]:
+                        critical_gaps += 1
+                    elif response.get("response") == "compliant" and response.get("tier_level", 1) >= 2:
+                        evidence_required += 1
+                        # Check evidence submission and approval
+                        evidence_record = await db.assessment_evidence.find_one({
+                            "session_id": session["_id"],
+                            "question_id": response.get("question_id")
+                        })
+                        if evidence_record:
+                            evidence_submitted += 1
+                            if evidence_record.get("review_status") == "approved":
+                                evidence_approved += 1
+            
+            # Get service request activity
+            active_services = await db.service_requests.count_documents({
+                "client_id": client["id"],
+                "status": {"$in": ["active", "in_progress", "pending"]}
+            })
+            
+            completed_services = await db.engagements.count_documents({
+                "client_id": client["id"],
+                "status": "completed"
+            })
+            
+            # Calculate readiness score
+            completion_rate = (completed_areas / total_areas) * 100 if total_areas > 0 else 0
+            evidence_approval_rate = (evidence_approved / evidence_required) * 100 if evidence_required > 0 else 0
+            readiness_score = round((completion_rate * 0.6) + (evidence_approval_rate * 0.4), 1)
+            
+            client_metrics.append({
+                "client_id": client["id"],
+                "client_email": client["email"],
+                "company_name": client.get("company_name", "Unknown"),
+                "registration_date": client.get("created_at"),
+                "assessment_completion": completion_rate,
+                "readiness_score": readiness_score,
+                "critical_gaps": critical_gaps,
+                "evidence_required": evidence_required,
+                "evidence_submitted": evidence_submitted,
+                "evidence_approved": evidence_approved,
+                "active_services": active_services,
+                "completed_services": completed_services,
+                "compliance_status": "compliant" if critical_gaps == 0 and evidence_approval_rate >= 80 else "needs_attention"
+            })
+        
+        # Calculate aggregate metrics
+        total_clients = len(agency_clients)
+        avg_readiness = sum(c["readiness_score"] for c in client_metrics) / total_clients if total_clients > 0 else 0
+        compliant_clients = len([c for c in client_metrics if c["compliance_status"] == "compliant"])
+        total_gaps = sum(c["critical_gaps"] for c in client_metrics)
+        total_evidence_pending = sum(c["evidence_required"] - c["evidence_submitted"] for c in client_metrics)
+        
+        # Get monthly trends
+        from datetime import datetime, timedelta
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        recent_assessments = await db.tier_assessment_sessions.count_documents({
+            "user_id": {"$in": [c["id"] for c in agency_clients]},
+            "created_at": {"$gte": thirty_days_ago},
+            "status": "completed"
+        })
+        
+        recent_evidence_submissions = await db.assessment_evidence.count_documents({
+            "user_id": {"$in": [c["id"] for c in agency_clients]},
+            "uploaded_at": {"$gte": thirty_days_ago}
+        })
+        
+        # Governance alerts
+        governance_alerts = []
+        for client in client_metrics:
+            if client["critical_gaps"] > 5:
+                governance_alerts.append({
+                    "type": "high_risk",
+                    "client_email": client["client_email"],
+                    "message": f"Client has {client['critical_gaps']} critical gaps requiring immediate attention"
+                })
+            if client["evidence_required"] > 0 and client["evidence_submitted"] == 0:
+                governance_alerts.append({
+                    "type": "evidence_missing",
+                    "client_email": client["client_email"],
+                    "message": f"Client has {client['evidence_required']} evidence submissions pending"
+                })
+        
+        return {
+            "agency_overview": {
+                "total_sponsored_clients": total_clients,
+                "average_readiness_score": round(avg_readiness, 1),
+                "compliant_clients": compliant_clients,
+                "compliance_rate": round((compliant_clients / total_clients) * 100, 1) if total_clients > 0 else 0,
+                "total_critical_gaps": total_gaps,
+                "pending_evidence_reviews": total_evidence_pending
+            },
+            "monthly_activity": {
+                "assessments_completed": recent_assessments,
+                "evidence_submissions": recent_evidence_submissions,
+                "period": "last_30_days"
+            },
+            "client_details": client_metrics,
+            "governance_alerts": governance_alerts,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting agency business intelligence: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get business intelligence dashboard")
+
 @api.put("/notifications/{notification_id}/read")
 async def mark_notification_read(notification_id: str, current=Depends(require_user)):
     """Mark notification as read"""
