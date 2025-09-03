@@ -2829,6 +2829,41 @@ async def get_approved_providers():
     providers = await db.users.find({"role": "provider", "approval_status": "approved"}).to_list(1000)
     return {"providers": providers}
 
+@api.get("/providers/{provider_id}")
+async def get_provider_profile(provider_id: str):
+    """Get individual provider profile by ID"""
+    try:
+        provider = await db.users.find_one({
+            "id": provider_id, 
+            "role": "provider", 
+            "approval_status": "approved"
+        })
+        
+        if not provider:
+            raise HTTPException(status_code=404, detail="Provider not found or not approved")
+        
+        # Get provider's service areas and capabilities if available
+        provider_profile = {
+            "id": provider["id"],
+            "email": provider["email"],
+            "company_name": provider.get("company_name"),
+            "business_description": provider.get("business_description"),
+            "services_offered": provider.get("services_offered", []),
+            "certifications": provider.get("certifications", []),
+            "business_areas": provider.get("business_areas", []),
+            "location": provider.get("location"),
+            "rating": provider.get("rating", 0),
+            "reviews_count": provider.get("reviews_count", 0),
+            "created_at": provider["created_at"],
+            "approval_status": provider["approval_status"]
+        }
+        
+        return provider_profile
+        
+    except Exception as e:
+        logger.error(f"Error retrieving provider profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve provider profile")
+
 
 # ---------------- Agency Approval System ----------------
 class AgencyApprovalIn(BaseModel):
