@@ -319,7 +319,7 @@ class FinalCorrectedTester:
                 f'/assessment/tier-session/{session_id}/response', 
                 token=self.client_token, 
                 data={
-                    "question_id": "area3_q1",
+                    "question_id": "q3_1_t1",  # Correct Tier 1 question ID for area3
                     "response": "compliant",
                     "evidence_provided": "false"
                 }
