@@ -10026,7 +10026,7 @@ async def upload_evidence(
         
         for file in files:
             # Validate file type
-            allowed_extensions = {'.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'}
+            allowed_extensions = {'.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.txt'}
             file_extension = os.path.splitext(file.filename)[1].lower()
             
             if file_extension not in allowed_extensions:
