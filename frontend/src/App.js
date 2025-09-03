@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, Navigate,
 // Import new page components
 import RevenueOptimization from './pages/RevenueOptimization';
 import NavigatorApprovals from './pages/NavigatorApprovals';
+import NavigatorEvidenceReview from './components/NavigatorEvidenceReview';
 import AgencyIssueCertificate from './pages/AgencyIssueCertificate';
 import AgencyLicenses from './pages/AgencyLicenses';
 import AssessmentResultsPage from './pages/AssessmentResultsPage';
