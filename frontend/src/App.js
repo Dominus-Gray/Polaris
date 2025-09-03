@@ -6515,15 +6515,12 @@ function AgencyHome(){
           <nav className="flex gap-6">
             {[
               { id: 'overview', label: 'Overview', icon: '📊' },
-              { id: 'subscription', label: 'Subscription & Billing', icon: '💳' },
-              { id: 'branding', label: 'Branding & Theme', icon: '🎨' },
-              { id: 'licenses', label: 'Client Licenses', icon: '🔑' },
-              { id: 'sponsored', label: 'Sponsored Companies', icon: '🏷️' },
-              { id: 'matching', label: 'Contract Matching', icon: '🤝' },
-              { id: 'issue_cert', label: 'Issue Certificates', icon: '✅' },
               { id: 'business_intelligence', label: 'Business Intelligence', icon: '📊' },
               { id: 'license_distribution', label: 'License Distribution', icon: '📧' },
               { id: 'ai_matching', label: 'AI Contract Matching', icon: '🤖' },
+              { id: 'sponsored', label: 'Sponsored Companies', icon: '🏷️' },
+              { id: 'matching', label: 'Contract Matching', icon: '🤝' },
+              { id: 'issue_cert', label: 'Issue Certificates', icon: '✅' },
               { id: 'settings', label: 'Account Settings', icon: '⚙️' }
             ].map((tab) => (
               <button
