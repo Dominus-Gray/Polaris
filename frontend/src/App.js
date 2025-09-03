@@ -1401,7 +1401,7 @@ function AssessmentPage(){
                             navigate(`/external-resources/${currentAreaData.id}?question=${question.id}`);
                           }}
                         >
-                          <span style={{ color: 'white' }}>View Free Resources</span>
+                          View Free Resources
                         </button>
                       </div>
                       
