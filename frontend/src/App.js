@@ -2900,7 +2900,7 @@ function AreaDeliverablesPage() {
                         border: 'none'
                       }}
                     >
-                      <span style={{ color: 'white' }}>Download Template</span>
+                      Download Template
                     </button>
                   </div>
                 ))}
