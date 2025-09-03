@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 # Test configuration
-BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_CREDENTIALS = {

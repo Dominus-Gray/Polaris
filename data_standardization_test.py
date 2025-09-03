@@ -12,7 +12,7 @@ from datetime import datetime
 import uuid
 
 # Test Configuration
-BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
 
 # QA Test Credentials
 QA_CREDENTIALS = {

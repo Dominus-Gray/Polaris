@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
 
 def approve_qa_users():
     """Approve existing QA users"""

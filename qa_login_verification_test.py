@@ -10,7 +10,7 @@ import sys
 from typing import Dict, Any, Optional
 
 # Backend URL from environment
-BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
 
 # QA Credentials to test
 QA_CREDENTIALS = [

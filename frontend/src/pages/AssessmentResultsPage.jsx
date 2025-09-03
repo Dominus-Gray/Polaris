@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://providermatrix.preview.emergentagent.com';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://smartbiz-assess.preview.emergentagent.com';
 
 function AssessmentResultsPage() {
   const { sessionId } = useParams();

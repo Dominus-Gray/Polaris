@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration
-BACKEND_URL = "https://providermatrix.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},
@@ -206,7 +206,7 @@ class ProductionHealthValidator:
         payment_data = {
             "package_id": "kb_all_areas",
             "payment_method": "pm_card_visa",
-            "origin_url": "https://providermatrix.preview.emergentagent.com/knowledge-base"
+            "origin_url": "https://smartbiz-assess.preview.emergentagent.com/knowledge-base"
         }
         
         status, data = await self.make_request("POST", "/payments/knowledge-base", token, payment_data)
@@ -247,7 +247,7 @@ class ProductionHealthValidator:
             "provider_id": "provider_test_67890",
             "agreed_fee": 1500.00,
             "payment_method": "pm_card_visa",
-            "origin_url": "https://providermatrix.preview.emergentagent.com/service-request"
+            "origin_url": "https://smartbiz-assess.preview.emergentagent.com/service-request"
         }
         
         status, data = await self.make_request("POST", "/payments/service-request", token, payment_data)

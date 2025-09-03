@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://providermatrix.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://smartbiz-assess.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Creating exact test credentials at: {API_BASE}")
