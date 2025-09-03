@@ -5068,7 +5068,7 @@ function ClientHome(){
                         className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer group transform hover:scale-105"
                         onClick={() => {
                           // Navigate directly to assessment for this specific area
-                          navigate(`/assessment?area=${area.area_id}&focus=true`);
+                          navigate(`/assessment?area=${area.area_id}&tier=${area.max_tier_access}&focus=true`);
                         }}
                       >
                         <div className="flex items-start justify-between mb-4">
