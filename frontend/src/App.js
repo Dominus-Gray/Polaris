@@ -4541,7 +4541,7 @@ function ClientHome(){
               <div>
                 <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{gaps.length}</div>
                 <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Critical Gaps</div>
-                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>Require Attention</div>
+                <div className="text-xs !text-slate-500 mt-1" style={{color: '#64748b !important'}}>Require Attention</div>
               </div>
             </div>
           </div>
@@ -4556,7 +4556,7 @@ function ClientHome(){
               <div>
                 <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{serviceRequests.filter(r => r.status === 'active').length}</div>
                 <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Active Services</div>
-                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>In Progress</div>
+                <div className="text-xs !text-slate-500 mt-1" style={{color: '#64748b !important'}}>In Progress</div>
               </div>
             </div>
           </div>
@@ -4571,7 +4571,7 @@ function ClientHome(){
               <div>
                 <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{data.readiness || 0}%</div>
                 <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Readiness Score</div>
-                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>Procurement Ready</div>
+                <div className="text-xs !text-slate-500 mt-1" style={{color: '#64748b !important'}}>Procurement Ready</div>
               </div>
             </div>
           </div>
