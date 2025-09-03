@@ -9883,10 +9883,22 @@ async def get_my_notifications(
             # Check if collection exists and has documents
             collection_exists = await db.notifications.find_one({})
             
-            notifications = await db.notifications.find(query)\
+            notifications_raw = await db.notifications.find(query)\
                 .sort("created_at", -1)\
                 .limit(limit)\
                 .to_list(limit)
+            
+            # Convert ObjectId fields to strings for JSON serialization
+            notifications = []
+            for notification in notifications_raw:
+                # Convert _id to string if it exists
+                if "_id" in notification:
+                    notification["_id"] = str(notification["_id"])
+                # Convert any other ObjectId fields to strings
+                for key, value in notification.items():
+                    if hasattr(value, '__class__') and value.__class__.__name__ == 'ObjectId':
+                        notification[key] = str(value)
+                notifications.append(notification)
                 
             unread_count = await db.notifications.count_documents({
                 "user_id": current["id"],
