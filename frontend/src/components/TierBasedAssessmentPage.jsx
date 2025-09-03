@@ -10,7 +10,7 @@ function TierBasedAssessmentPage() {
   const [availableAreas, setAvailableAreas] = useState([]);
   const [assessmentProgress, setAssessmentProgress] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
-  const [selectedTier, setSelectedTier] = useState(1);
+  const [selectedTier, setSelectedTier] = useState(3); // Default to Tier 3 for comprehensive assessment
   const [currentSession, setCurrentSession] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
