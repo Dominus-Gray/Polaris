@@ -6534,6 +6534,9 @@ function AgencyHome(){
               { id: 'sponsored', label: 'Sponsored Companies', icon: '🏷️' },
               { id: 'matching', label: 'Contract Matching', icon: '🤝' },
               { id: 'issue_cert', label: 'Issue Certificates', icon: '✅' },
+              { id: 'business_intelligence', label: 'Business Intelligence', icon: '📊' },
+              { id: 'license_distribution', label: 'License Distribution', icon: '📧' },
+              { id: 'ai_matching', label: 'AI Contract Matching', icon: '🤖' },
               { id: 'settings', label: 'Account Settings', icon: '⚙️' }
             ].map((tab) => (
               <button
