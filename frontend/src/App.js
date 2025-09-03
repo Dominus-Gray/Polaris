@@ -6851,8 +6851,10 @@ function AgencyHome(){
           {activeTab === 'sponsored' && <AgencySponsoredClients />}
           {activeTab === 'matching' && <AgencyContractMatching />}
           {activeTab === 'issue_cert' && <AgencyIssueCertificate />}
-          
-          {activeTab === 'settings' && <SystemHealthDashboard />}
+          {activeTab === 'business_intelligence' && <AgencyBusinessIntelligenceDashboard />}
+          {activeTab === 'license_distribution' && <AgencyLicenseDistribution />}
+          {activeTab === 'ai_matching' && <AgencyAIContractMatching />}
+          {activeTab === 'settings' && <AgencyAccountSettings />}
         </div>
       </div>
     </div>
