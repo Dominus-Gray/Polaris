@@ -6830,13 +6830,350 @@ function AgencyHome(){
             </div>
           )}
 
-          {activeTab === 'business_intelligence' && <AgencyBusinessIntelligenceDashboard />}
-          {activeTab === 'license_distribution' && <AgencyLicenseDistribution />}
-          {activeTab === 'ai_matching' && <AgencyAIContractMatching />}
+          {activeTab === 'business_intelligence' && (
+            <div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-6">Business Intelligence Dashboard</h3>
+              <p className="text-slate-600 mb-8">Track sponsored company progression across all key business areas</p>
+              
+              {/* Overview Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-indigo-100 rounded-lg">
+                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{impact?.invites?.total || 0}</div>
+                      <div className="text-sm text-slate-600">Sponsored Clients</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{Math.round((impact?.assessments?.completed || 0) / (impact?.invites?.total || 1) * 100)}%</div>
+                      <div className="text-sm text-slate-600">Avg Readiness</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{Math.round((impact?.certificates?.issued || 0) / (impact?.invites?.total || 1) * 100)}%</div>
+                      <div className="text-sm text-slate-600">Compliance Rate</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-red-100 rounded-lg">
+                      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{impact?.gaps?.critical || 0}</div>
+                      <div className="text-sm text-slate-600">Critical Gaps</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Client Progress Table */}
+              <div className="bg-white rounded-lg border">
+                <div className="p-6 border-b">
+                  <h4 className="text-lg font-semibold text-slate-900">Sponsored Client Progression</h4>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-8 text-slate-500">
+                    <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p>Client progression tracking available with active sponsored businesses</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'license_distribution' && (
+            <div>
+              {/* Moved Banner: Enhanced Tier Banner with License Information */}
+              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-xl p-6 text-white mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">{tierInfo.tier} Plan - License Distribution</h3>
+                    <p className="text-indigo-100">Manage and distribute assessment licenses to sponsored businesses</p>
+                  </div>
+                  <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                    Purchase Licenses
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div className="text-2xl font-bold mb-1">25</div>
+                    <div className="text-sm text-indigo-100">Tier 1 Licenses</div>
+                    <div className="text-xs text-indigo-200 mt-1">$25 each</div>
+                  </div>
+                  <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div className="text-2xl font-bold mb-1">10</div>
+                    <div className="text-sm text-indigo-100">Tier 2 Licenses</div>
+                    <div className="text-xs text-indigo-200 mt-1">$75 each</div>
+                  </div>
+                  <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div className="text-2xl font-bold mb-1">5</div>
+                    <div className="text-sm text-indigo-100">Tier 3 Licenses</div>
+                    <div className="text-xs text-indigo-200 mt-1">$150 each</div>
+                  </div>
+                </div>
+                
+                {/* Tier Scope Information */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                    <h5 className="font-semibold mb-2">Tier 1 - Basic Assessment</h5>
+                    <p className="text-xs text-indigo-100">Self-reported responses for fundamental business readiness across 10 business areas</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                    <h5 className="font-semibold mb-2">Tier 2 - Enhanced Assessment</h5>
+                    <p className="text-xs text-indigo-100">Evidence-backed validation for intermediate business verification with document upload</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                    <h5 className="font-semibold mb-2">Tier 3 - Comprehensive Assessment</h5>
+                    <p className="text-xs text-indigo-100">Full evidence review with navigator validation for procurement readiness certification</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* License Distribution Form */}
+              <div className="bg-white rounded-lg border p-6 mb-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Send Assessment Invitation</h4>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Recipient Email</label>
+                      <input 
+                        type="email" 
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="client@business.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Assessment Tier</label>
+                      <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">Tier 1 - Basic Assessment ($25)</option>
+                        <option value="2">Tier 2 - Enhanced Assessment ($75)</option>
+                        <option value="3">Tier 3 - Comprehensive Assessment ($150)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Custom Message (Optional)</label>
+                    <textarea 
+                      rows={3}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Add a personalized message for your sponsored business..."
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                      Send Invitation
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Sent Invitations */}
+              <div className="bg-white rounded-lg border">
+                <div className="p-6 border-b">
+                  <h4 className="text-lg font-semibold text-slate-900">Sent Invitations</h4>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-8 text-slate-500">
+                    <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <p>No invitations sent yet. Send your first assessment invitation above.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'ai_matching' && (
+            <div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-6">AI-Powered Contract Matching</h3>
+              <p className="text-slate-600 mb-8">Intelligent contract matching with risk assessment and recommendations</p>
+              
+              <div className="bg-white rounded-lg border p-6 mb-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Contract Opportunities</h4>
+                <div className="text-center py-8 text-slate-500">
+                  <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p>Connect with local procurement systems to view available contracts</p>
+                  <button className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    Connect Data Sources
+                  </button>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg border">
+                <div className="p-6 border-b">
+                  <h4 className="text-lg font-semibold text-slate-900">AI Matching Results</h4>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-8 text-slate-500">
+                    <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <p>Run AI matching analysis on contract opportunities to see recommendations</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {activeTab === 'sponsored' && <AgencySponsoredClients />}
           {activeTab === 'matching' && <AgencyContractMatching />}
           {activeTab === 'issue_cert' && <AgencyIssueCertificate />}
-          {activeTab === 'settings' && <AgencyAccountSettings />}
+          
+          {activeTab === 'settings' && (
+            <div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-6">Account Settings</h3>
+              
+              {/* Settings Navigation */}
+              <div className="mb-6">
+                <div className="flex space-x-1 bg-slate-100 rounded-lg p-1">
+                  <button className="px-4 py-2 rounded-lg text-sm font-medium bg-white text-slate-900 shadow-sm">
+                    💳 Subscription & Billing
+                  </button>
+                  <button className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/50">
+                    🎨 Branding & Theme
+                  </button>
+                </div>
+              </div>
+              
+              {/* Subscription & Billing Section */}
+              <div className="space-y-6">
+                {/* Current Subscription */}
+                <div className="bg-white rounded-lg border p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Current Subscription</h4>
+                  <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <div className="text-lg font-semibold text-slate-900">{tierInfo.tier} Plan</div>
+                        <div className="text-sm text-slate-600">Active since account creation</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-slate-600">${tierInfo.price}</div>
+                        <div className="text-sm text-slate-600">per license</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subscription Plans */}
+                <div className="bg-white rounded-lg border p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Available Plans</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="border-2 border-slate-200 rounded-xl p-6">
+                      <div className="text-center">
+                        <h5 className="text-lg font-semibold text-slate-900">Starter</h5>
+                        <div className="text-3xl font-bold text-slate-900 mt-2">$99</div>
+                        <div className="text-sm text-slate-600">per month</div>
+                        <div className="mt-4 space-y-2 text-sm text-slate-600">
+                          <div>25 Tier 1 Licenses/month</div>
+                          <div>5 Tier 2 Licenses/month</div>
+                          <div>2 Tier 3 Licenses/month</div>
+                          <div>Basic Analytics</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-2 border-indigo-500 bg-indigo-50 rounded-xl p-6">
+                      <div className="text-center">
+                        <div className="text-xs bg-indigo-500 text-white px-2 py-1 rounded-full mb-2">POPULAR</div>
+                        <h5 className="text-lg font-semibold text-slate-900">Professional</h5>
+                        <div className="text-3xl font-bold text-slate-900 mt-2">$299</div>
+                        <div className="text-sm text-slate-600">per month</div>
+                        <div className="mt-4 space-y-2 text-sm text-slate-600">
+                          <div>100 Tier 1 Licenses/month</div>
+                          <div>25 Tier 2 Licenses/month</div>
+                          <div>10 Tier 3 Licenses/month</div>
+                          <div>Advanced Analytics</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-2 border-slate-200 rounded-xl p-6">
+                      <div className="text-center">
+                        <h5 className="text-lg font-semibold text-slate-900">Enterprise</h5>
+                        <div className="text-3xl font-bold text-slate-900 mt-2">$699</div>
+                        <div className="text-sm text-slate-600">per month</div>
+                        <div className="mt-4 space-y-2 text-sm text-slate-600">
+                          <div>Unlimited Tier 1 Licenses</div>
+                          <div>100 Tier 2 Licenses/month</div>
+                          <div>50 Tier 3 Licenses/month</div>
+                          <div>Premium Analytics</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Branding & Theme Section (shown when that tab would be active) */}
+                <div className="bg-white rounded-lg border p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Branding & Theme</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Agency Name</label>
+                      <input 
+                        type="text"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                        placeholder="Your Agency Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Primary Color</label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="color"
+                          value="#6366f1"
+                          className="w-12 h-10 border border-slate-300 rounded-lg cursor-pointer"
+                        />
+                        <input 
+                          type="text"
+                          value="#6366f1"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6">
+                    <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                      Save Branding Settings
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
