@@ -2146,7 +2146,7 @@ function KnowledgeBasePage(){
                       className="btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-2 text-sm font-medium text-white border-none"
                       onClick={() => unlockArea(area.id)}
                       disabled={paymentLoading}
-                      style={{ color: 'white !important' }}
+                      className="text-white"
                     >
                       {paymentLoading ? (
                         <span className="flex items-center gap-2">
