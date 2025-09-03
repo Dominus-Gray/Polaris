@@ -6219,9 +6219,9 @@ function NavigatorHome(){
             </div>
           )}
 
-          {activeTab === 'system' && (
+          {activeTab === 'settings' && (
             <div className="text-center py-12 text-slate-500">
-              <p>System health monitoring coming soon...</p>
+              <p>Account settings coming soon...</p>
             </div>
           )}
         </div>
