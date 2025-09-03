@@ -235,16 +235,15 @@ class CriticalBusinessLogicTester:
             # Create a test file for evidence upload
             test_file_content = b"This is a test evidence document for Tier 2 assessment compliance verification."
             
-            # Test evidence upload endpoint
+            # Test evidence upload endpoint - use 'files' parameter (plural) as expected by endpoint
             files = {
-                'file': ('evidence_document.pdf', test_file_content, 'application/pdf')
+                'files': ('evidence_document.pdf', test_file_content, 'application/pdf')
             }
             
             upload_data = {
                 'session_id': self.test_session_id,
                 'question_id': 'area1_q1',
-                'evidence_type': 'document',
-                'description': 'Compliance evidence for business formation requirements'
+                'evidence_description': 'Compliance evidence for business formation requirements'
             }
             
             # Try evidence upload endpoint
