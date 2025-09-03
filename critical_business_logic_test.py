@@ -415,14 +415,14 @@ class CriticalBusinessLogicTester:
                     response_data = {
                         "question_id": "area1_q3",
                         "response": "gap_exists",
-                        "evidence_provided": False
+                        "evidence_provided": "false"
                     }
                     
                     self.make_request(
                         'POST', 
                         f'/assessment/tier-session/{self.test_session_id}/response', 
                         token=self.client_token, 
-                        json=response_data
+                        data=response_data
                     )
                     
                     # Check dashboard again for updates
