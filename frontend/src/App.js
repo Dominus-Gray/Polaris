@@ -8045,6 +8045,7 @@ function AppShell(){
           <Route path="/assessment/results/:sessionId" element={<AssessmentResults />} />
           <Route path="/agency" element={<AgencyHome />} />
           <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
+          <Route path="/navigator/evidence-review" element={<NavigatorEvidenceReview />} />
           {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
           <Route path="/opportunities" element={<OpportunitiesPage />} />
           <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
