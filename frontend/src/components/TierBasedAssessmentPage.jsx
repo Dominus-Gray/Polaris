@@ -301,6 +301,30 @@ function TierBasedAssessmentPage() {
     }));
   };
 
+  // Handle evidence file upload
+  const handleEvidenceUpload = (questionId, files) => {
+    if (!files || files.length === 0) return;
+    
+    const fileArray = Array.from(files);
+    const existingFiles = answers[`${questionId}_evidence`] || [];
+    
+    setAnswers(prev => ({
+      ...prev,
+      [`${questionId}_evidence`]: [...existingFiles, ...fileArray]
+    }));
+  };
+
+  // Remove evidence file
+  const removeEvidence = (questionId, fileIndex) => {
+    const existingFiles = answers[`${questionId}_evidence`] || [];
+    const updatedFiles = existingFiles.filter((_, index) => index !== fileIndex);
+    
+    setAnswers(prev => ({
+      ...prev,
+      [`${questionId}_evidence`]: updatedFiles
+    }));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
