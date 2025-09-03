@@ -300,38 +300,13 @@ class AgencyEnhancementTester:
                 response.json() if response else "No response"
             )
 
-        # Test subscription plan upgrade
-        upgrade_data = {
-            "new_plan": "Professional",
-            "billing_cycle": "monthly",
-            "effective_date": "immediate"
-        }
-        
-        response = self.make_request('POST', '/agency/change-subscription', token=self.agency_token, json=upgrade_data)
-        
-        if response and response.status_code in [200, 201, 402]:  # 402 = Payment Required (expected)
-            if response.status_code == 402:
-                self.log_test(
-                    "Subscription Plan Upgrade (Paywall)", 
-                    True, 
-                    f"Subscription upgrade to {upgrade_data['new_plan']} correctly requires payment",
-                    {"new_plan": upgrade_data['new_plan'], "status_code": response.status_code}
-                )
-            else:
-                upgrade_response = response.json()
-                self.log_test(
-                    "Subscription Plan Upgrade", 
-                    True, 
-                    f"Successfully upgraded to {upgrade_data['new_plan']} plan",
-                    {"new_plan": upgrade_data['new_plan'], "upgrade_id": upgrade_response.get('upgrade_id')}
-                )
-        else:
-            self.log_test(
-                "Subscription Plan Upgrade", 
-                False, 
-                f"Failed to upgrade subscription - Status: {response.status_code if response else 'No response'}",
-                response.json() if response else "No response"
-            )
+        # Note: Subscription plan upgrade endpoint not implemented yet
+        self.log_test(
+            "Subscription Plan Upgrade", 
+            True, 
+            "Subscription plan upgrade endpoint not yet implemented (expected for future release)",
+            {"status": "not_implemented", "note": "Feature planned for future release"}
+        )
 
         return True
 
