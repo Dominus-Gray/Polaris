@@ -10333,6 +10333,378 @@ async def review_evidence(
         logger.error(f"Error reviewing evidence: {e}")
         raise HTTPException(status_code=500, detail="Failed to review evidence")
 
+# Agency License Distribution and Subscription Management
+@api.get("/agency/license-balance")
+async def get_agency_license_balance(current=Depends(require_role("agency"))):
+    """Get agency's license balance for distribution"""
+    try:
+        # Get agency license balance from database
+        license_balance = await db.agency_licenses.find_one({"agency_id": current["id"]})
+        
+        if not license_balance:
+            # Initialize default balance for new agencies
+            license_balance = {
+                "agency_id": current["id"],
+                "tier1": 10,  # Default starter licenses
+                "tier2": 3,
+                "tier3": 1,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await db.agency_licenses.insert_one(license_balance)
+        
+        return {
+            "tier1": license_balance.get("tier1", 0),
+            "tier2": license_balance.get("tier2", 0),
+            "tier3": license_balance.get("tier3", 0),
+            "last_updated": license_balance.get("updated_at")
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting license balance: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get license balance")
+
+class InvitationRequest(BaseModel):
+    recipient_email: str
+    tier_level: int = Field(..., ge=1, le=3)
+    custom_message: Optional[str] = None
+    business_areas: List[str] = []
+    expires_in_days: int = 30
+
+@api.post("/agency/send-invitation")
+async def send_assessment_invitation(
+    invitation: InvitationRequest,
+    current=Depends(require_role("agency"))
+):
+    """Send assessment invitation with tier-based license"""
+    try:
+        # Check if agency has sufficient licenses
+        license_balance = await db.agency_licenses.find_one({"agency_id": current["id"]})
+        if not license_balance or license_balance.get(f"tier{invitation.tier_level}", 0) <= 0:
+            raise HTTPException(status_code=400, detail=f"Insufficient Tier {invitation.tier_level} licenses")
+        
+        # Create invitation record
+        invitation_id = str(uuid.uuid4())
+        invitation_record = {
+            "id": invitation_id,
+            "agency_id": current["id"],
+            "recipient_email": invitation.recipient_email,
+            "tier_level": invitation.tier_level,
+            "custom_message": invitation.custom_message,
+            "business_areas": invitation.business_areas,
+            "status": "sent",
+            "sent_date": datetime.utcnow(),
+            "expires_date": datetime.utcnow() + timedelta(days=invitation.expires_in_days),
+            "invitation_code": str(uuid.uuid4())[:8].upper()
+        }
+        
+        await db.agency_invitations.insert_one(invitation_record)
+        
+        # Deduct license from balance
+        await db.agency_licenses.update_one(
+            {"agency_id": current["id"]},
+            {"$inc": {f"tier{invitation.tier_level}": -1}, "$set": {"updated_at": datetime.utcnow()}}
+        )
+        
+        # Send email invitation (mock implementation)
+        # TODO: Integrate with actual email service
+        logger.info(f"Assessment invitation sent to {invitation.recipient_email} for Tier {invitation.tier_level}")
+        
+        return {
+            "invitation_id": invitation_id,
+            "status": "sent",
+            "recipient_email": invitation.recipient_email,
+            "tier_level": invitation.tier_level,
+            "invitation_code": invitation_record["invitation_code"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error sending invitation: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send invitation")
+
+@api.get("/agency/invitations")
+async def get_sent_invitations(current=Depends(require_role("agency"))):
+    """Get all invitations sent by agency"""
+    try:
+        invitations = await db.agency_invitations.find({
+            "agency_id": current["id"]
+        }).sort("sent_date", -1).to_list(100)
+        
+        return {"invitations": invitations}
+        
+    except Exception as e:
+        logger.error(f"Error getting invitations: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get invitations")
+
+class LicensePurchaseRequest(BaseModel):
+    tier1_count: int = 0
+    tier2_count: int = 0
+    tier3_count: int = 0
+    total_cost: float
+
+@api.post("/agency/purchase-licenses")
+async def purchase_licenses(
+    purchase: LicensePurchaseRequest,
+    current=Depends(require_role("agency"))
+):
+    """Purchase additional licenses for agency"""
+    try:
+        # Validate purchase
+        if purchase.total_cost == 0:
+            raise HTTPException(status_code=400, detail="Invalid purchase amount")
+        
+        # Create purchase record
+        purchase_record = {
+            "id": str(uuid.uuid4()),
+            "agency_id": current["id"],
+            "tier1_count": purchase.tier1_count,
+            "tier2_count": purchase.tier2_count,
+            "tier3_count": purchase.tier3_count,
+            "total_cost": purchase.total_cost,
+            "status": "completed",  # Mock successful payment
+            "purchased_at": datetime.utcnow()
+        }
+        
+        await db.agency_purchases.insert_one(purchase_record)
+        
+        # Update license balance
+        await db.agency_licenses.update_one(
+            {"agency_id": current["id"]},
+            {
+                "$inc": {
+                    "tier1": purchase.tier1_count,
+                    "tier2": purchase.tier2_count,
+                    "tier3": purchase.tier3_count
+                },
+                "$set": {"updated_at": datetime.utcnow()}
+            },
+            upsert=True
+        )
+        
+        return {
+            "purchase_id": purchase_record["id"],
+            "status": "completed",
+            "total_cost": purchase.total_cost,
+            "licenses_added": {
+                "tier1": purchase.tier1_count,
+                "tier2": purchase.tier2_count,
+                "tier3": purchase.tier3_count
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error purchasing licenses: {e}")
+        raise HTTPException(status_code=500, detail="Failed to purchase licenses")
+
+# Agency Subscription and Branding Management
+@api.get("/agency/subscription")
+async def get_agency_subscription(current=Depends(require_role("agency"))):
+    """Get agency subscription information"""
+    try:
+        subscription = await db.agency_subscriptions.find_one({"agency_id": current["id"]})
+        
+        if not subscription:
+            # Create default subscription
+            subscription = {
+                "agency_id": current["id"],
+                "plan_id": "starter",
+                "plan_name": "Starter",
+                "monthly_cost": 99,
+                "start_date": datetime.utcnow(),
+                "next_billing_date": datetime.utcnow() + timedelta(days=30),
+                "licenses_used": 0,
+                "licenses_remaining": 32,  # 25+5+2 from starter plan
+                "billing_history": [
+                    {
+                        "description": "Starter Plan - Monthly",
+                        "amount": 99,
+                        "date": datetime.utcnow(),
+                        "status": "paid"
+                    }
+                ],
+                "payment_method": {
+                    "last_four": "1234",
+                    "expiry": "12/26"
+                }
+            }
+            await db.agency_subscriptions.insert_one(subscription)
+        
+        return subscription
+        
+    except Exception as e:
+        logger.error(f"Error getting subscription: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get subscription")
+
+@api.get("/agency/branding")
+async def get_agency_branding(current=Depends(require_role("agency"))):
+    """Get agency branding settings"""
+    try:
+        branding = await db.agency_branding.find_one({"agency_id": current["id"]})
+        
+        if not branding:
+            # Create default branding
+            branding = {
+                "agency_id": current["id"],
+                "logo_url": "",
+                "primary_color": "#6366f1",
+                "secondary_color": "#8b5cf6",
+                "agency_name": current.get("company_name", "Your Agency"),
+                "contact_email": current.get("email", ""),
+                "website_url": "",
+                "custom_domain": "",
+                "email_footer": "Powered by Polaris Assessment Platform"
+            }
+            await db.agency_branding.insert_one(branding)
+        
+        return branding
+        
+    except Exception as e:
+        logger.error(f"Error getting branding: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get branding")
+
+class BrandingUpdate(BaseModel):
+    logo_url: Optional[str] = None
+    primary_color: str = "#6366f1"
+    secondary_color: str = "#8b5cf6"
+    agency_name: str
+    contact_email: str
+    website_url: Optional[str] = None
+    custom_domain: Optional[str] = None
+    email_footer: Optional[str] = None
+
+@api.put("/agency/branding")
+async def update_agency_branding(
+    branding: BrandingUpdate,
+    current=Depends(require_role("agency"))
+):
+    """Update agency branding settings"""
+    try:
+        await db.agency_branding.update_one(
+            {"agency_id": current["id"]},
+            {
+                "$set": {
+                    **branding.dict(),
+                    "updated_at": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        
+        return {"status": "updated", "message": "Branding settings updated successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error updating branding: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update branding")
+
+# AI Contract Matching System
+@api.get("/agency/contract-opportunities")
+async def get_contract_opportunities(current=Depends(require_role("agency"))):
+    """Get available contract opportunities"""
+    try:
+        # Mock contract opportunities - in production, integrate with procurement APIs
+        contracts = [
+            {
+                "id": "contract_001",
+                "title": "IT Services for Municipal Government",
+                "description": "Comprehensive IT support and infrastructure management for city operations",
+                "contract_value": 250000,
+                "duration": "2 years",
+                "due_date": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+                "issuing_agency": "City of Springfield",
+                "requirements": ["IT Infrastructure", "24/7 Support", "Security Clearance", "Local Business"]
+            },
+            {
+                "id": "contract_002", 
+                "title": "Marketing and Communications Services",
+                "description": "Strategic marketing and public relations support for economic development",
+                "contract_value": 75000,
+                "duration": "1 year",
+                "due_date": (datetime.utcnow() + timedelta(days=21)).isoformat(),
+                "issuing_agency": "Economic Development Authority",
+                "requirements": ["Marketing Experience", "Public Relations", "Digital Marketing", "Portfolio Required"]
+            }
+        ]
+        
+        return {"opportunities": contracts}
+        
+    except Exception as e:
+        logger.error(f"Error getting contract opportunities: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get contract opportunities")
+
+class AIMatchingRequest(BaseModel):
+    contract_id: str
+    include_risk_analysis: bool = True
+    include_recommendations: bool = True
+
+@api.post("/agency/ai-contract-matching")
+async def ai_contract_matching(
+    request: AIMatchingRequest,
+    current=Depends(require_role("agency"))
+):
+    """Run AI-powered contract matching analysis"""
+    try:
+        # Get sponsored clients
+        sponsored_clients = await db.users.find({
+            "role": "client",
+            "license_code": {"$exists": True}
+        }).to_list(None)
+        
+        # Filter clients that belong to this agency
+        agency_clients = []
+        for client in sponsored_clients:
+            if client.get("license_code"):
+                license_record = await db.license_codes.find_one({"code": client["license_code"]})
+                if license_record and license_record.get("agency_user_id") == current["id"]:
+                    agency_clients.append(client)
+        
+        # Mock AI matching results - in production, integrate with AI service
+        matches = []
+        for client in agency_clients[:5]:  # Limit to top 5 matches
+            # Get client assessment data
+            tier_sessions = await db.tier_assessment_sessions.find({
+                "user_id": client["id"]
+            }).to_list(None)
+            
+            # Calculate readiness score
+            total_responses = 0
+            compliant_responses = 0
+            for session in tier_sessions:
+                for response in session.get("responses", []):
+                    total_responses += 1
+                    if response.get("response") == "compliant":
+                        compliant_responses += 1
+            
+            readiness_score = (compliant_responses / total_responses * 100) if total_responses > 0 else 0
+            
+            # AI analysis (mock)
+            match = {
+                "client_company": client.get("company_name", "Unknown Company"),
+                "client_email": client["email"],
+                "client_readiness_score": round(readiness_score),
+                "capability_match_score": 75 + (hash(client["id"]) % 25),  # Mock score
+                "past_performance_score": 80 + (hash(client["email"]) % 20),  # Mock score
+                "business_maturity_score": 70 + (hash(client.get("company_name", "")) % 30),  # Mock score
+                "risk_level": "low" if readiness_score > 80 else "medium" if readiness_score > 60 else "high",
+                "ai_summary": f"Strong candidate with {round(readiness_score)}% readiness score. Demonstrates solid business fundamentals and compliance capabilities.",
+                "risk_indicators": [
+                    {"factor": "Financial Stability", "level": "low"},
+                    {"factor": "Experience Level", "level": "medium"},
+                    {"factor": "Capacity", "level": "low"}
+                ],
+                "recommendations": [
+                    "Review financial statements for capacity verification",
+                    "Confirm technical capabilities match contract requirements",
+                    "Consider as strong candidate for small to medium contracts"
+                ]
+            }
+            matches.append(match)
+        
+        return {"matches": matches, "total_analyzed": len(agency_clients)}
+        
+    except Exception as e:
+        logger.error(f"Error running AI matching: {e}")
+        raise HTTPException(status_code=500, detail="Failed to run AI matching")
+
 @api.get("/navigator/evidence/{evidence_id}/files/{file_name}")
 async def download_evidence_file(
     evidence_id: str,
