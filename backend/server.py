@@ -10534,6 +10534,10 @@ async def get_agency_subscription(current=Depends(require_role("agency"))):
             }
             await db.agency_subscriptions.insert_one(subscription)
         
+        # Convert ObjectId to string for JSON serialization
+        if subscription and "_id" in subscription:
+            subscription["_id"] = str(subscription["_id"])
+        
         return subscription
         
     except Exception as e:
