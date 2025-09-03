@@ -642,6 +642,64 @@ function TierBasedAssessmentPage() {
               </div>
             </div>
 
+            {/* Evidence Upload Section for Compliant Responses */}
+            {answers[currentQuestion.id] === 'compliant' && currentQuestion?.tier_level >= 2 && (
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-3">📎 Evidence Upload Required</h4>
+                <p className="text-sm text-blue-700 mb-4">
+                  For {currentQuestion?.tier_level === 2 ? 'Tier 2' : 'Tier 3'} assessments, please upload supporting documentation to verify compliance.
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload Supporting Documents (PDF, DOC, DOCX, JPG, PNG)
+                    </label>
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={(e) => handleEvidenceUpload(currentQuestion.id, e.target.files)}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Evidence Description (Optional)
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Briefly describe the evidence you've uploaded..."
+                      value={answers[`${currentQuestion.id}_evidence_description`] || ''}
+                      onChange={(e) => handleAnswerChange(`${currentQuestion.id}_evidence_description`, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  {/* Display uploaded files */}
+                  {answers[`${currentQuestion.id}_evidence`] && answers[`${currentQuestion.id}_evidence`].length > 0 && (
+                    <div className="mt-3">
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">Uploaded Files:</h5>
+                      <div className="space-y-2">
+                        {answers[`${currentQuestion.id}_evidence`].map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-white border rounded">
+                            <span className="text-sm text-gray-600">{file.name}</span>
+                            <button
+                              onClick={() => removeEvidence(currentQuestion.id, index)}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Gap Solution Pathway Selection */}
             {answers[currentQuestion.id] === 'gap_exists' && (
               <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
