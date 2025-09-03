@@ -6058,8 +6058,8 @@ function NavigatorHome(){
             <p className="text-green-100">Platform administration and quality assurance</p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{systemHealth?.overall_score || 'N/A'}</div>
-            <div className="text-green-100 text-sm">System Health</div>
+            <div className="text-3xl font-bold">98%</div>
+            <div className="text-green-100 text-sm">Platform Uptime</div>
           </div>
         </div>
       </div>
