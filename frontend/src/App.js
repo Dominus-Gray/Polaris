@@ -5998,7 +5998,7 @@ function NavigatorHome(){
         setPendingProviders(providersRes.data.providers || []);
         setPendingAgencies(agenciesRes.data.agencies || []);
         setResourceStats(statsRes.data);
-        setSystemHealth(healthRes.data);
+        // Removed system health data - focusing on business intelligence
         setRecentActivity(activityRes.data.activities || []);
       }catch(e){
         console.error('Navigator home load error:', e);
