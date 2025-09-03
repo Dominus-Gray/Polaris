@@ -188,10 +188,11 @@ class AgencyEnhancementTester:
 
         # Test sending tier-based invitation
         invitation_data = {
-            "client_email": "test.client@example.com",
+            "recipient_email": "test.client@example.com",
             "tier_level": 2,
             "business_areas": ["area1", "area2", "area5"],
-            "invitation_message": "Welcome to our enhanced tier-based assessment system. You have access to Tier 2 assessments for Business Formation, Financial Operations, and Technology Infrastructure."
+            "custom_message": "Welcome to our enhanced tier-based assessment system. You have access to Tier 2 assessments for Business Formation, Financial Operations, and Technology Infrastructure.",
+            "expires_in_days": 30
         }
         
         response = self.make_request('POST', '/agency/send-invitation', token=self.agency_token, json=invitation_data)
