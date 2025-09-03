@@ -6537,73 +6537,115 @@ function AgencyHome(){
         </div>
 
         <div className="p-6">
-          {activeTab === 'overview' && (
+          {/* Agency Portal Tab - Consolidated Dashboard Information */}
+          {activeTab === 'agency_portal' && (
             <div>
-              <AgencySponsorKPIs />
-
-              <div className="dashboard-grid mb-6">
-        <div className="tile">
-          <div className="tile-title">
-            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            Total Invites
-          </div>
-          <div className="tile-num">{String(impact?.invites?.total || 0)}</div>
-          <div className="tile-sub">businesses engaged</div>
-        </div>
-        <div className="tile">
-          <div className="tile-title">
-            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-            Paid Assessments
-          </div>
-          <div className="tile-num">{String(impact?.invites?.paid || 0)}</div>
-          <div className="tile-sub">completed assessments</div>
-        </div>
-        <div className="tile">
-          <div className="tile-title">
-            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Revenue Generated
-          </div>
-          <div className="tile-num">${String(impact?.revenue?.assessment_fees || 0)}</div>
-          <div className="tile-sub">assessment fees</div>
-        </div>
-        <div className="tile">
-          <div className="tile-title">
-            <svg className="tile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            Opportunities
-          </div>
-          <div className="tile-num">{String(impact?.opportunities?.count || 0)}</div>
-          <div className="tile-sub">available contracts</div>
-        </div>
-      </div>
-
-              {/* Certificates Section */}
-              {certificates.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Issued Certificates</h3>
-                  <div className="space-y-2">
-                    {certificates.map(cert => (
-                      <div key={cert.id} className="certificate-card">
-                        <div>
-                          <div className="font-medium">{cert.title}</div>
-                          <div className="text-sm text-slate-600">Client: {cert.client_user_id} • Readiness: {cert.readiness_percent}% • Issued: {cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : 'Unknown'}</div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="btn btn-sm" onClick={()=>downloadCertificate(cert.id)}>Download PDF</button>
-                          <button className="btn btn-sm" onClick={()=>copyVerificationLink(cert.id)}>Copy verification link</button>
-                        </div>
-                      </div>
-                    ))}
+              <h2 className="text-2xl font-bold text-slate-900 mb-6">Local Agency Management Portal</h2>
+              
+              {/* Key Performance Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{impact?.invites?.total || 0}</div>
+                      <div className="text-sm text-slate-600">Active Sponsored Businesses</div>
+                    </div>
                   </div>
                 </div>
-              )}
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{impact?.certificates?.issued || 0}</div>
+                      <div className="text-sm text-slate-600">Certificates Issued</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">${((impact?.assessments?.paid || 0) * 50).toLocaleString()}</div>
+                      <div className="text-sm text-slate-600">Revenue Generated</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-100 rounded-lg">
+                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{Math.round((impact?.certificates?.issued || 0) / (impact?.invites?.total || 1) * 100)}%</div>
+                      <div className="text-sm text-slate-600">Success Rate</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white rounded-lg border p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <button className="p-4 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors text-left">
+                    <div className="text-indigo-600 mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-slate-900">Send Invitation</div>
+                    <div className="text-sm text-slate-600">Invite new business to assessment</div>
+                  </button>
+                  
+                  <button className="p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors text-left">
+                    <div className="text-green-600 mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-slate-900">Issue Certificate</div>
+                    <div className="text-sm text-slate-600">Generate completion certificate</div>
+                  </button>
+                  
+                  <button className="p-4 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors text-left">
+                    <div className="text-purple-600 mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-slate-900">View Analytics</div>
+                    <div className="text-sm text-slate-600">Business intelligence dashboard</div>
+                  </button>
+                  
+                  <button className="p-4 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors text-left">
+                    <div className="text-amber-600 mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-slate-900">Purchase Licenses</div>
+                    <div className="text-sm text-slate-600">Expand assessment capacity</div>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
