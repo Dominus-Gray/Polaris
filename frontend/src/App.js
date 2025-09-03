@@ -4514,7 +4514,7 @@ function ClientHome(){
         <h1 className="text-2xl font-bold mb-2">Welcome to Your Procurement Readiness Dashboard</h1>
         <p className="opacity-90">Track your assessment progress, manage gaps, and access professional services</p>
         
-        {/* Enhanced Dashboard Statistics with Proper Contrast */}
+        {/* Enhanced Dashboard Statistics with Forced Dark Text */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
           <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 shadow-sm">
             <div className="flex items-center gap-4">
@@ -4524,9 +4524,9 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold text-slate-900">{assessmentData?.completion_percentage || 0}%</div>
-                <div className="text-sm font-medium text-slate-600">Assessment Complete</div>
-                <div className="text-xs text-slate-500 mt-1">10 Business Areas</div>
+                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{assessmentData?.completion_percentage || 0}%</div>
+                <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Assessment Complete</div>
+                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>10 Business Areas</div>
               </div>
             </div>
           </div>
@@ -4539,9 +4539,9 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold text-slate-900">{gaps.length}</div>
-                <div className="text-sm font-medium text-slate-600">Critical Gaps</div>
-                <div className="text-xs text-slate-500 mt-1">Require Attention</div>
+                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{gaps.length}</div>
+                <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Critical Gaps</div>
+                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>Require Attention</div>
               </div>
             </div>
           </div>
@@ -4554,9 +4554,9 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold text-slate-900">{serviceRequests.filter(r => r.status === 'active').length}</div>
-                <div className="text-sm font-medium text-slate-600">Active Services</div>
-                <div className="text-xs text-slate-500 mt-1">In Progress</div>
+                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{serviceRequests.filter(r => r.status === 'active').length}</div>
+                <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Active Services</div>
+                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>In Progress</div>
               </div>
             </div>
           </div>
@@ -4569,9 +4569,9 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold text-slate-900">{data.readiness || 0}%</div>
-                <div className="text-sm font-medium text-slate-600">Readiness Score</div>
-                <div className="text-xs text-slate-500 mt-1">Procurement Ready</div>
+                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{data.readiness || 0}%</div>
+                <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Readiness Score</div>
+                <div className="text-xs !text-slate-500" style={{color: '#64748b !important'}} mt-1>Procurement Ready</div>
               </div>
             </div>
           </div>
