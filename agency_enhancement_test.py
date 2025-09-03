@@ -202,7 +202,7 @@ class AgencyEnhancementTester:
             self.log_test(
                 "Send Tier-Based Invitation", 
                 True, 
-                f"Successfully sent Tier {invitation_data['tier_level']} invitation to {invitation_data['client_email']}",
+                f"Successfully sent Tier {invitation_data['tier_level']} invitation to {invitation_data['recipient_email']}",
                 {"invitation_id": invitation_response.get('invitation_id'), "tier_level": invitation_data['tier_level']}
             )
         else:
