@@ -9994,6 +9994,209 @@ async def get_dashboard_stats(current=Depends(require_user)):
         logger.error(f"Error getting dashboard stats: {e}")
         raise HTTPException(status_code=500, detail="Failed to get dashboard statistics")
 
+# Evidence Upload and Navigator Review Endpoints
+from fastapi import File, UploadFile
+import shutil
+import os
+
+@api.post("/assessment/evidence/upload")
+async def upload_evidence(
+    session_id: str = Form(...),
+    question_id: str = Form(...),
+    evidence_description: Optional[str] = Form(None),
+    files: List[UploadFile] = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload evidence files for tier-based assessment responses"""
+    try:
+        # Verify session belongs to user
+        session = await db.tier_assessment_sessions.find_one({
+            "_id": session_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Assessment session not found")
+        
+        # Create evidence directory if it doesn't exist
+        evidence_dir = f"/app/evidence/{session_id}/{question_id}"
+        os.makedirs(evidence_dir, exist_ok=True)
+        
+        uploaded_files = []
+        
+        for file in files:
+            # Validate file type
+            allowed_extensions = {'.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'}
+            file_extension = os.path.splitext(file.filename)[1].lower()
+            
+            if file_extension not in allowed_extensions:
+                raise HTTPException(status_code=400, detail=f"File type {file_extension} not allowed")
+            
+            # Generate unique filename
+            import uuid
+            unique_filename = f"{uuid.uuid4()}{file_extension}"
+            file_path = os.path.join(evidence_dir, unique_filename)
+            
+            # Save file
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            uploaded_files.append({
+                "original_name": file.filename,
+                "stored_name": unique_filename,
+                "file_path": file_path,
+                "file_size": os.path.getsize(file_path),
+                "uploaded_at": datetime.utcnow()
+            })
+        
+        # Store evidence metadata in database
+        evidence_record = {
+            "id": str(uuid.uuid4()),
+            "session_id": session_id,
+            "question_id": question_id,
+            "user_id": current_user["id"],
+            "evidence_description": evidence_description,
+            "files": uploaded_files,
+            "uploaded_at": datetime.utcnow(),
+            "review_status": "pending",
+            "navigator_review": None
+        }
+        
+        await db.assessment_evidence.insert_one(evidence_record)
+        
+        return {
+            "evidence_id": evidence_record["id"],
+            "uploaded_files": len(uploaded_files),
+            "status": "uploaded"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading evidence: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload evidence")
+
+@api.get("/navigator/evidence/pending")
+async def get_pending_evidence(current=Depends(require_role("navigator"))):
+    """Get all evidence submissions pending navigator review"""
+    try:
+        evidence_list = await db.assessment_evidence.find({
+            "review_status": "pending"
+        }).sort("uploaded_at", -1).to_list(100)
+        
+        # Enrich with user and session information
+        for evidence in evidence_list:
+            # Get user info
+            user = await db.users.find_one({"id": evidence["user_id"]})
+            evidence["user_email"] = user.get("email") if user else "Unknown"
+            
+            # Get session info
+            session = await db.tier_assessment_sessions.find_one({"_id": evidence["session_id"]})
+            evidence["business_area"] = session.get("area_id") if session else "Unknown"
+            evidence["tier_level"] = session.get("tier_level") if session else "Unknown"
+        
+        return {
+            "pending_evidence": evidence_list,
+            "total_count": len(evidence_list)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting pending evidence: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get pending evidence")
+
+class EvidenceReviewIn(BaseModel):
+    review_status: str = Field(..., regex="^(approved|rejected|needs_clarification)$")
+    review_comments: Optional[str] = None
+    follow_up_required: bool = False
+
+@api.post("/navigator/evidence/{evidence_id}/review")
+async def review_evidence(
+    evidence_id: str,
+    review: EvidenceReviewIn,
+    current=Depends(require_role("navigator"))
+):
+    """Navigator review of submitted evidence"""
+    try:
+        # Update evidence record with review
+        result = await db.assessment_evidence.update_one(
+            {"id": evidence_id},
+            {
+                "$set": {
+                    "review_status": review.review_status,
+                    "navigator_review": {
+                        "navigator_id": current["id"],
+                        "navigator_email": current["email"],
+                        "review_comments": review.review_comments,
+                        "follow_up_required": review.follow_up_required,
+                        "reviewed_at": datetime.utcnow()
+                    },
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Evidence record not found")
+        
+        # Send notification to user about review completion
+        evidence = await db.assessment_evidence.find_one({"id": evidence_id})
+        if evidence:
+            notification = {
+                "_id": str(uuid.uuid4()),
+                "id": str(uuid.uuid4()),
+                "user_id": evidence["user_id"],
+                "title": f"Evidence Review Completed",
+                "message": f"Your evidence for assessment has been reviewed and {review.review_status}.",
+                "notification_type": "assessment",
+                "action_url": f"/assessment/results/{evidence['session_id']}",
+                "read": False,
+                "created_at": datetime.utcnow()
+            }
+            await db.notifications.insert_one(notification)
+        
+        return {
+            "status": "reviewed",
+            "review_status": review.review_status,
+            "evidence_id": evidence_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error reviewing evidence: {e}")
+        raise HTTPException(status_code=500, detail="Failed to review evidence")
+
+@api.get("/navigator/evidence/{evidence_id}/files/{file_name}")
+async def download_evidence_file(
+    evidence_id: str,
+    file_name: str,
+    current=Depends(require_role("navigator"))
+):
+    """Download evidence file for navigator review"""
+    try:
+        # Get evidence record
+        evidence = await db.assessment_evidence.find_one({"id": evidence_id})
+        if not evidence:
+            raise HTTPException(status_code=404, detail="Evidence not found")
+        
+        # Find the file
+        target_file = None
+        for file_info in evidence.get("files", []):
+            if file_info["stored_name"] == file_name:
+                target_file = file_info
+                break
+        
+        if not target_file:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Return file for download
+        from fastapi.responses import FileResponse
+        return FileResponse(
+            path=target_file["file_path"],
+            filename=target_file["original_name"],
+            media_type='application/octet-stream'
+        )
+        
+    except Exception as e:
+        logger.error(f"Error downloading evidence file: {e}")
+        raise HTTPException(status_code=500, detail="Failed to download file")
+
 @api.put("/notifications/{notification_id}/read")
 async def mark_notification_read(notification_id: str, current=Depends(require_user)):
     """Mark notification as read"""
