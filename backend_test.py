@@ -634,6 +634,9 @@ class BackendTester:
         self.test_assessment_api_endpoints()
         self.test_service_provider_matching()
         self.test_dashboard_apis()
+        self.test_user_statistics_endpoints()
+        self.test_individual_provider_profiles()
+        self.test_notifications_system_fix()
         self.test_marketplace_integration()
         
         # Calculate results
