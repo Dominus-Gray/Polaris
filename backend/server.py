@@ -10430,6 +10430,11 @@ async def get_sent_invitations(current=Depends(require_role("agency"))):
             "agency_id": current["id"]
         }).sort("sent_date", -1).to_list(100)
         
+        # Convert ObjectId to string for JSON serialization
+        for invitation in invitations:
+            if "_id" in invitation:
+                invitation["_id"] = str(invitation["_id"])
+        
         return {"invitations": invitations}
         
     except Exception as e:
