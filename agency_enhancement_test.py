@@ -253,11 +253,12 @@ class AgencyEnhancementTester:
                 )
             else:
                 purchase_response = response.json()
+                total_licenses = purchase_data['tier1_count'] + purchase_data['tier2_count'] + purchase_data['tier3_count']
                 self.log_test(
                     "License Purchase", 
                     True, 
-                    f"License purchase processed for {purchase_data['quantity']} {purchase_data['license_package']} licenses",
-                    {"purchase_id": purchase_response.get('purchase_id'), "quantity": purchase_data['quantity']}
+                    f"License purchase processed for {total_licenses} licenses (T1:{purchase_data['tier1_count']}, T2:{purchase_data['tier2_count']}, T3:{purchase_data['tier3_count']})",
+                    {"purchase_id": purchase_response.get('purchase_id'), "total_licenses": total_licenses}
                 )
         else:
             self.log_test(
