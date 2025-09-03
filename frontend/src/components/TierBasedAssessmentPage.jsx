@@ -78,10 +78,28 @@ function TierBasedAssessmentPage() {
               console.log('Auto-starting assessment for area:', focusArea, 'tier:', focusTier || targetArea.max_tier_access);
               setSelectedArea(targetArea);
               setSelectedTier(focusTier || targetArea.max_tier_access);
-              // Automatically start the session after a brief delay
-              setTimeout(() => {
-                startNewSession(targetArea.area_id, focusTier || targetArea.max_tier_access);
-              }, 500);
+              // Automatically start the session after a brief delay to allow state updates
+              setTimeout(async () => {
+                try {
+                  setSessionLoading(true);
+                  const formData = new FormData();
+                  formData.append('area_id', targetArea.area_id);
+                  formData.append('tier_level', (focusTier || targetArea.max_tier_access).toString());
+                  
+                  const response = await axios.post(`${API}/api/assessment/tier-session`, formData, authHeaders);
+                  
+                  setCurrentSession(response.data);
+                  setQuestions(response.data.questions || []);
+                  setAnswers({});
+                  setCurrentQuestionIndex(0);
+                  setSessionLoading(false);
+                  
+                  console.log(`Auto-started session with ${response.data.questions?.length || 0} questions for Tier ${focusTier || targetArea.max_tier_access}`);
+                } catch (error) {
+                  console.error('Error auto-starting session:', error);
+                  setSessionLoading(false);
+                }
+              }, 1000);
             }
           }
         }
