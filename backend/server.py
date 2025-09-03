@@ -10082,8 +10082,12 @@ async def get_pending_evidence(current=Depends(require_role("navigator"))):
             "review_status": "pending"
         }).sort("uploaded_at", -1).to_list(100)
         
-        # Enrich with user and session information
+        # Enrich with user and session information and fix ObjectId serialization
         for evidence in evidence_list:
+            # Convert ObjectId to string if present
+            if "_id" in evidence:
+                evidence["_id"] = str(evidence["_id"])
+            
             # Get user info
             user = await db.users.find_one({"id": evidence["user_id"]})
             evidence["user_email"] = user.get("email") if user else "Unknown"
@@ -10092,6 +10096,18 @@ async def get_pending_evidence(current=Depends(require_role("navigator"))):
             session = await db.tier_assessment_sessions.find_one({"_id": evidence["session_id"]})
             evidence["business_area"] = session.get("area_id") if session else "Unknown"
             evidence["tier_level"] = session.get("tier_level") if session else "Unknown"
+            
+            # Convert datetime objects to ISO strings for JSON serialization
+            if "uploaded_at" in evidence and evidence["uploaded_at"]:
+                evidence["uploaded_at"] = evidence["uploaded_at"].isoformat()
+            if "updated_at" in evidence and evidence["updated_at"]:
+                evidence["updated_at"] = evidence["updated_at"].isoformat()
+            
+            # Fix files array serialization
+            if "files" in evidence and evidence["files"]:
+                for file_info in evidence["files"]:
+                    if "uploaded_at" in file_info and file_info["uploaded_at"]:
+                        file_info["uploaded_at"] = file_info["uploaded_at"].isoformat()
         
         return {
             "pending_evidence": evidence_list,
