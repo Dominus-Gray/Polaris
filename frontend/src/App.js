@@ -6529,7 +6529,7 @@ function AgencyHome(){
               { id: 'sponsored', label: 'Sponsored Companies', icon: '🏷️' },
               { id: 'matching', label: 'Contract Matching', icon: '🤝' },
               { id: 'issue_cert', label: 'Issue Certificates', icon: '✅' },
-              { id: 'system', label: 'System Health', icon: '⚡' }
+              { id: 'settings', label: 'Account Settings', icon: '⚙️' }
             ].map((tab) => (
               <button
                 key={tab.id}
