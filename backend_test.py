@@ -164,14 +164,13 @@ class BackendTester:
                 response.json() if response else "No response"
             )
 
-        # Test tier session creation
+        # Test tier session creation (using form data as expected by endpoint)
         session_data = {
             "area_id": "area1",
-            "tier_level": 1,
-            "session_type": "self_assessment"
+            "tier_level": 1
         }
         
-        response = self.make_request('POST', '/assessment/tier-session', token=self.client_token, json=session_data)
+        response = self.make_request('POST', '/assessment/tier-session', token=self.client_token, data=session_data)
         session_id = None
         
         if response and response.status_code == 200:
