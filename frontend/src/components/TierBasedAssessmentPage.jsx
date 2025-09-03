@@ -824,11 +824,21 @@ function TierBasedAssessmentPage() {
               <button
                 onClick={() => {
                   const answer = answers[currentQuestion.id];
-                  if (answer) {
-                    submitAnswer(answer);
-                  } else {
+                  if (!answer) {
                     alert('Please select an answer before continuing.');
+                    return;
                   }
+                  
+                  // CRITICAL: Enforce evidence upload for Tier 2 & 3 compliant responses
+                  if (answer === 'compliant' && currentQuestion?.tier_level >= 2) {
+                    const evidenceFiles = answers[`${currentQuestion.id}_evidence`];
+                    if (!evidenceFiles || evidenceFiles.length === 0) {
+                      alert(`Evidence upload is required for Tier ${currentQuestion.tier_level} compliant responses. Please upload supporting documentation before continuing.`);
+                      return;
+                    }
+                  }
+                  
+                  submitAnswer(answer);
                 }}
                 disabled={submitLoading || !answers[currentQuestion.id]}
                 className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
