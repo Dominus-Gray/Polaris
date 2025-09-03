@@ -89,14 +89,14 @@ class EvidenceUploadSystemTester:
         try:
             headers = {"Authorization": f"Bearer {self.client_token}"}
             
-            # Create Tier 2 session (evidence required)
+            # Create Tier 2 session (evidence required) - using Form data
             session_data = {
                 "area_id": "area1",
-                "tier_level": 2
+                "tier_level": "2"
             }
             
             response = requests.post(f"{BACKEND_URL}/assessment/tier-session", 
-                                   json=session_data, headers=headers)
+                                   data=session_data, headers=headers)
             
             if response.status_code == 200:
                 data = response.json()
