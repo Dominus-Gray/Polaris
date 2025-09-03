@@ -8964,23 +8964,136 @@ async def agency_impact(current=Depends(require_role("agency"))):
 # ---------------- Home dashboards ----------------
 @api.get("/home/client")
 async def home_client(current=Depends(require_role("client"))):
-    sess = await db.sessions.find_one({"user_id": current["id"]})
-    readiness = 0.0
-    if sess:
-        answers = await db.answers.find({"session_id": sess["_id"]}).to_list(1000)
-        total_q = sum(len(a["questions"]) for a in ASSESSMENT_SCHEMA["areas"])
-        approved = 0
-        for a in answers:
-            if a.get("value") is True and a.get("evidence_ids"):
-                ok = await db.reviews.find_one({"session_id": sess["_id"], "area_id": a["area_id"], "question_id": a["question_id"], "evidence_id": {"$in": a.get("evidence_ids")}, "status": "approved"})
-                if ok:
-                    approved += 1
-        readiness = round((approved/total_q)*100,2) if total_q else 0.0
-    cert = await db.certificates.find_one({"client_user_id": current["id"]})
-    # Call available_opportunities directly
-    avail = await available_opportunities(current=current)
-    prof = await db.business_profiles.find_one({"user_id": current["id"]})
-    return {"readiness": readiness, "has_certificate": bool(cert), "opportunities": len(avail.get("opportunities", [])), "profile_complete": bool(prof and prof.get("logo_upload_id"))}
+    """Enhanced client dashboard with accurate tier-based assessment data"""
+    try:
+        # Get tier-based assessment sessions
+        tier_sessions = await db.tier_assessment_sessions.find({
+            "user_id": current["id"]
+        }).to_list(None)
+        
+        # Calculate assessment completion and gaps
+        total_areas = 10  # 10 business areas
+        completed_areas = 0
+        critical_gaps = 0
+        total_questions = 0
+        answered_questions = 0
+        evidence_required_questions = 0
+        evidence_submitted_questions = 0
+        
+        for session in tier_sessions:
+            if session.get("status") == "completed":
+                completed_areas += 1
+                
+            # Count questions and responses
+            session_questions = len(session.get("questions", []))
+            session_responses = len(session.get("responses", []))
+            total_questions += session_questions
+            answered_questions += session_responses
+            
+            # Check for gaps (no_help responses)
+            for response in session.get("responses", []):
+                if response.get("response") in ["gap_exists", "no_help"]:
+                    critical_gaps += 1
+                elif response.get("response") == "compliant":
+                    # Check if evidence was required and submitted
+                    question_tier = response.get("tier_level", 1)
+                    if question_tier >= 2:
+                        evidence_required_questions += 1
+                        # Check if evidence was submitted
+                        evidence_record = await db.assessment_evidence.find_one({
+                            "session_id": session["_id"],
+                            "question_id": response.get("question_id")
+                        })
+                        if evidence_record:
+                            evidence_submitted_questions += 1
+        
+        # Calculate completion percentage
+        completion_percentage = round((completed_areas / total_areas) * 100, 1) if total_areas > 0 else 0
+        
+        # Calculate readiness score based on evidence-approved answers
+        evidence_approval_rate = 0
+        if evidence_required_questions > 0:
+            # Get approved evidence count
+            approved_evidence = await db.assessment_evidence.count_documents({
+                "user_id": current["id"],
+                "review_status": "approved"
+            })
+            evidence_approval_rate = (approved_evidence / evidence_required_questions) * 100
+        
+        # Base readiness on completion and evidence approval
+        readiness_score = round((completion_percentage * 0.6) + (evidence_approval_rate * 0.4), 1)
+        
+        # Get active service requests
+        active_services = await db.service_requests.count_documents({
+            "client_id": current["id"],
+            "status": {"$in": ["active", "in_progress", "pending"]}
+        })
+        
+        # Get certificates
+        cert = await db.certificates.find_one({"client_user_id": current["id"]})
+        
+        # Get opportunities
+        try:
+            avail = await available_opportunities(current=current)
+            opportunities_count = len(avail.get("opportunities", []))
+        except:
+            opportunities_count = 0
+        
+        # Get profile completion
+        prof = await db.business_profiles.find_one({"user_id": current["id"]})
+        
+        # Get agency information for governance
+        agency_info = None
+        if current.get("license_code"):
+            # Find agency that issued this license
+            license_record = await db.license_codes.find_one({"code": current["license_code"]})
+            if license_record:
+                agency = await db.users.find_one({"id": license_record.get("agency_user_id")})
+                if agency:
+                    agency_info = {
+                        "agency_id": agency["id"],
+                        "agency_email": agency["email"],
+                        "company_name": agency.get("company_name", "Local Agency")
+                    }
+        
+        return {
+            "readiness": readiness_score,
+            "completion_percentage": completion_percentage,
+            "critical_gaps": critical_gaps,
+            "active_services": active_services,
+            "total_questions": total_questions,
+            "answered_questions": answered_questions,
+            "evidence_required": evidence_required_questions,
+            "evidence_submitted": evidence_submitted_questions,
+            "has_certificate": bool(cert),
+            "opportunities": opportunities_count,
+            "profile_complete": bool(prof and prof.get("logo_upload_id")),
+            "agency_info": agency_info,
+            "assessment_areas": {
+                "total": total_areas,
+                "completed": completed_areas,
+                "in_progress": len([s for s in tier_sessions if s.get("status") == "active"])
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting client dashboard data: {e}")
+        # Fallback to basic data
+        return {
+            "readiness": 0,
+            "completion_percentage": 0,
+            "critical_gaps": 0,
+            "active_services": 0,
+            "total_questions": 0,
+            "answered_questions": 0,
+            "evidence_required": 0,
+            "evidence_submitted": 0,
+            "has_certificate": False,
+            "opportunities": 0,
+            "profile_complete": False,
+            "agency_info": None,
+            "assessment_areas": {"total": 10, "completed": 0, "in_progress": 0}
+        }
 
 @api.get("/home/provider")
 async def home_provider(current=Depends(require_role("provider"))):
