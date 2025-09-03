@@ -193,14 +193,14 @@ class CriticalBusinessLogicTester:
             response_data = {
                 "question_id": "area1_q1",
                 "response": "compliant",  # Compliant response for Tier 2/3
-                "evidence_provided": False  # No evidence provided
+                "evidence_provided": "false"  # No evidence provided - use string for form data
             }
             
             response = self.make_request(
                 'POST', 
                 f'/assessment/tier-session/{self.test_session_id}/response', 
                 token=self.client_token, 
-                json=response_data
+                data=response_data  # Use form data, not JSON
             )
             
             # Should be blocked or require evidence
