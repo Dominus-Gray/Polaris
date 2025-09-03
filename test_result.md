@@ -902,7 +902,7 @@ The major accessibility issues have been resolved. Users can now read all dashbo
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
