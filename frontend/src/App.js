@@ -4540,7 +4540,7 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{gaps.length}</div>
+                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{data?.critical_gaps || 0}</div>
                 <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Critical Gaps</div>
                 <div className="text-xs !text-slate-500 mt-1" style={{color: '#64748b !important'}}>Require Attention</div>
               </div>
