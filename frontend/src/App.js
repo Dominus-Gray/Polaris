@@ -2982,7 +2982,7 @@ function AreaDeliverablesPage() {
                         border: 'none'
                       }}
                     >
-                      <span style={{ color: 'white' }}>Download Guide</span>
+                      Download Guide
                     </button>
                   </div>
                 ))}
