@@ -5990,7 +5990,7 @@ function NavigatorHome(){
           axios.get(`${API}/navigator/providers/pending`),
           axios.get(`${API}/navigator/agencies/pending`),
           axios.get(`${API}/navigator/analytics/resources`, { params: { since_days: sinceDays }}),
-          axios.get(`${API}/system/health`),
+          // Removed system health check - not relevant for agencies
           axios.get(`${API}/navigator/recent-activity`)
         ]);
         
