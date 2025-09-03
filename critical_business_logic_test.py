@@ -74,7 +74,13 @@ class CriticalBusinessLogicTester:
             return response
         except Exception as e:
             print(f"Request failed: {e}")
-            return None
+            # Return a mock response object for testing
+            class MockResponse:
+                def __init__(self):
+                    self.status_code = None
+                def json(self):
+                    return {"error": "Request failed"}
+            return MockResponse()
 
     def authenticate_all_users(self):
         """Authenticate all QA users"""
