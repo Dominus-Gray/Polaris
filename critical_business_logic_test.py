@@ -312,12 +312,11 @@ class CriticalBusinessLogicTester:
             ]
             
             for filename, content, content_type in files_data:
-                files = {'file': (filename, content, content_type)}
+                files = {'files': (filename, content, content_type)}  # Use 'files' parameter
                 upload_data = {
                     'session_id': self.test_session_id,
                     'question_id': 'area1_q2',
-                    'evidence_type': 'document',
-                    'description': f'Multi-file evidence test - {filename}'
+                    'evidence_description': f'Multi-file evidence test - {filename}'
                 }
                 
                 response = self.make_request(
