@@ -22,6 +22,12 @@ function TierBasedAssessmentPage() {
   const [showActionModal, setShowActionModal] = useState(false);
   const [completionResults, setCompletionResults] = useState(null);
 
+  // Get URL parameters for direct navigation
+  const urlParams = new URLSearchParams(window.location.search);
+  const focusArea = urlParams.get('area');
+  const focusTier = parseInt(urlParams.get('tier')) || null;
+  const autoFocus = urlParams.get('focus') === 'true';
+
   // Authentication header
   const authHeaders = {
     headers: {
