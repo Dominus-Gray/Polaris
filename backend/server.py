@@ -2860,6 +2860,9 @@ async def get_provider_profile(provider_id: str):
         
         return provider_profile
         
+    except HTTPException:
+        # Re-raise HTTPExceptions (like 404) without converting to 500
+        raise
     except Exception as e:
         logger.error(f"Error retrieving provider profile: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve provider profile")
