@@ -6491,6 +6491,91 @@ function AgencyHome(){
     }
   };
 
+  const handleLicensePurchase = async(packageId) => {
+    try {
+      const origin_url = window.location.origin;
+      
+      const response = await axios.post(`${API}/agency/licenses/purchase`, {
+        package_id: packageId,
+        origin_url: origin_url,
+        metadata: {
+          source: 'agency_dashboard',
+          package_type: packageId
+        }
+      });
+      
+      if (response.data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = response.data.url;
+      }
+    } catch (e) {
+      toast.error('Purchase failed', { description: e.response?.data?.detail || e.message });
+    }
+  };
+
+  // Check for payment completion on page load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    const tab = urlParams.get('tab');
+    
+    if (sessionId && tab === 'sponsored_companies') {
+      // Set the active tab
+      setActiveTab('sponsored_companies');
+      
+      // Check payment status
+      const checkPaymentStatus = async () => {
+        try {
+          const response = await axios.get(`${API}/agency/licenses/purchase/status/${sessionId}`);
+          
+          if (response.data.payment_status === 'paid') {
+            toast.success('License purchase successful! Your new licenses are now available.', {
+              duration: 5000
+            });
+            
+            // Clear the URL parameters
+            window.history.replaceState({}, document.title, '/agency');
+            
+            // Refresh the data
+            const { data } = await axios.get(`${API}/home/agency`);
+            setImpact(data);
+          } else if (response.data.status === 'expired') {
+            toast.error('Payment session expired. Please try purchasing again.');
+          } else {
+            // Payment is still processing
+            toast('Processing payment...', { duration: 3000 });
+            
+            // Poll for status updates
+            const pollStatus = async (attempts = 0) => {
+              if (attempts >= 5) return;
+              
+              setTimeout(async () => {
+                try {
+                  const statusRes = await axios.get(`${API}/agency/licenses/purchase/status/${sessionId}`);
+                  if (statusRes.data.payment_status === 'paid') {
+                    toast.success('License purchase successful! Your new licenses are now available.');
+                    const { data } = await axios.get(`${API}/home/agency`);
+                    setImpact(data);
+                  } else {
+                    pollStatus(attempts + 1);
+                  }
+                } catch (e) {
+                  console.error('Error polling payment status:', e);
+                }
+              }, 2000);
+            };
+            
+            pollStatus();
+          }
+        } catch (e) {
+          toast.error('Error checking payment status. Please contact support if you completed the payment.');
+        }
+      };
+      
+      checkPaymentStatus();
+    }
+  }, []);
+
   // Calculate current tier based on invites
   const getTierInfo = () => {
     if (!impact) return { tier: 'Basic', price: 100, next: 'Volume' };
