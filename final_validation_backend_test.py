@@ -30,7 +30,7 @@ import os
 import tempfile
 
 # Configuration
-BASE_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
+BASE_URL = "https://agencydash.preview.emergentagent.com/api"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"
 QA_CLIENT_PASSWORD = "Polaris#2025!"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"

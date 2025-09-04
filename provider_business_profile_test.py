@@ -16,7 +16,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
+BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
 
 # Test Credentials
 PROVIDER_CREDENTIALS = {

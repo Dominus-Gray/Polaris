@@ -6,7 +6,7 @@ Debug test to check marketplace endpoints
 import requests
 import json
 
-BACKEND_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
+BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
 
 CLIENT_CREDENTIALS = {
     "email": "client.qa@polaris.example.com",

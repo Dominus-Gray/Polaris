@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://smartbiz-assess.preview.emergentagent.com/api"
+BASE_URL = "https://agencydash.preview.emergentagent.com/api"
 
 # QA Credentials as specified in review request
 CLIENT_CREDENTIALS = {
