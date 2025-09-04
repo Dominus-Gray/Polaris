@@ -7822,6 +7822,195 @@ async def unlock_knowledge_base(request: Request, payload: PaymentTransactionIn,
     except Exception as e:
         raise create_polaris_error("POL-2003", f"Knowledge base payment creation failed: {str(e)}", 500)
 
+# License Purchase Models
+class LicensePurchaseIn(BaseModel):
+    package_id: str = Field(..., description="License package identifier")
+    origin_url: str = Field(..., description="Origin URL for transaction tracking")
+    metadata: Dict[str, str] = Field(default_factory=dict, description="Additional transaction metadata")
+
+@api.post("/agency/licenses/purchase")
+async def purchase_licenses(request: Request, payload: LicensePurchaseIn, current=Depends(require_agency)):
+    """Create payment session for license purchase (agencies only)"""
+    if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
+        raise HTTPException(status_code=503, detail="Payment service unavailable")
+    
+    # Validate package is license related
+    if payload.package_id not in LICENSE_PACKAGES:
+        raise HTTPException(status_code=400, detail="Invalid license package")
+    
+    try:
+        # Initialize Stripe checkout
+        host_url = str(request.base_url)
+        webhook_url = f"{host_url}api/webhook/stripe"
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Get amount from server-side definition only (security)
+        amount = LICENSE_PACKAGES[payload.package_id]
+        
+        # Build URLs
+        success_url = f"{payload.origin_url}/agency?session_id={{CHECKOUT_SESSION_ID}}&tab=sponsored_companies"
+        cancel_url = f"{payload.origin_url}/agency?tab=sponsored_companies" 
+        
+        # Add metadata
+        metadata = {
+            "user_id": current["id"],
+            "agency_id": current["id"], 
+            "package_id": payload.package_id,
+            "service_type": "license_purchase",
+            "email": current["email"],
+            **payload.metadata
+        }
+        
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=amount,
+            currency="USD",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata
+        )
+        
+        session = await stripe_client.create_checkout_session(checkout_request)
+        
+        # Create pending transaction record
+        transaction_id = str(uuid.uuid4())
+        transaction_doc = {
+            "_id": transaction_id,
+            "id": transaction_id,
+            "user_id": current["id"],
+            "agency_id": current["id"],
+            "package_id": payload.package_id,
+            "amount": amount,
+            "currency": "USD",
+            "stripe_session_id": session.session_id,
+            "payment_status": "pending",
+            "status": "initiated",
+            "service_type": "license_purchase",
+            "metadata": metadata,
+            "created_at": datetime.utcnow()
+        }
+        await db.payment_transactions.insert_one(transaction_doc)
+        
+        return {"url": session.url, "session_id": session.session_id}
+        
+    except Exception as e:
+        raise create_polaris_error("POL-2003", f"License purchase payment creation failed: {str(e)}", 500)
+
+@api.get("/agency/licenses/purchase/status/{session_id}")
+async def get_license_purchase_status(session_id: str, current=Depends(require_agency)):
+    """Get license purchase payment status and update database"""
+    
+    # Find transaction
+    transaction = await db.payment_transactions.find_one({"stripe_session_id": session_id})
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Check if transaction belongs to current agency
+    if transaction["agency_id"] != current["id"]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    try:
+        # Initialize Stripe client
+        stripe_client = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="https://dummy.com/webhook")
+        
+        # Get status from Stripe
+        checkout_status = await stripe_client.get_checkout_status(session_id)
+        
+        # Update transaction only if not already processed (prevent double processing)
+        if transaction["payment_status"] != "paid" and checkout_status.payment_status == "paid":
+            await db.payment_transactions.update_one(
+                {"stripe_session_id": session_id},
+                {
+                    "$set": {
+                        "payment_status": checkout_status.payment_status,
+                        "status": checkout_status.status,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            
+            # Generate licenses based on package purchased
+            await generate_licenses_for_purchase(transaction, checkout_status)
+        
+        return {
+            "payment_status": checkout_status.payment_status,
+            "status": checkout_status.status,
+            "amount_total": checkout_status.amount_total,
+            "currency": checkout_status.currency,
+            "metadata": checkout_status.metadata
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"License purchase status check failed: {str(e)}")
+
+async def generate_licenses_for_purchase(transaction: dict, checkout_status: dict):
+    """Generate license codes based on package purchased"""
+    try:
+        package_id = transaction["package_id"]
+        agency_id = transaction["agency_id"]
+        
+        # Define license generation based on package
+        license_config = {
+            # Single licenses
+            "tier_1_single": {"tier_1": 1},
+            "tier_2_single": {"tier_2": 1}, 
+            "tier_3_single": {"tier_3": 1},
+            # Bulk licenses  
+            "tier_1_bulk_5": {"tier_1": 5},
+            "tier_1_bulk_10": {"tier_1": 10},
+            "tier_2_bulk_5": {"tier_2": 5},
+            "tier_2_bulk_10": {"tier_2": 10}, 
+            "tier_3_bulk_5": {"tier_3": 5},
+            "tier_3_bulk_10": {"tier_3": 10},
+            # Mixed packages
+            "mixed_starter": {"tier_1": 5, "tier_2": 2, "tier_3": 1},
+            "mixed_professional": {"tier_1": 10, "tier_2": 5, "tier_3": 2}
+        }
+        
+        if package_id not in license_config:
+            return
+            
+        config = license_config[package_id]
+        generated_licenses = []
+        
+        for tier, count in config.items():
+            for _ in range(count):
+                # Generate 10-digit license code
+                license_code = ''.join([str(random.randint(0, 9)) for _ in range(10)])
+                
+                license_doc = {
+                    "_id": str(uuid.uuid4()),
+                    "code": license_code,
+                    "agency_id": agency_id,
+                    "tier": tier,
+                    "status": "available",
+                    "created_at": datetime.utcnow(),
+                    "expires_at": datetime.utcnow() + timedelta(days=365),  # 1 year expiry
+                    "purchase_transaction_id": transaction["id"],
+                    "generated_from_package": package_id
+                }
+                
+                await db.agency_licenses.insert_one(license_doc)
+                generated_licenses.append(license_code)
+        
+        # Update agency statistics
+        await db.agencies.update_one(
+            {"_id": agency_id},
+            {
+                "$inc": {
+                    "licenses_purchased": sum(config.values()),
+                    "licenses_available": sum(config.values())
+                },
+                "$set": {"last_purchase_at": datetime.utcnow()}
+            }
+        )
+        
+        return generated_licenses
+        
+    except Exception as e:
+        print(f"Error generating licenses for purchase: {str(e)}")
+        return []
+
 @api.get("/knowledge-base/access")
 async def get_knowledge_base_access(current=Depends(require_user)):
     """Get user's knowledge base access status (QA: auto-unlock for polaris.example.com except providers)"""
