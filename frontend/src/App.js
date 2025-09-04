@@ -6895,9 +6895,7 @@ function AgencyHome(){
             </div>
           )}
           
-          {activeTab === 'sponsored' && <AgencySponsoredClients />}
-          {activeTab === 'matching' && <AgencyContractMatching />}
-          {activeTab === 'issue_cert' && <AgencyIssueCertificate />}
+
           
           {activeTab === 'settings' && (
             <div>
