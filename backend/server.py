@@ -3851,6 +3851,21 @@ SERVICE_PACKAGES = {
     "assessment_fee": 100.0
 }
 
+# License packages for agencies
+LICENSE_PACKAGES = {
+    "tier_1_single": 25.0,    # Single Tier 1 license
+    "tier_2_single": 75.0,    # Single Tier 2 license  
+    "tier_3_single": 150.0,   # Single Tier 3 license
+    "tier_1_bulk_5": 115.0,   # 5 Tier 1 licenses (8% discount)
+    "tier_1_bulk_10": 220.0,  # 10 Tier 1 licenses (12% discount)
+    "tier_2_bulk_5": 350.0,   # 5 Tier 2 licenses (7% discount)
+    "tier_2_bulk_10": 675.0,  # 10 Tier 2 licenses (10% discount)
+    "tier_3_bulk_5": 700.0,   # 5 Tier 3 licenses (7% discount)  
+    "tier_3_bulk_10": 1350.0, # 10 Tier 3 licenses (10% discount)
+    "mixed_starter": 245.0,   # 5 Tier 1 + 2 Tier 2 + 1 Tier 3 (starter pack)
+    "mixed_professional": 485.0, # 10 Tier 1 + 5 Tier 2 + 2 Tier 3 (professional pack)
+}
+
 class PaymentTransactionIn(BaseModel):
     package_id: str = Field(..., description="Knowledge base package identifier")
     origin_url: str = Field(..., description="Origin URL for transaction tracking")
