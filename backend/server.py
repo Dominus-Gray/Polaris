@@ -4217,6 +4217,10 @@ async def handle_successful_payment(transaction: dict, checkout_status: dict):
                 {"_id": transaction["request_id"]},
                 {"$set": {"status": "payment_completed", "engagement_id": engagement_id}}
             )
+        
+        elif transaction.get("service_type") == "license_purchase":
+            # Generate licenses for successful purchase
+            await generate_licenses_for_purchase(transaction, checkout_status)
     
     except Exception as e:
         print(f"Post-payment processing error: {e}")
