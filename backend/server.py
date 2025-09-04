@@ -1086,6 +1086,11 @@ def require_role(role: str):
         return current
     return role_dep
 
+async def require_agency(current=Depends(require_user)) -> dict:
+    if current.get("role") != "agency":
+        raise HTTPException(status_code=403, detail="Agency access required")
+    return current
+
 @api.post("/auth/register")
 @rate_limit(max_requests=5, window_seconds=300)  # 5 registrations per 5 minutes
 async def register_user(request: Request, user: UserRegistrationIn):
