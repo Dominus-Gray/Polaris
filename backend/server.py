@@ -1287,10 +1287,11 @@ async def verify_user(email: str, password: str) -> Optional[dict]:
     return None
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create JWT access token with production security settings"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=PRODUCTION_SECURITY_CONFIG["JWT_EXPIRE_MINUTES"]))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, AUTH_SECRET, algorithm=ALGO)
+    return jwt.encode(to_encode, PRODUCTION_SECURITY_CONFIG["JWT_SECRET_KEY"], algorithm=PRODUCTION_SECURITY_CONFIG["JWT_ALGORITHM"])
 
 async def get_current_user(authorization: Optional[str] = Header(None)) -> Optional[dict]:
     """Enhanced user authentication with session tracking and audit logging"""
