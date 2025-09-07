@@ -1372,50 +1372,149 @@ async def register_user(request: Request, user: UserRegistrationIn):
 @api.post("/auth/login", response_model=Token)
 @rate_limit(max_requests=10, window_seconds=300)  # 10 login attempts per 5 minutes
 async def login_user(request: Request, user: UserLogin):
+    """Enhanced login with comprehensive security logging and audit trail"""
+    
+    # Extract request context for audit logging
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "unknown")
+    request_id = str(uuid.uuid4())
+    
     db_user = await db.users.find_one({"email": user.email})
     if not db_user:
-        log_security_event("LOGIN_USER_NOT_FOUND", details={"email": user.email, "ip": request.client.host})
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.LOGIN_FAILURE,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            success=False,
+            details={
+                "reason": "user_not_found",
+                "email_attempted": user.email,
+                "error_code": "POL-1001"
+            },
+            request_id=request_id
+        )
         raise create_polaris_error("POL-1001", "User not found", 400)
     
     # Check if account is locked
     if db_user.get("locked_until") and db_user["locked_until"] > datetime.utcnow():
-        log_security_event("LOGIN_ACCOUNT_LOCKED", user_id=db_user["id"], details={"email": user.email})
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.LOGIN_FAILURE,
+            user_id=db_user["id"],
+            ip_address=client_ip,
+            user_agent=user_agent,
+            success=False,
+            details={
+                "reason": "account_locked",
+                "email": user.email,
+                "locked_until": db_user["locked_until"].isoformat(),
+                "error_code": "POL-1002"
+            },
+            request_id=request_id
+        )
         raise create_polaris_error("POL-1002", "Account temporarily locked due to failed login attempts", 423)
     
-    # Verify password
+    # Verify password with enhanced security logging
     if not pbkdf2_sha256.verify(user.password, db_user["hashed_password"]):
         # Increment failed attempts
         failed_attempts = db_user.get("failed_login_attempts", 0) + 1
-        update_data = {"failed_login_attempts": failed_attempts}
+        update_data = {
+            "failed_login_attempts": failed_attempts,
+            "last_failed_login": datetime.utcnow(),
+            "last_failed_ip": client_ip
+        }
         
         # Lock account if too many failures
-        if failed_attempts >= SECURITY_CONFIG["MAX_LOGIN_ATTEMPTS"]:
-            lock_until = datetime.utcnow() + timedelta(minutes=SECURITY_CONFIG["LOGIN_LOCKOUT_MINUTES"])
+        if failed_attempts >= PRODUCTION_SECURITY_CONFIG["MAX_LOGIN_ATTEMPTS"]:
+            lock_until = datetime.utcnow() + timedelta(minutes=PRODUCTION_SECURITY_CONFIG["LOGIN_LOCKOUT_MINUTES"])
             update_data["locked_until"] = lock_until
             
         await db.users.update_one({"id": db_user["id"]}, {"$set": update_data})
         
-        log_security_event("LOGIN_FAILED", user_id=db_user["id"], details={
-            "email": user.email, 
-            "attempts": failed_attempts,
-            "ip": request.client.host
-        })
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.LOGIN_FAILURE,
+            user_id=db_user["id"],
+            ip_address=client_ip,
+            user_agent=user_agent,
+            success=False,
+            details={
+                "reason": "invalid_password",
+                "email": user.email,
+                "failed_attempts": failed_attempts,
+                "account_locked": failed_attempts >= PRODUCTION_SECURITY_CONFIG["MAX_LOGIN_ATTEMPTS"],
+                "error_code": "POL-1001"
+            },
+            request_id=request_id
+        )
         raise create_polaris_error("POL-1001", "Invalid password", 400)
     
     # Check if provider or agency is approved
     if db_user["role"] in ["provider", "agency"] and db_user.get("approval_status") != "approved":
-        log_security_event("LOGIN_USER_NOT_APPROVED", user_id=db_user["id"], details={"email": user.email, "role": db_user["role"]})
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.LOGIN_FAILURE,
+            user_id=db_user["id"],
+            ip_address=client_ip,
+            user_agent=user_agent,
+            success=False,
+            details={
+                "reason": "user_not_approved",
+                "email": user.email,
+                "role": db_user["role"],
+                "approval_status": db_user.get("approval_status", "unknown"),
+                "error_code": "POL-1003"
+            },
+            request_id=request_id
+        )
         raise create_polaris_error("POL-1003", f"{db_user['role'].title()} account pending approval", 403)
     
-    # Reset failed attempts on successful login
+    # Generate session ID for tracking
+    session_id = str(uuid.uuid4())
+    
+    # Reset failed attempts and update login tracking
     await db.users.update_one(
         {"id": db_user["id"]}, 
-        {"$set": {"failed_login_attempts": 0, "locked_until": None, "last_login": datetime.utcnow()}}
+        {"$set": {
+            "failed_login_attempts": 0,
+            "locked_until": None,
+            "last_login": datetime.utcnow(),
+            "last_login_ip": client_ip,
+            "current_session_id": session_id
+        }}
     )
     
-    access_token = create_access_token(data={"sub": db_user["id"]})
+    # Create JWT token with enhanced expiry based on role
+    token_expiry = timedelta(minutes=PRODUCTION_SECURITY_CONFIG["JWT_EXPIRE_MINUTES"])
+    if db_user["role"] in PRODUCTION_SECURITY_CONFIG["MFA_REQUIRED_ROLES"]:
+        # Shorter token expiry for privileged roles
+        token_expiry = timedelta(minutes=15)
     
-    log_security_event("LOGIN_SUCCESS", user_id=db_user["id"], details={"email": user.email, "ip": request.client.host})
+    access_token = create_access_token(
+        data={
+            "sub": db_user["id"],
+            "session_id": session_id,
+            "role": db_user["role"],
+            "email": db_user["email"]
+        },
+        expires_delta=token_expiry
+    )
+    
+    # Log successful login with comprehensive context
+    await AuditLogger.log_security_event(
+        event_type=SecurityEventType.LOGIN_SUCCESS,
+        user_id=db_user["id"],
+        session_id=session_id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+        success=True,
+        details={
+            "email": user.email,
+            "role": db_user["role"],
+            "previous_login": db_user.get("last_login"),
+            "token_expiry_minutes": token_expiry.total_seconds() / 60,
+            "mfa_required": db_user["role"] in PRODUCTION_SECURITY_CONFIG["MFA_REQUIRED_ROLES"]
+        },
+        request_id=request_id
+    )
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 @api.get("/auth/me", response_model=UserOut)
