@@ -47,7 +47,7 @@ async def unlock_qa_accounts():
                 print(f"❌ Not found: {email}")
     
     print("\n🔓 QA account unlock completed!")
-    await client.close()
+    client.close()
 
 if __name__ == "__main__":
     asyncio.run(unlock_qa_accounts())
