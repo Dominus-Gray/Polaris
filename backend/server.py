@@ -1293,20 +1293,94 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return jwt.encode(to_encode, AUTH_SECRET, algorithm=ALGO)
 
 async def get_current_user(authorization: Optional[str] = Header(None)) -> Optional[dict]:
+    """Enhanced user authentication with session tracking and audit logging"""
     if not authorization:
         return None
+    
     try:
         scheme, _, token = authorization.partition(" ")
         if scheme.lower() != "bearer" or not token:
             return None
-        payload = jwt.decode(token, AUTH_SECRET, algorithms=[ALGO])
+            
+        payload = jwt.decode(token, PRODUCTION_SECURITY_CONFIG["JWT_SECRET_KEY"], algorithms=[PRODUCTION_SECURITY_CONFIG["JWT_ALGORITHM"]])
         uid: str = payload.get("sub")
+        session_id: str = payload.get("session_id")
+        
         if uid is None:
             return None
+            
         user = await db.users.find_one({"_id": uid})
+        if not user:
+            return None
+            
+        # Verify session is still valid
+        if session_id and user.get("current_session_id") != session_id:
+            await AuditLogger.log_security_event(
+                event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                user_id=uid,
+                success=False,
+                details={"reason": "invalid_session_id", "provided_session": session_id}
+            )
+            return None
+            
+        # Check if account is locked
+        if user.get("locked_until") and user["locked_until"] > datetime.utcnow():
+            return None
+            
         return user
-    except JWTError:
+        
+    except jwt.ExpiredSignatureError:
+        if uid:
+            await AuditLogger.log_security_event(
+                event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                user_id=uid,
+                success=False,
+                details={"reason": "expired_token"}
+            )
         return None
+    except jwt.JWTError as e:
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+            success=False,
+            details={"reason": "invalid_jwt", "error": str(e)}
+        )
+        return None
+
+# Enhanced authorization decorators with audit logging
+def require_user_with_audit(request: Request):
+    """Enhanced user requirement with comprehensive audit logging"""
+    async def _require_user(authorization: Optional[str] = Header(None)):
+        user = await get_current_user(authorization)
+        if not user:
+            # Log unauthorized access attempt
+            client_ip = request.client.host if request.client else "unknown"
+            user_agent = request.headers.get("user-agent", "unknown")
+            
+            await AuditLogger.log_security_event(
+                event_type=SecurityEventType.PERMISSION_DENIED,
+                ip_address=client_ip,
+                user_agent=user_agent,
+                resource_accessed=str(request.url),
+                success=False,
+                details={"reason": "no_valid_token", "endpoint": request.url.path}
+            )
+            raise create_polaris_error("POL-1000", "Authentication required", 401)
+        
+        # Log successful data access
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.DATA_ACCESS,
+            user_id=user["id"],
+            session_id=user.get("current_session_id"),
+            ip_address=request.client.host if request.client else "unknown",
+            user_agent=request.headers.get("user-agent", "unknown"),
+            resource_accessed=str(request.url),
+            data_classification=DataClassificationService.classify_field("user_data"),
+            success=True,
+            details={"endpoint": request.url.path, "method": request.method}
+        )
+        
+        return user
+    return _require_user
 
 class EngagementDataProcessor:
     """Centralized engagement data processing with standardization"""
