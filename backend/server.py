@@ -606,9 +606,9 @@ class AuditLogger:
         
         # Log to appropriate logger
         if event_data["compliance_relevant"]:
-            compliance_logger.info(json.dumps(event_data))
+            compliance_logger.info(json.dumps(event_data, default=str))
         
-        security_logger.info(json.dumps(event_data))
+        security_logger.info(json.dumps(event_data, default=str))
         
         # Store in database for querying
         try:
