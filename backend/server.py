@@ -1077,9 +1077,9 @@ UPLOAD_BASE.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-ALGO = "HS256"
-AUTH_SECRET = os.environ.get("AUTH_SECRET", "dev-secret-change-me")
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+ALGO = PRODUCTION_SECURITY_CONFIG["JWT_ALGORITHM"]
+AUTH_SECRET = PRODUCTION_SECURITY_CONFIG["JWT_SECRET_KEY"]
+ACCESS_TOKEN_EXPIRE_MINUTES = PRODUCTION_SECURITY_CONFIG["JWT_EXPIRE_MINUTES"]
 
 class Token(BaseModel):
     access_token: str
