@@ -1729,6 +1729,95 @@ async def login_user(request: Request, user: UserLogin):
     
     return {"access_token": access_token, "token_type": "bearer"}
 
+# GDPR Compliance API Endpoints
+@api.get("/gdpr/data-access")
+async def request_data_access(current=Depends(require_user)):
+    """GDPR Article 15: Right of access - Get all personal data"""
+    try:
+        user_data = await GDPRComplianceService.handle_data_access_request(current["id"])
+        return user_data
+    except Exception as e:
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=current["id"],
+            success=False,
+            details={"request_type": "data_access", "error": str(e)}
+        )
+        raise HTTPException(status_code=500, detail="Failed to process data access request")
+
+@api.get("/gdpr/data-export")
+async def export_personal_data(current=Depends(require_user)):
+    """GDPR Article 20: Right to data portability - Export data in machine-readable format"""
+    try:
+        export_data = await GDPRComplianceService.handle_data_portability_request(current["id"])
+        
+        return Response(
+            content=export_data,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename=polaris_data_export_{current['id'][:8]}.json"
+            }
+        )
+    except Exception as e:
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=current["id"],
+            success=False,
+            details={"request_type": "data_export", "error": str(e)}
+        )
+        raise HTTPException(status_code=500, detail="Failed to export personal data")
+
+class DataDeletionRequest(BaseModel):
+    confirmation: str = Field(..., description="Must be 'DELETE_MY_DATA' to confirm")
+    reason: Optional[str] = Field(None, description="Optional reason for deletion")
+
+@api.post("/gdpr/delete-account")
+async def request_account_deletion(
+    request_data: DataDeletionRequest,
+    current=Depends(require_user)
+):
+    """GDPR Article 17: Right to erasure - Delete personal data"""
+    
+    if request_data.confirmation != "DELETE_MY_DATA":
+        raise HTTPException(
+            status_code=400, 
+            detail="Account deletion requires explicit confirmation"
+        )
+    
+    try:
+        deletion_report = await GDPRComplianceService.handle_data_deletion_request(current["id"])
+        
+        # Log the successful deletion
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=current["id"],
+            success=True,
+            details={
+                "request_type": "account_deletion",
+                "reason": request_data.reason,
+                "records_deleted": deletion_report["deleted_records"]
+            }
+        )
+        
+        return {
+            "message": "Account deletion completed successfully",
+            "deletion_report": deletion_report,
+            "note": "Some data may be retained for legal/business purposes in pseudonymized form"
+        }
+    except Exception as e:
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=current["id"],
+            success=False,
+            details={"request_type": "account_deletion", "error": str(e)}
+        )
+        raise HTTPException(status_code=500, detail="Failed to process deletion request")
+
+@api.get("/auth/password-requirements")
+async def get_password_requirements_endpoint():
+    """Get password requirements for frontend validation"""
+    return get_password_requirements()
+
 @api.get("/auth/me", response_model=UserOut)
 async def get_current_user_info(current=Depends(require_user)):
     return UserOut(id=current["id"], email=current["email"], role=current["role"], created_at=current["created_at"])
