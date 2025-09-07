@@ -489,19 +489,220 @@ SECURITY_CONFIG = {
     "ALLOWED_HOSTS": os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,*.emergentagent.com").split(",")
 }
 
-# Security logging
+# Production Security & Audit Logging System
+import hashlib
+import ipaddress
+from typing import Optional, Dict, Any, List
+from enum import Enum
+
+class SecurityEventType(Enum):
+    LOGIN_SUCCESS = "login_success"
+    LOGIN_FAILURE = "login_failure"
+    PASSWORD_CHANGE = "password_change"
+    PERMISSION_DENIED = "permission_denied"
+    DATA_ACCESS = "data_access"
+    DATA_MODIFICATION = "data_modification"
+    SUSPICIOUS_ACTIVITY = "suspicious_activity"
+    API_KEY_USAGE = "api_key_usage"
+    GDPR_REQUEST = "gdpr_request"
+    SECURITY_SCAN = "security_scan"
+
+class DataClassification(Enum):
+    PUBLIC = "public"
+    INTERNAL = "internal"
+    CONFIDENTIAL = "confidential"
+    RESTRICTED = "restricted"
+
+# Enhanced Security Configuration
+PRODUCTION_SECURITY_CONFIG = {
+    # Authentication
+    "JWT_SECRET_KEY": os.environ.get("JWT_SECRET_KEY", secrets.token_urlsafe(64)),
+    "JWT_ALGORITHM": "HS256",
+    "JWT_EXPIRE_MINUTES": 30,  # Reduced for production
+    "REFRESH_TOKEN_EXPIRE_DAYS": 30,
+    
+    # Password Policy
+    "PASSWORD_MIN_LENGTH": 12,
+    "PASSWORD_REQUIRE_UPPERCASE": True,
+    "PASSWORD_REQUIRE_LOWERCASE": True,
+    "PASSWORD_REQUIRE_DIGITS": True,
+    "PASSWORD_REQUIRE_SPECIAL": True,
+    "PASSWORD_HISTORY_COUNT": 12,
+    
+    # Account Security
+    "MAX_LOGIN_ATTEMPTS": 5,
+    "LOGIN_LOCKOUT_MINUTES": 30,
+    "SESSION_TIMEOUT_MINUTES": 30,
+    "MFA_REQUIRED_ROLES": ["agency", "navigator", "admin"],
+    
+    # API Security
+    "RATE_LIMIT_PER_MINUTE": 100,
+    "API_KEY_LENGTH": 64,
+    "REQUIRE_HTTPS": os.environ.get("REQUIRE_HTTPS", "true").lower() == "true",
+    "ALLOWED_HOSTS": os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,*.emergentagent.com").split(","),
+    
+    # Data Protection
+    "ENCRYPTION_KEY": os.environ.get("ENCRYPTION_KEY", Fernet.generate_key().decode()),
+    "HASH_SALT_ROUNDS": 12,
+    "DATA_RETENTION_DAYS": 2555,  # 7 years for compliance
+    
+    # Audit & Monitoring
+    "AUDIT_LOG_RETENTION_DAYS": 2555,
+    "SECURITY_LOG_LEVEL": "INFO",
+    "FAILED_LOGIN_ALERT_THRESHOLD": 10,
+    "SUSPICIOUS_ACTIVITY_ALERT_THRESHOLD": 5
+}
+
+# Security logging setup
 security_logger = logging.getLogger("polaris.security")
-security_logger.setLevel(logging.INFO)
+audit_logger = logging.getLogger("polaris.audit")
+compliance_logger = logging.getLogger("polaris.compliance")
+
+for logger in [security_logger, audit_logger, compliance_logger]:
+    logger.setLevel(logging.INFO)
+    
+    # Create file handlers for persistent logging
+    handler = logging.FileHandler(f'/var/log/polaris/{logger.name}.log')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+class AuditLogger:
+    """Comprehensive audit logging for compliance and security"""
+    
+    @staticmethod
+    async def log_security_event(
+        event_type: SecurityEventType,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        resource_accessed: Optional[str] = None,
+        data_classification: Optional[DataClassification] = None,
+        success: bool = True,
+        details: Optional[Dict[str, Any]] = None,
+        request_id: Optional[str] = None
+    ):
+        """Log security events with comprehensive context"""
+        
+        event_data = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "event_id": str(uuid.uuid4()),
+            "event_type": event_type.value,
+            "user_id": user_id,
+            "session_id": session_id,
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+            "resource_accessed": resource_accessed,
+            "data_classification": data_classification.value if data_classification else None,
+            "success": success,
+            "details": details or {},
+            "request_id": request_id,
+            "severity": AuditLogger._calculate_severity(event_type, success),
+            "compliance_relevant": AuditLogger._is_compliance_relevant(event_type)
+        }
+        
+        # Log to appropriate logger
+        if event_data["compliance_relevant"]:
+            compliance_logger.info(json.dumps(event_data))
+        
+        security_logger.info(json.dumps(event_data))
+        
+        # Store in database for querying
+        try:
+            await db.audit_logs.insert_one(event_data)
+        except Exception as e:
+            security_logger.error(f"Failed to store audit log: {str(e)}")
+    
+    @staticmethod
+    def _calculate_severity(event_type: SecurityEventType, success: bool) -> str:
+        """Calculate event severity for alerting"""
+        high_risk_events = [
+            SecurityEventType.LOGIN_FAILURE,
+            SecurityEventType.PERMISSION_DENIED,
+            SecurityEventType.SUSPICIOUS_ACTIVITY
+        ]
+        
+        if event_type in high_risk_events and not success:
+            return "HIGH"
+        elif event_type == SecurityEventType.DATA_ACCESS:
+            return "MEDIUM"
+        else:
+            return "LOW"
+    
+    @staticmethod
+    def _is_compliance_relevant(event_type: SecurityEventType) -> bool:
+        """Determine if event is relevant for compliance reporting"""
+        compliance_events = [
+            SecurityEventType.DATA_ACCESS,
+            SecurityEventType.DATA_MODIFICATION,
+            SecurityEventType.GDPR_REQUEST,
+            SecurityEventType.PERMISSION_DENIED
+        ]
+        return event_type in compliance_events
+
+# Data encryption utilities
+class DataEncryption:
+    """Production-grade data encryption for sensitive fields"""
+    
+    def __init__(self):
+        key = PRODUCTION_SECURITY_CONFIG["ENCRYPTION_KEY"].encode()
+        self.cipher_suite = Fernet(key)
+    
+    def encrypt_field(self, data: str) -> Dict[str, str]:
+        """Encrypt sensitive data field"""
+        if not data:
+            return {"encrypted_value": "", "encryption_method": "none"}
+            
+        encrypted_data = self.cipher_suite.encrypt(data.encode())
+        return {
+            "encrypted_value": encrypted_data.decode(),
+            "encryption_method": "AES-256-GCM",
+            "encrypted_at": datetime.utcnow().isoformat()
+        }
+    
+    def decrypt_field(self, encrypted_data: Dict[str, str]) -> str:
+        """Decrypt sensitive data field"""
+        if not encrypted_data.get("encrypted_value"):
+            return ""
+            
+        try:
+            decrypted = self.cipher_suite.decrypt(encrypted_data["encrypted_value"].encode())
+            return decrypted.decode()
+        except Exception as e:
+            security_logger.error(f"Decryption failed: {str(e)}")
+            raise HTTPException(status_code=500, detail="Data decryption error")
+
+data_encryptor = DataEncryption()
 
 def log_security_event(event_type: str, user_id: str = None, details: dict = None):
-    """Log security events for auditing"""
-    event_data = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "event_type": event_type,
-        "user_id": user_id,
-        "details": details or {}
-    }
-    security_logger.info(f"SECURITY_EVENT: {event_data}")
+    """Legacy compatibility wrapper - will be deprecated"""
+    import asyncio
+    
+    # Convert to new enum if possible
+    try:
+        event_enum = SecurityEventType(event_type)
+    except ValueError:
+        event_enum = SecurityEventType.SUSPICIOUS_ACTIVITY
+    
+    # Run async function in sync context
+    loop = asyncio.get_event_loop()
+    if loop.is_running():
+        # If we're already in an async context, schedule the task
+        asyncio.create_task(AuditLogger.log_security_event(
+            event_type=event_enum,
+            user_id=user_id,
+            details=details
+        ))
+    else:
+        # If we're in sync context, run directly
+        loop.run_until_complete(AuditLogger.log_security_event(
+            event_type=event_enum,
+            user_id=user_id,
+            details=details
+        ))
 
 def validate_password_strength(password: str) -> bool:
     """Validate password meets security requirements"""
