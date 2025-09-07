@@ -705,18 +705,230 @@ def log_security_event(event_type: str, user_id: str = None, details: dict = Non
         ))
 
 def validate_password_strength(password: str) -> bool:
-    """Validate password meets security requirements"""
-    if len(password) < SECURITY_CONFIG["PASSWORD_MIN_LENGTH"]:
+    """Enhanced password validation for production security"""
+    config = PRODUCTION_SECURITY_CONFIG
+    
+    if len(password) < config["PASSWORD_MIN_LENGTH"]:
         return False
-    if not re.search(r"[A-Z]", password):  # Uppercase letter
+    
+    if config["PASSWORD_REQUIRE_UPPERCASE"] and not re.search(r'[A-Z]', password):
         return False
-    if not re.search(r"[a-z]", password):  # Lowercase letter  
+    
+    if config["PASSWORD_REQUIRE_LOWERCASE"] and not re.search(r'[a-z]', password):
         return False
-    if not re.search(r"\d", password):     # Digit
+    
+    if config["PASSWORD_REQUIRE_DIGITS"] and not re.search(r'\d', password):
         return False
-    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?]", password):  # Special char
+    
+    if config["PASSWORD_REQUIRE_SPECIAL"] and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
         return False
+    
     return True
+
+def get_password_requirements() -> dict:
+    """Get password requirements for frontend validation"""
+    config = PRODUCTION_SECURITY_CONFIG
+    return {
+        "min_length": config["PASSWORD_MIN_LENGTH"],
+        "require_uppercase": config["PASSWORD_REQUIRE_UPPERCASE"],
+        "require_lowercase": config["PASSWORD_REQUIRE_LOWERCASE"],
+        "require_digits": config["PASSWORD_REQUIRE_DIGITS"],
+        "require_special": config["PASSWORD_REQUIRE_SPECIAL"],
+        "history_count": config["PASSWORD_HISTORY_COUNT"]
+    }
+
+# GDPR Compliance Framework
+class GDPRComplianceService:
+    """GDPR compliance service for data subject rights"""
+    
+    @staticmethod
+    async def handle_data_access_request(user_id: str) -> Dict[str, Any]:
+        """Article 15: Right of access - provide all personal data"""
+        
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=user_id,
+            success=True,
+            details={"request_type": "data_access", "article": "15"}
+        )
+        
+        # Collect all user data from various collections
+        user_data = {}
+        
+        # Basic user information
+        user = await db.users.find_one({"_id": user_id})
+        if user:
+            user_data["profile"] = {
+                "id": user.get("id"),
+                "email": user.get("email"),
+                "role": user.get("role"),
+                "created_at": user.get("created_at"),
+                "last_login": user.get("last_login")
+            }
+        
+        # Assessment data
+        assessments = await db.assessments.find({"user_id": user_id}).to_list(length=None)
+        user_data["assessments"] = [{
+            "id": assessment.get("id"),
+            "business_area": assessment.get("business_area"),
+            "tier": assessment.get("tier"),
+            "created_at": assessment.get("created_at"),
+            "status": assessment.get("status")
+        } for assessment in assessments]
+        
+        # Service requests
+        service_requests = await db.service_requests.find({"client_user_id": user_id}).to_list(length=None)
+        user_data["service_requests"] = [{
+            "id": request.get("id"),
+            "area_id": request.get("area_id"),
+            "status": request.get("status"),
+            "created_at": request.get("created_at")
+        } for request in service_requests]
+        
+        # Payment transactions
+        payments = await db.payment_transactions.find({"user_id": user_id}).to_list(length=None)
+        user_data["payment_history"] = [{
+            "id": payment.get("id"),
+            "amount": payment.get("amount"),
+            "currency": payment.get("currency"),
+            "status": payment.get("payment_status"),
+            "created_at": payment.get("created_at")
+        } for payment in payments]
+        
+        return {
+            "request_id": str(uuid.uuid4()),
+            "processed_at": datetime.utcnow().isoformat(),
+            "data_subject_id": user_id,
+            "personal_data": user_data,
+            "processing_purposes": [
+                "business_readiness_assessment",
+                "service_provider_matching",
+                "payment_processing",
+                "user_authentication"
+            ],
+            "retention_periods": {
+                "assessment_data": "7 years",
+                "payment_data": "7 years",
+                "user_profile": "Account lifetime + 30 days"
+            }
+        }
+    
+    @staticmethod
+    async def handle_data_deletion_request(user_id: str, verification_token: str = None) -> Dict[str, Any]:
+        """Article 17: Right to erasure - delete personal data"""
+        
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=user_id,
+            success=True,
+            details={"request_type": "data_deletion", "article": "17"}
+        )
+        
+        deletion_report = {
+            "request_id": str(uuid.uuid4()),
+            "processed_at": datetime.utcnow().isoformat(),
+            "data_subject_id": user_id,
+            "deleted_records": {}
+        }
+        
+        # Delete user profile (pseudonymize critical business records)
+        user_result = await db.users.delete_one({"_id": user_id})
+        deletion_report["deleted_records"]["user_profile"] = user_result.deleted_count
+        
+        # Pseudonymize assessment data (keep for business purposes but remove PII)
+        assessment_result = await db.assessments.update_many(
+            {"user_id": user_id},
+            {"$set": {
+                "user_id": f"deleted_user_{hashlib.sha256(user_id.encode()).hexdigest()[:8]}",
+                "email": None,
+                "business_name": "[DELETED]",
+                "deleted_at": datetime.utcnow()
+            }}
+        )
+        deletion_report["deleted_records"]["assessments_pseudonymized"] = assessment_result.modified_count
+        
+        # Delete service requests
+        service_result = await db.service_requests.delete_many({"client_user_id": user_id})
+        deletion_report["deleted_records"]["service_requests"] = service_result.deleted_count
+        
+        # Keep payment records for legal/tax purposes but pseudonymize
+        payment_result = await db.payment_transactions.update_many(
+            {"user_id": user_id},
+            {"$set": {
+                "user_id": f"deleted_user_{hashlib.sha256(user_id.encode()).hexdigest()[:8]}",
+                "email": None,
+                "deleted_at": datetime.utcnow()
+            }}
+        )
+        deletion_report["deleted_records"]["payments_pseudonymized"] = payment_result.modified_count
+        
+        return deletion_report
+    
+    @staticmethod
+    async def handle_data_portability_request(user_id: str) -> bytes:
+        """Article 20: Right to data portability - export in machine-readable format"""
+        
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.GDPR_REQUEST,
+            user_id=user_id,
+            success=True,
+            details={"request_type": "data_portability", "article": "20"}
+        )
+        
+        # Get all user data
+        user_data = await GDPRComplianceService.handle_data_access_request(user_id)
+        
+        # Export as JSON
+        export_data = {
+            "export_info": {
+                "generated_at": datetime.utcnow().isoformat(),
+                "format": "JSON",
+                "version": "1.0",
+                "data_subject_id": user_id
+            },
+            "data": user_data["personal_data"]
+        }
+        
+        return json.dumps(export_data, indent=2, default=str).encode('utf-8')
+
+# Production Data Classification
+class DataClassificationService:
+    """Service for classifying and handling sensitive data"""
+    
+    FIELD_CLASSIFICATIONS = {
+        # Restricted - requires encryption
+        "tax_id": DataClassification.RESTRICTED,
+        "ssn": DataClassification.RESTRICTED,
+        "bank_account": DataClassification.RESTRICTED,
+        "credit_card": DataClassification.RESTRICTED,
+        
+        # Confidential - business sensitive
+        "financial_data": DataClassification.CONFIDENTIAL,
+        "business_revenue": DataClassification.CONFIDENTIAL,
+        "assessment_responses": DataClassification.CONFIDENTIAL,
+        
+        # Internal - company use
+        "user_id": DataClassification.INTERNAL,
+        "session_id": DataClassification.INTERNAL,
+        
+        # Public - can be shared
+        "business_name": DataClassification.PUBLIC,
+        "public_certifications": DataClassification.PUBLIC
+    }
+    
+    @staticmethod
+    def classify_field(field_name: str) -> DataClassification:
+        """Classify data field based on sensitivity"""
+        return DataClassificationService.FIELD_CLASSIFICATIONS.get(
+            field_name, 
+            DataClassification.INTERNAL
+        )
+    
+    @staticmethod
+    def should_encrypt_field(field_name: str) -> bool:
+        """Determine if field should be encrypted"""
+        classification = DataClassificationService.classify_field(field_name)
+        return classification in [DataClassification.RESTRICTED, DataClassification.CONFIDENTIAL]
 
 def rate_limit(max_requests: int, window_seconds: int):
     """Rate limiting decorator"""
