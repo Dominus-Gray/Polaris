@@ -6409,10 +6409,10 @@ function NavigatorAnalyticsPage(){
 }
 
 function AgencyHome(){
-  // Guard against null crashes and show skeletons while loading
-  const [impact, setImpact] = useState(null);
-  const [certificates, setCertificates] = useState([]);
-  const [activeTab, setActiveTab] = useState('agency_portal');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [pipelineData, setPipelineData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState(null);
   const [subscriptionTiers, setSubscriptionTiers] = useState([]);
   const [usageData, setUsageData] = useState(null);
