@@ -518,7 +518,7 @@ PRODUCTION_SECURITY_CONFIG = {
     # Authentication
     "JWT_SECRET_KEY": os.environ.get("JWT_SECRET_KEY", secrets.token_urlsafe(64)),
     "JWT_ALGORITHM": "HS256",
-    "JWT_EXPIRE_MINUTES": 30,  # Reduced for production
+    "JWT_EXPIRE_MINUTES": 240,  # Extended to 4 hours for better UX
     "REFRESH_TOKEN_EXPIRE_DAYS": 30,
     
     # Password Policy
