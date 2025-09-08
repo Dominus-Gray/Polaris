@@ -6920,44 +6920,61 @@ function AgencyHome(){
               <div className="bg-white rounded-lg border p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <button className="p-4 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors text-left">
-                    <div className="text-indigo-600 mb-2">
+                  <button 
+                    onClick={() => handleQuickAction('add_opportunity')}
+                    className="p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors text-left"
+                  >
+                    <div className="text-green-600 mb-2">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
-                    <div className="font-medium text-slate-900">Send Invitation</div>
-                    <div className="text-sm text-slate-600">Invite new business to assessment</div>
+                    <div className="font-medium text-slate-900">Add Opportunity</div>
+                    <div className="text-sm text-slate-600">Create new contract opportunity</div>
                   </button>
                   
-                  <button className="p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors text-left">
-                    <div className="text-green-600 mb-2">
+                  <button 
+                    onClick={() => handleQuickAction('review_businesses')}
+                    className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-left"
+                  >
+                    <div className="text-blue-600 mb-2">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
                     </div>
-                    <div className="font-medium text-slate-900">Issue Certificate</div>
-                    <div className="text-sm text-slate-600">Generate completion certificate</div>
+                    <div className="font-medium text-slate-900">Review Businesses</div>
+                    <div className="text-sm text-slate-600">Assessment progress overview</div>
                   </button>
                   
-                  <button className="p-4 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors text-left">
+                  <button 
+                    onClick={() => handleQuickAction('ai_analysis')}
+                    disabled={aiLoading}
+                    className="p-4 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors text-left disabled:opacity-50"
+                  >
                     <div className="text-purple-600 mb-2">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
+                      {aiLoading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                      ) : (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      )}
                     </div>
-                    <div className="font-medium text-slate-900">View Analytics</div>
-                    <div className="text-sm text-slate-600">Business intelligence dashboard</div>
+                    <div className="font-medium text-slate-900">AI Contract Analysis</div>
+                    <div className="text-sm text-slate-600">{aiLoading ? 'Analyzing...' : 'Smart opportunity matching'}</div>
                   </button>
                   
-                  <button className="p-4 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors text-left">
+                  <button 
+                    onClick={() => handleQuickAction('manage_licenses')}
+                    className="p-4 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors text-left"
+                  >
                     <div className="text-amber-600 mb-2">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                       </svg>
                     </div>
-                    <div className="font-medium text-slate-900">Purchase Licenses</div>
-                    <div className="text-sm text-slate-600">Expand assessment capacity</div>
+                    <div className="font-medium text-slate-900">Manage Licenses</div>
+                    <div className="text-sm text-slate-600">Purchase & distribute</div>
                   </button>
                 </div>
               </div>
