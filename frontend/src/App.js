@@ -6968,15 +6968,75 @@ function AgencyHome(){
 
           {activeTab === 'business_intelligence' && (
             <div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-6">Business Intelligence Dashboard</h3>
-              <p className="text-slate-600 mb-8">Comprehensive analytics for economic development impact and small business success tracking</p>
-              
-              {/* Key Performance Overview */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">AI-Enhanced Business Intelligence Dashboard</h3>
+                <p className="text-slate-600">Comprehensive analytics powered by artificial intelligence for strategic decision-making and growth optimization</p>
+              </div>
+
+              {/* AI Insights Section */}
+              {enhancedBI?.ai_insights && (
+                <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900">AI Strategic Insights</h4>
+                    <div className="ml-auto text-sm text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                      Portfolio Health: {enhancedBI.ai_insights.portfolio_health}%
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-2">Growth Opportunities</h5>
+                      <ul className="space-y-1 text-sm text-slate-600">
+                        {enhancedBI.ai_insights.growth_opportunities?.map((opportunity, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <span className="text-green-500 mr-2">•</span>
+                            {opportunity}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-2">Risk Assessment</h5>
+                      <ul className="space-y-1 text-sm text-slate-600">
+                        {enhancedBI.ai_insights.risk_assessment?.map((risk, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <span className="text-amber-500 mr-2">⚠</span>
+                            {risk}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-2">Strategic Actions</h5>
+                      <ul className="space-y-1 text-sm text-slate-600">
+                        {enhancedBI.ai_insights.strategic_recommendations?.map((action, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <span className="text-indigo-500 mr-2">→</span>
+                            {action}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-white rounded-lg">
+                    <h5 className="font-medium text-slate-900 mb-1">Market Positioning</h5>
+                    <p className="text-sm text-slate-600">{enhancedBI.ai_insights.market_positioning}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Performance Metrics Dashboard */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-lg border p-6">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-indigo-100 rounded-lg">
-                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
@@ -6990,18 +7050,49 @@ function AgencyHome(){
                 
                 <div className="bg-white rounded-lg border p-6">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-green-100 rounded-lg">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-slate-900">{Math.round((impact?.assessments?.completed || 0) / (impact?.invites?.total || 1) * 100)}%</div>
-                      <div className="text-sm text-slate-600">Business Survival Rate</div>
+                      <div className="text-2xl font-bold text-slate-900">{Math.round((enhancedBI?.performance_metrics?.client_success_rate || 0))}%</div>
+                      <div className="text-sm text-slate-600">Client Success Rate</div>
                       <div className="text-xs text-slate-500">12-month tracking</div>
                     </div>
                   </div>
                 </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{enhancedBI?.performance_metrics?.engagement_score || 0}</div>
+                      <div className="text-sm text-slate-600">Engagement Score</div>
+                      <div className="text-xs text-purple-600 mt-1">Active participation</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-indigo-100 rounded-lg">
+                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">{enhancedBI?.performance_metrics?.market_penetration || 0}%</div>
+                      <div className="text-sm text-slate-600">Market Penetration</div>
+                      <div className="text-xs text-indigo-600 mt-1">Regional coverage</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
                 
                 <div className="bg-white rounded-lg border p-6">
                   <div className="flex items-center gap-4">
