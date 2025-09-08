@@ -6492,42 +6492,74 @@ function AgencyHome(){
     }
   };
 
-  if(!impact) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
-  
-  const tierInfo = getTierInfo();
-  
-  return (
-    <div className="container mt-6">
-      {/* Tier banner moved to License Distribution tab */}
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading contract pipeline...</p>
+        </div>
+      </div>
+    );
+  }
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="border-b p-4">
-          <nav className="flex gap-6">
-            {[
-              { id: 'agency_portal', label: 'Agency Portal', icon: '🏛️' },
-              { id: 'business_intelligence', label: 'Business Intelligence', icon: '📊' },
-              { id: 'opportunities', label: 'Opportunities', icon: '🎯' },
-              { id: 'sponsored_companies', label: 'Sponsored Companies', icon: '🏢' },
-              { id: 'settings', label: 'Account Settings', icon: '⚙️' }
-            ].map((tab) => (
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Streamlined Navigation - No redundant tabs */}
+      <nav className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-slate-900">Contract Pipeline Management</h1>
+            </div>
+            <div className="flex items-center space-x-8">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id 
-                    ? 'border-indigo-500 text-indigo-600' 
-                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-3 py-2 text-sm font-medium ${
+                  activeTab === 'dashboard'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
+                Pipeline Dashboard
               </button>
-            ))}
-          </nav>
+              <button
+                onClick={() => setActiveTab('businesses')}
+                className={`px-3 py-2 text-sm font-medium ${
+                  activeTab === 'businesses'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Business Readiness
+              </button>
+              <button
+                onClick={() => setActiveTab('opportunities')}
+                className={`px-3 py-2 text-sm font-medium ${
+                  activeTab === 'opportunities'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Opportunity Matching
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`px-3 py-2 text-sm font-medium ${
+                  activeTab === 'settings'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Account Settings
+              </button>
+            </div>
+          </div>
         </div>
+      </nav>
 
-        <div className="p-6">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Agency Portal Tab - Consolidated Dashboard Information */}
           {activeTab === 'agency_portal' && (
             <div>
