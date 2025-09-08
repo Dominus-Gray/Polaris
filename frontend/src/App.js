@@ -6415,6 +6415,8 @@ function AgencyHome(){
   const [impact, setImpact] = useState(null);
   const [enhancedBI, setEnhancedBI] = useState(null);
   const [aiInsights, setAiInsights] = useState(null);
+  const [opportunityData, setOpportunityData] = useState(null);
+  const [generatedReport, setGeneratedReport] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   // Load dashboard data focused on contract pipeline
