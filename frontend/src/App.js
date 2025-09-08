@@ -7350,8 +7350,68 @@ function AgencyHome(){
 
           {activeTab === 'opportunities' && (
             <div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-6">AI Contracting Recommendation</h3>
-              <p className="text-slate-600 mb-8">Intelligent contract matching with risk assessment and recommendations for sponsored businesses</p>
+              <h3 className="text-xl font-semibold text-slate-900 mb-6">AI-Powered Contract Opportunities</h3>
+              <p className="text-slate-600 mb-8">Intelligent contract matching with risk assessment and AI-driven recommendations for sponsored businesses</p>
+              
+              {/* AI Analysis Results */}
+              {aiInsights && (
+                <div className="mb-8 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 border border-purple-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900">AI Contract Analysis Results</h4>
+                    <div className="ml-auto text-sm text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
+                      Readiness Score: {aiInsights.readiness_score}%
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-2">Top Opportunities</h5>
+                      <ul className="space-y-2">
+                        {aiInsights.opportunities?.map((opportunity, idx) => (
+                          <li key={idx} className="flex items-center text-sm">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            <span className="text-slate-700">{opportunity}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-2">Risk Factors</h5>
+                      <ul className="space-y-2">
+                        {aiInsights.risk_factors?.map((risk, idx) => (
+                          <li key={idx} className="flex items-center text-sm">
+                            <span className="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
+                            <span className="text-slate-700">{risk}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-2">Strategic Advantages</h5>
+                      <ul className="space-y-2">
+                        {aiInsights.advantages?.map((advantage, idx) => (
+                          <li key={idx} className="flex items-center text-sm">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                            <span className="text-slate-700">{advantage}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-white rounded-lg">
+                    <h5 className="font-medium text-slate-900 mb-1">Recommended Timeline</h5>
+                    <p className="text-sm text-slate-600">{aiInsights.timeline}</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Contract Opportunity Pipeline */}
               
               <div className="bg-white rounded-lg border p-6 mb-6">
                 <h4 className="text-lg font-semibold text-slate-900 mb-4">Contract Opportunities</h4>
