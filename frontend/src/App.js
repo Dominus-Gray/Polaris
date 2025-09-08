@@ -6447,146 +6447,49 @@ function AgencyHome(){
     loadData();
   }, []);
 
-  const downloadCertificate = async(certId) => {
-    try{
-      const response = await fetch(`${API}/certificates/${certId}/download`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('polaris_token')}` }
-      });
-      if(!response.ok) throw new Error('Download failed');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Polaris_Certificate_${certId}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast.success('Certificate downloaded');
-    }catch(e){ toast.error('Download failed', { description: e.message }); }
-  };
-
-  const copyVerificationLink = async(certId) => {
-    try{
-      const link = `${window.location.origin}/verify/cert/${certId}`;
-      await navigator.clipboard.writeText(link);
-      toast.success('Verification link copied to clipboard');
-    }catch(e){ toast.error('Failed to copy link', { description: e.message }); }
-  };
-
-  const upgradeSubscription = async(tierId, billingCycle = 'monthly') => {
-    setUpgradeLoading(true);
-    try{
-      const response = await axios.post(`${API}/agency/subscription/upgrade`, {
-        tier_id: tierId,
-        billing_cycle: billingCycle
-      });
-      
-      toast.success(response.data.message);
-      setSubscription(response.data.subscription);
-      
-      // Reload subscription data
-      const subscriptionRes = await axios.get(`${API}/agency/subscription/current`);
-      setSubscription(subscriptionRes.data);
-      
-    }catch(e){
-      toast.error('Upgrade failed', { description: e.response?.data?.detail || e.message });
-    }finally{
-      setUpgradeLoading(false);
-    }
-  };
-
-  const handleLicensePurchase = async(packageId) => {
-    try {
-      const origin_url = window.location.origin;
-      
-      const response = await axios.post(`${API}/agency/licenses/purchase`, {
-        package_id: packageId,
-        origin_url: origin_url,
-        metadata: {
-          source: 'agency_dashboard',
-          package_type: packageId
-        }
-      });
-      
-      if (response.data.url) {
-        // Redirect to Stripe checkout
-        window.location.href = response.data.url;
-      }
-    } catch (e) {
-      toast.error('Purchase failed', { description: e.response?.data?.detail || e.message });
-    }
-  };
-
-  // Check for payment completion on page load
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('session_id');
-    const tab = urlParams.get('tab');
-    
-    if (sessionId && tab === 'sponsored_companies') {
-      // Set the active tab
-      setActiveTab('sponsored_companies');
-      
-      // Check payment status
-      const checkPaymentStatus = async () => {
+  // Quick action handlers with actual functionality
+  const handleQuickAction = async (action) => {
+    switch (action) {
+      case 'add_opportunity':
+        setActiveTab('opportunities');
+        setTimeout(() => {
+          const element = document.getElementById('add-opportunity-form');
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+        break;
+        
+      case 'review_businesses':
+        setActiveTab('businesses');
+        break;
+        
+      case 'generate_report':
         try {
-          const response = await axios.get(`${API}/agency/licenses/purchase/status/${sessionId}`);
+          const response = await axios.get(`${API}/agency/reports/pipeline`, {
+            responseType: 'blob'
+          });
           
-          if (response.data.payment_status === 'paid') {
-            toast.success('License purchase successful! Your new licenses are now available.', {
-              duration: 5000
-            });
-            
-            // Clear the URL parameters
-            window.history.replaceState({}, document.title, '/agency');
-            
-            // Refresh the data
-            const { data } = await axios.get(`${API}/home/agency`);
-            setImpact(data);
-          } else if (response.data.status === 'expired') {
-            toast.error('Payment session expired. Please try purchasing again.');
-          } else {
-            // Payment is still processing
-            toast('Processing payment...', { duration: 3000 });
-            
-            // Poll for status updates
-            const pollStatus = async (attempts = 0) => {
-              if (attempts >= 5) return;
-              
-              setTimeout(async () => {
-                try {
-                  const statusRes = await axios.get(`${API}/agency/licenses/purchase/status/${sessionId}`);
-                  if (statusRes.data.payment_status === 'paid') {
-                    toast.success('License purchase successful! Your new licenses are now available.');
-                    const { data } = await axios.get(`${API}/home/agency`);
-                    setImpact(data);
-                  } else {
-                    pollStatus(attempts + 1);
-                  }
-                } catch (e) {
-                  console.error('Error polling payment status:', e);
-                }
-              }, 2000);
-            };
-            
-            pollStatus();
-          }
-        } catch (e) {
-          toast.error('Error checking payment status. Please contact support if you completed the payment.');
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `pipeline_report_${new Date().toISOString().split('T')[0]}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          
+          toast.success('Pipeline report generated successfully');
+        } catch (error) {
+          toast.error('Failed to generate report');
         }
-      };
-      
-      checkPaymentStatus();
+        break;
+        
+      case 'manage_licenses':
+        setActiveTab('settings');
+        setTimeout(() => {
+          const element = document.getElementById('subscription-billing');
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+        break;
     }
-  }, []);
-
-  // Calculate current tier based on invites
-  const getTierInfo = () => {
-    if (!impact) return { tier: 'Basic', price: 100, next: 'Volume' };
-    const total = impact.invites.total || 0;
-    if (total >= 100) return { tier: 'Enterprise', price: 60, next: null };
-    if (total >= 25) return { tier: 'Growth', price: 75, next: 'Enterprise (100+ invites = $60 each)' };
-    if (total >= 5) return { tier: 'Volume', price: 85, next: 'Growth (25+ invites = $75 each)' };
-    return { tier: 'Basic', price: 100, next: 'Volume (5+ invites = $85 each)' };
   };
 
   if(!impact) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
