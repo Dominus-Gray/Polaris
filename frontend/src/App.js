@@ -7629,7 +7629,82 @@ function AgencyHome(){
               </div>
               
               {/* Subscription & Billing Section */}
-              <div className="space-y-6">
+              <div className="space-y-6" id="subscription-billing">
+                {/* License Distribution Section - Moved from Sponsored Companies */}
+                <div className="bg-white rounded-lg border p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">License Distribution Management</h4>
+                  
+                  {/* Enhanced Tier Banner with License Information */}
+                  <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-xl p-6 text-white mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold">Enterprise Plan - License Distribution</h3>
+                        <p className="text-indigo-100">Manage and distribute assessment licenses to sponsored businesses</p>
+                      </div>
+                      <div className="space-x-3">
+                        <button 
+                          onClick={() => handleLicensePurchase('tier_1_bulk_10')}
+                          className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                        >
+                          Buy Tier 1 Licenses
+                        </button>
+                        <button 
+                          onClick={() => handleLicensePurchase('mixed_professional')}
+                          className="bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-colors"
+                        >
+                          Professional Pack
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-6">
+                      <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <div className="text-2xl font-bold mb-1">25</div>
+                        <div className="text-sm text-indigo-100">Tier 1 Licenses</div>
+                        <div className="text-xs text-indigo-200 mt-1">$25 each</div>
+                      </div>
+                      <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <div className="text-2xl font-bold mb-1">10</div>
+                        <div className="text-sm text-indigo-100">Tier 2 Licenses</div>
+                        <div className="text-xs text-indigo-200 mt-1">$75 each</div>
+                      </div>
+                      <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <div className="text-2xl font-bold mb-1">5</div>
+                        <div className="text-sm text-indigo-100">Tier 3 Licenses</div>
+                        <div className="text-xs text-indigo-200 mt-1">$150 each</div>
+                      </div>
+                    </div>
+                    
+                    {/* License Package Options */}
+                    <div className="mt-6">
+                      <h5 className="font-semibold mb-3">Quick Purchase Options:</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button 
+                          onClick={() => handleLicensePurchase('tier_1_bulk_5')}
+                          className="bg-white/10 rounded-lg p-3 text-left hover:bg-white/20 transition-colors border border-white/20"
+                        >
+                          <div className="font-medium">Starter Pack</div>
+                          <div className="text-sm text-indigo-200">5 Tier 1 Licenses - $125</div>
+                        </button>
+                        <button 
+                          onClick={() => handleLicensePurchase('tier_2_bulk_5')}
+                          className="bg-white/10 rounded-lg p-3 text-left hover:bg-white/20 transition-colors border border-white/20"
+                        >
+                          <div className="font-medium">Growth Pack</div>
+                          <div className="text-sm text-indigo-200">5 Tier 2 Licenses - $375</div>
+                        </button>
+                        <button 
+                          onClick={() => handleLicensePurchase('tier_3_bulk_3')}
+                          className="bg-white/10 rounded-lg p-3 text-left hover:bg-white/20 transition-colors border border-white/20"
+                        >
+                          <div className="font-medium">Premium Pack</div>
+                          <div className="text-sm text-indigo-200">3 Tier 3 Licenses - $450</div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Current Subscription */}
                 <div className="bg-white rounded-lg border p-6">
                   <h4 className="text-lg font-semibold text-slate-900 mb-4">Current Subscription</h4>
