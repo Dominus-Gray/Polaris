@@ -7269,7 +7269,7 @@ function AgencyHome(){
                 <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-xl p-6 text-white mb-8">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold">{tierInfo.tier} Plan - License Distribution</h3>
+                      <h3 className="text-xl font-semibold">Enterprise Plan - License Distribution</h3>
                       <p className="text-indigo-100">Manage and distribute assessment licenses to sponsored businesses</p>
                     </div>
                     <div className="space-x-3">
