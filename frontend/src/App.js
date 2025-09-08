@@ -7124,6 +7124,78 @@ function AgencyHome(){
                 </div>
               )}
 
+              {/* AI Generated Report Display */}
+              {generatedReport && (
+                <div className="mb-8 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg p-6 border border-slate-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-slate-900">AI Generated Report</h4>
+                    <button 
+                      onClick={() => generateAIReport('comprehensive')}
+                      className="text-sm bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700"
+                    >
+                      Regenerate
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-lg p-4 border">
+                        <h5 className="font-medium text-slate-900 mb-2">Executive Summary</h5>
+                        <p className="text-sm text-slate-600">{generatedReport.executive_summary}</p>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg p-4 border">
+                        <h5 className="font-medium text-slate-900 mb-2">Growth Analysis</h5>
+                        <p className="text-sm text-slate-600">{generatedReport.growth_analysis}</p>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg p-4 border">
+                        <h5 className="font-medium text-slate-900 mb-2">Market Opportunities</h5>
+                        <ul className="space-y-1">
+                          {generatedReport.market_opportunities?.map((opportunity, idx) => (
+                            <li key={idx} className="text-sm text-slate-600 flex items-start">
+                              <span className="text-green-500 mr-2">•</span>
+                              {opportunity}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-lg p-4 border">
+                        <h5 className="font-medium text-slate-900 mb-2">Recommendations</h5>
+                        <ul className="space-y-1">
+                          {generatedReport.recommendations?.map((rec, idx) => (
+                            <li key={idx} className="text-sm text-slate-600 flex items-start">
+                              <span className="text-indigo-500 mr-2">→</span>
+                              {rec}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg p-4 border">
+                        <h5 className="font-medium text-slate-900 mb-2">Action Items</h5>
+                        <ul className="space-y-1">
+                          {generatedReport.action_items?.map((action, idx) => (
+                            <li key={idx} className="text-sm text-slate-600 flex items-start">
+                              <span className="text-amber-500 mr-2">✓</span>
+                              {action}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg p-4 border">
+                        <h5 className="font-medium text-slate-900 mb-2">Forecast</h5>
+                        <p className="text-sm text-slate-600">{generatedReport.forecast}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Performance Metrics Dashboard */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-lg border p-6">
