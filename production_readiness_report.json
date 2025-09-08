@@ -1,0 +1,475 @@
+{
+  "summary": {
+    "total_tests": 24,
+    "passed_tests": 21,
+    "failed_tests": 3,
+    "success_rate": 87.5,
+    "test_timestamp": "2025-09-08T17:30:45.510541"
+  },
+  "categories": {
+    "Authentication": {
+      "total": 4,
+      "passed": 4,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.498546",
+          "category": "Authentication",
+          "test_name": "Client Login",
+          "success": true,
+          "details": "Successfully authenticated client user",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:44.564280",
+          "category": "Authentication",
+          "test_name": "Agency Login",
+          "success": true,
+          "details": "Successfully authenticated agency user",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:44.591599",
+          "category": "Authentication",
+          "test_name": "Provider Login",
+          "success": true,
+          "details": "Successfully authenticated provider user",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:44.677197",
+          "category": "Authentication",
+          "test_name": "Navigator Login",
+          "success": true,
+          "details": "Successfully authenticated navigator user",
+          "response_data": null
+        }
+      ]
+    },
+    "Security": {
+      "total": 2,
+      "passed": 2,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.730088",
+          "category": "Security",
+          "test_name": "JWT Token Validation",
+          "success": true,
+          "details": "Token valid, user role: client",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:44.778243",
+          "category": "Security",
+          "test_name": "Password Requirements",
+          "success": true,
+          "details": "Min length: 12, Complexity rules enforced",
+          "response_data": null
+        }
+      ]
+    },
+    "GDPR Compliance": {
+      "total": 1,
+      "passed": 0,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.785967",
+          "category": "GDPR Compliance",
+          "test_name": "Data Access Request",
+          "success": false,
+          "details": "Status: 405 - Article 15 compliance",
+          "response_data": null
+        }
+      ]
+    },
+    "Assessment System": {
+      "total": 2,
+      "passed": 1,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.807051",
+          "category": "Assessment System",
+          "test_name": "Tier-Based Schema",
+          "success": true,
+          "details": "Schema loaded with 10 business areas",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:44.856784",
+          "category": "Assessment System",
+          "test_name": "Session Creation",
+          "success": false,
+          "details": "Status: 422",
+          "response_data": null
+        }
+      ]
+    },
+    "License Management": {
+      "total": 1,
+      "passed": 1,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.883527",
+          "category": "License Management",
+          "test_name": "License Generation",
+          "success": true,
+          "details": "Generated 2 license codes",
+          "response_data": null
+        }
+      ]
+    },
+    "AI Integration": {
+      "total": 1,
+      "passed": 0,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.917140",
+          "category": "AI Integration",
+          "test_name": "AI Assistance",
+          "success": false,
+          "details": "Status: 500",
+          "response_data": null
+        }
+      ]
+    },
+    "Service Matching": {
+      "total": 2,
+      "passed": 2,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:44.946827",
+          "category": "Service Matching",
+          "test_name": "Service Request Creation",
+          "success": true,
+          "details": "Request created: req_1ceee8b2-2e75-4fff-a5ea-9d13d27334b4",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:44.975538",
+          "category": "Service Matching",
+          "test_name": "Provider Response",
+          "success": true,
+          "details": "Provider responded with $2500.0 proposal",
+          "response_data": null
+        }
+      ]
+    },
+    "Payment Processing": {
+      "total": 1,
+      "passed": 1,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:45.039987",
+          "category": "Payment Processing",
+          "test_name": "Stripe Checkout Session",
+          "success": true,
+          "details": "Validation working correctly (422 expected for test data)",
+          "response_data": null
+        }
+      ]
+    },
+    "Data Integrity": {
+      "total": 2,
+      "passed": 2,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:45.069498",
+          "category": "Data Integrity",
+          "test_name": "Client Statistics",
+          "success": true,
+          "details": "Statistics loaded: 13 data points",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:45.123827",
+          "category": "Data Integrity",
+          "test_name": "Analytics Data Consistency",
+          "success": true,
+          "details": "Analytics data consistent: 4 total accesses",
+          "response_data": null
+        }
+      ]
+    },
+    "Performance": {
+      "total": 2,
+      "passed": 2,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:45.132740",
+          "category": "Performance",
+          "test_name": "Health Check Response Time",
+          "success": true,
+          "details": "Response time: 0.009s (under 2s threshold)",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:45.346715",
+          "category": "Performance",
+          "test_name": "Rate Limiting",
+          "success": true,
+          "details": "Handled 5 rapid requests appropriately",
+          "response_data": null
+        }
+      ]
+    },
+    "Error Handling": {
+      "total": 3,
+      "passed": 3,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:45.181349",
+          "category": "Error Handling",
+          "test_name": "404 Error Response",
+          "success": true,
+          "details": "Proper 404 error returned for invalid endpoint",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:45.460117",
+          "category": "Error Handling",
+          "test_name": "Invalid Token Handling",
+          "success": true,
+          "details": "Properly rejected invalid authentication token",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:45.509878",
+          "category": "Error Handling",
+          "test_name": "Malformed Request Validation",
+          "success": true,
+          "details": "Properly validated malformed request (status: 422)",
+          "response_data": null
+        }
+      ]
+    },
+    "External Services": {
+      "total": 1,
+      "passed": 1,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:45.355525",
+          "category": "External Services",
+          "test_name": "Template Generation",
+          "success": true,
+          "details": "Template generated: 1466 characters",
+          "response_data": null
+        }
+      ]
+    },
+    "Monitoring": {
+      "total": 2,
+      "passed": 2,
+      "tests": [
+        {
+          "timestamp": "2025-09-08T17:30:45.403348",
+          "category": "Monitoring",
+          "test_name": "System Health Check",
+          "success": true,
+          "details": "System healthy: ok",
+          "response_data": null
+        },
+        {
+          "timestamp": "2025-09-08T17:30:45.411652",
+          "category": "Monitoring",
+          "test_name": "Metrics Collection",
+          "success": true,
+          "details": "Metrics endpoint not exposed (security best practice)",
+          "response_data": null
+        }
+      ]
+    }
+  },
+  "detailed_results": [
+    {
+      "timestamp": "2025-09-08T17:30:44.498546",
+      "category": "Authentication",
+      "test_name": "Client Login",
+      "success": true,
+      "details": "Successfully authenticated client user",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.564280",
+      "category": "Authentication",
+      "test_name": "Agency Login",
+      "success": true,
+      "details": "Successfully authenticated agency user",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.591599",
+      "category": "Authentication",
+      "test_name": "Provider Login",
+      "success": true,
+      "details": "Successfully authenticated provider user",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.677197",
+      "category": "Authentication",
+      "test_name": "Navigator Login",
+      "success": true,
+      "details": "Successfully authenticated navigator user",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.730088",
+      "category": "Security",
+      "test_name": "JWT Token Validation",
+      "success": true,
+      "details": "Token valid, user role: client",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.778243",
+      "category": "Security",
+      "test_name": "Password Requirements",
+      "success": true,
+      "details": "Min length: 12, Complexity rules enforced",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.785967",
+      "category": "GDPR Compliance",
+      "test_name": "Data Access Request",
+      "success": false,
+      "details": "Status: 405 - Article 15 compliance",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.807051",
+      "category": "Assessment System",
+      "test_name": "Tier-Based Schema",
+      "success": true,
+      "details": "Schema loaded with 10 business areas",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.856784",
+      "category": "Assessment System",
+      "test_name": "Session Creation",
+      "success": false,
+      "details": "Status: 422",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.883527",
+      "category": "License Management",
+      "test_name": "License Generation",
+      "success": true,
+      "details": "Generated 2 license codes",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.917140",
+      "category": "AI Integration",
+      "test_name": "AI Assistance",
+      "success": false,
+      "details": "Status: 500",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.946827",
+      "category": "Service Matching",
+      "test_name": "Service Request Creation",
+      "success": true,
+      "details": "Request created: req_1ceee8b2-2e75-4fff-a5ea-9d13d27334b4",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:44.975538",
+      "category": "Service Matching",
+      "test_name": "Provider Response",
+      "success": true,
+      "details": "Provider responded with $2500.0 proposal",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.039987",
+      "category": "Payment Processing",
+      "test_name": "Stripe Checkout Session",
+      "success": true,
+      "details": "Validation working correctly (422 expected for test data)",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.069498",
+      "category": "Data Integrity",
+      "test_name": "Client Statistics",
+      "success": true,
+      "details": "Statistics loaded: 13 data points",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.123827",
+      "category": "Data Integrity",
+      "test_name": "Analytics Data Consistency",
+      "success": true,
+      "details": "Analytics data consistent: 4 total accesses",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.132740",
+      "category": "Performance",
+      "test_name": "Health Check Response Time",
+      "success": true,
+      "details": "Response time: 0.009s (under 2s threshold)",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.181349",
+      "category": "Error Handling",
+      "test_name": "404 Error Response",
+      "success": true,
+      "details": "Proper 404 error returned for invalid endpoint",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.346715",
+      "category": "Performance",
+      "test_name": "Rate Limiting",
+      "success": true,
+      "details": "Handled 5 rapid requests appropriately",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.355525",
+      "category": "External Services",
+      "test_name": "Template Generation",
+      "success": true,
+      "details": "Template generated: 1466 characters",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.403348",
+      "category": "Monitoring",
+      "test_name": "System Health Check",
+      "success": true,
+      "details": "System healthy: ok",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.411652",
+      "category": "Monitoring",
+      "test_name": "Metrics Collection",
+      "success": true,
+      "details": "Metrics endpoint not exposed (security best practice)",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.460117",
+      "category": "Error Handling",
+      "test_name": "Invalid Token Handling",
+      "success": true,
+      "details": "Properly rejected invalid authentication token",
+      "response_data": null
+    },
+    {
+      "timestamp": "2025-09-08T17:30:45.509878",
+      "category": "Error Handling",
+      "test_name": "Malformed Request Validation",
+      "success": true,
+      "details": "Properly validated malformed request (status: 422)",
+      "response_data": null
+    }
+  ]
+}
