@@ -290,24 +290,24 @@ class AgencyDashboardTester:
             return False
             
         try:
-            # Test sponsored companies list endpoint
-            response = self.session.get(f"{BACKEND_URL}/agency/sponsored-companies")
+            # Test agency clients accepted endpoint
+            response = self.session.get(f"{BACKEND_URL}/agency/clients/accepted")
             
             if response.status_code == 200:
                 data = response.json()
-                if "companies" in data or "sponsored_businesses" in data:
-                    companies_count = len(data.get("companies", data.get("sponsored_businesses", [])))
+                if "clients" in data or "accepted_clients" in data or isinstance(data, list):
+                    companies_count = len(data) if isinstance(data, list) else len(data.get("clients", data.get("accepted_clients", [])))
                     self.log_test(
                         "Sponsored Companies Management", 
                         True, 
-                        f"Sponsored companies list retrieved, count: {companies_count}"
+                        f"Accepted clients list retrieved, count: {companies_count}"
                     )
                     return True
                 else:
                     self.log_test(
                         "Sponsored Companies Management", 
                         False, 
-                        "No companies/sponsored_businesses field in response",
+                        "No clients data in response",
                         data
                     )
                     return False
