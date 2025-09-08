@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 
 def approve_qa_users():
     """Approve existing QA users"""

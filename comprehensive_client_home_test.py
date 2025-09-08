@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 CLIENT_EMAIL = "client.qa@polaris.example.com"
 CLIENT_PASSWORD = "Polaris#2025!"
 

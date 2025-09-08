@@ -18,7 +18,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BASE_URL = "https://agencydash.preview.emergentagent.com/api"
+BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},

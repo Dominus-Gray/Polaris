@@ -9,7 +9,7 @@ import json
 import uuid
 
 # Configuration
-BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 
 # QA Credentials to create
 QA_USERS = [

@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 
 # Test credentials from test_result.md
 NAVIGATOR_EMAIL = "navigator.qa@polaris.example.com"

@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 # Configuration
-BASE_URL = "https://agencydash.preview.emergentagent.com/api"
+BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 
 # QA Test Credentials
 QA_CREDENTIALS = {

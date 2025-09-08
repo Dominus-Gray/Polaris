@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Test Configuration
-BACKEND_URL = "https://agencydash.preview.emergentagent.com/api"
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},

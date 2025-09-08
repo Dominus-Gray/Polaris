@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://agencydash.preview.emergentagent.com/api"
+BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"
 QA_CLIENT_PASSWORD = "Polaris#2025!"
 QA_PROVIDER_EMAIL = "provider.qa@polaris.example.com"

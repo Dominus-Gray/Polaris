@@ -20,7 +20,7 @@ import sys
 import uuid
 
 # Configuration
-BASE_URL = "https://agencydash.preview.emergentagent.com/api"
+BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
 TEST_EMAIL = "test.user@example.com"
 TEST_PASSWORD = "TestPassword123!"  # Meets 12+ char requirements
 

@@ -173,7 +173,7 @@ function AgencyLicenses() {
         <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <label className="text-sm text-slate-600"><input id="polaris_only_available_codes" type="checkbox" className="mr-2" />Include only available codes</label>
-          <button className="btn btn-sm" onClick={()=>navigator.clipboard.writeText('Polaris Registration: https://agencydash.preview.emergentagent.com\nUse the attached CSV of codes (single-use).')}>Copy Email Body</button>
+          <button className="btn btn-sm" onClick={()=>navigator.clipboard.writeText('Polaris Registration: https://biz-matchmaker-1.preview.emergentagent.com\nUse the attached CSV of codes (single-use).')}>Copy Email Body</button>
         </div>
           <h3 className="text-lg font-semibold text-slate-900">License Codes</h3>
           <div className="flex gap-2">
@@ -250,7 +250,7 @@ function InviteCompanyPanel({ licenses }){
       '',
       'Download CSV: ' + url,
       '',
-      'Registration link: https://agencydash.preview.emergentagent.com (Sign Up → Enter 10-digit license code)',
+      'Registration link: https://biz-matchmaker-1.preview.emergentagent.com (Sign Up → Enter 10-digit license code)',
       '',
       'Best regards,',
       'Your Agency'
@@ -317,14 +317,14 @@ function GenerateEmailButton({ licenses }){
       '',
       'Download CSV: ' + url,
       '',
-      'Registration link: https://agencydash.preview.emergentagent.com (Sign Up → Enter 10-digit license code)',
+      'Registration link: https://biz-matchmaker-1.preview.emergentagent.com (Sign Up → Enter 10-digit license code)',
       '',
       'Best regards,',
       'Your Agency Team'
     ];
     const body = encodeURIComponent(bodyLines.join('\n'));
 
-    navigator.clipboard.writeText('Polaris Registration: https://agencydash.preview.emergentagent.com\nInclude the CSV attachment downloaded from your browser.');
+    navigator.clipboard.writeText('Polaris Registration: https://biz-matchmaker-1.preview.emergentagent.com\nInclude the CSV attachment downloaded from your browser.');
 
     const a = document.createElement('a');
     a.href = url;
