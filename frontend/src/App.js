@@ -6615,25 +6615,14 @@ function AgencyHome(){
         await performContractAnalysis(sampleBusinessData);
         setActiveTab('opportunities'); // Switch to opportunities tab to show results
         break;
-        
+
+      case 'opportunity_matching':
+        await performOpportunityMatching();
+        setActiveTab('opportunities');
+        break;
+
       case 'generate_report':
-        try {
-          const response = await axios.get(`${API}/agency/reports/pipeline`, {
-            responseType: 'blob'
-          });
-          
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', `pipeline_report_${new Date().toISOString().split('T')[0]}.pdf`);
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          
-          toast.success('Pipeline report generated successfully');
-        } catch (error) {
-          toast.error('Failed to generate report');
-        }
+        await generateAIReport('comprehensive');
         break;
         
       case 'manage_licenses':
