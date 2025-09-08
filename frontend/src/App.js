@@ -6782,6 +6782,9 @@ function AgencyHome(){
             </div>
           </div>
         )}
+
+        {/* All Agency Tabs */}
+        <>
           {/* Agency Portal Tab - Consolidated Dashboard Information */}
           {activeTab === 'agency_portal' && (
             <div>
