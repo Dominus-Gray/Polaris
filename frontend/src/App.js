@@ -586,6 +586,7 @@ function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
               </button>
             </div>
           )}
+        </>
         </div>
       </div>
       
