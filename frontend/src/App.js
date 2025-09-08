@@ -6461,22 +6461,70 @@ function AgencyHome(){
     loadData();
   }, []);
 
-  // AI-Powered Contract Analysis Function
-  const performContractAnalysis = async (businessData) => {
+  // AI-Powered Opportunity Matching Function
+  const performOpportunityMatching = async () => {
     try {
       setAiLoading(true);
-      const response = await axios.post(`${API}/agency/ai-contract-analysis`, businessData);
+      
+      // Sample business profile for demonstration
+      const matchingRequest = {
+        business_profile: {
+          industry: 'Technology Services',
+          size: 'Small Business',
+          certifications: ['HUB', 'SDVOB'],
+          past_performance: 'Limited but growing',
+          geographic_focus: 'Regional',
+          revenue_range: '$500K-$2M'
+        },
+        contract_preferences: {
+          contract_types: ['IT Services', 'Consulting', 'Professional Services'],
+          min_value: '$50,000',
+          max_value: '$500,000',
+          agencies: ['Federal', 'State', 'Local']
+        },
+        market_focus: 'technology_government'
+      };
+      
+      const response = await axios.post(`${API}/agency/ai-opportunity-matching`, matchingRequest);
       
       if (response.data.success) {
-        setAiInsights(response.data.analysis);
-        toast.success('AI Contract Analysis completed successfully');
+        setOpportunityData(response.data.analysis);
+        toast.success('AI Opportunity Matching completed successfully');
       } else {
-        setAiInsights(response.data.fallback_analysis);
+        setOpportunityData(response.data.fallback_analysis);
         toast.warning('Using fallback analysis - AI service temporarily unavailable');
       }
     } catch (error) {
-      console.error('AI Analysis Error:', error);
-      toast.error('Contract analysis failed. Please try again.');
+      console.error('Opportunity Matching Error:', error);
+      toast.error('Opportunity matching failed. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // AI-Powered Report Generation Function
+  const generateAIReport = async (reportType = 'comprehensive') => {
+    try {
+      setAiLoading(true);
+      
+      const reportRequest = {
+        report_type: reportType,
+        time_period: 'quarter',
+        focus_areas: ['performance', 'growth', 'opportunities']
+      };
+      
+      const response = await axios.post(`${API}/agency/ai-generate-report`, reportRequest);
+      
+      if (response.data.success) {
+        setGeneratedReport(response.data.report);
+        toast.success(`${reportType} report generated successfully`);
+        // Optionally download as PDF or display in modal
+      } else {
+        toast.error('Report generation failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Report Generation Error:', error);
+      toast.error('Report generation failed. Please try again.');
     } finally {
       setAiLoading(false);
     }
