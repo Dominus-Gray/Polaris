@@ -6463,6 +6463,27 @@ function AgencyHome(){
     loadData();
   }, []);
 
+  // AI-Powered Contract Analysis Function
+  const performContractAnalysis = async (businessData) => {
+    try {
+      setAiLoading(true);
+      const response = await axios.post(`${API}/agency/ai-contract-analysis`, businessData);
+      
+      if (response.data.success) {
+        setAiInsights(response.data.analysis);
+        toast.success('AI Contract Analysis completed successfully');
+      } else {
+        setAiInsights(response.data.fallback_analysis);
+        toast.warning('Using fallback analysis - AI service temporarily unavailable');
+      }
+    } catch (error) {
+      console.error('AI Analysis Error:', error);
+      toast.error('Contract analysis failed. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   // AI-Powered Opportunity Matching Function
   const performOpportunityMatching = async () => {
     try {
