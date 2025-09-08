@@ -6529,6 +6529,22 @@ function AgencyHome(){
         setActiveTab('businesses');
         break;
         
+      case 'ai_analysis':
+        // Sample business data for AI analysis
+        const sampleBusinessData = {
+          business_areas: ['Technology & Security Infrastructure', 'Financial Management & Reporting'],
+          readiness_scores: {
+            'area1': 75,
+            'area2': 82,
+            'area5': 68
+          },
+          certifications: ['Small Business', 'HUB Certified'],
+          contract_history: 'Previous state contract for IT services'
+        };
+        await performContractAnalysis(sampleBusinessData);
+        setActiveTab('opportunities'); // Switch to opportunities tab to show results
+        break;
+        
       case 'generate_report':
         try {
           const response = await axios.get(`${API}/agency/reports/pipeline`, {
