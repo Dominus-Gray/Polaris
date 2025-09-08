@@ -7410,8 +7410,114 @@ function AgencyHome(){
 
           {activeTab === 'opportunities' && (
             <div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-6">AI-Powered Contract Opportunities</h3>
-              <p className="text-slate-600 mb-8">Intelligent contract matching with risk assessment and AI-driven recommendations for sponsored businesses</p>
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">AI-Powered Contract Opportunities</h3>
+                <p className="text-slate-600">Intelligent contract matching with risk assessment and AI-driven recommendations for sponsored businesses</p>
+                
+                {/* Advanced AI Actions */}
+                <div className="flex gap-3 mt-4">
+                  <button 
+                    onClick={performOpportunityMatching}
+                    disabled={aiLoading}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {aiLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    )}
+                    {aiLoading ? 'Analyzing...' : 'AI Opportunity Matching'}
+                  </button>
+                  
+                  <button 
+                    onClick={() => generateAIReport('opportunity')}
+                    disabled={aiLoading}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Generate AI Report
+                  </button>
+                </div>
+              </div>
+              
+              {/* Advanced Opportunity Matching Results */}
+              {opportunityData && (
+                <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-green-100 rounded-lg mr-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900">AI Opportunity Matching Results</h4>
+                    <div className="ml-auto text-sm text-green-600 bg-green-100 px-3 py-1 rounded-full">
+                      Score: {opportunityData.opportunity_score}%
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-3">Top Contract Opportunities</h5>
+                      <div className="space-y-3">
+                        {opportunityData.top_opportunities?.slice(0, 3).map((opportunity, idx) => (
+                          <div key={idx} className="bg-white rounded-lg p-4 border">
+                            <div className="flex justify-between items-start mb-2">
+                              <h6 className="font-medium text-slate-900">{opportunity.title}</h6>
+                              <span className="text-sm text-green-600 font-medium">{opportunity.fit_score}% fit</span>
+                            </div>
+                            <p className="text-sm text-slate-600 mb-1">{opportunity.agency}</p>
+                            <p className="text-sm font-semibold text-slate-900">{opportunity.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h5 className="font-medium text-slate-900 mb-3">Market Intelligence</h5>
+                      <div className="space-y-4">
+                        <div>
+                          <h6 className="text-sm font-medium text-slate-700 mb-2">Market Trends</h6>
+                          <ul className="space-y-1">
+                            {opportunityData.market_trends?.map((trend, idx) => (
+                              <li key={idx} className="text-sm text-slate-600 flex items-start">
+                                <span className="text-blue-500 mr-2">•</span>
+                                {trend}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        <div>
+                          <h6 className="text-sm font-medium text-slate-700 mb-2">Success Probability</h6>
+                          <div className="space-y-1">
+                            {Object.entries(opportunityData.success_probability || {}).map(([type, prob]) => (
+                              <div key={type} className="flex justify-between text-sm">
+                                <span className="text-slate-600">{type}:</span>
+                                <span className="font-medium text-green-600">{prob}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-white rounded-lg">
+                      <h5 className="font-medium text-slate-900 mb-1">Competitive Analysis</h5>
+                      <p className="text-sm text-slate-600">{opportunityData.competitive_analysis}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <h5 className="font-medium text-slate-900 mb-1">Timing Recommendations</h5>
+                      <p className="text-sm text-slate-600">{opportunityData.timing_recommendations}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* AI Analysis Results */}
               {aiInsights && (
