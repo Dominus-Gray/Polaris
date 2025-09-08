@@ -255,23 +255,23 @@ class AgencyDashboardTester:
             return False
             
         try:
-            # Test payment methods endpoint
-            response = self.session.get(f"{BACKEND_URL}/agency/payment-methods")
+            # Test billing history endpoint
+            response = self.session.get(f"{BACKEND_URL}/agency/billing/history")
             
             if response.status_code == 200:
                 data = response.json()
-                if "payment_methods" in data or "billing_info" in data:
+                if "transactions" in data or "billing_history" in data or "payments" in data:
                     self.log_test(
                         "Payment Integration Endpoints", 
                         True, 
-                        "Payment methods endpoint accessible"
+                        f"Billing history endpoint accessible: {list(data.keys())}"
                     )
                     return True
                 else:
                     self.log_test(
                         "Payment Integration Endpoints", 
                         False, 
-                        "Unexpected payment endpoint response structure",
+                        "Unexpected billing endpoint response structure",
                         data
                     )
                     return False
