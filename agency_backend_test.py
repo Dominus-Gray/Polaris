@@ -134,18 +134,22 @@ class AgencyDashboardTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if "assessments" in data or "analytics" in data or "performance" in data:
+                # Check for actual BI data structure
+                expected_fields = ["assessment_overview", "business_area_breakdown", "tier_utilization"]
+                found_fields = [field for field in expected_fields if field in data]
+                
+                if len(found_fields) >= 2:  # At least 2 out of 3 expected fields
                     self.log_test(
                         "Business Intelligence Endpoints", 
                         True, 
-                        f"BI assessments retrieved with data keys: {list(data.keys())}"
+                        f"BI assessments retrieved with {len(found_fields)}/3 expected fields: {found_fields}"
                     )
                     return True
                 else:
                     self.log_test(
                         "Business Intelligence Endpoints", 
                         False, 
-                        f"Unexpected BI data structure",
+                        f"Insufficient BI data fields. Found: {found_fields}",
                         data
                     )
                     return False
