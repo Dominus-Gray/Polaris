@@ -6482,6 +6482,38 @@ function AgencyHome(){
     }
   };
 
+  // License Purchase Handler
+  const handleLicensePurchase = async (packageType) => {
+    try {
+      const packageMap = {
+        'tier_1_bulk_10': { quantity: 10, tier: 1, price: 250 },
+        'tier_2_bulk_5': { quantity: 5, tier: 2, price: 375 },
+        'tier_3_bulk_3': { quantity: 3, tier: 3, price: 450 }
+      };
+      
+      const packageInfo = packageMap[packageType];
+      if (!packageInfo) {
+        toast.error('Invalid package selected');
+        return;
+      }
+      
+      // Generate licenses via API
+      const response = await axios.post(`${API}/agency/licenses/generate`, {
+        quantity: packageInfo.quantity,
+        tier: packageInfo.tier,
+        expires_days: 365
+      });
+      
+      if (response.data.licenses) {
+        toast.success(`Successfully generated ${packageInfo.quantity} Tier ${packageInfo.tier} licenses`);
+        // Optionally refresh license data
+      }
+    } catch (error) {
+      console.error('License purchase error:', error);
+      toast.error('Failed to generate licenses. Please try again.');
+    }
+  };
+
   // Quick action handlers with actual functionality
   const handleQuickAction = async (action) => {
     switch (action) {
