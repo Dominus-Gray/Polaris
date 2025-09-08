@@ -6429,6 +6429,16 @@ function AgencyHome(){
           certificatesIssued: data?.certificates?.issued || 12
         });
         setBusinessData(data);
+        setImpact(data); // Set impact data from agency response
+        
+        // Load enhanced business intelligence
+        try {
+          const biResponse = await axios.get(`${API}/agency/business-intelligence/enhanced`);
+          setEnhancedBI(biResponse.data);
+        } catch (biError) {
+          console.error('Enhanced BI loading error:', biError);
+        }
+        
       } catch (error) {
         console.error('Error loading agency data:', error);
         setPipelineData({
@@ -6447,6 +6457,27 @@ function AgencyHome(){
 
     loadData();
   }, []);
+
+  // AI-Powered Contract Analysis Function
+  const performContractAnalysis = async (businessData) => {
+    try {
+      setAiLoading(true);
+      const response = await axios.post(`${API}/agency/ai-contract-analysis`, businessData);
+      
+      if (response.data.success) {
+        setAiInsights(response.data.analysis);
+        toast.success('AI Contract Analysis completed successfully');
+      } else {
+        setAiInsights(response.data.fallback_analysis);
+        toast.warning('Using fallback analysis - AI service temporarily unavailable');
+      }
+    } catch (error) {
+      console.error('AI Analysis Error:', error);
+      toast.error('Contract analysis failed. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   // Quick action handlers with actual functionality
   const handleQuickAction = async (action) => {
