@@ -7483,11 +7483,11 @@ function AgencyHome(){
                   <div className="bg-slate-50 rounded-lg p-4 mb-6">
                     <div className="flex justify-between items-center mb-2">
                       <div>
-                        <div className="text-lg font-semibold text-slate-900">{tierInfo.tier} Plan</div>
+                        <div className="text-lg font-semibold text-slate-900">Enterprise Plan</div>
                         <div className="text-sm text-slate-600">Active since account creation</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-slate-600">${tierInfo.price}</div>
+                        <div className="text-2xl font-bold text-slate-600">$25</div>
                         <div className="text-sm text-slate-600">per license</div>
                       </div>
                     </div>
