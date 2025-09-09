@@ -9979,9 +9979,8 @@ class FinancialHealthCalculator:
             
         return insights
 
-# QuickBooks Integration Endpoints
 @api.get("/integrations/quickbooks/auth-url", response_model=dict)
-async def get_quickbooks_auth_url(current=Depends(require_role("agency", "client"))):
+async def get_quickbooks_auth_url(current=Depends(require_roles("agency", "client"))):
     """Get QuickBooks OAuth authorization URL"""
     try:
         # Mock implementation - in production, this would use actual QuickBooks OAuth
@@ -9999,7 +9998,7 @@ async def get_quickbooks_auth_url(current=Depends(require_role("agency", "client
 @api.post("/integrations/quickbooks/connect", response_model=dict)
 async def connect_quickbooks(
     connection_request: QuickBooksConnectionRequest,
-    current=Depends(require_role("agency", "client"))
+    current=Depends(require_roles("agency", "client"))
 ):
     """Connect QuickBooks account and exchange authorization code for tokens"""
     try:
@@ -10034,7 +10033,7 @@ async def connect_quickbooks(
         return {"success": False, "error": str(e)}
 
 @api.get("/integrations/quickbooks/financial-health", response_model=FinancialHealthScore)
-async def get_quickbooks_financial_health(current=Depends(require_role("agency", "client"))):
+async def get_quickbooks_financial_health(current=Depends(require_roles("agency", "client"))):
     """Get financial health analysis from QuickBooks data"""
     try:
         user_id = current['id']
@@ -10087,7 +10086,7 @@ async def get_quickbooks_financial_health(current=Depends(require_role("agency",
 @api.post("/integrations/quickbooks/sync", response_model=dict)  
 async def sync_quickbooks_data(
     sync_options: dict,
-    current=Depends(require_role("agency", "client"))
+    current=Depends(require_roles("agency", "client"))
 ):
     """Synchronize data with QuickBooks"""
     try:
@@ -10142,7 +10141,7 @@ async def sync_quickbooks_data(
 @api.get("/integrations/quickbooks/cash-flow-analysis", response_model=dict)
 async def get_cash_flow_analysis(
     days: int = 90,
-    current=Depends(require_role("agency", "client"))
+    current=Depends(require_roles("agency", "client"))
 ):
     """Get comprehensive cash flow analysis from QuickBooks data"""
     try:
