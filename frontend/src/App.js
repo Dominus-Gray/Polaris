@@ -6419,7 +6419,7 @@ function AgencyHome(){
   const [generatedReport, setGeneratedReport] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-  // Load dashboard data focused on contract pipeline
+  // Enhanced data loading with integration status
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -6434,7 +6434,7 @@ function AgencyHome(){
           certificatesIssued: data?.certificates?.issued || 12
         });
         setBusinessData(data);
-        setImpact(data); // Set impact data from agency response
+        setImpact(data);
         
         // Load enhanced business intelligence
         try {
@@ -6442,6 +6442,14 @@ function AgencyHome(){
           setEnhancedBI(biResponse.data);
         } catch (biError) {
           console.error('Enhanced BI loading error:', biError);
+        }
+        
+        // Load integration status  
+        try {
+          const integrationResponse = await axios.get(`${API}/integrations/status`);
+          setIntegrationStatus(integrationResponse.data);
+        } catch (integrationError) {
+          console.error('Integration status loading error:', integrationError);
         }
         
       } catch (error) {
@@ -6462,6 +6470,117 @@ function AgencyHome(){
 
     loadData();
   }, []);
+
+  // QuickBooks Integration Functions
+  const connectQuickBooks = async () => {
+    try {
+      setAiLoading(true);
+      
+      // Get QuickBooks authorization URL
+      const authResponse = await axios.get(`${API}/integrations/quickbooks/auth-url`);
+      
+      if (authResponse.data.success) {
+        // Open QuickBooks OAuth popup
+        const popup = window.open(
+          authResponse.data.auth_url,
+          'quickbooks-auth',
+          'width=800,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        // Monitor popup for completion (simplified for demo)
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            // Simulate successful connection
+            handleQuickBooksConnected();
+          }
+        }, 1000);
+        
+        toast.info('QuickBooks authorization window opened');
+      }
+    } catch (error) {
+      console.error('QuickBooks connection error:', error);
+      toast.error('Failed to connect QuickBooks');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleQuickBooksConnected = async () => {
+    try {
+      // Simulate successful connection
+      const connectionRequest = {
+        auth_code: 'demo_auth_code',
+        realm_id: 'demo_realm_123',
+        redirect_uri: window.location.origin + '/integrations/quickbooks/callback'
+      };
+      
+      const response = await axios.post(`${API}/integrations/quickbooks/connect`, connectionRequest);
+      
+      if (response.data.success) {
+        toast.success('QuickBooks connected successfully!');
+        
+        // Trigger initial sync and financial health calculation
+        await syncQuickBooksData();
+        await loadFinancialHealth();
+        
+        // Refresh integration status
+        const statusResponse = await axios.get(`${API}/integrations/status`);
+        setIntegrationStatus(statusResponse.data);
+      }
+    } catch (error) {
+      console.error('QuickBooks connection finalization error:', error);
+      toast.error('Failed to finalize QuickBooks connection');
+    }
+  };
+
+  const syncQuickBooksData = async (syncType = 'all') => {
+    try {
+      setAiLoading(true);
+      
+      const response = await axios.post(`${API}/integrations/quickbooks/sync`, {
+        sync_type: syncType,
+        include_historical: true
+      });
+      
+      if (response.data.success) {
+        toast.success(`QuickBooks ${syncType} data synchronized - ${response.data.records_synced} records updated`);
+        setQuickBooksSync(response.data);
+      }
+    } catch (error) {
+      console.error('QuickBooks sync error:', error);
+      toast.error('QuickBooks synchronization failed');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const loadFinancialHealth = async () => {
+    try {
+      const response = await axios.get(`${API}/integrations/quickbooks/financial-health`);
+      setFinancialHealth(response.data);
+      
+      // Show financial health notification
+      if (response.data.overall_score >= 8) {
+        toast.success(`Excellent financial health score: ${response.data.overall_score.toFixed(1)}/10`);
+      } else if (response.data.overall_score >= 6) {
+        toast.info(`Good financial health score: ${response.data.overall_score.toFixed(1)}/10`);
+      } else {
+        toast.warning(`Financial health needs attention: ${response.data.overall_score.toFixed(1)}/10`);
+      }
+    } catch (error) {
+      console.error('Financial health loading error:', error);
+    }
+  };
+
+  const loadCashFlowAnalysis = async () => {
+    try {
+      const response = await axios.get(`${API}/integrations/quickbooks/cash-flow-analysis?days=90`);
+      setCashFlowData(response.data);
+    } catch (error) {
+      console.error('Cash flow analysis error:', error);
+    }
+  };
 
   // AI-Powered Contract Analysis Function
   const performContractAnalysis = async (businessData) => {
