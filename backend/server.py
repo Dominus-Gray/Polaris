@@ -9787,6 +9787,481 @@ async def enhanced_business_intelligence(
             "basic_data": basic_bi if 'basic_bi' in locals() else {}
         }
 
+# ================== QUICKBOOKS FINANCIAL INTEGRATION ==================
+
+# Pydantic models for QuickBooks integration
+class FinancialHealthScore(BaseModel):
+    overall_score: float = Field(ge=0, le=10)
+    cash_flow_score: float = Field(ge=0, le=10) 
+    profitability_score: float = Field(ge=0, le=10)
+    liquidity_score: float = Field(ge=0, le=10)
+    debt_ratio_score: float = Field(ge=0, le=10)
+    generated_date: datetime
+    recommendations: List[str] = []
+    insights: List[str] = []
+
+class QuickBooksConnectionRequest(BaseModel):
+    auth_code: str
+    realm_id: str
+    redirect_uri: str
+
+# QuickBooks Financial Health Calculator
+class FinancialHealthCalculator:
+    def __init__(self):
+        self.metrics_weights = {
+            'cash_flow': 0.30,
+            'profitability': 0.25, 
+            'liquidity': 0.20,
+            'debt_ratio': 0.15,
+            'growth_trend': 0.10
+        }
+    
+    def calculate_cash_flow_score(self, transactions: List[Dict]) -> float:
+        """Calculate cash flow health score based on transaction history"""
+        if not transactions:
+            return 0.0
+            
+        # Analyze cash flow patterns
+        total_inflow = sum(t['amount'] for t in transactions if t['amount'] > 0)
+        total_outflow = abs(sum(t['amount'] for t in transactions if t['amount'] < 0))
+        net_flow = total_inflow - total_outflow
+        
+        # Score based on positive cash flow and consistency
+        if net_flow >= total_inflow * 0.2:  # 20% or more net positive
+            return 9.0
+        elif net_flow >= total_inflow * 0.1:  # 10% or more net positive
+            return 7.0
+        elif net_flow >= 0:  # Break even
+            return 5.0
+        else:  # Negative cash flow
+            return max(0, 5.0 + (net_flow / total_inflow) * 5)
+    
+    def calculate_profitability_score(self, revenue: float, expenses: float) -> float:
+        """Calculate profitability score based on revenue and expenses"""
+        if revenue <= 0:
+            return 0.0
+            
+        profit_margin = (revenue - expenses) / revenue
+        
+        if profit_margin >= 0.20:
+            return 10.0
+        elif profit_margin >= 0.15:
+            return 8.0
+        elif profit_margin >= 0.10:
+            return 6.0
+        elif profit_margin >= 0.05:
+            return 4.0
+        elif profit_margin > 0:
+            return 2.0
+        else:
+            return 0.0
+    
+    def calculate_liquidity_score(self, current_assets: float, current_liabilities: float) -> float:
+        """Calculate liquidity score using current ratio"""
+        if current_liabilities <= 0:
+            return 10.0
+            
+        current_ratio = current_assets / current_liabilities
+        
+        if current_ratio >= 2.0:
+            return 10.0
+        elif current_ratio >= 1.5:
+            return 8.0
+        elif current_ratio >= 1.2:
+            return 6.0
+        elif current_ratio >= 1.0:
+            return 4.0
+        else:
+            return max(0.0, current_ratio * 4)
+    
+    def calculate_debt_ratio_score(self, total_debt: float, total_assets: float) -> float:
+        """Calculate debt ratio score"""
+        if total_assets <= 0:
+            return 0.0
+            
+        debt_ratio = total_debt / total_assets
+        
+        if debt_ratio <= 0.3:  # Low debt
+            return 10.0
+        elif debt_ratio <= 0.5:  # Moderate debt
+            return 7.0
+        elif debt_ratio <= 0.7:  # High debt
+            return 4.0
+        else:  # Very high debt
+            return 1.0
+    
+    def calculate_overall_health_score(self, financial_data: Dict[str, Any]) -> FinancialHealthScore:
+        """Calculate comprehensive financial health score"""
+        
+        # Calculate individual scores
+        cash_flow_score = self.calculate_cash_flow_score(financial_data.get('transactions', []))
+        profitability_score = self.calculate_profitability_score(
+            financial_data.get('revenue', 0),
+            financial_data.get('expenses', 0)
+        )
+        liquidity_score = self.calculate_liquidity_score(
+            financial_data.get('current_assets', 0),
+            financial_data.get('current_liabilities', 1)  # Avoid division by zero
+        )
+        debt_ratio_score = self.calculate_debt_ratio_score(
+            financial_data.get('total_debt', 0),
+            financial_data.get('total_assets', 1)
+        )
+        
+        # Calculate weighted overall score
+        overall_score = (
+            cash_flow_score * self.metrics_weights['cash_flow'] +
+            profitability_score * self.metrics_weights['profitability'] +
+            liquidity_score * self.metrics_weights['liquidity'] +
+            debt_ratio_score * self.metrics_weights['debt_ratio']
+        )
+        
+        # Generate recommendations
+        recommendations = self._generate_recommendations(
+            cash_flow_score, profitability_score, liquidity_score, debt_ratio_score
+        )
+        
+        # Generate insights
+        insights = self._generate_insights(financial_data, overall_score)
+        
+        return FinancialHealthScore(
+            overall_score=round(overall_score, 2),
+            cash_flow_score=round(cash_flow_score, 2),
+            profitability_score=round(profitability_score, 2), 
+            liquidity_score=round(liquidity_score, 2),
+            debt_ratio_score=round(debt_ratio_score, 2),
+            generated_date=datetime.now(timezone.utc),
+            recommendations=recommendations,
+            insights=insights
+        )
+    
+    def _generate_recommendations(self, cash_flow: float, profitability: float, 
+                                liquidity: float, debt_ratio: float) -> List[str]:
+        """Generate actionable recommendations"""
+        recommendations = []
+        
+        if cash_flow < 5:
+            recommendations.append("Improve cash flow management by accelerating collections and optimizing payment terms")
+        if profitability < 5:
+            recommendations.append("Focus on cost reduction and revenue optimization strategies")  
+        if liquidity < 5:
+            recommendations.append("Increase liquid assets or reduce short-term liabilities")
+        if debt_ratio < 5:
+            recommendations.append("Consider debt reduction strategies to improve financial stability")
+        if cash_flow >= 8 and profitability >= 8 and liquidity >= 8:
+            recommendations.append("Excellent financial health - consider expansion opportunities")
+            
+        return recommendations
+    
+    def _generate_insights(self, financial_data: Dict[str, Any], overall_score: float) -> List[str]:
+        """Generate financial insights"""
+        insights = []
+        
+        revenue = financial_data.get('revenue', 0)
+        expenses = financial_data.get('expenses', 0)
+        
+        if revenue > expenses * 1.2:
+            insights.append("Strong revenue generation with healthy profit margins")
+        if overall_score >= 8:
+            insights.append("Business shows excellent financial stability for contract pursuits")
+        elif overall_score >= 6:
+            insights.append("Solid financial foundation with room for improvement")
+        else:
+            insights.append("Financial health needs attention before pursuing major contracts")
+            
+        return insights
+
+# QuickBooks Integration Endpoints
+@api.get("/integrations/quickbooks/auth-url", response_model=dict)
+async def get_quickbooks_auth_url(current=Depends(require_role("agency", "client"))):
+    """Get QuickBooks OAuth authorization URL"""
+    try:
+        # Mock implementation - in production, this would use actual QuickBooks OAuth
+        auth_url = f"https://appcenter.intuit.com/connect/oauth2?client_id=mock&response_type=code&redirect_uri=mock"
+        
+        return {
+            "success": True,
+            "auth_url": auth_url,
+            "state": f"user_{current['id']}_{int(datetime.now().timestamp())}"
+        }
+    except Exception as e:
+        logging.error(f"QuickBooks auth URL generation failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api.post("/integrations/quickbooks/connect", response_model=dict)
+async def connect_quickbooks(
+    connection_request: QuickBooksConnectionRequest,
+    current=Depends(require_role("agency", "client"))
+):
+    """Connect QuickBooks account and exchange authorization code for tokens"""
+    try:
+        # Mock successful connection - in production, exchange auth code for tokens
+        user_id = current['id']
+        
+        # Store connection status
+        connection_record = {
+            "user_id": user_id,
+            "platform": "quickbooks",
+            "status": "connected",
+            "realm_id": connection_request.realm_id,
+            "connected_at": datetime.now(timezone.utc).isoformat(),
+            "last_sync": None
+        }
+        
+        await db.integrations.update_one(
+            {"user_id": user_id, "platform": "quickbooks"},
+            {"$set": connection_record},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "QuickBooks connected successfully",
+            "realm_id": connection_request.realm_id,
+            "status": "connected"
+        }
+        
+    except Exception as e:
+        logging.error(f"QuickBooks connection failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api.get("/integrations/quickbooks/financial-health", response_model=FinancialHealthScore)
+async def get_quickbooks_financial_health(current=Depends(require_role("agency", "client"))):
+    """Get financial health analysis from QuickBooks data"""
+    try:
+        user_id = current['id']
+        
+        # Check if QuickBooks is connected
+        connection = await db.integrations.find_one(
+            {"user_id": user_id, "platform": "quickbooks", "status": "connected"}
+        )
+        
+        if not connection:
+            raise HTTPException(
+                status_code=404, 
+                detail="QuickBooks not connected. Please connect QuickBooks first."
+            )
+        
+        # Generate mock financial data for demonstration
+        # In production, this would fetch real data from QuickBooks API
+        mock_financial_data = {
+            "revenue": 150000,
+            "expenses": 120000,
+            "current_assets": 80000,
+            "current_liabilities": 40000,
+            "total_debt": 25000,
+            "total_assets": 200000,
+            "transactions": [
+                {"date": "2024-01-01", "amount": 5000, "type": "revenue"},
+                {"date": "2024-01-02", "amount": -2000, "type": "expense"},
+                {"date": "2024-01-03", "amount": 7500, "type": "revenue"},
+                {"date": "2024-01-04", "amount": -3000, "type": "expense"},
+                {"date": "2024-01-05", "amount": 4200, "type": "revenue"}
+            ]
+        }
+        
+        # Calculate financial health score
+        calculator = FinancialHealthCalculator()
+        health_score = calculator.calculate_overall_health_score(mock_financial_data)
+        
+        # Update last sync time
+        await db.integrations.update_one(
+            {"user_id": user_id, "platform": "quickbooks"},
+            {"$set": {"last_sync": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return health_score
+        
+    except Exception as e:
+        logging.error(f"QuickBooks financial health calculation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api.post("/integrations/quickbooks/sync", response_model=dict)  
+async def sync_quickbooks_data(
+    sync_options: dict,
+    current=Depends(require_role("agency", "client"))
+):
+    """Synchronize data with QuickBooks"""
+    try:
+        user_id = current['id']
+        sync_type = sync_options.get('sync_type', 'all')
+        
+        # Check connection
+        connection = await db.integrations.find_one(
+            {"user_id": user_id, "platform": "quickbooks", "status": "connected"}
+        )
+        
+        if not connection:
+            raise HTTPException(status_code=404, detail="QuickBooks not connected")
+        
+        # Mock sync results - in production, perform actual QuickBooks sync
+        sync_results = {
+            "success": True,
+            "sync_type": sync_type,
+            "records_synced": 0,
+            "started_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        if sync_type in ['all', 'customers']:
+            sync_results['customers_synced'] = 25
+            sync_results['records_synced'] += 25
+            
+        if sync_type in ['all', 'invoices']:
+            sync_results['invoices_synced'] = 48  
+            sync_results['records_synced'] += 48
+            
+        if sync_type in ['all', 'expenses']:
+            sync_results['expenses_synced'] = 67
+            sync_results['records_synced'] += 67
+            
+        sync_results['completed_at'] = datetime.now(timezone.utc).isoformat()
+        
+        # Update sync status
+        await db.integrations.update_one(
+            {"user_id": user_id, "platform": "quickbooks"},
+            {"$set": {
+                "last_sync": datetime.now(timezone.utc).isoformat(),
+                "sync_results": sync_results
+            }}
+        )
+        
+        return sync_results
+        
+    except Exception as e:
+        logging.error(f"QuickBooks sync failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api.get("/integrations/quickbooks/cash-flow-analysis", response_model=dict)
+async def get_cash_flow_analysis(
+    days: int = 90,
+    current=Depends(require_role("agency", "client"))
+):
+    """Get comprehensive cash flow analysis from QuickBooks data"""
+    try:
+        user_id = current['id']
+        
+        # Check connection
+        connection = await db.integrations.find_one(
+            {"user_id": user_id, "platform": "quickbooks", "status": "connected"}
+        )
+        
+        if not connection:
+            raise HTTPException(status_code=404, detail="QuickBooks not connected")
+        
+        # Mock cash flow analysis - in production, use real QuickBooks data
+        analysis = {
+            "period_days": days,
+            "current_cash_position": {
+                "total_cash": 75000.00,
+                "checking_account": 50000.00,
+                "savings_account": 25000.00,
+                "outstanding_receivables": 35000.00,
+                "outstanding_payables": 22000.00,
+                "projected_cash": 88000.00
+            },
+            "cash_flow_trends": {
+                "total_inflow": 180000.00,
+                "total_outflow": 145000.00,
+                "net_cash_flow": 35000.00,
+                "average_daily_flow": 388.89,
+                "trend_direction": "positive",
+                "volatility": "low"
+            },
+            "weekly_predictions": [
+                {
+                    "week": 1,
+                    "predicted_inflow": 12000,
+                    "predicted_outflow": 9500,
+                    "net_flow": 2500,
+                    "ending_balance": 90500,
+                    "confidence": 0.85
+                },
+                {
+                    "week": 2, 
+                    "predicted_inflow": 11500,
+                    "predicted_outflow": 9800,
+                    "net_flow": 1700,
+                    "ending_balance": 92200,
+                    "confidence": 0.80
+                }
+            ],
+            "alerts": [],
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Add alerts if cash position is concerning
+        if analysis["current_cash_position"]["projected_cash"] < 25000:
+            analysis["alerts"].append({
+                "severity": "warning",
+                "message": "Projected cash position below recommended minimum",
+                "recommendation": "Monitor cash flow closely and consider accelerating collections"
+            })
+        
+        return analysis
+        
+    except Exception as e:
+        logging.error(f"Cash flow analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api.get("/integrations/status", response_model=dict)
+async def get_integration_status(current=Depends(require_role("agency", "client"))):
+    """Get status of all integrations for user"""
+    try:
+        user_id = current['id']
+        
+        # Get all integrations for user
+        integrations = await db.integrations.find({"user_id": user_id}).to_list(length=None)
+        
+        status_summary = {
+            "user_id": user_id,
+            "total_integrations": len(integrations),
+            "active_integrations": 0,
+            "integrations": [],
+            "overall_health_score": 0
+        }
+        
+        health_scores = []
+        
+        for integration in integrations:
+            integration_status = {
+                "platform": integration["platform"],
+                "status": integration["status"], 
+                "connected_at": integration.get("connected_at"),
+                "last_sync": integration.get("last_sync"),
+                "health_score": 100,  # Default healthy
+                "sync_records": integration.get("sync_results", {}).get("records_synced", 0)
+            }
+            
+            if integration["status"] == "connected":
+                status_summary["active_integrations"] += 1
+                
+                # Calculate health score based on last sync
+                if integration.get("last_sync"):
+                    last_sync = datetime.fromisoformat(integration["last_sync"].replace('Z', '+00:00'))
+                    hours_since_sync = (datetime.now(timezone.utc) - last_sync).total_seconds() / 3600
+                    
+                    if hours_since_sync > 48:  # More than 2 days
+                        integration_status["health_score"] = 60
+                    elif hours_since_sync > 24:  # More than 1 day
+                        integration_status["health_score"] = 80
+                    else:
+                        integration_status["health_score"] = 100
+            else:
+                integration_status["health_score"] = 0
+            
+            health_scores.append(integration_status["health_score"])
+            status_summary["integrations"].append(integration_status)
+        
+        # Calculate overall health
+        if health_scores:
+            status_summary["overall_health_score"] = sum(health_scores) / len(health_scores)
+        
+        return status_summary
+        
+    except Exception as e:
+        logging.error(f"Integration status retrieval failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ================== AGENCY SUBSCRIPTION MANAGEMENT ==================
 
 # Advanced AI-Powered Opportunity Matching Endpoint
