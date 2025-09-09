@@ -7129,7 +7129,7 @@ function AgencyHome(){
               {/* Quick Actions */}
               <div className="bg-white rounded-lg border p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <button 
                     onClick={() => handleQuickAction('add_opportunity')}
                     className="p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors text-left"
@@ -7144,16 +7144,25 @@ function AgencyHome(){
                   </button>
                   
                   <button 
-                    onClick={() => handleQuickAction('review_businesses')}
-                    className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-left"
+                    onClick={() => handleQuickAction('quickbooks_integration')}
+                    disabled={aiLoading}
+                    className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-left disabled:opacity-50"
                   >
                     <div className="text-blue-600 mb-2">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
+                      {aiLoading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      ) : (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      )}
                     </div>
-                    <div className="font-medium text-slate-900">Review Businesses</div>
-                    <div className="text-sm text-slate-600">Assessment progress overview</div>
+                    <div className="font-medium text-slate-900">
+                      {integrationStatus?.integrations?.find(i => i.platform === 'quickbooks')?.status === 'connected' 
+                        ? 'QuickBooks Connected' 
+                        : 'Connect QuickBooks'}
+                    </div>
+                    <div className="text-sm text-slate-600">Financial health monitoring</div>
                   </button>
                   
                   <button 
@@ -7172,6 +7181,20 @@ function AgencyHome(){
                     </div>
                     <div className="font-medium text-slate-900">AI Contract Analysis</div>
                     <div className="text-sm text-slate-600">{aiLoading ? 'Analyzing...' : 'Smart opportunity matching'}</div>
+                  </button>
+                  
+                  <button 
+                    onClick={() => handleQuickAction('financial_health')}
+                    disabled={aiLoading}
+                    className="p-4 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors text-left disabled:opacity-50"
+                  >
+                    <div className="text-indigo-600 mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-slate-900">Financial Health</div>
+                    <div className="text-sm text-slate-600">Real-time financial scoring</div>
                   </button>
                   
                   <button 
