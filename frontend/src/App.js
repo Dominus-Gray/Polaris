@@ -6968,12 +6968,12 @@ function AgencyHome(){
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Streamlined Navigation - No redundant tabs */}
+      {/* Unified Navigation - Consolidated Dashboard */}
       <nav className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-slate-900">Contract Pipeline Management</h1>
+              <h1 className="text-xl font-semibold text-slate-900">Agency Management Portal</h1>
             </div>
             <div className="flex items-center space-x-8">
               <button
@@ -6984,27 +6984,7 @@ function AgencyHome(){
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Pipeline Dashboard
-              </button>
-              <button
-                onClick={() => setActiveTab('businesses')}
-                className={`px-3 py-2 text-sm font-medium ${
-                  activeTab === 'businesses'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Business Readiness
-              </button>
-              <button
-                onClick={() => setActiveTab('opportunities')}
-                className={`px-3 py-2 text-sm font-medium ${
-                  activeTab === 'opportunities'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Opportunity Matching
+                Dashboard
               </button>
               <button
                 onClick={() => setActiveTab('business_intelligence')}
@@ -7015,6 +6995,16 @@ function AgencyHome(){
                 }`}
               >
                 Business Intelligence
+              </button>
+              <button
+                onClick={() => setActiveTab('opportunities')}
+                className={`px-3 py-2 text-sm font-medium ${
+                  activeTab === 'opportunities'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Contract Opportunities
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
