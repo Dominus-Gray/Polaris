@@ -1577,6 +1577,14 @@ def require_role(role: str):
         return current
     return role_dep
 
+def require_roles(*roles):
+    """Allow multiple roles to access an endpoint"""
+    async def role_dep(current=Depends(require_user)):
+        if current.get("role") not in roles:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        return current
+    return role_dep
+
 async def require_agency(current=Depends(require_user)) -> dict:
     if current.get("role") != "agency":
         raise HTTPException(status_code=403, detail="Agency access required")
