@@ -7280,16 +7280,25 @@ function AgencyHome(){
                   </button>
                   
                   <button 
-                    onClick={() => handleQuickAction('manage_licenses')}
-                    className="p-4 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors text-left"
+                    onClick={() => handleQuickAction('microsoft365_integration')}
+                    disabled={aiLoading}
+                    className="p-4 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors text-left disabled:opacity-50"
                   >
-                    <div className="text-amber-600 mb-2">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
+                    <div className="text-orange-600 mb-2">
+                      {aiLoading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600"></div>
+                      ) : (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      )}
                     </div>
-                    <div className="font-medium text-slate-900">Manage Licenses</div>
-                    <div className="text-sm text-slate-600">Purchase & distribute</div>
+                    <div className="font-medium text-slate-900">
+                      {integrationStatus?.integrations?.find(i => i.platform === 'microsoft365')?.status === 'connected' 
+                        ? 'Microsoft 365 Connected' 
+                        : 'Connect Microsoft 365'}
+                    </div>
+                    <div className="text-sm text-slate-600">Email & document automation</div>
                   </button>
                 </div>
               </div>
