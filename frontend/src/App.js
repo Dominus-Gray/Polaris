@@ -6942,6 +6942,15 @@ function AgencyHome(){
           if (element) element.scrollIntoView({ behavior: 'smooth' });
         }, 100);
         break;
+
+      case 'salesforce_integration':
+        await connectCRM('salesforce');
+        break;
+
+      case 'crm_analytics':
+        await loadCRMAnalytics();
+        setActiveTab('business_intelligence');
+        break;
     }
   };
 
