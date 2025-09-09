@@ -11448,7 +11448,7 @@ async def home_client(current=Depends(require_role("client"))):
             "user_id": current["id"]
         }).to_list(None)
         
-        # Calculate assessment completion and gaps
+        # Calculate assessment completion and gaps with proper validation
         total_areas = 10  # 10 business areas
         completed_areas = 0
         critical_gaps = 0
@@ -11484,8 +11484,10 @@ async def home_client(current=Depends(require_role("client"))):
                         if evidence_record:
                             evidence_submitted_questions += 1
         
-        # Calculate completion percentage
+        # Apply proper validation and capping to prevent impossible values
+        completed_areas = min(completed_areas, total_areas)  # Cap at total areas
         completion_percentage = round((completed_areas / total_areas) * 100, 1) if total_areas > 0 else 0
+        completion_percentage = min(100.0, max(0.0, completion_percentage))  # Cap between 0-100%
         
         # Calculate readiness score based on evidence-approved answers
         evidence_approval_rate = 0
@@ -11495,9 +11497,11 @@ async def home_client(current=Depends(require_role("client"))):
                 "user_id": current["id"],
                 "review_status": "approved"
             })
-            evidence_approval_rate = (approved_evidence / evidence_required_questions) * 100
+            evidence_approval_rate = min(100.0, (approved_evidence / evidence_required_questions) * 100)
         
-        # Base readiness on completion and evidence approval
+        # Base readiness on completion and evidence approval with proper capping
+        readiness_score = round((completion_percentage * 0.6) + (evidence_approval_rate * 0.4), 1)
+        readiness_score = min(100.0, max(0.0, readiness_score))  # Cap between 0-100%
         readiness_score = round((completion_percentage * 0.6) + (evidence_approval_rate * 0.4), 1)
         
         # Get active service requests
