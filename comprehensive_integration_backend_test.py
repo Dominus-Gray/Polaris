@@ -780,11 +780,10 @@ class ComprehensiveIntegrationTester:
         # Step 3: Test Bidirectional Data Sync
         try:
             sync_data = {
+                "platforms": ["salesforce"],
                 "sync_direction": "bidirectional",
-                "data_types": ["contacts", "opportunities", "accounts"],
-                "include_polaris_data": True,
-                "sync_assessment_data": True,
-                "sync_financial_data": True
+                "object_types": ["contacts", "companies", "deals"],
+                "force_full_sync": False
             }
             
             response = self.session.post(
