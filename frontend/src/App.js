@@ -6459,6 +6459,14 @@ function AgencyHome(){
           console.error('Integration status loading error:', integrationError);
         }
         
+        // Load sponsored business analytics
+        try {
+          const businessResponse = await axios.get(`${API}/agency/sponsored-businesses`);
+          setSponsoredBusinessData(businessResponse.data);
+        } catch (businessError) {
+          console.error('Sponsored business data loading error:', businessError);
+        }
+        
       } catch (error) {
         console.error('Error loading agency data:', error);
         setPipelineData({
