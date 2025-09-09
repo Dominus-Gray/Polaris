@@ -12,6 +12,7 @@ import AgencyBusinessIntelligenceDashboard from './components/AgencyBusinessInte
 import AgencyLicenseDistribution from './components/AgencyLicenseDistribution';
 import AgencyAIContractMatching from './components/AgencyAIContractMatching';
 import AgencyAccountSettings from './components/AgencyAccountSettings';
+import IntegrationsPage from './components/IntegrationsPage';
 import AgencyIssueCertificate from './pages/AgencyIssueCertificate';
 import AgencyLicenses from './pages/AgencyLicenses';
 import AssessmentResultsPage from './pages/AssessmentResultsPage';
