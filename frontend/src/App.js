@@ -6586,7 +6586,99 @@ function AgencyHome(){
     }
   };
 
-  // Microsoft 365 Integration Functions
+  // CRM Integration Functions
+  const connectCRM = async (platform) => {
+    try {
+      setAiLoading(true);
+      
+      const connectionRequest = {
+        platform: platform,
+        credentials: {
+          org_id: `demo_${platform}_org`,
+          instance_url: `https://demo-${platform}.com`,
+          api_version: "latest"
+        },
+        sync_preferences: {
+          bidirectional: true,
+          sync_frequency: 'hourly',
+          conflict_resolution: 'last_modified_wins'
+        }
+      };
+      
+      const response = await axios.post(`${API}/integrations/crm/connect`, connectionRequest);
+      
+      if (response.data.success) {
+        toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} CRM connected successfully!`);
+        
+        // Trigger initial sync
+        await syncCRMData([platform]);
+        
+        // Refresh integration status
+        const statusResponse = await axios.get(`${API}/integrations/status`);
+        setIntegrationStatus(statusResponse.data);
+      }
+    } catch (error) {
+      console.error(`${platform} CRM connection error:`, error);
+      toast.error(`Failed to connect ${platform} CRM`);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const syncCRMData = async (platforms = ['salesforce', 'hubspot']) => {
+    try {
+      setAiLoading(true);
+      
+      const response = await axios.post(`${API}/integrations/crm/sync`, {
+        platforms: platforms,
+        sync_direction: 'bidirectional',
+        object_types: ['contacts', 'companies', 'deals'],
+        force_full_sync: false
+      });
+      
+      if (response.data.success) {
+        setCrmAnalytics(response.data);
+        toast.success(`CRM sync completed - ${response.data.total_records_processed} records processed`);
+      }
+    } catch (error) {
+      console.error('CRM sync error:', error);
+      toast.error('CRM synchronization failed');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const calculateLeadScore = async (contactData) => {
+    try {
+      const response = await axios.post(`${API}/integrations/crm/lead-scoring`, {
+        contact_data: contactData,
+        activity_data: [
+          { type: 'email_open', timestamp: new Date().toISOString() },
+          { type: 'page_view', timestamp: new Date().toISOString() },
+          { type: 'content_download', timestamp: new Date().toISOString() }
+        ]
+      });
+      
+      if (response.data.success) {
+        setLeadScoringData(response.data);
+        toast.success(`Lead score calculated: ${response.data.overall_score}/100 (${response.data.classification})`);
+      }
+    } catch (error) {
+      console.error('Lead scoring error:', error);
+      toast.error('Lead scoring calculation failed');
+    }
+  };
+
+  const loadCRMAnalytics = async () => {
+    try {
+      const response = await axios.get(`${API}/integrations/crm/analytics?timeframe=30d`);
+      if (response.data.success !== false) {
+        setCrmAnalytics(response.data);
+      }
+    } catch (error) {
+      console.error('CRM analytics error:', error);
+    }
+  };
   const connectMicrosoft365 = async () => {
     try {
       setAiLoading(true);
