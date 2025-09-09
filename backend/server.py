@@ -11466,7 +11466,7 @@ async def home_client(current=Depends(require_role("client"))):
         
         # Calculate assessment completion and gaps with proper validation
         total_areas = 10  # 10 business areas
-        completed_areas = 0
+        completed_area_ids = set()  # Use set to prevent counting duplicates
         critical_gaps = 0
         total_questions = 0
         answered_questions = 0
@@ -11474,8 +11474,11 @@ async def home_client(current=Depends(require_role("client"))):
         evidence_submitted_questions = 0
         
         for session in tier_sessions:
+            # Track completed areas uniquely
             if session.get("status") == "completed":
-                completed_areas += 1
+                area_id = session.get("area_id")
+                if area_id:
+                    completed_area_ids.add(area_id)
                 
             # Count questions and responses
             session_questions = len(session.get("questions", []))
@@ -11501,7 +11504,7 @@ async def home_client(current=Depends(require_role("client"))):
                             evidence_submitted_questions += 1
         
         # Apply proper validation and capping to prevent impossible values
-        completed_areas = min(completed_areas, total_areas)  # Cap at total areas
+        completed_areas = min(len(completed_area_ids), total_areas)  # Count unique areas only
         completion_percentage = round((completed_areas / total_areas) * 100, 1) if total_areas > 0 else 0
         completion_percentage = min(100.0, max(0.0, completion_percentage))  # Cap between 0-100%
         
