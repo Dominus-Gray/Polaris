@@ -6827,9 +6827,18 @@ function AgencyHome(){
         setActiveTab('business_intelligence');
         break;
 
-      case 'cash_flow_analysis':
-        await loadCashFlowAnalysis();
+      case 'microsoft365_integration':
+        await connectMicrosoft365();
         setActiveTab('business_intelligence');
+        break;
+
+      case 'send_automated_email':
+        await sendAutomatedEmail('assessment_reminder', ['demo@example.com'], {
+          business_name: 'Demo Business',
+          pending_areas: ['Financial Management', 'Operations'],
+          completion_percentage: 65,
+          assessment_url: window.location.origin + '/assessment'
+        });
         break;
         
       case 'manage_licenses':
