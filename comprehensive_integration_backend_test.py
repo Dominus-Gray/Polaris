@@ -710,37 +710,29 @@ class ComprehensiveIntegrationTester:
         # Step 2: Test Lead Scoring with Real Contact Data
         try:
             lead_scoring_data = {
-                "contacts": [
+                "contact_data": {
+                    "contact_id": "lead_001",
+                    "company_name": "Tech Solutions Inc",
+                    "industry": "Technology",
+                    "annual_revenue": 2500000,
+                    "employee_count": 45,
+                    "procurement_history": True,
+                    "certifications": ["SBA 8(a)", "WOSB"],
+                    "financial_health_score": self.integration_data.get("financial_health", {}).get("overall_score", 7.5),
+                    "assessment_completion": 85
+                },
+                "activity_data": [
                     {
-                        "contact_id": "lead_001",
-                        "company_name": "Tech Solutions Inc",
-                        "industry": "Technology",
-                        "annual_revenue": 2500000,
-                        "employee_count": 45,
-                        "procurement_history": True,
-                        "certifications": ["SBA 8(a)", "WOSB"],
-                        "financial_health_score": self.integration_data.get("financial_health", {}).get("overall_score", 7.5),
-                        "assessment_completion": 85
+                        "activity_type": "email_open",
+                        "timestamp": "2025-01-08T10:00:00Z",
+                        "engagement_score": 8
                     },
                     {
-                        "contact_id": "lead_002", 
-                        "company_name": "Manufacturing Corp",
-                        "industry": "Manufacturing",
-                        "annual_revenue": 5000000,
-                        "employee_count": 120,
-                        "procurement_history": False,
-                        "certifications": ["HUB"],
-                        "financial_health_score": 6.2,
-                        "assessment_completion": 45
+                        "activity_type": "website_visit",
+                        "timestamp": "2025-01-08T14:30:00Z",
+                        "engagement_score": 6
                     }
-                ],
-                "scoring_criteria": {
-                    "financial_health_weight": 0.3,
-                    "assessment_completion_weight": 0.25,
-                    "procurement_history_weight": 0.2,
-                    "certifications_weight": 0.15,
-                    "company_size_weight": 0.1
-                }
+                ]
             }
             
             response = self.session.post(
