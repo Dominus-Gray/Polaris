@@ -9857,6 +9857,7 @@ function AppShell(){
         <Routes>
 
           <Route path="/verify/cert/:id" element={<VerifyCert />} />
+          <Route path="/integrations" element={<IntegrationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<ProfileSettings />} />
           <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
