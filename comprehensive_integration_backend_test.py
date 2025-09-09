@@ -653,13 +653,14 @@ class ComprehensiveIntegrationTester:
         # Step 1: Test CRM Connection Setup
         try:
             crm_connection_data = {
-                "crm_type": "salesforce",
-                "api_credentials": {
+                "platform": "salesforce",
+                "credentials": {
+                    "org_id": "mock_salesforce_org_id",
                     "client_id": "mock_salesforce_client_id",
                     "client_secret": "mock_salesforce_client_secret",
                     "instance_url": "https://demo.salesforce.com"
                 },
-                "sync_settings": {
+                "sync_preferences": {
                     "sync_contacts": True,
                     "sync_opportunities": True,
                     "sync_accounts": True,
