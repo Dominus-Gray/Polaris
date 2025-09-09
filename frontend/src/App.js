@@ -7675,6 +7675,145 @@ function AgencyHome(){
                 </div>
               )}
 
+              {/* CRM Integration Analytics */}
+              {crmAnalytics && (
+                <div className="mb-8 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-6 border border-purple-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900">CRM Integration Analytics</h4>
+                    <div className="ml-auto text-sm text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
+                      {crmAnalytics.timeframe} Analysis
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">{crmAnalytics.sync_statistics?.total_records_synced}</div>
+                        <div className="text-sm text-slate-600">Records Synced</div>
+                        <div className="text-xs text-green-600 mt-1">+15% this period</div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{crmAnalytics.lead_scoring_metrics?.leads_scored}</div>
+                        <div className="text-sm text-slate-600">Leads Scored</div>
+                        <div className="text-xs text-blue-600 mt-1">Avg: {crmAnalytics.lead_scoring_metrics?.average_score}/100</div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">{crmAnalytics.lead_scoring_metrics?.hot_leads}</div>
+                        <div className="text-sm text-slate-600">Hot Leads</div>
+                        <div className="text-xs text-purple-600 mt-1">Score 80+</div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">{crmAnalytics.integration_performance?.sync_success_rate}%</div>
+                        <div className="text-sm text-slate-600">Sync Success Rate</div>
+                        <div className="text-xs text-orange-600 mt-1">Excellent performance</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Business Impact</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Sales Velocity Improvement:</span>
+                          <span className="font-medium text-green-600">{crmAnalytics.business_impact?.sales_velocity_improvement}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Lead Conversion Rate:</span>
+                          <span className="font-medium text-green-600">{crmAnalytics.business_impact?.lead_conversion_rate}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Time Saved Per Week:</span>
+                          <span className="font-medium text-blue-600">{crmAnalytics.business_impact?.time_saved_hours_per_week} hours</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Data Accuracy:</span>
+                          <span className="font-medium text-purple-600">{crmAnalytics.business_impact?.data_accuracy_improvement}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Lead Distribution</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Hot Leads:</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-2 bg-gray-200 rounded">
+                              <div 
+                                className="h-2 bg-red-500 rounded" 
+                                style={{width: `${(crmAnalytics.lead_scoring_metrics?.hot_leads / crmAnalytics.lead_scoring_metrics?.leads_scored) * 100}%`}}
+                              ></div>
+                            </div>
+                            <span className="font-medium text-red-600">{crmAnalytics.lead_scoring_metrics?.hot_leads}</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Warm Leads:</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-2 bg-gray-200 rounded">
+                              <div 
+                                className="h-2 bg-orange-500 rounded" 
+                                style={{width: `${(crmAnalytics.lead_scoring_metrics?.warm_leads / crmAnalytics.lead_scoring_metrics?.leads_scored) * 100}%`}}
+                              ></div>
+                            </div>
+                            <span className="font-medium text-orange-600">{crmAnalytics.lead_scoring_metrics?.warm_leads}</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Qualified Leads:</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-2 bg-gray-200 rounded">
+                              <div 
+                                className="h-2 bg-blue-500 rounded" 
+                                style={{width: `${(crmAnalytics.lead_scoring_metrics?.qualified_leads / crmAnalytics.lead_scoring_metrics?.leads_scored) * 100}%`}}
+                              ></div>
+                            </div>
+                            <span className="font-medium text-blue-600">{crmAnalytics.lead_scoring_metrics?.qualified_leads}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex gap-3">
+                    <button 
+                      onClick={() => connectCRM('salesforce')}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Connect Salesforce
+                    </button>
+                    <button 
+                      onClick={() => connectCRM('hubspot')}
+                      className="bg-white text-purple-600 px-4 py-2 rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
+                    >
+                      Connect HubSpot
+                    </button>
+                    <button 
+                      onClick={() => syncCRMData()}
+                      disabled={aiLoading}
+                      className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 transition-colors disabled:opacity-50"
+                    >
+                      {aiLoading ? 'Syncing...' : 'Sync All CRMs'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Cash Flow Analysis Display */}
               {cashFlowData && (
                 <div className="mb-8 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
