@@ -1,5 +1,893 @@
 #!/usr/bin/env python3
 """
+QuickBooks Integration Backend Testing Suite
+Testing Agent: testing
+Test Date: January 2025
+Test Scope: Complete QuickBooks integration endpoints validation as requested in review
+
+This test suite validates the newly implemented QuickBooks integration endpoints:
+1. QuickBooks Auth URL Generation: GET /api/integrations/quickbooks/auth-url
+2. QuickBooks Connection: POST /api/integrations/quickbooks/connect
+3. Financial Health Analysis: GET /api/integrations/quickbooks/financial-health
+4. QuickBooks Data Sync: POST /api/integrations/quickbooks/sync
+5. Cash Flow Analysis: GET /api/integrations/quickbooks/cash-flow-analysis
+6. Integration Status: GET /api/integrations/status
+"""
+
+import requests
+import json
+import time
+from datetime import datetime
+import sys
+import os
+
+# Configuration
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
+QA_CREDENTIALS = {
+    "email": "agency.qa@polaris.example.com",
+    "password": "Polaris#2025!"
+}
+
+class QuickBooksIntegrationTester:
+    def __init__(self):
+        self.session = requests.Session()
+        self.auth_token = None
+        self.user_id = None
+        self.test_results = []
+        self.total_tests = 0
+        self.passed_tests = 0
+        
+    def log_test(self, test_name, success, details="", response_data=None):
+        """Log test results with detailed information"""
+        self.total_tests += 1
+        if success:
+            self.passed_tests += 1
+            status = "✅ PASS"
+        else:
+            status = "❌ FAIL"
+            
+        result = {
+            "test": test_name,
+            "status": status,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat(),
+            "response_data": response_data
+        }
+        self.test_results.append(result)
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"   Details: {details}")
+        if not success and response_data:
+            print(f"   Response: {response_data}")
+        print()
+
+    def authenticate(self):
+        """Authenticate with QA credentials"""
+        try:
+            print("🔐 AUTHENTICATING WITH QA CREDENTIALS...")
+            print(f"Email: {QA_CREDENTIALS['email']}")
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=QA_CREDENTIALS,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.auth_token = data.get("access_token")
+                
+                # Get user info
+                user_response = self.session.get(
+                    f"{BACKEND_URL}/auth/me",
+                    headers={"Authorization": f"Bearer {self.auth_token}"}
+                )
+                
+                if user_response.status_code == 200:
+                    user_data = user_response.json()
+                    self.user_id = user_data.get("id")
+                    
+                    self.log_test(
+                        "QA Authentication",
+                        True,
+                        f"Successfully authenticated as {user_data.get('email')} (Role: {user_data.get('role')})"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "QA Authentication - User Info",
+                        False,
+                        f"Failed to get user info: {user_response.status_code}",
+                        user_response.text
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "QA Authentication",
+                    False,
+                    f"Login failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "QA Authentication",
+                False,
+                f"Authentication error: {str(e)}"
+            )
+            return False
+
+    def test_quickbooks_auth_url(self):
+        """Test QuickBooks Auth URL Generation: GET /api/integrations/quickbooks/auth-url"""
+        try:
+            print("🔗 TESTING QUICKBOOKS AUTH URL GENERATION...")
+            
+            response = self.session.get(
+                f"{BACKEND_URL}/integrations/quickbooks/auth-url",
+                headers={"Authorization": f"Bearer {self.auth_token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Validate response structure
+                required_fields = ["success", "auth_url", "state"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "QuickBooks Auth URL - Response Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Validate auth URL format
+                auth_url = data.get("auth_url", "")
+                if not auth_url.startswith("https://appcenter.intuit.com/connect/oauth2"):
+                    self.log_test(
+                        "QuickBooks Auth URL - URL Format",
+                        False,
+                        f"Invalid auth URL format: {auth_url}",
+                        data
+                    )
+                    return False
+                
+                # Validate state parameter
+                state = data.get("state", "")
+                if not state.startswith(f"user_{self.user_id}"):
+                    self.log_test(
+                        "QuickBooks Auth URL - State Parameter",
+                        False,
+                        f"Invalid state parameter: {state}",
+                        data
+                    )
+                    return False
+                
+                self.log_test(
+                    "QuickBooks Auth URL Generation",
+                    True,
+                    f"Auth URL generated successfully with state: {state}",
+                    {
+                        "success": data.get("success"),
+                        "auth_url_valid": auth_url.startswith("https://appcenter.intuit.com"),
+                        "state_valid": state.startswith(f"user_{self.user_id}")
+                    }
+                )
+                return True
+                
+            else:
+                self.log_test(
+                    "QuickBooks Auth URL Generation",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "QuickBooks Auth URL Generation",
+                False,
+                f"Test error: {str(e)}"
+            )
+            return False
+
+    def test_quickbooks_connection(self):
+        """Test QuickBooks Connection: POST /api/integrations/quickbooks/connect"""
+        try:
+            print("🔌 TESTING QUICKBOOKS CONNECTION...")
+            
+            # Mock connection request data
+            connection_data = {
+                "auth_code": "mock_auth_code_12345",
+                "realm_id": "123456789012345",
+                "redirect_uri": "https://biz-matchmaker-1.preview.emergentagent.com/quickbooks/callback"
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/integrations/quickbooks/connect",
+                json=connection_data,
+                headers={
+                    "Authorization": f"Bearer {self.auth_token}",
+                    "Content-Type": "application/json"
+                }
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Validate response structure
+                required_fields = ["success", "message", "realm_id", "status"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "QuickBooks Connection - Response Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Validate connection success
+                if not data.get("success"):
+                    self.log_test(
+                        "QuickBooks Connection - Success Status",
+                        False,
+                        f"Connection not successful: {data.get('message')}",
+                        data
+                    )
+                    return False
+                
+                # Validate realm_id matches
+                if data.get("realm_id") != connection_data["realm_id"]:
+                    self.log_test(
+                        "QuickBooks Connection - Realm ID",
+                        False,
+                        f"Realm ID mismatch: expected {connection_data['realm_id']}, got {data.get('realm_id')}",
+                        data
+                    )
+                    return False
+                
+                # Validate status is connected
+                if data.get("status") != "connected":
+                    self.log_test(
+                        "QuickBooks Connection - Status",
+                        False,
+                        f"Invalid status: expected 'connected', got {data.get('status')}",
+                        data
+                    )
+                    return False
+                
+                self.log_test(
+                    "QuickBooks Connection",
+                    True,
+                    f"QuickBooks connected successfully with realm_id: {data.get('realm_id')}",
+                    {
+                        "success": data.get("success"),
+                        "status": data.get("status"),
+                        "realm_id": data.get("realm_id"),
+                        "message": data.get("message")
+                    }
+                )
+                return True
+                
+            else:
+                self.log_test(
+                    "QuickBooks Connection",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "QuickBooks Connection",
+                False,
+                f"Test error: {str(e)}"
+            )
+            return False
+
+    def test_financial_health_analysis(self):
+        """Test Financial Health Analysis: GET /api/integrations/quickbooks/financial-health"""
+        try:
+            print("📊 TESTING FINANCIAL HEALTH ANALYSIS...")
+            
+            response = self.session.get(
+                f"{BACKEND_URL}/integrations/quickbooks/financial-health",
+                headers={"Authorization": f"Bearer {self.auth_token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Validate response structure - all score categories
+                required_fields = [
+                    "overall_score", "cash_flow_score", "profitability_score", 
+                    "liquidity_score", "debt_ratio_score", "generated_date",
+                    "recommendations", "insights"
+                ]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Financial Health Analysis - Response Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Validate score ranges (0-10)
+                score_fields = ["overall_score", "cash_flow_score", "profitability_score", "liquidity_score", "debt_ratio_score"]
+                invalid_scores = []
+                
+                for field in score_fields:
+                    score = data.get(field, -1)
+                    if not isinstance(score, (int, float)) or score < 0 or score > 10:
+                        invalid_scores.append(f"{field}: {score}")
+                
+                if invalid_scores:
+                    self.log_test(
+                        "Financial Health Analysis - Score Validation",
+                        False,
+                        f"Invalid scores (must be 0-10): {invalid_scores}",
+                        data
+                    )
+                    return False
+                
+                # Validate recommendations and insights are lists
+                if not isinstance(data.get("recommendations"), list):
+                    self.log_test(
+                        "Financial Health Analysis - Recommendations Format",
+                        False,
+                        f"Recommendations must be a list, got: {type(data.get('recommendations'))}",
+                        data
+                    )
+                    return False
+                
+                if not isinstance(data.get("insights"), list):
+                    self.log_test(
+                        "Financial Health Analysis - Insights Format",
+                        False,
+                        f"Insights must be a list, got: {type(data.get('insights'))}",
+                        data
+                    )
+                    return False
+                
+                self.log_test(
+                    "Financial Health Analysis",
+                    True,
+                    f"Financial health analysis completed - Overall Score: {data.get('overall_score')}/10, Recommendations: {len(data.get('recommendations', []))}, Insights: {len(data.get('insights', []))}",
+                    {
+                        "overall_score": data.get("overall_score"),
+                        "cash_flow_score": data.get("cash_flow_score"),
+                        "profitability_score": data.get("profitability_score"),
+                        "liquidity_score": data.get("liquidity_score"),
+                        "debt_ratio_score": data.get("debt_ratio_score"),
+                        "recommendations_count": len(data.get("recommendations", [])),
+                        "insights_count": len(data.get("insights", []))
+                    }
+                )
+                return True
+                
+            else:
+                self.log_test(
+                    "Financial Health Analysis",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Financial Health Analysis",
+                False,
+                f"Test error: {str(e)}"
+            )
+            return False
+
+    def test_quickbooks_data_sync(self):
+        """Test QuickBooks Data Sync: POST /api/integrations/quickbooks/sync"""
+        try:
+            print("🔄 TESTING QUICKBOOKS DATA SYNC...")
+            
+            # Test different sync types
+            sync_types = ["all", "customers", "invoices"]
+            
+            for sync_type in sync_types:
+                print(f"   Testing sync type: {sync_type}")
+                
+                sync_data = {"sync_type": sync_type}
+                
+                response = self.session.post(
+                    f"{BACKEND_URL}/integrations/quickbooks/sync",
+                    json=sync_data,
+                    headers={
+                        "Authorization": f"Bearer {self.auth_token}",
+                        "Content-Type": "application/json"
+                    }
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Validate response structure
+                    required_fields = ["success", "sync_type", "records_synced", "started_at", "completed_at"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if missing_fields:
+                        self.log_test(
+                            f"QuickBooks Data Sync ({sync_type}) - Response Structure",
+                            False,
+                            f"Missing required fields: {missing_fields}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate sync success
+                    if not data.get("success"):
+                        self.log_test(
+                            f"QuickBooks Data Sync ({sync_type}) - Success Status",
+                            False,
+                            f"Sync not successful: {data}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate sync type matches
+                    if data.get("sync_type") != sync_type:
+                        self.log_test(
+                            f"QuickBooks Data Sync ({sync_type}) - Sync Type",
+                            False,
+                            f"Sync type mismatch: expected {sync_type}, got {data.get('sync_type')}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate record counts
+                    records_synced = data.get("records_synced", 0)
+                    if records_synced < 0:
+                        self.log_test(
+                            f"QuickBooks Data Sync ({sync_type}) - Record Count",
+                            False,
+                            f"Invalid record count: {records_synced}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate specific sync results based on type
+                    if sync_type == "all":
+                        expected_fields = ["customers_synced", "invoices_synced", "expenses_synced"]
+                        missing_sync_fields = [field for field in expected_fields if field not in data]
+                        if missing_sync_fields:
+                            self.log_test(
+                                f"QuickBooks Data Sync ({sync_type}) - Detailed Results",
+                                False,
+                                f"Missing sync result fields: {missing_sync_fields}",
+                                data
+                            )
+                            continue
+                    
+                    self.log_test(
+                        f"QuickBooks Data Sync ({sync_type})",
+                        True,
+                        f"Sync completed successfully - Records synced: {records_synced}",
+                        {
+                            "sync_type": data.get("sync_type"),
+                            "records_synced": data.get("records_synced"),
+                            "customers_synced": data.get("customers_synced"),
+                            "invoices_synced": data.get("invoices_synced"),
+                            "expenses_synced": data.get("expenses_synced")
+                        }
+                    )
+                    
+                else:
+                    self.log_test(
+                        f"QuickBooks Data Sync ({sync_type})",
+                        False,
+                        f"Request failed with status {response.status_code}",
+                        response.text
+                    )
+                    
+            return True
+                
+        except Exception as e:
+            self.log_test(
+                "QuickBooks Data Sync",
+                False,
+                f"Test error: {str(e)}"
+            )
+            return False
+
+    def test_cash_flow_analysis(self):
+        """Test Cash Flow Analysis: GET /api/integrations/quickbooks/cash-flow-analysis"""
+        try:
+            print("💰 TESTING CASH FLOW ANALYSIS...")
+            
+            # Test with different day parameters
+            day_parameters = [30, 90, 180]
+            
+            for days in day_parameters:
+                print(f"   Testing cash flow analysis for {days} days")
+                
+                response = self.session.get(
+                    f"{BACKEND_URL}/integrations/quickbooks/cash-flow-analysis?days={days}",
+                    headers={"Authorization": f"Bearer {self.auth_token}"}
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Validate response structure
+                    required_fields = [
+                        "period_days", "current_cash_position", "cash_flow_trends", 
+                        "weekly_predictions", "alerts", "generated_at"
+                    ]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if missing_fields:
+                        self.log_test(
+                            f"Cash Flow Analysis ({days} days) - Response Structure",
+                            False,
+                            f"Missing required fields: {missing_fields}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate period_days matches request
+                    if data.get("period_days") != days:
+                        self.log_test(
+                            f"Cash Flow Analysis ({days} days) - Period Validation",
+                            False,
+                            f"Period mismatch: expected {days}, got {data.get('period_days')}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate current_cash_position structure
+                    cash_position = data.get("current_cash_position", {})
+                    required_cash_fields = [
+                        "total_cash", "checking_account", "savings_account",
+                        "outstanding_receivables", "outstanding_payables", "projected_cash"
+                    ]
+                    missing_cash_fields = [field for field in required_cash_fields if field not in cash_position]
+                    
+                    if missing_cash_fields:
+                        self.log_test(
+                            f"Cash Flow Analysis ({days} days) - Cash Position Structure",
+                            False,
+                            f"Missing cash position fields: {missing_cash_fields}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate cash_flow_trends structure
+                    trends = data.get("cash_flow_trends", {})
+                    required_trend_fields = [
+                        "total_inflow", "total_outflow", "net_cash_flow",
+                        "average_daily_flow", "trend_direction", "volatility"
+                    ]
+                    missing_trend_fields = [field for field in required_trend_fields if field not in trends]
+                    
+                    if missing_trend_fields:
+                        self.log_test(
+                            f"Cash Flow Analysis ({days} days) - Trends Structure",
+                            False,
+                            f"Missing trend fields: {missing_trend_fields}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate weekly_predictions is a list
+                    predictions = data.get("weekly_predictions", [])
+                    if not isinstance(predictions, list):
+                        self.log_test(
+                            f"Cash Flow Analysis ({days} days) - Predictions Format",
+                            False,
+                            f"Weekly predictions must be a list, got: {type(predictions)}",
+                            data
+                        )
+                        continue
+                    
+                    # Validate prediction structure if predictions exist
+                    if predictions:
+                        first_prediction = predictions[0]
+                        required_prediction_fields = [
+                            "week", "predicted_inflow", "predicted_outflow",
+                            "net_flow", "ending_balance", "confidence"
+                        ]
+                        missing_prediction_fields = [field for field in required_prediction_fields if field not in first_prediction]
+                        
+                        if missing_prediction_fields:
+                            self.log_test(
+                                f"Cash Flow Analysis ({days} days) - Prediction Structure",
+                                False,
+                                f"Missing prediction fields: {missing_prediction_fields}",
+                                data
+                            )
+                            continue
+                    
+                    self.log_test(
+                        f"Cash Flow Analysis ({days} days)",
+                        True,
+                        f"Analysis completed - Total Cash: ${cash_position.get('total_cash', 0):,.2f}, Net Flow: ${trends.get('net_cash_flow', 0):,.2f}, Predictions: {len(predictions)}",
+                        {
+                            "period_days": data.get("period_days"),
+                            "total_cash": cash_position.get("total_cash"),
+                            "net_cash_flow": trends.get("net_cash_flow"),
+                            "trend_direction": trends.get("trend_direction"),
+                            "predictions_count": len(predictions),
+                            "alerts_count": len(data.get("alerts", []))
+                        }
+                    )
+                    
+                else:
+                    self.log_test(
+                        f"Cash Flow Analysis ({days} days)",
+                        False,
+                        f"Request failed with status {response.status_code}",
+                        response.text
+                    )
+                    
+            return True
+                
+        except Exception as e:
+            self.log_test(
+                "Cash Flow Analysis",
+                False,
+                f"Test error: {str(e)}"
+            )
+            return False
+
+    def test_integration_status(self):
+        """Test Integration Status: GET /api/integrations/status"""
+        try:
+            print("📋 TESTING INTEGRATION STATUS...")
+            
+            response = self.session.get(
+                f"{BACKEND_URL}/integrations/status",
+                headers={"Authorization": f"Bearer {self.auth_token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Validate response structure
+                required_fields = [
+                    "user_id", "total_integrations", "active_integrations",
+                    "integrations", "overall_health_score"
+                ]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Integration Status - Response Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Validate user_id matches
+                if data.get("user_id") != self.user_id:
+                    self.log_test(
+                        "Integration Status - User ID",
+                        False,
+                        f"User ID mismatch: expected {self.user_id}, got {data.get('user_id')}",
+                        data
+                    )
+                    return False
+                
+                # Validate integrations is a list
+                integrations = data.get("integrations", [])
+                if not isinstance(integrations, list):
+                    self.log_test(
+                        "Integration Status - Integrations Format",
+                        False,
+                        f"Integrations must be a list, got: {type(integrations)}",
+                        data
+                    )
+                    return False
+                
+                # Validate integration structure if integrations exist
+                if integrations:
+                    first_integration = integrations[0]
+                    required_integration_fields = [
+                        "platform", "status", "connected_at", "last_sync",
+                        "health_score", "sync_records"
+                    ]
+                    missing_integration_fields = [field for field in required_integration_fields if field not in first_integration]
+                    
+                    if missing_integration_fields:
+                        self.log_test(
+                            "Integration Status - Integration Structure",
+                            False,
+                            f"Missing integration fields: {missing_integration_fields}",
+                            data
+                        )
+                        return False
+                    
+                    # Check for QuickBooks integration specifically
+                    quickbooks_integration = None
+                    for integration in integrations:
+                        if integration.get("platform") == "quickbooks":
+                            quickbooks_integration = integration
+                            break
+                    
+                    if quickbooks_integration:
+                        # Validate QuickBooks integration details
+                        if quickbooks_integration.get("status") != "connected":
+                            self.log_test(
+                                "Integration Status - QuickBooks Status",
+                                False,
+                                f"QuickBooks should be connected, got: {quickbooks_integration.get('status')}",
+                                data
+                            )
+                            return False
+                        
+                        # Validate health score range
+                        health_score = quickbooks_integration.get("health_score", -1)
+                        if not isinstance(health_score, (int, float)) or health_score < 0 or health_score > 100:
+                            self.log_test(
+                                "Integration Status - Health Score",
+                                False,
+                                f"Invalid health score (must be 0-100): {health_score}",
+                                data
+                            )
+                            return False
+                
+                # Validate overall health score range
+                overall_health = data.get("overall_health_score", -1)
+                if not isinstance(overall_health, (int, float)) or overall_health < 0 or overall_health > 100:
+                    self.log_test(
+                        "Integration Status - Overall Health Score",
+                        False,
+                        f"Invalid overall health score (must be 0-100): {overall_health}",
+                        data
+                    )
+                    return False
+                
+                self.log_test(
+                    "Integration Status",
+                    True,
+                    f"Status retrieved successfully - Total: {data.get('total_integrations')}, Active: {data.get('active_integrations')}, Health: {data.get('overall_health_score')}/100",
+                    {
+                        "total_integrations": data.get("total_integrations"),
+                        "active_integrations": data.get("active_integrations"),
+                        "overall_health_score": data.get("overall_health_score"),
+                        "quickbooks_connected": any(i.get("platform") == "quickbooks" and i.get("status") == "connected" for i in integrations)
+                    }
+                )
+                return True
+                
+            else:
+                self.log_test(
+                    "Integration Status",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Integration Status",
+                False,
+                f"Test error: {str(e)}"
+            )
+            return False
+
+    def run_comprehensive_tests(self):
+        """Run all QuickBooks integration tests"""
+        print("🎯 QUICKBOOKS INTEGRATION COMPREHENSIVE TESTING STARTED")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test Credentials: {QA_CREDENTIALS['email']}")
+        print(f"Test Date: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Step 1: Authentication
+        if not self.authenticate():
+            print("❌ AUTHENTICATION FAILED - CANNOT PROCEED WITH TESTS")
+            return False
+        
+        print("=" * 80)
+        print("🧪 RUNNING QUICKBOOKS INTEGRATION ENDPOINT TESTS")
+        print("=" * 80)
+        print()
+        
+        # Step 2: Test QuickBooks Auth URL Generation
+        self.test_quickbooks_auth_url()
+        
+        # Step 3: Test QuickBooks Connection
+        self.test_quickbooks_connection()
+        
+        # Step 4: Test Financial Health Analysis
+        self.test_financial_health_analysis()
+        
+        # Step 5: Test QuickBooks Data Sync
+        self.test_quickbooks_data_sync()
+        
+        # Step 6: Test Cash Flow Analysis
+        self.test_cash_flow_analysis()
+        
+        # Step 7: Test Integration Status
+        self.test_integration_status()
+        
+        # Generate final report
+        self.generate_final_report()
+        
+        return self.passed_tests == self.total_tests
+
+    def generate_final_report(self):
+        """Generate comprehensive test report"""
+        print("=" * 80)
+        print("📊 QUICKBOOKS INTEGRATION TESTING FINAL REPORT")
+        print("=" * 80)
+        
+        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
+        
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed Tests: {self.passed_tests}")
+        print(f"Failed Tests: {self.total_tests - self.passed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        print()
+        
+        # Detailed results
+        print("DETAILED TEST RESULTS:")
+        print("-" * 40)
+        
+        for result in self.test_results:
+            print(f"{result['status']}: {result['test']}")
+            if result['details']:
+                print(f"   {result['details']}")
+        
+        print()
+        print("=" * 80)
+        
+        if success_rate >= 95:
+            print("✅ QUICKBOOKS INTEGRATION: EXCELLENT - READY FOR PRODUCTION")
+        elif success_rate >= 85:
+            print("✅ QUICKBOOKS INTEGRATION: GOOD - READY FOR PRODUCTION WITH MINOR ISSUES")
+        elif success_rate >= 70:
+            print("⚠️ QUICKBOOKS INTEGRATION: NEEDS ATTENTION - SOME ISSUES IDENTIFIED")
+        else:
+            print("❌ QUICKBOOKS INTEGRATION: CRITICAL ISSUES - NOT READY FOR PRODUCTION")
+        
+        print("=" * 80)
+
+def main():
+    """Main test execution"""
+    tester = QuickBooksIntegrationTester()
+    
+    try:
+        success = tester.run_comprehensive_tests()
+        
+        if success:
+            print("\n🎉 ALL QUICKBOOKS INTEGRATION TESTS PASSED!")
+            sys.exit(0)
+        else:
+            print("\n❌ SOME QUICKBOOKS INTEGRATION TESTS FAILED!")
+            sys.exit(1)
+            
+    except KeyboardInterrupt:
+        print("\n⚠️ Testing interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n💥 Testing failed with error: {str(e)}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+"""
 Agency Dashboard Backend Testing Suite
 Testing backend functionality for agency portal improvements as requested in review.
 
