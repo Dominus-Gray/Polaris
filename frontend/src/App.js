@@ -6744,8 +6744,19 @@ function AgencyHome(){
         setActiveTab('opportunities');
         break;
 
-      case 'generate_report':
-        await generateAIReport('comprehensive');
+      case 'quickbooks_integration':
+        await connectQuickBooks();
+        setActiveTab('business_intelligence');
+        break;
+
+      case 'financial_health':
+        await loadFinancialHealth();
+        setActiveTab('business_intelligence');
+        break;
+
+      case 'cash_flow_analysis':
+        await loadCashFlowAnalysis();
+        setActiveTab('business_intelligence');
         break;
         
       case 'manage_licenses':
