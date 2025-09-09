@@ -24,6 +24,7 @@ import time
 import json
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from cryptography.fernet import Fernet
+from decimal import Decimal
 
 # Enhanced caching for Knowledge Base content
 from functools import lru_cache
