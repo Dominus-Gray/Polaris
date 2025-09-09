@@ -6586,7 +6586,80 @@ function AgencyHome(){
     }
   };
 
-  // AI-Powered Contract Analysis Function
+  // Microsoft 365 Integration Functions
+  const connectMicrosoft365 = async () => {
+    try {
+      setAiLoading(true);
+      
+      // Get Microsoft 365 authorization URL
+      const authResponse = await axios.get(`${API}/integrations/microsoft365/auth-url`);
+      
+      if (authResponse.data.success) {
+        // Open Microsoft 365 OAuth popup
+        const popup = window.open(
+          authResponse.data.auth_url,
+          'microsoft365-auth',
+          'width=800,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        // Monitor popup for completion
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            handleMicrosoft365Connected();
+          }
+        }, 1000);
+        
+        toast.info('Microsoft 365 authorization window opened');
+      }
+    } catch (error) {
+      console.error('Microsoft 365 connection error:', error);
+      toast.error('Failed to connect Microsoft 365');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleMicrosoft365Connected = async () => {
+    try {
+      const connectionRequest = {
+        auth_code: 'demo_m365_auth_code',
+        redirect_uri: window.location.origin + '/integrations/microsoft365/callback',
+        tenant_id: 'demo_tenant_123'
+      };
+      
+      const response = await axios.post(`${API}/integrations/microsoft365/connect`, connectionRequest);
+      
+      if (response.data.success) {
+        toast.success('Microsoft 365 connected successfully!');
+        
+        // Refresh integration status
+        const statusResponse = await axios.get(`${API}/integrations/status`);
+        setIntegrationStatus(statusResponse.data);
+      }
+    } catch (error) {
+      console.error('Microsoft 365 connection error:', error);
+      toast.error('Failed to connect Microsoft 365');
+    }
+  };
+
+  const sendAutomatedEmail = async (templateType, recipients, personalizationData) => {
+    try {
+      const response = await axios.post(`${API}/integrations/microsoft365/send-email`, {
+        template_type: templateType,
+        recipients: recipients,
+        personalization_data: personalizationData
+      });
+      
+      if (response.data.success) {
+        toast.success(`Email sent successfully to ${recipients.length} recipient(s)`);
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Email sending error:', error);
+      toast.error('Failed to send automated email');
+    }
+  };
   const performContractAnalysis = async (businessData) => {
     try {
       setAiLoading(true);
