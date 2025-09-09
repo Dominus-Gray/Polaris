@@ -11443,10 +11443,26 @@ async def agency_impact(current=Depends(require_role("agency"))):
 async def home_client(current=Depends(require_role("client"))):
     """Enhanced client dashboard with accurate tier-based assessment data"""
     try:
-        # Get tier-based assessment sessions
+        # Get tier-based assessment sessions with data validation
         tier_sessions = await db.tier_assessment_sessions.find({
             "user_id": current["id"]
         }).to_list(None)
+        
+        # Clean up any malformed sessions (defensive programming)
+        valid_sessions = []
+        for session in tier_sessions:
+            # Validate session has required fields and proper area_id
+            area_id = session.get("area_id", "")
+            if area_id.startswith("area") and session.get("user_id") == current["id"]:
+                # Extract area number and validate it's between 1-10
+                try:
+                    area_num = int(area_id.replace("area", ""))
+                    if 1 <= area_num <= 10:
+                        valid_sessions.append(session)
+                except ValueError:
+                    continue  # Skip invalid area IDs
+        
+        tier_sessions = valid_sessions
         
         # Calculate assessment completion and gaps with proper validation
         total_areas = 10  # 10 business areas
