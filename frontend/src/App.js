@@ -7281,6 +7281,121 @@ function AgencyHome(){
                 </div>
               )}
 
+              {/* QuickBooks Financial Health Integration */}
+              {financialHealth && (
+                <div className="mb-8 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-6 border border-emerald-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-emerald-100 rounded-lg mr-3">
+                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-slate-900">QuickBooks Financial Health Analysis</h4>
+                    </div>
+                    <div className="text-sm text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">
+                      Overall Score: {financialHealth.overall_score.toFixed(1)}/10
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">{financialHealth.cash_flow_score.toFixed(1)}</div>
+                        <div className="text-sm text-slate-600">Cash Flow Score</div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div 
+                            className="bg-green-600 h-2 rounded-full" 
+                            style={{width: `${(financialHealth.cash_flow_score / 10) * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{financialHealth.profitability_score.toFixed(1)}</div>
+                        <div className="text-sm text-slate-600">Profitability</div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full" 
+                            style={{width: `${(financialHealth.profitability_score / 10) * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">{financialHealth.liquidity_score.toFixed(1)}</div>
+                        <div className="text-sm text-slate-600">Liquidity</div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div 
+                            className="bg-purple-600 h-2 rounded-full" 
+                            style={{width: `${(financialHealth.liquidity_score / 10) * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">{financialHealth.debt_ratio_score.toFixed(1)}</div>
+                        <div className="text-sm text-slate-600">Debt Management</div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div 
+                            className="bg-orange-600 h-2 rounded-full" 
+                            style={{width: `${(financialHealth.debt_ratio_score / 10) * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Key Insights</h5>
+                      <ul className="space-y-2">
+                        {financialHealth.insights?.map((insight, idx) => (
+                          <li key={idx} className="flex items-start text-sm">
+                            <span className="text-blue-500 mr-2 mt-0.5">•</span>
+                            <span className="text-slate-700">{insight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Recommendations</h5>
+                      <ul className="space-y-2">
+                        {financialHealth.recommendations?.map((recommendation, idx) => (
+                          <li key={idx} className="flex items-start text-sm">
+                            <span className="text-emerald-500 mr-2 mt-0.5">→</span>
+                            <span className="text-slate-700">{recommendation}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex gap-3">
+                    <button 
+                      onClick={() => syncQuickBooksData('all')}
+                      disabled={aiLoading}
+                      className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    >
+                      {aiLoading ? 'Syncing...' : 'Sync Financial Data'}
+                    </button>
+                    <button 
+                      onClick={() => handleQuickAction('cash_flow_analysis')}
+                      className="bg-white text-emerald-600 px-4 py-2 rounded-lg border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                    >
+                      View Cash Flow Analysis
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* AI Generated Report Display */}
               {generatedReport && (
                 <div className="mb-8 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg p-6 border border-slate-200">
