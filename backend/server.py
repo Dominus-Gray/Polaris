@@ -9795,6 +9795,156 @@ async def enhanced_business_intelligence(
             "basic_data": basic_bi if 'basic_bi' in locals() else {}
         }
 
+# ================== SPONSORED BUSINESS ANALYTICS FOR AGENCIES ==================
+
+@api.get("/agency/sponsored-businesses", response_model=dict)
+async def get_sponsored_businesses_analytics(current=Depends(require_role("agency"))):
+    """Get comprehensive analytics for all sponsored businesses"""
+    try:
+        agency_id = current['id']
+        
+        # Get all sponsored businesses for this agency
+        sponsored_businesses = await db.users.find({
+            "sponsored_by": agency_id,
+            "role": "client"
+        }).to_list(length=None)
+        
+        business_analytics = []
+        
+        for business in sponsored_businesses:
+            business_id = business['id']
+            
+            # Get assessment data for this business
+            tier_sessions = await db.tier_assessment_sessions.find({
+                "user_id": business_id
+            }).to_list(None)
+            
+            # Calculate business metrics
+            total_areas = 10
+            completed_areas = len(set(s.get("area_id") for s in tier_sessions if s.get("status") == "completed"))
+            completion_percentage = min(100, (completed_areas / total_areas) * 100) if total_areas > 0 else 0
+            
+            # Count critical gaps
+            critical_gaps = 0
+            for session in tier_sessions:
+                for response in session.get("responses", []):
+                    if response.get("response") in ["gap_exists", "no_help"]:
+                        critical_gaps += 1
+            
+            # Calculate readiness score
+            evidence_approved = await db.assessment_evidence.count_documents({
+                "user_id": business_id,
+                "review_status": "approved"
+            })
+            evidence_required = sum(1 for session in tier_sessions 
+                                  for response in session.get("responses", [])
+                                  if response.get("tier_level", 1) >= 2 and response.get("response") == "compliant")
+            
+            readiness_score = min(100, round((completion_percentage * 0.6) + 
+                                           ((evidence_approved / max(1, evidence_required)) * 100 * 0.4), 1))
+            
+            # Determine contract readiness level
+            if readiness_score >= 85:
+                contract_readiness = "excellent"
+                readiness_class = "text-green-600"
+            elif readiness_score >= 70:
+                contract_readiness = "good"  
+                readiness_class = "text-blue-600"
+            elif readiness_score >= 50:
+                contract_readiness = "developing"
+                readiness_class = "text-orange-600"
+            else:
+                contract_readiness = "needs_improvement"
+                readiness_class = "text-red-600"
+            
+            # Generate contract opportunity matches (mock intelligent matching)
+            opportunities = []
+            if readiness_score >= 85:
+                opportunities = [
+                    {"title": "Federal IT Services Contract", "value": "$350K", "match_score": 95, "agency": "GSA"},
+                    {"title": "State Technology Upgrade", "value": "$275K", "match_score": 89, "agency": "State CIO"},
+                    {"title": "Local Government Consulting", "value": "$125K", "match_score": 82, "agency": "City Hall"}
+                ]
+            elif readiness_score >= 70:
+                opportunities = [
+                    {"title": "Local Government Services", "value": "$150K", "match_score": 78, "agency": "County"},
+                    {"title": "State Small Projects", "value": "$85K", "match_score": 72, "agency": "State Agency"}
+                ]
+            elif readiness_score >= 50:
+                opportunities = [
+                    {"title": "Small Local Contracts", "value": "$45K", "match_score": 65, "agency": "City Dept"}
+                ]
+            
+            # Identify improvement areas
+            improvement_areas = []
+            if completion_percentage < 80:
+                improvement_areas.append("Complete remaining assessment areas")
+            if critical_gaps > 3:
+                improvement_areas.append("Address critical compliance gaps")
+            if evidence_approved < evidence_required:
+                improvement_areas.append("Submit additional evidence for review")
+            
+            business_analytics.append({
+                "business_id": business_id,
+                "business_name": business.get("company_name") or business.get("first_name", "") + " " + business.get("last_name", ""),
+                "email": business.get("email"),
+                "industry": business.get("industry", "General Services"),
+                "location": f"{business.get('city', 'Unknown')}, {business.get('state', 'TX')}",
+                "readiness_score": readiness_score,
+                "completion_percentage": completion_percentage,
+                "critical_gaps": critical_gaps,
+                "contract_readiness": contract_readiness,
+                "readiness_class": readiness_class,
+                "opportunities": opportunities,
+                "improvement_areas": improvement_areas,
+                "last_activity": business.get("last_login", business.get("created_at")),
+                "assessment_areas": {
+                    "completed": completed_areas,
+                    "total": total_areas,
+                    "in_progress": len([s for s in tier_sessions if s.get("status") == "active"])
+                }
+            })
+        
+        # Sort by readiness score (highest first)
+        business_analytics.sort(key=lambda x: x["readiness_score"], reverse=True)
+        
+        # Calculate portfolio summary
+        portfolio_summary = {
+            "total_businesses": len(business_analytics),
+            "contract_ready": len([b for b in business_analytics if b["readiness_score"] >= 85]),
+            "developing": len([b for b in business_analytics if 70 <= b["readiness_score"] < 85]),
+            "needs_support": len([b for b in business_analytics if b["readiness_score"] < 70]),
+            "average_readiness": round(sum(b["readiness_score"] for b in business_analytics) / max(1, len(business_analytics)), 1),
+            "total_opportunities": sum(len(b["opportunities"]) for b in business_analytics),
+            "high_value_opportunities": len([opp for b in business_analytics for opp in b["opportunities"] 
+                                           if int(opp["value"].replace("$", "").replace("K", "000")) >= 200000])
+        }
+        
+        return {
+            "success": True,
+            "agency_id": agency_id,
+            "portfolio_summary": portfolio_summary,
+            "businesses": business_analytics,
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logging.error(f"Sponsored business analytics failed: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "businesses": [],
+            "portfolio_summary": {
+                "total_businesses": 0,
+                "contract_ready": 0, 
+                "developing": 0,
+                "needs_support": 0,
+                "average_readiness": 0,
+                "total_opportunities": 0,
+                "high_value_opportunities": 0
+            }
+        }
+
 # ================== CRM INTEGRATION SYSTEM ==================
 
 # CRM Integration Models
