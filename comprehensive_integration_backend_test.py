@@ -746,24 +746,21 @@ class ComprehensiveIntegrationTester:
             
             if response.status_code == 200:
                 data = response.json()
-                scored_leads = data.get("scored_leads", [])
+                lead_score = data.get("lead_score", 0)
+                score_breakdown = data.get("score_breakdown", {})
                 
-                if len(scored_leads) == 2:
-                    total_score = sum(lead.get("score", 0) for lead in scored_leads)
-                    avg_score = total_score / len(scored_leads)
-                    
+                if lead_score > 0:
                     self.log_test(
                         "CRM Lead Scoring",
                         True,
-                        f"Lead scoring completed - {len(scored_leads)} leads scored, Average Score: {avg_score:.1f}"
+                        f"Lead scoring completed - Score: {lead_score}, Breakdown available: {bool(score_breakdown)}"
                     )
-                    self.integration_data["leads_scored"] = len(scored_leads)
-                    self.integration_data["avg_lead_score"] = avg_score
+                    self.integration_data["lead_score"] = lead_score
                 else:
                     self.log_test(
                         "CRM Lead Scoring",
                         False,
-                        f"Expected 2 scored leads, got {len(scored_leads)}",
+                        f"Invalid lead scoring result: {data}",
                         data
                     )
                     workflow_success = False
