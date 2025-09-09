@@ -6424,6 +6424,7 @@ function AgencyHome(){
   const [cashFlowData, setCashFlowData] = useState(null);
   const [crmAnalytics, setCrmAnalytics] = useState(null);
   const [leadScoringData, setLeadScoringData] = useState(null);
+  const [sponsoredBusinessData, setSponsoredBusinessData] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   // Enhanced data loading with integration status
