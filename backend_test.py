@@ -1,5 +1,628 @@
 #!/usr/bin/env python3
 """
+Microsoft 365 Integration Testing Suite
+Testing the new Microsoft 365 integration endpoints as requested in review.
+"""
+
+import requests
+import json
+import sys
+from datetime import datetime, timezone
+
+# Configuration
+BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
+QA_CREDENTIALS = {
+    "email": "agency.qa@polaris.example.com",
+    "password": "Polaris#2025!"
+}
+
+class Microsoft365IntegrationTester:
+    def __init__(self):
+        self.session = requests.Session()
+        self.auth_token = None
+        self.user_id = None
+        self.test_results = []
+        
+    def log_test(self, test_name, success, details="", response_data=None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        if response_data:
+            result["response_data"] = response_data
+        self.test_results.append(result)
+        
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"   Details: {details}")
+        if not success and response_data:
+            print(f"   Response: {response_data}")
+        print()
+
+    def authenticate(self):
+        """Authenticate with QA credentials"""
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=QA_CREDENTIALS,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.auth_token = data.get("access_token")
+                self.session.headers.update({
+                    "Authorization": f"Bearer {self.auth_token}"
+                })
+                
+                # Get user info
+                me_response = self.session.get(f"{BACKEND_URL}/auth/me")
+                if me_response.status_code == 200:
+                    user_data = me_response.json()
+                    self.user_id = user_data.get("id")
+                    self.log_test(
+                        "Authentication", 
+                        True, 
+                        f"Successfully authenticated as {QA_CREDENTIALS['email']}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Authentication", 
+                        False, 
+                        "Failed to get user info after login",
+                        me_response.text
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Authentication", 
+                    False, 
+                    f"Login failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test("Authentication", False, f"Exception during auth: {str(e)}")
+            return False
+
+    def test_microsoft365_auth_url(self):
+        """Test Microsoft 365 Auth URL endpoint"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/integrations/microsoft365/auth-url")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["success", "auth_url", "state"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Microsoft 365 Auth URL - Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Verify auth URL format
+                auth_url = data.get("auth_url", "")
+                if "login.microsoftonline.com" in auth_url and "oauth2" in auth_url:
+                    self.log_test(
+                        "Microsoft 365 Auth URL - Format",
+                        True,
+                        f"Valid Microsoft OAuth URL format: {auth_url[:100]}..."
+                    )
+                else:
+                    self.log_test(
+                        "Microsoft 365 Auth URL - Format",
+                        False,
+                        f"Invalid OAuth URL format: {auth_url}",
+                        data
+                    )
+                    return False
+                
+                # Verify state parameter
+                state = data.get("state", "")
+                if state.startswith("m365_user_") and self.user_id in state:
+                    self.log_test(
+                        "Microsoft 365 Auth URL - State",
+                        True,
+                        f"Valid state parameter with user ID: {state}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Microsoft 365 Auth URL - State",
+                        False,
+                        f"Invalid state parameter: {state}",
+                        data
+                    )
+                    return False
+                    
+            else:
+                self.log_test(
+                    "Microsoft 365 Auth URL",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Microsoft 365 Auth URL",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+
+    def test_microsoft365_connect(self):
+        """Test Microsoft 365 Connection endpoint"""
+        try:
+            connection_data = {
+                "auth_code": "mock_auth_code_12345",
+                "redirect_uri": "https://biz-matchmaker-1.preview.emergentagent.com/auth/callback",
+                "tenant_id": "demo_tenant_id"
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/integrations/microsoft365/connect",
+                json=connection_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["success", "message", "scopes", "status"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Microsoft 365 Connect - Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Verify connection success
+                if data.get("success") and data.get("status") == "connected":
+                    # Verify scopes
+                    scopes = data.get("scopes", [])
+                    expected_scopes = ["Mail.Send", "Files.ReadWrite", "Calendars.ReadWrite"]
+                    
+                    if all(scope in scopes for scope in expected_scopes):
+                        self.log_test(
+                            "Microsoft 365 Connect",
+                            True,
+                            f"Successfully connected with scopes: {scopes}"
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Microsoft 365 Connect - Scopes",
+                            False,
+                            f"Missing expected scopes. Got: {scopes}, Expected: {expected_scopes}",
+                            data
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Microsoft 365 Connect - Status",
+                        False,
+                        f"Connection not successful. Success: {data.get('success')}, Status: {data.get('status')}",
+                        data
+                    )
+                    return False
+                    
+            else:
+                self.log_test(
+                    "Microsoft 365 Connect",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Microsoft 365 Connect",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+
+    def test_microsoft365_send_email(self):
+        """Test Microsoft 365 Send Email endpoint"""
+        try:
+            # Test assessment reminder template
+            assessment_email_data = {
+                "template_type": "assessment_reminder",
+                "recipients": ["client@example.com"],
+                "personalization_data": {
+                    "business_name": "Test Business LLC",
+                    "pending_areas": ["Business Formation", "Financial Operations"],
+                    "completion_percentage": 65,
+                    "assessment_url": "https://biz-matchmaker-1.preview.emergentagent.com/assessment"
+                }
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/integrations/microsoft365/send-email",
+                json=assessment_email_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["success", "template_type", "recipients", "sent_at", "message_id", "subject", "delivery_status"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Microsoft 365 Send Email - Assessment Reminder Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Verify email content
+                if (data.get("success") and 
+                    data.get("template_type") == "assessment_reminder" and
+                    data.get("delivery_status") == "sent" and
+                    "Assessment Reminder" in data.get("subject", "")):
+                    
+                    self.log_test(
+                        "Microsoft 365 Send Email - Assessment Reminder",
+                        True,
+                        f"Assessment reminder email sent successfully. Subject: {data.get('subject')}"
+                    )
+                else:
+                    self.log_test(
+                        "Microsoft 365 Send Email - Assessment Reminder Content",
+                        False,
+                        f"Email content validation failed",
+                        data
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Microsoft 365 Send Email - Assessment Reminder",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+            
+            # Test opportunity alert template
+            opportunity_email_data = {
+                "template_type": "opportunity_alert",
+                "recipients": ["business@example.com"],
+                "personalization_data": {
+                    "business_name": "Test Business LLC",
+                    "opportunity_title": "IT Services Contract - Department of Defense",
+                    "agency": "Department of Defense",
+                    "contract_value": "$250,000",
+                    "deadline": "February 15, 2025",
+                    "match_score": 92,
+                    "opportunity_url": "https://sam.gov/opportunity/12345"
+                }
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/integrations/microsoft365/send-email",
+                json=opportunity_email_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if (data.get("success") and 
+                    data.get("template_type") == "opportunity_alert" and
+                    data.get("delivery_status") == "sent" and
+                    "Contract Opportunity" in data.get("subject", "")):
+                    
+                    self.log_test(
+                        "Microsoft 365 Send Email - Opportunity Alert",
+                        True,
+                        f"Opportunity alert email sent successfully. Subject: {data.get('subject')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Microsoft 365 Send Email - Opportunity Alert Content",
+                        False,
+                        f"Email content validation failed",
+                        data
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Microsoft 365 Send Email - Opportunity Alert",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Microsoft 365 Send Email",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+
+    def test_microsoft365_backup_documents(self):
+        """Test Microsoft 365 Document Backup endpoint"""
+        try:
+            backup_data = {
+                "documents": [
+                    {
+                        "name": "Business_License.pdf",
+                        "type": "license",
+                        "size_bytes": 2048000,
+                        "content": "base64_encoded_content_here",
+                        "metadata": {
+                            "created_date": "2024-01-15",
+                            "category": "legal_documents"
+                        }
+                    },
+                    {
+                        "name": "Financial_Statement_2024.xlsx",
+                        "type": "financial",
+                        "size_bytes": 1536000,
+                        "content": "base64_encoded_content_here",
+                        "metadata": {
+                            "created_date": "2024-12-31",
+                            "category": "financial_documents"
+                        }
+                    },
+                    {
+                        "name": "Capability_Statement.docx",
+                        "type": "capability",
+                        "size_bytes": 512000,
+                        "content": "base64_encoded_content_here",
+                        "metadata": {
+                            "created_date": "2024-11-20",
+                            "category": "marketing_documents"
+                        }
+                    }
+                ],
+                "backup_folder": "Polaris_Business_Documents_2025",
+                "include_metadata": True
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/integrations/microsoft365/backup-documents",
+                json=backup_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["success", "backup_folder", "documents_processed", "uploaded_successfully", "failed_uploads", "backup_size_mb", "backup_url", "backup_completed_at"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Microsoft 365 Document Backup - Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Verify backup results
+                if (data.get("success") and 
+                    data.get("documents_processed") == 3 and
+                    data.get("uploaded_successfully") == 3 and
+                    data.get("failed_uploads") == 0):
+                    
+                    backup_size = data.get("backup_size_mb", 0)
+                    backup_url = data.get("backup_url", "")
+                    
+                    self.log_test(
+                        "Microsoft 365 Document Backup",
+                        True,
+                        f"Successfully backed up 3 documents ({backup_size:.2f} MB) to {backup_url}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Microsoft 365 Document Backup - Results",
+                        False,
+                        f"Backup validation failed. Processed: {data.get('documents_processed')}, Success: {data.get('uploaded_successfully')}, Failed: {data.get('failed_uploads')}",
+                        data
+                    )
+                    return False
+                    
+            else:
+                self.log_test(
+                    "Microsoft 365 Document Backup",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Microsoft 365 Document Backup",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+
+    def test_integration_status_updated(self):
+        """Test updated Integration Status endpoint showing both QuickBooks and Microsoft 365"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/integrations/status")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["user_id", "total_integrations", "active_integrations", "integrations", "overall_health_score"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Integration Status - Structure",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        data
+                    )
+                    return False
+                
+                # Check for Microsoft 365 integration
+                integrations = data.get("integrations", [])
+                platforms = [integration.get("platform") for integration in integrations]
+                
+                microsoft365_found = "microsoft365" in platforms
+                
+                if microsoft365_found:
+                    # Find Microsoft 365 integration details
+                    m365_integration = next((i for i in integrations if i.get("platform") == "microsoft365"), None)
+                    
+                    if m365_integration:
+                        status = m365_integration.get("status")
+                        health_score = m365_integration.get("health_score")
+                        
+                        self.log_test(
+                            "Integration Status - Microsoft 365",
+                            True,
+                            f"Microsoft 365 integration found. Status: {status}, Health Score: {health_score}"
+                        )
+                    else:
+                        self.log_test(
+                            "Integration Status - Microsoft 365 Details",
+                            False,
+                            "Microsoft 365 platform found but details missing",
+                            data
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Integration Status - Microsoft 365 Missing",
+                        False,
+                        f"Microsoft 365 integration not found. Available platforms: {platforms}",
+                        data
+                    )
+                    return False
+                
+                # Verify overall status
+                total_integrations = data.get("total_integrations", 0)
+                active_integrations = data.get("active_integrations", 0)
+                overall_health = data.get("overall_health_score", 0)
+                
+                self.log_test(
+                    "Integration Status - Overall",
+                    True,
+                    f"Total: {total_integrations}, Active: {active_integrations}, Health Score: {overall_health}"
+                )
+                
+                return True
+                
+            else:
+                self.log_test(
+                    "Integration Status",
+                    False,
+                    f"Request failed with status {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Integration Status",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+
+    def run_all_tests(self):
+        """Run all Microsoft 365 integration tests"""
+        print("🎯 MICROSOFT 365 INTEGRATION TESTING SUITE")
+        print("=" * 60)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"QA Credentials: {QA_CREDENTIALS['email']}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print()
+        
+        # Authenticate first
+        if not self.authenticate():
+            print("❌ Authentication failed. Cannot proceed with tests.")
+            return False
+        
+        # Run all tests
+        tests = [
+            self.test_microsoft365_auth_url,
+            self.test_microsoft365_connect,
+            self.test_microsoft365_send_email,
+            self.test_microsoft365_backup_documents,
+            self.test_integration_status_updated
+        ]
+        
+        passed_tests = 0
+        total_tests = len(tests)
+        
+        for test in tests:
+            if test():
+                passed_tests += 1
+        
+        # Print summary
+        print("=" * 60)
+        print("🎯 MICROSOFT 365 INTEGRATION TEST SUMMARY")
+        print("=" * 60)
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"Tests Passed: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+        print()
+        
+        # Print individual results
+        for result in self.test_results:
+            status = "✅ PASS" if result["success"] else "❌ FAIL"
+            print(f"{status}: {result['test']}")
+            if result["details"]:
+                print(f"   {result['details']}")
+        
+        print()
+        print("=" * 60)
+        
+        if success_rate >= 80:
+            print("🎉 MICROSOFT 365 INTEGRATION: PRODUCTION READY")
+            print("All critical Microsoft 365 integration endpoints are operational.")
+        elif success_rate >= 60:
+            print("⚠️ MICROSOFT 365 INTEGRATION: NEEDS ATTENTION")
+            print("Most endpoints working but some issues need resolution.")
+        else:
+            print("🚨 MICROSOFT 365 INTEGRATION: CRITICAL ISSUES")
+            print("Major problems detected. Integration not ready for production.")
+        
+        return success_rate >= 80
+
+if __name__ == "__main__":
+    tester = Microsoft365IntegrationTester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)
+"""
 QuickBooks Integration Backend Testing Suite
 Testing Agent: testing
 Test Date: January 2025
