@@ -9795,6 +9795,228 @@ async def enhanced_business_intelligence(
             "basic_data": basic_bi if 'basic_bi' in locals() else {}
         }
 
+# ================== MICROSOFT 365 INTEGRATION ==================
+
+# Microsoft 365 integration models
+class Microsoft365ConnectionRequest(BaseModel):
+    auth_code: str
+    redirect_uri: str
+    tenant_id: Optional[str] = None
+
+class EmailAutomationRequest(BaseModel):
+    template_type: str  # assessment_reminder, opportunity_alert, invoice_notification
+    recipients: List[str]
+    personalization_data: Dict[str, Any]
+    schedule_time: Optional[datetime] = None
+
+class DocumentBackupRequest(BaseModel):
+    documents: List[Dict[str, Any]]
+    backup_folder: str = "Polaris_Business_Documents"
+    include_metadata: bool = True
+
+# Microsoft 365 Integration Endpoints
+@api.get("/integrations/microsoft365/auth-url", response_model=dict)
+async def get_microsoft365_auth_url(current=Depends(require_roles("agency", "client"))):
+    """Get Microsoft 365 OAuth authorization URL"""
+    try:
+        # Mock Microsoft 365 OAuth URL - in production, use MSAL library
+        auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=mock&response_type=code"
+        
+        return {
+            "success": True,
+            "auth_url": auth_url,
+            "state": f"m365_user_{current['id']}_{int(datetime.now().timestamp())}"
+        }
+    except Exception as e:
+        logging.error(f"Microsoft 365 auth URL generation failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api.post("/integrations/microsoft365/connect", response_model=dict)
+async def connect_microsoft365(
+    connection_request: Microsoft365ConnectionRequest,
+    current=Depends(require_roles("agency", "client"))
+):
+    """Connect Microsoft 365 account"""
+    try:
+        user_id = current['id']
+        
+        # Mock successful connection
+        connection_record = {
+            "user_id": user_id,
+            "platform": "microsoft365",
+            "status": "connected",
+            "tenant_id": connection_request.tenant_id or "demo_tenant",
+            "connected_at": datetime.now(timezone.utc).isoformat(),
+            "scopes": ["Mail.Send", "Files.ReadWrite", "Calendars.ReadWrite"],
+            "last_sync": None
+        }
+        
+        await db.integrations.update_one(
+            {"user_id": user_id, "platform": "microsoft365"},
+            {"$set": connection_record},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "Microsoft 365 connected successfully",
+            "scopes": connection_record["scopes"],
+            "status": "connected"
+        }
+        
+    except Exception as e:
+        logging.error(f"Microsoft 365 connection failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api.post("/integrations/microsoft365/send-email", response_model=dict)
+async def send_automated_email(
+    email_request: EmailAutomationRequest,
+    current=Depends(require_roles("agency", "client"))
+):
+    """Send automated email via Microsoft 365"""
+    try:
+        user_id = current['id']
+        
+        # Check connection
+        connection = await db.integrations.find_one(
+            {"user_id": user_id, "platform": "microsoft365", "status": "connected"}
+        )
+        
+        if not connection:
+            raise HTTPException(status_code=404, detail="Microsoft 365 not connected")
+        
+        # Generate email content based on template type
+        email_content = await generate_email_content(
+            email_request.template_type,
+            email_request.personalization_data
+        )
+        
+        # Mock successful email sending
+        email_result = {
+            "success": True,
+            "template_type": email_request.template_type,
+            "recipients": email_request.recipients,
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+            "message_id": f"msg_{int(datetime.now().timestamp())}",
+            "subject": email_content["subject"],
+            "delivery_status": "sent"
+        }
+        
+        # Store email log
+        await db.email_logs.insert_one({
+            "user_id": user_id,
+            "platform": "microsoft365",
+            "email_result": email_result,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return email_result
+        
+    except Exception as e:
+        logging.error(f"Microsoft 365 email sending failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api.post("/integrations/microsoft365/backup-documents", response_model=dict)
+async def backup_documents_to_onedrive(
+    backup_request: DocumentBackupRequest,
+    current=Depends(require_roles("agency", "client"))
+):
+    """Backup documents to OneDrive"""
+    try:
+        user_id = current['id']
+        
+        # Check connection
+        connection = await db.integrations.find_one(
+            {"user_id": user_id, "platform": "microsoft365", "status": "connected"}
+        )
+        
+        if not connection:
+            raise HTTPException(status_code=404, detail="Microsoft 365 not connected")
+        
+        # Mock document backup process
+        backup_result = {
+            "success": True,
+            "backup_folder": backup_request.backup_folder,
+            "documents_processed": len(backup_request.documents),
+            "uploaded_successfully": len(backup_request.documents),
+            "failed_uploads": 0,
+            "backup_size_mb": sum(doc.get("size_bytes", 1024) for doc in backup_request.documents) / (1024 * 1024),
+            "backup_url": f"https://onedrive.live.com/folder/{backup_request.backup_folder}",
+            "backup_completed_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Store backup record
+        await db.document_backups.insert_one({
+            "user_id": user_id,
+            "platform": "microsoft365", 
+            "backup_result": backup_result,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return backup_result
+        
+    except Exception as e:
+        logging.error(f"Microsoft 365 document backup failed: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+async def generate_email_content(template_type: str, personalization_data: Dict[str, Any]) -> Dict[str, str]:
+    """Generate email content based on template type"""
+    templates = {
+        "assessment_reminder": {
+            "subject": "Assessment Reminder: Complete Your Procurement Readiness Evaluation",
+            "body": f"""
+            <html>
+            <body>
+                <h2>Procurement Readiness Assessment Reminder</h2>
+                <p>Dear {personalization_data.get('business_name', 'Valued Client')},</p>
+                
+                <p>This is a friendly reminder that you have pending assessments to complete:</p>
+                <ul>
+                    <li>Business Areas: {', '.join(personalization_data.get('pending_areas', []))}</li>
+                    <li>Completion Status: {personalization_data.get('completion_percentage', 0)}%</li>
+                </ul>
+                
+                <p>Completing your assessment will help identify opportunities for business growth and government contracting success.</p>
+                
+                <p><a href="{personalization_data.get('assessment_url', '#')}">Continue Your Assessment</a></p>
+                
+                <p>Best regards,<br>Your Polaris Team</p>
+            </body>
+            </html>
+            """
+        },
+        "opportunity_alert": {
+            "subject": f"New Contract Opportunity: {personalization_data.get('opportunity_title', 'Government Contract')}",
+            "body": f"""
+            <html>
+            <body>
+                <h2>New Contract Opportunity Matched!</h2>
+                <p>Dear {personalization_data.get('business_name', 'Business Owner')},</p>
+                
+                <p>We've identified a new contract opportunity that matches your capabilities:</p>
+                
+                <div style="border: 1px solid #ccc; padding: 15px; margin: 15px 0;">
+                    <h3>{personalization_data.get('opportunity_title', 'Contract Opportunity')}</h3>
+                    <p><strong>Agency:</strong> {personalization_data.get('agency', 'Government Agency')}</p>
+                    <p><strong>Value:</strong> {personalization_data.get('contract_value', 'TBD')}</p>
+                    <p><strong>Deadline:</strong> {personalization_data.get('deadline', 'See posting')}</p>
+                    <p><strong>Match Score:</strong> {personalization_data.get('match_score', 85)}%</p>
+                </div>
+                
+                <p><a href="{personalization_data.get('opportunity_url', '#')}">View Full Details</a></p>
+                
+                <p>Best regards,<br>Your Polaris Opportunity Team</p>
+            </body>
+            </html>
+            """
+        }
+    }
+    
+    return templates.get(template_type, {
+        "subject": "Polaris Platform Notification",
+        "body": "<p>Thank you for using Polaris Platform.</p>"
+    })
+
 # ================== QUICKBOOKS FINANCIAL INTEGRATION ==================
 
 # Pydantic models for QuickBooks integration
