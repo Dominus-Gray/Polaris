@@ -7396,6 +7396,107 @@ function AgencyHome(){
                 </div>
               )}
 
+              {/* Cash Flow Analysis Display */}
+              {cashFlowData && (
+                <div className="mb-8 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900">Cash Flow Analysis ({cashFlowData.period_days} Days)</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Current Position</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Total Cash:</span>
+                          <span className="font-medium text-green-600">${cashFlowData.current_cash_position?.total_cash?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Receivables:</span>
+                          <span className="font-medium text-blue-600">${cashFlowData.current_cash_position?.outstanding_receivables?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Payables:</span>
+                          <span className="font-medium text-red-600">${cashFlowData.current_cash_position?.outstanding_payables?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-sm font-medium text-slate-900">Projected Cash:</span>
+                          <span className="font-bold text-slate-900">${cashFlowData.current_cash_position?.projected_cash?.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Flow Trends</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Total Inflow:</span>
+                          <span className="font-medium text-green-600">${cashFlowData.cash_flow_trends?.total_inflow?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Total Outflow:</span>
+                          <span className="font-medium text-red-600">${cashFlowData.cash_flow_trends?.total_outflow?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-600">Net Flow:</span>
+                          <span className={`font-medium ${cashFlowData.cash_flow_trends?.net_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            ${cashFlowData.cash_flow_trends?.net_cash_flow?.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-sm font-medium text-slate-900">Trend:</span>
+                          <span className={`font-bold capitalize ${
+                            cashFlowData.cash_flow_trends?.trend_direction === 'positive' ? 'text-green-600' : 
+                            cashFlowData.cash_flow_trends?.trend_direction === 'negative' ? 'text-red-600' : 'text-slate-600'
+                          }`}>
+                            {cashFlowData.cash_flow_trends?.trend_direction}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Predictions</h5>
+                      <div className="space-y-3">
+                        {cashFlowData.weekly_predictions?.slice(0, 2).map((prediction, idx) => (
+                          <div key={idx} className="flex justify-between items-center">
+                            <div>
+                              <div className="text-sm font-medium text-slate-900">Week {prediction.week}</div>
+                              <div className="text-xs text-slate-600">Confidence: {(prediction.confidence * 100).toFixed(0)}%</div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`font-medium text-sm ${prediction.net_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                ${prediction.net_flow?.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-slate-600">${prediction.ending_balance?.toLocaleString()}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {cashFlowData.alerts && cashFlowData.alerts.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <h5 className="font-medium text-red-800 mb-2">Cash Flow Alerts</h5>
+                      <ul className="space-y-1">
+                        {cashFlowData.alerts.map((alert, idx) => (
+                          <li key={idx} className="text-sm text-red-700 flex items-start">
+                            <span className="text-red-500 mr-2">⚠</span>
+                            {alert.message}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* AI Generated Report Display */}
               {generatedReport && (
                 <div className="mb-8 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg p-6 border border-slate-200">
