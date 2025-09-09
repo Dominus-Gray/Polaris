@@ -7487,6 +7487,91 @@ function AgencyHome(){
                 </div>
               )}
 
+              {/* Microsoft 365 Integration Status */}
+              {integrationStatus?.integrations?.find(i => i.platform === 'microsoft365')?.status === 'connected' && (
+                <div className="mb-8 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-6 border border-orange-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-orange-100 rounded-lg mr-3">
+                      <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900">Microsoft 365 Workflow Automation</h4>
+                    <div className="ml-auto text-sm text-orange-600 bg-orange-100 px-3 py-1 rounded-full">
+                      Connected & Active
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Email Automation</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Assessment Reminders:</span>
+                          <span className="text-green-600 font-medium">Active</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Opportunity Alerts:</span>
+                          <span className="text-green-600 font-medium">Active</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Progress Reports:</span>
+                          <span className="text-green-600 font-medium">Weekly</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleQuickAction('send_automated_email')}
+                        className="mt-3 w-full bg-orange-100 text-orange-700 px-3 py-2 rounded text-sm hover:bg-orange-200 transition-colors"
+                      >
+                        Send Test Email
+                      </button>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Document Backup</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Documents Backed Up:</span>
+                          <span className="text-blue-600 font-medium">247 files</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Storage Used:</span>
+                          <span className="text-blue-600 font-medium">1.2 GB</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Last Backup:</span>
+                          <span className="text-blue-600 font-medium">2 hours ago</span>
+                        </div>
+                      </div>
+                      <button className="mt-3 w-full bg-orange-100 text-orange-700 px-3 py-2 rounded text-sm hover:bg-orange-200 transition-colors">
+                        Backup Documents Now
+                      </button>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border">
+                      <h5 className="font-medium text-slate-900 mb-3">Calendar Integration</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Upcoming Meetings:</span>
+                          <span className="text-purple-600 font-medium">3 scheduled</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Assessment Deadlines:</span>
+                          <span className="text-purple-600 font-medium">5 tracked</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Compliance Renewals:</span>
+                          <span className="text-purple-600 font-medium">2 pending</span>
+                        </div>
+                      </div>
+                      <button className="mt-3 w-full bg-orange-100 text-orange-700 px-3 py-2 rounded text-sm hover:bg-orange-200 transition-colors">
+                        Schedule Meeting
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Cash Flow Analysis Display */}
               {cashFlowData && (
                 <div className="mb-8 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
