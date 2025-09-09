@@ -6417,6 +6417,10 @@ function AgencyHome(){
   const [aiInsights, setAiInsights] = useState(null);
   const [opportunityData, setOpportunityData] = useState(null);
   const [generatedReport, setGeneratedReport] = useState(null);
+  const [integrationStatus, setIntegrationStatus] = useState(null);
+  const [financialHealth, setFinancialHealth] = useState(null);
+  const [quickBooksSync, setQuickBooksSync] = useState(null);
+  const [cashFlowData, setCashFlowData] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   // Enhanced data loading with integration status
