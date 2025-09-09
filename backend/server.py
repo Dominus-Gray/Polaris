@@ -10211,7 +10211,7 @@ async def get_cash_flow_analysis(
         raise HTTPException(status_code=500, detail=str(e))
 
 @api.get("/integrations/status", response_model=dict)
-async def get_integration_status(current=Depends(require_role("agency", "client"))):
+async def get_integration_status(current=Depends(require_roles("agency", "client"))):
     """Get status of all integrations for user"""
     try:
         user_id = current['id']
