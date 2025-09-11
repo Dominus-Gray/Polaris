@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://polaris.example.com/schemas/user-events.json",
+  "title": "User Events Schema",
+  "description": "Webhook events related to user lifecycle",
+  "definitions": {
+    "user_registered": {
+      "allOf": [
+        { "$ref": "../schemas/base-event.json" },
+        {
+          "properties": {
+            "event_type": { "const": "user.registered" },
+            "data": {
+              "type": "object",
+              "required": ["user_id", "email", "role"],
+              "properties": {
+                "user_id": { "type": "string", "format": "uuid" },
+                "email": { "type": "string", "format": "email" },
+                "role": { 
+                  "type": "string", 
+                  "enum": ["client", "navigator", "provider", "agency", "admin"] 
+                },
+                "profile_complete": { "type": "boolean" },
+                "terms_accepted": { "type": "boolean" },
+                "license_code": { "type": "string" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "user_profile_updated": {
+      "allOf": [
+        { "$ref": "../schemas/base-event.json" },
+        {
+          "properties": {
+            "event_type": { "const": "user.profile_updated" },
+            "data": {
+              "type": "object",
+              "required": ["user_id", "updated_fields"],
+              "properties": {
+                "user_id": { "type": "string", "format": "uuid" },
+                "updated_fields": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "List of fields that were updated"
+                },
+                "changes": {
+                  "type": "object",
+                  "description": "Before/after values for updated fields"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "user_login": {
+      "allOf": [
+        { "$ref": "../schemas/base-event.json" },
+        {
+          "properties": {
+            "event_type": { "const": "user.login" },
+            "data": {
+              "type": "object",
+              "required": ["user_id", "login_method"],
+              "properties": {
+                "user_id": { "type": "string", "format": "uuid" },
+                "login_method": { 
+                  "type": "string",
+                  "enum": ["password", "oauth", "token"]
+                },
+                "ip_address": { "type": "string", "format": "ipv4" },
+                "user_agent": { "type": "string" },
+                "trusted_device": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/user_registered" },
+    { "$ref": "#/definitions/user_profile_updated" },
+    { "$ref": "#/definitions/user_login" }
+  ]
+}

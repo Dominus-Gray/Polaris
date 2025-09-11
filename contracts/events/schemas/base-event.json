@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://polaris.example.com/schemas/base-event.json",
+  "title": "Base Event Schema",
+  "description": "Base schema for all Polaris platform events",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "source",
+    "version"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this event"
+    },
+    "event_type": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$",
+      "description": "Event type in format 'category.action' (e.g., 'user.registered')"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the event occurred"
+    },
+    "source": {
+      "type": "string",
+      "description": "Source system that generated the event"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Event schema version (semantic versioning)"
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "Optional correlation ID for tracing related events"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID associated with the event (if applicable)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata specific to the event type",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
