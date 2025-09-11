@@ -1,0 +1,64 @@
+# Example Deprecation Override File
+# 
+# This file allows approved breaking changes that would otherwise
+# be blocked by the contract governance system.
+#
+# IMPORTANT: Each override must reference an approved GitHub issue
+# and explicitly list the impacted paths. No wildcard removals allowed.
+
+overrides:
+  # Example security-related override
+  - issueNumber: "SEC-123"
+    reason: "Critical security vulnerability requires immediate removal of legacy authentication endpoint"
+    impactedPaths:
+      - "paths./auth/legacy.post"
+      - "components.schemas.LegacyCredentials"
+    approver: "security-team"
+    expiresAt: "2025-03-01T00:00:00Z"
+  
+  # Example business-justified breaking change
+  - issueNumber: "ARCH-456"
+    reason: "API redesign approved by architecture committee - consolidated user endpoints"
+    impactedPaths:
+      - "paths./users/profile.get"
+      - "paths./users/settings.get"
+      - "components.schemas.UserProfile"
+    approver: "architecture-committee"
+    # No expiration - permanent approval for this specific change
+  
+  # Example time-limited override for deprecated feature removal
+  - issueNumber: "CLEAN-789"
+    reason: "Removing unused deprecated fields identified in API cleanup initiative"
+    impactedPaths:
+      - "components.schemas.User.properties.legacyId"
+      - "components.schemas.User.properties.oldFormat"
+    approver: "api-team"
+    expiresAt: "2025-06-01T00:00:00Z"
+
+# Override Guidelines:
+# 
+# 1. issueNumber: Must reference an open or recently closed GitHub issue
+#    that documents the justification and approval process
+#
+# 2. reason: Clear explanation of why the breaking change is needed
+#    and why it cannot follow normal deprecation process
+#
+# 3. impactedPaths: Explicit list of schema paths affected by the change
+#    - Use dot notation: "paths./endpoint.method" 
+#    - For schemas: "components.schemas.ModelName.properties.fieldName"
+#    - No wildcards (*) allowed for security reasons
+#
+# 4. approver: Individual or team who approved the override
+#    - Must have authority to approve breaking changes
+#    - Should be traceable to the approval in the referenced issue
+#
+# 5. expiresAt: Optional expiration date for time-limited overrides
+#    - Use ISO 8601 format: "YYYY-MM-DDTHH:mm:ssZ"
+#    - Omit for permanent approvals
+#    - Expired overrides will be ignored by the linter
+#
+# Security Notes:
+# - This file should be reviewed in every PR where it's modified
+# - Overrides should be removed after the change is deployed
+# - Do not commit this file with real overrides unless approved
+# - Consider using separate override files for different environments

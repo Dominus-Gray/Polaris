@@ -1,0 +1,162 @@
+name: Contract Governance
+
+on:
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'events/**'
+      - 'tooling/contract-diff/**'
+      - 'tooling/contract-linter/**'
+      - '.github/workflows/contract-governance.yml'
+
+env:
+  DIFF_ENFORCEMENT_MODE: warn  # Can be 'warn' or 'block'
+  DEPRECATION_WINDOW_DAYS: 90
+  OVERRIDE_FILE_PATH: .deprecation-override.yml
+
+jobs:
+  contract-governance:
+    runs-on: ubuntu-latest
+    name: Contract Diff Analysis & Governance
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for diff
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'tooling/contract-diff/package.json'
+          
+      - name: Install diff tool dependencies
+        working-directory: tooling/contract-diff
+        run: |
+          npm ci
+          npm run build
+          
+      - name: Setup TypeScript for linter
+        run: |
+          npm install -g typescript ts-node
+          
+      - name: Get base branch schemas
+        run: |
+          # Create temporary directory for base schemas
+          mkdir -p /tmp/base-schemas
+          
+          # Get the base branch (typically main)
+          BASE_BRANCH=${{ github.base_ref || 'main' }}
+          echo "Base branch: $BASE_BRANCH"
+          
+          # Checkout base branch and copy schemas
+          git fetch origin $BASE_BRANCH
+          git checkout origin/$BASE_BRANCH -- schemas/ events/ 2>/dev/null || echo "No schemas in base branch"
+          
+          # Copy base schemas to temp location
+          if [ -d "schemas" ]; then
+            cp -r schemas /tmp/base-schemas/ 2>/dev/null || true
+          fi
+          if [ -d "events" ]; then
+            cp -r events /tmp/base-schemas/ 2>/dev/null || true
+          fi
+          
+          # Return to PR branch
+          git checkout ${{ github.sha }}
+          
+      - name: Run contract diff analysis
+        working-directory: tooling/contract-diff
+        run: |
+          echo "🔍 Running contract diff analysis..."
+          
+          # Check if we have schemas to analyze
+          if [ ! -d "../../schemas" ] && [ ! -d "../../events" ]; then
+            echo "No schemas or events directories found, creating sample report"
+            echo '{"breaking":[],"additive":[],"docsOnly":[],"refactor":[],"version":{"current":"1.0.0","requiredBump":"none","suggestedNew":"1.0.0"},"timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'","summary":{"totalChanges":0,"breakingCount":0,"additiveCount":0,"docsOnlyCount":0,"refactorCount":0}}' > ../../contract-diff-report.json
+          else
+            # Run the diff tool
+            node lib/run.js \
+              --old-dir /tmp/base-schemas \
+              --new-dir ../../ \
+              --output ../../contract-diff-report.json \
+              --version-file ../../schemas/openapi/version.json
+          fi
+          
+      - name: Upload diff report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-diff-report
+          path: contract-diff-report.json
+          retention-days: 30
+          
+      - name: Run contract linter
+        run: |
+          echo "🔧 Running contract governance linter..."
+          
+          # Install dependencies for linter
+          cd tooling/contract-linter
+          npm init -y
+          npm install js-yaml @types/js-yaml
+          
+          # Run the linter
+          ts-node enforce.ts ../../contract-diff-report.json
+          
+      - name: Generate job summary
+        if: always()
+        run: |
+          echo "# Contract Governance Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "contract-diff-report.json" ]; then
+            BREAKING_COUNT=$(cat contract-diff-report.json | jq -r '.summary.breakingCount // 0')
+            ADDITIVE_COUNT=$(cat contract-diff-report.json | jq -r '.summary.additiveCount // 0')
+            DOCS_COUNT=$(cat contract-diff-report.json | jq -r '.summary.docsOnlyCount // 0')
+            REFACTOR_COUNT=$(cat contract-diff-report.json | jq -r '.summary.refactorCount // 0')
+            TOTAL_COUNT=$(cat contract-diff-report.json | jq -r '.summary.totalChanges // 0')
+            CURRENT_VERSION=$(cat contract-diff-report.json | jq -r '.version.current // "unknown"')
+            SUGGESTED_VERSION=$(cat contract-diff-report.json | jq -r '.version.suggestedNew // "unknown"')
+            REQUIRED_BUMP=$(cat contract-diff-report.json | jq -r '.version.requiredBump // "none"')
+            
+            echo "## Summary" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total Changes**: $TOTAL_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- **Breaking Changes**: $BREAKING_COUNT ❌" >> $GITHUB_STEP_SUMMARY
+            echo "- **Additive Changes**: $ADDITIVE_COUNT ✅" >> $GITHUB_STEP_SUMMARY
+            echo "- **Documentation Changes**: $DOCS_COUNT 📝" >> $GITHUB_STEP_SUMMARY
+            echo "- **Refactor Changes**: $REFACTOR_COUNT 🔧" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## Version Impact" >> $GITHUB_STEP_SUMMARY
+            echo "- **Current Version**: $CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
+            echo "- **Required Bump**: $REQUIRED_BUMP" >> $GITHUB_STEP_SUMMARY
+            echo "- **Suggested Version**: $SUGGESTED_VERSION" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$BREAKING_COUNT" != "0" ]; then
+              echo "## ⚠️ Breaking Changes Detected" >> $GITHUB_STEP_SUMMARY
+              echo "This PR contains breaking changes that may affect API consumers." >> $GITHUB_STEP_SUMMARY
+              echo "Please review the impact and consider:" >> $GITHUB_STEP_SUMMARY
+              echo "- Deprecation notices for removed fields" >> $GITHUB_STEP_SUMMARY
+              echo "- Migration guides for affected endpoints" >> $GITHUB_STEP_SUMMARY
+              echo "- Communication plan for API consumers" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "$ENFORCEMENT_MODE" = "block" ] && [ "$BREAKING_COUNT" != "0" ]; then
+              echo "## 🚫 Governance Enforcement" >> $GITHUB_STEP_SUMMARY
+              echo "This PR is blocked due to unapproved breaking changes." >> $GITHUB_STEP_SUMMARY
+              echo "To proceed, either:" >> $GITHUB_STEP_SUMMARY
+              echo "1. Remove the breaking changes" >> $GITHUB_STEP_SUMMARY
+              echo "2. Add deprecation metadata to removed fields" >> $GITHUB_STEP_SUMMARY
+              echo "3. Create a governance override file (.deprecation-override.yml)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+          else
+            echo "❌ Contract diff report not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: Comment on PR (future enhancement)
+        if: false  # Disabled for now - placeholder for future PR commenting feature
+        run: |
+          echo "Future enhancement: Comment diff summary on PR"

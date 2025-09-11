@@ -1,0 +1,75 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Test API",
+    "description": "API for integration testing",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legacy-endpoint": {
+      "get": {
+        "summary": "Legacy endpoint",
+        "deprecated": true,
+        "x-status": "deprecated",
+        "x-sunset": "2025-01-01T00:00:00Z",
+        "responses": {
+          "200": {
+            "description": "Legacy response"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": ["id", "email"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User identifier"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email"
+          },
+          "legacyField": {
+            "type": "string",
+            "deprecated": true,
+            "x-status": "deprecated",
+            "description": "Legacy field - use newField instead"
+          }
+        }
+      }
+    }
+  }
+}

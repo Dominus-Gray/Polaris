@@ -1,0 +1,147 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Polaris API",
+    "description": "Business services platform API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/assessments": {
+      "post": {
+        "summary": "Create new assessment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assessment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Assessment"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": ["id", "email"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique user identifier"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address"
+          },
+          "name": {
+            "type": "string",
+            "description": "User display name"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["client", "provider", "agency", "navigator"],
+            "description": "User role in the platform"
+          }
+        }
+      },
+      "AssessmentRequest": {
+        "type": "object",
+        "required": ["areaId", "clientId"],
+        "properties": {
+          "areaId": {
+            "type": "string",
+            "description": "Business area identifier"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "Client requesting the assessment"
+          },
+          "responses": {
+            "type": "object",
+            "description": "Assessment question responses"
+          }
+        }
+      },
+      "Assessment": {
+        "type": "object",
+        "required": ["id", "areaId", "clientId", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Assessment identifier"
+          },
+          "areaId": {
+            "type": "string",
+            "description": "Business area identifier"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "Client identifier"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"],
+            "description": "Assessment status"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Assessment score percentage"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Assessment creation timestamp"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "breaking": [
+    {
+      "type": "remove",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "User",
+        "properties",
+        "legacyField"
+      ],
+      "oldValue": {
+        "deprecated": true,
+        "description": "Legacy field - use newField instead",
+        "type": "string",
+        "x-status": "deprecated"
+      },
+      "classificationHint": "property_removed"
+    },
+    {
+      "type": "modify",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "User",
+        "required"
+      ],
+      "oldValue": [
+        "id",
+        "email"
+      ],
+      "newValue": [
+        "id",
+        "email",
+        "status"
+      ],
+      "classificationHint": "array_length_changed"
+    }
+  ],
+  "additive": [
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "CreateUserRequest"
+      ],
+      "newValue": {
+        "properties": {
+          "email": {
+            "description": "User email address",
+            "format": "email",
+            "type": "string"
+          },
+          "initialStatus": {
+            "default": "active",
+            "description": "Initial user status",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "classificationHint": "field_added"
+    },
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "User",
+        "properties",
+        "newField"
+      ],
+      "newValue": {
+        "description": "New field replacing legacy field",
+        "type": "string"
+      },
+      "classificationHint": "property_added"
+    },
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "User",
+        "properties",
+        "status"
+      ],
+      "newValue": {
+        "description": "User account status",
+        "enum": [
+          "active",
+          "inactive"
+        ],
+        "type": "string"
+      },
+      "classificationHint": "property_added"
+    },
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "User",
+        "required",
+        "2"
+      ],
+      "newValue": "status",
+      "classificationHint": "array_item_added"
+    },
+    {
+      "type": "modify",
+      "path": [
+        "api.json",
+        "info",
+        "version"
+      ],
+      "oldValue": "1.0.0",
+      "newValue": "2.0.0",
+      "classificationHint": "value_changed"
+    },
+    {
+      "type": "remove",
+      "path": [
+        "api.json",
+        "paths",
+        "/legacy-endpoint"
+      ],
+      "oldValue": {
+        "get": {
+          "deprecated": true,
+          "responses": {
+            "200": {
+              "description": "Legacy response"
+            }
+          },
+          "summary": "Legacy endpoint",
+          "x-status": "deprecated",
+          "x-sunset": "2025-01-01T00:00:00Z"
+        }
+      },
+      "classificationHint": "field_removed"
+    },
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "paths",
+        "/users"
+      ],
+      "newValue": {
+        "post": {
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserRequest"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "201": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              },
+              "description": "User created"
+            }
+          },
+          "summary": "Create new user"
+        }
+      },
+      "classificationHint": "field_added"
+    },
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "paths",
+        "/users/{id}",
+        "get",
+        "responses",
+        "404"
+      ],
+      "newValue": {
+        "description": "User not found"
+      },
+      "classificationHint": "response_added"
+    }
+  ],
+  "docsOnly": [
+    {
+      "type": "modify",
+      "path": [
+        "api.json",
+        "components",
+        "schemas",
+        "User",
+        "properties",
+        "email",
+        "description"
+      ],
+      "oldValue": "User email",
+      "newValue": "User email address",
+      "classificationHint": "value_changed"
+    },
+    {
+      "type": "modify",
+      "path": [
+        "api.json",
+        "info",
+        "description"
+      ],
+      "oldValue": "API for integration testing",
+      "newValue": "Updated API for integration testing with new features",
+      "classificationHint": "value_changed"
+    },
+    {
+      "type": "add",
+      "path": [
+        "api.json",
+        "paths",
+        "/users/{id}",
+        "get",
+        "description"
+      ],
+      "newValue": "Retrieve a user by their unique identifier",
+      "classificationHint": "field_added"
+    }
+  ],
+  "refactor": [],
+  "version": {
+    "current": "1.0.0",
+    "requiredBump": "major",
+    "suggestedNew": "2.0.0"
+  },
+  "timestamp": "2025-09-11T05:14:33.217Z",
+  "summary": {
+    "totalChanges": 13,
+    "breakingCount": 2,
+    "additiveCount": 8,
+    "docsOnlyCount": 3,
+    "refactorCount": 0
+  }
+}

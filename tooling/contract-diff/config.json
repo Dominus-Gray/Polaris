@@ -1,0 +1,19 @@
+{
+  "docsOnlyPatterns": [
+    "description",
+    "example",
+    "examples", 
+    "summary",
+    "title",
+    "x-description",
+    "x-example"
+  ],
+  "ignoreOrdering": true,
+  "deprecationFields": [
+    "x-status",
+    "x-sunset",
+    "deprecated"
+  ],
+  "deprecationWindowDays": 90,
+  "enforcement": "warn"
+}
