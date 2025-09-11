@@ -15703,7 +15703,191 @@ async def external_services_health_check():
         "services": services
     }
 
-# Include router
+# Public OpenAPI router (unauthenticated)
+public_openapi_router = APIRouter(prefix="/openapi/public/v1", tags=["Public OpenAPI"])
+
+@public_openapi_router.get("/openapi.json")
+async def get_public_openapi_spec(response: Response):
+    """
+    Get the public OpenAPI specification (unauthenticated).
+    
+    This endpoint provides a filtered version of the API specification that excludes:
+    - Internal-only endpoints
+    - Endpoints requiring authentication
+    - Sensitive or administrative endpoints
+    
+    The specification includes enhanced version metadata with semantic versioning
+    and commit SHA for better API version tracking.
+    """
+    try:
+        # Get the full OpenAPI spec from the main app
+        full_spec = app.openapi()
+        
+        # Create a filtered copy
+        public_spec = {
+            "openapi": full_spec.get("openapi", "3.1.0"),
+            "info": {
+                "title": full_spec.get("info", {}).get("title", "Polaris Public API"),
+                "description": "Public API endpoints for the Polaris Small Business Procurement Readiness Platform. This specification includes only publicly accessible endpoints that do not require authentication.",
+                "version": _get_enhanced_version(),
+                "contact": full_spec.get("info", {}).get("contact"),
+                "license": full_spec.get("info", {}).get("license")
+            },
+            "servers": full_spec.get("servers", []),
+            "paths": {},
+            "components": {
+                "schemas": full_spec.get("components", {}).get("schemas", {}),
+                "responses": full_spec.get("components", {}).get("responses", {}),
+                "parameters": full_spec.get("components", {}).get("parameters", {}),
+                "examples": full_spec.get("components", {}).get("examples", {}),
+                "headers": full_spec.get("components", {}).get("headers", {})
+                # Deliberately exclude securitySchemes from public spec
+            },
+            "tags": full_spec.get("tags", [])
+        }
+        
+        # Filter paths to include only public endpoints
+        for path, path_item in full_spec.get("paths", {}).items():
+            filtered_path_item = {}
+            
+            for method, operation in path_item.items():
+                if method.lower() in ["get", "post", "put", "delete", "patch", "head", "options", "trace"]:
+                    # Check if this endpoint should be included in public spec
+                    if _is_public_endpoint(path, method, operation):
+                        # Clean operation for public consumption
+                        filtered_operation = _clean_operation_for_public(operation)
+                        filtered_path_item[method] = filtered_operation
+            
+            # Only include path if it has at least one public operation
+            if filtered_path_item:
+                public_spec["paths"][path] = filtered_path_item
+        
+        # Set cache-friendly headers for the public OpenAPI spec
+        response.headers["Cache-Control"] = "public, max-age=3600"  # Cache for 1 hour
+        response.headers["ETag"] = f'"{_get_enhanced_version()}"'  # Use version as ETag
+        
+        return public_spec
+        
+    except Exception as e:
+        # Log error but don't expose internal details
+        security_logger.error(f"Error generating public OpenAPI spec: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to generate public API specification"
+        )
+
+def _get_enhanced_version() -> str:
+    """
+    Generate enhanced version string with semantic version and commit SHA.
+    Format: {semantic_version}+{short_commit_sha}
+    """
+    base_version = "0.1.0"  # This should be updated with actual semantic versioning
+    
+    try:
+        import subprocess
+        # Get current commit SHA
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd="/home/runner/work/Polaris/Polaris"
+        )
+        if result.returncode == 0:
+            commit_sha = result.stdout.strip()
+            return f"{base_version}+{commit_sha}"
+    except Exception:
+        pass
+    
+    return base_version
+
+def _is_public_endpoint(path: str, method: str, operation: dict) -> bool:
+    """
+    Determine if an endpoint should be included in the public OpenAPI spec.
+    
+    Excludes endpoints that:
+    - Require authentication (have security requirements)
+    - Are marked as internal-only
+    - Are administrative or sensitive in nature
+    """
+    # Exclude if endpoint has security requirements
+    if operation.get("security"):
+        return False
+    
+    # Exclude internal endpoints based on path patterns
+    internal_path_patterns = [
+        "/api/auth/",  # Authentication endpoints (sensitive)
+        "/api/admin/", # Admin endpoints
+        "/api/internal/", # Explicit internal endpoints
+        "/api/system/", # System endpoints
+        "/api/debug/", # Debug endpoints
+        "/api/metrics", # Metrics endpoints
+    ]
+    
+    for pattern in internal_path_patterns:
+        if pattern in path:
+            return False
+    
+    # Exclude sensitive operations based on operation ID or summary
+    operation_id = operation.get("operationId", "").lower()
+    summary = operation.get("summary", "").lower()
+    
+    sensitive_keywords = [
+        "admin", "internal", "debug", "system", "auth", "login", "register",
+        "password", "token", "secret", "key", "private", "sensitive",
+        "delete", "remove", "destroy", "audit", "log"
+    ]
+    
+    for keyword in sensitive_keywords:
+        if keyword in operation_id or keyword in summary:
+            return False
+    
+    # Include endpoints that are explicitly public-facing
+    public_path_patterns = [
+        "/api/public/",
+        "/api/docs",
+        "/api/health",
+        "/api/status",
+        "/api/info"
+    ]
+    
+    for pattern in public_path_patterns:
+        if pattern in path:
+            return True
+    
+    # For now, be conservative and exclude most endpoints
+    # In a real implementation, you'd want to mark endpoints as public explicitly
+    return False
+
+def _clean_operation_for_public(operation: dict) -> dict:
+    """
+    Clean an operation definition for public consumption.
+    Remove internal metadata and sensitive information.
+    """
+    cleaned = operation.copy()
+    
+    # Remove security-related fields
+    cleaned.pop("security", None)
+    
+    # Remove internal tags
+    tags = cleaned.get("tags", [])
+    public_tags = [tag for tag in tags if not any(
+        internal_word in tag.lower() 
+        for internal_word in ["internal", "admin", "debug", "private"]
+    )]
+    if public_tags:
+        cleaned["tags"] = public_tags
+    else:
+        cleaned.pop("tags", None)
+    
+    # Clean description to remove internal notes
+    description = cleaned.get("description", "")
+    if "internal" in description.lower() or "admin" in description.lower():
+        cleaned["description"] = "Public API endpoint"
+    
+    return cleaned
+
+# Include routers
+app.include_router(public_openapi_router)
 app.include_router(api)
 
 @app.on_event("shutdown")
