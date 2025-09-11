@@ -1,0 +1,179 @@
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=polaris_dev
+      - REDIS_URL=redis://redis:6379
+      - ENABLE_TRACING=true
+      - ENABLE_METRICS=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:14250
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - mongodb
+      - redis
+      - jaeger
+    volumes:
+      - ./backend:/app/backend
+      - ./logs:/var/log/polaris
+    networks:
+      - polaris-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/system"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MongoDB database
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=polaris_dev
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - polaris-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/polaris_dev --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - polaris-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # gRPC endpoint for OTLP
+      - "14268:14268"  # HTTP endpoint for spans
+      - "6831:6831/udp"  # Jaeger agent UDP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - polaris-network
+    restart: unless-stopped
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - polaris-network
+    restart: unless-stopped
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - polaris-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Background worker for outbox processing
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python scripts/worker.py
+    environment:
+      - ENVIRONMENT=development
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=polaris_dev
+      - REDIS_URL=redis://redis:6379
+      - ENABLE_TRACING=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:14250
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - mongodb
+      - redis
+      - jaeger
+    volumes:
+      - ./backend:/app/backend
+      - ./logs:/var/log/polaris
+    networks:
+      - polaris-network
+    restart: unless-stopped
+
+  # Nginx reverse proxy (optional, for production-like setup)
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - ./frontend/build:/usr/share/nginx/html
+    depends_on:
+      - app
+    networks:
+      - polaris-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  polaris-network:
+    driver: bridge
