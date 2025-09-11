@@ -472,6 +472,24 @@ async def agency_impact(current=Depends(require_role("agency"))):
 # --------------- Financial Core + Matching remain as implemented above ---------------
 # ... existing financial endpoints ...
 
+# =============================================================================
+# WORKFLOW ORCHESTRATION INTEGRATION
+# =============================================================================
+
+# Import workflow components
+try:
+    from workflow_api import setup_workflow_api
+    from workflow_workers import start_workflow_workers, stop_workflow_workers
+    WORKFLOW_AVAILABLE = True
+    logger.info("Workflow orchestration enabled")
+except ImportError as e:
+    logger.warning(f"Workflow orchestration disabled: {e}")
+    WORKFLOW_AVAILABLE = False
+
+# Setup workflow API
+if WORKFLOW_AVAILABLE:
+    setup_workflow_api(app, client)
+
 # Include router and CORS (unchanged)
 app.include_router(api)
 app.add_middleware(
@@ -482,6 +500,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize workflow workers on startup"""
+    if WORKFLOW_AVAILABLE:
+        try:
+            await start_workflow_workers(client)
+            logger.info("Workflow workers started successfully")
+        except Exception as e:
+            logger.error(f"Failed to start workflow workers: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    """Cleanup on shutdown"""
+    if WORKFLOW_AVAILABLE:
+        try:
+            await stop_workflow_workers()
+            logger.info("Workflow workers stopped")
+        except Exception as e:
+            logger.error(f"Error stopping workflow workers: {e}")
+    
     client.close()
