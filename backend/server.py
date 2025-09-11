@@ -1005,10 +1005,51 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI(
     title="Polaris - Small Business Procurement Readiness Platform",
-    description="Secure platform for assessing small business procurement readiness",
+    description="""
+## Secure platform for assessing small business procurement readiness
+
+### API Hardening Features
+- **API Token Authentication**: Scope-based tokens with prefix.secret format
+- **Rate Limiting**: Sliding window with burst protection (120 req/min default)
+- **API Versioning**: Path-based versioning with deprecation signaling
+- **Problem+JSON Errors**: Standardized RFC 7807 error responses
+- **Pagination & Filtering**: Consistent pagination, filtering, and sorting
+- **Idempotency Support**: Safe retry of mutating operations
+
+### Authentication
+This API supports two authentication methods:
+1. **JWT Tokens** (legacy): Full access based on user role
+2. **API Tokens** (recommended): Scope-based access with fine-grained permissions
+
+### Rate Limiting
+All endpoints are rate limited with headers returned:
+- `X-RateLimit-Limit`: Requests allowed per window
+- `X-RateLimit-Remaining`: Requests remaining in current window  
+- `X-RateLimit-Reset`: Unix timestamp when window resets
+- `Retry-After`: Seconds to wait when rate limited (429 response)
+
+### API Versioning
+- **Current**: `/api/v1/...` (recommended)
+- **Legacy**: `/api/...` (deprecated, sunset 2025-12-31)
+
+### Error Format
+All errors follow Problem+JSON format (RFC 7807) with Polaris-specific codes:
+- **POL-1xxx**: Authentication/Authorization errors
+- **POL-2xxx**: System/Infrastructure errors
+- **POL-3xxx**: Validation/Business logic errors
+    """,
     version="1.0.0",
     docs_url="/docs" if os.environ.get("ENVIRONMENT") == "development" else None,
-    redoc_url=None
+    redoc_url=None,
+    contact={
+        "name": "Polaris API Support",
+        "email": "api-support@polaris.example.com",
+        "url": "https://polaris.example.com/support"
+    },
+    license_info={
+        "name": "Proprietary",
+        "url": "https://polaris.example.com/license"
+    }
 )
 
 # API Versioning Support
@@ -2474,6 +2515,134 @@ async def revoke_api_token(
     )
     
     return {"message": "Token revoked successfully"}
+
+# Enhanced List Endpoints with Pagination, Filtering, and Sorting
+from backend.pagination import (
+    PaginatedResponse, PaginationParams, FilterParams, SortParams,
+    get_pagination_params, get_filter_params, get_sort_params,
+    create_pagination_info, build_filter_query, build_sort_spec,
+    check_idempotency, store_idempotency_record
+)
+
+@api_v1.get("/clients", response_model=PaginatedResponse)
+@require_scope("read:clients")
+@rate_limit_with_headers("default")
+async def list_clients_v1(
+    request: Request,
+    pagination: PaginationParams = Depends(get_pagination_params),
+    filters: FilterParams = Depends(get_filter_params),
+    sort: SortParams = Depends(get_sort_params),
+    auth_info=Depends(get_current_user_or_token)
+):
+    """List clients with pagination, filtering, and sorting"""
+    if not auth_info or not auth_info.get("user"):
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
+    
+    user = auth_info["user"]
+    
+    # Build query
+    query = build_filter_query(filters)
+    
+    # Add role-based filtering
+    if user["role"] == "client":
+        query["_id"] = user["id"]  # Clients can only see themselves
+    elif user["role"] == "provider":
+        # Providers can't access client list
+        raise create_polaris_error("POL-1003", "Providers cannot access client list", 403)
+    
+    # Get total count
+    total_count = await db.users.count_documents({**query, "role": "client"})
+    
+    # Get paginated results
+    sort_spec = build_sort_spec(sort)
+    clients = await db.users.find({**query, "role": "client"}) \
+        .sort(sort_spec) \
+        .skip(pagination.offset) \
+        .limit(pagination.limit) \
+        .to_list(length=pagination.limit)
+    
+    # Create pagination info
+    pagination_info = create_pagination_info(pagination.page, pagination.limit, total_count)
+    
+    # Format response data
+    client_data = [
+        {
+            "id": client["id"],
+            "email": client["email"],
+            "created_at": client["created_at"],
+            "profile_complete": client.get("profile_complete", False),
+            "status": client.get("status", "active")
+        }
+        for client in clients
+    ]
+    
+    return PaginatedResponse(
+        data=client_data,
+        pagination=pagination_info,
+        filters_applied=filters.dict(exclude_none=True),
+        sort_applied={"sort_by": sort.sort_by, "sort_order": sort.sort_order}
+    )
+
+@api_v1.post("/service-requests")
+@require_scope("write:action_plans")
+@rate_limit_with_headers("default")
+async def create_service_request_v1(
+    request: Request,
+    service_request: dict,
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    auth_info=Depends(get_current_user_or_token)
+):
+    """Create service request with idempotency support"""
+    if not auth_info or not auth_info.get("user"):
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
+    
+    user = auth_info["user"]
+    
+    # Check idempotency if key provided
+    if idempotency_key:
+        existing_record = await check_idempotency(
+            db, user["id"], idempotency_key,
+            "POST", "/api/v1/service-requests", service_request
+        )
+        
+        if existing_record:
+            # Return cached response
+            return JSONResponse(
+                content=existing_record.response_body,
+                status_code=existing_record.response_status,
+                headers={"Idempotency-Replayed": "true"}
+            )
+    
+    # Create new service request
+    request_id = str(uuid.uuid4())
+    request_doc = {
+        "_id": request_id,
+        "id": request_id,
+        "client_id": user["id"],
+        "status": "draft",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        **service_request
+    }
+    
+    await db.service_requests.insert_one(request_doc)
+    
+    # Prepare response
+    response_data = {
+        "id": request_id,
+        "status": "created",
+        "message": "Service request created successfully"
+    }
+    
+    # Store idempotency record if key provided
+    if idempotency_key:
+        await store_idempotency_record(
+            db, user["id"], idempotency_key,
+            "POST", "/api/v1/service-requests", service_request,
+            response_data, 201
+        )
+    
+    return JSONResponse(content=response_data, status_code=201)
 
 class OAuthCallbackIn(BaseModel):
     session_id: str
