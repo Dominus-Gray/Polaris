@@ -14299,6 +14299,96 @@ async def system_performance_metrics():
             "timestamp": datetime.utcnow().isoformat()
         }
 
+# Enhanced Production Monitoring Endpoints
+@api.get("/system/health-report")
+async def get_comprehensive_health_report():
+    """Get comprehensive system health report with alerts and recommendations"""
+    try:
+        from production_monitoring import ProductionMonitor
+        monitor = ProductionMonitor(client)
+        return await monitor.generate_health_report()
+    except ImportError:
+        # Fallback to basic health check if production_monitoring not available
+        return await system_health_check()
+    except Exception as e:
+        logger.error(f"Health report generation failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+@api.get("/system/sla-compliance")
+async def get_sla_compliance_report():
+    """Get SLA compliance metrics and performance report"""
+    try:
+        from production_monitoring import ProductionMonitor
+        monitor = ProductionMonitor(client)
+        return await monitor.get_sla_compliance_report()
+    except ImportError:
+        # Fallback SLA report
+        return {
+            "status": "limited",
+            "message": "Full SLA monitoring requires production_monitoring module",
+            "basic_metrics": await system_performance_metrics()
+        }
+    except Exception as e:
+        logger.error(f"SLA compliance report failed: {e}")
+        return {
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+@api.get("/system/alerts")
+async def get_active_alerts():
+    """Get current system alerts and warnings"""
+    try:
+        from production_monitoring import ProductionMonitor
+        monitor = ProductionMonitor(client)
+        alerts = await monitor.check_alert_conditions()
+        
+        # Also get recent alerts from database
+        recent_cutoff = datetime.utcnow() - timedelta(hours=24)
+        recent_alerts = await db.system_alerts.find({
+            "timestamp": {"$gte": recent_cutoff.isoformat()}
+        }).sort("timestamp", -1).to_list(50)
+        
+        return {
+            "current_alerts": alerts,
+            "recent_alerts": recent_alerts,
+            "alert_summary": {
+                "critical": len([a for a in alerts if a.get('level') == 'critical']),
+                "warning": len([a for a in alerts if a.get('level') == 'warning']),
+                "info": len([a for a in alerts if a.get('level') == 'info'])
+            }
+        }
+    except Exception as e:
+        logger.error(f"Alert retrieval failed: {e}")
+        return {
+            "error": str(e),
+            "current_alerts": [],
+            "recent_alerts": []
+        }
+
+@api.get("/system/prometheus-metrics")
+async def get_prometheus_metrics():
+    """Get metrics in Prometheus format for monitoring integration"""
+    try:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        from production_monitoring import ProductionMonitor
+        
+        # Update metrics
+        monitor = ProductionMonitor(client)
+        await monitor.collect_system_metrics()
+        
+        return Response(
+            content=generate_latest(),
+            media_type=CONTENT_TYPE_LATEST
+        )
+    except Exception as e:
+        logger.error(f"Prometheus metrics failed: {e}")
+        return {"error": str(e)}
+
 # Bulk Operations
 @api.post("/bulk/update-users")
 async def bulk_update_users(
