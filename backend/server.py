@@ -379,19 +379,41 @@ DATA_STANDARDS = {
 # Area names mapping for backward compatibility
 AREA_NAMES = DATA_STANDARDS["service_areas"]
 
-def create_polaris_error(code: str, detail: str = None, status_code: int = 400):
-    """Create a standardized Polaris error response"""
-    error_message = POLARIS_ERROR_CODES.get(code, "Unknown error")
-    if detail:
-        error_message = f"{error_message}: {detail}"
+# Problem+JSON Error Models for API Hardening
+class ProblemDetails(BaseModel):
+    """RFC 7807 Problem Details for HTTP APIs"""
+    type: str = Field(..., description="URI reference identifying the problem type")
+    title: str = Field(..., description="Short, human-readable summary")
+    status: int = Field(..., description="HTTP status code")
+    detail: Optional[str] = Field(None, description="Human-readable explanation")
+    instance: Optional[str] = Field(None, description="URI reference identifying the specific occurrence")
+    code: str = Field(..., description="Application-specific error code")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional problem-specific metadata")
+
+def create_polaris_error(code: str, detail: str = None, status_code: int = 400, metadata: Dict[str, Any] = None):
+    """Create a standardized Polaris error response in Problem+JSON format"""
+    error_title = POLARIS_ERROR_CODES.get(code, "Unknown error")
+    
+    # Generate unique instance identifier
+    instance_id = str(uuid.uuid4())
+    
+    problem_details = ProblemDetails(
+        type=f"https://polaris.example.com/problems/{code}",
+        title=error_title,
+        status=status_code,
+        detail=detail,
+        instance=f"urn:uuid:{instance_id}",
+        code=code,
+        metadata=metadata or {}
+    )
+    
+    # Log error for tracking
+    ERROR_COUNT.labels(error_code=code, endpoint="unknown").inc()
     
     return HTTPException(
         status_code=status_code,
-        detail={
-            "error_code": code,
-            "message": error_message,
-            "detail": detail
-        }
+        detail=problem_details.dict(),
+        headers={"Content-Type": "application/problem+json"}
     )
 
 class DataValidator:
@@ -988,7 +1010,45 @@ app = FastAPI(
     docs_url="/docs" if os.environ.get("ENVIRONMENT") == "development" else None,
     redoc_url=None
 )
-api = APIRouter(prefix="/api")
+
+# API Versioning Support
+api_v1 = APIRouter(prefix="/api/v1")
+api = APIRouter(prefix="/api")  # Backward compatibility
+
+# API Version Middleware
+class APIVersionMiddleware:
+    """Middleware to handle API versioning and deprecation"""
+    
+    def __init__(self, app: FastAPI):
+        self.app = app
+    
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            path = scope.get("path", "")
+            headers = dict(scope.get("headers", []))
+            
+            # Check for deprecation
+            if path.startswith("/api") and not path.startswith("/api/v"):
+                # Add deprecation headers for unversioned API
+                async def send_with_headers(message):
+                    if message["type"] == "http.response.start":
+                        response_headers = list(message.get("headers", []))
+                        response_headers.extend([
+                            (b"sunset", b"2025-12-31T00:00:00Z"),
+                            (b"link", b'</api/v1/>; rel="successor-version"'),
+                            (b"deprecation", b"true")
+                        ])
+                        message["headers"] = response_headers
+                    await send(message)
+                
+                await self.app(scope, receive, send_with_headers)
+            else:
+                await self.app(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+# Add versioning middleware
+app.add_middleware(APIVersionMiddleware)
 
 # Security Middleware
 app.add_middleware(
@@ -1126,6 +1186,75 @@ class UserOut(BaseModel):
     is_active: bool = True
     created_at: datetime
     profile_complete: bool = False
+
+# API Token Models for Public API Hardening
+class APITokenCreate(BaseModel):
+    name: str = Field(..., max_length=100, description="Human-readable token name")
+    scopes: List[str] = Field(..., description="List of API scopes for this token")
+    expires_at: Optional[datetime] = Field(None, description="Token expiration (optional)")
+    description: Optional[str] = Field(None, max_length=500, description="Token description")
+
+class APITokenOut(BaseModel):
+    id: str
+    name: str
+    token_prefix: str
+    scopes: List[str]
+    created_at: datetime
+    last_used_at: Optional[datetime]
+    expires_at: Optional[datetime]
+    revoked_at: Optional[datetime]
+    is_active: bool
+
+class APITokenResponse(BaseModel):
+    token: str = Field(..., description="Full API token (only shown once)")
+    token_info: APITokenOut
+
+# API Scope Definitions
+API_SCOPES = {
+    # Client data access
+    "read:clients": "Read client information and profiles",
+    "write:clients": "Create and update client information",
+    
+    # Action plan access
+    "read:action_plans": "Read action plans and assessments",
+    "write:action_plans": "Create and update action plans",
+    
+    # Task management
+    "read:tasks": "Read tasks and task status",
+    "write:tasks": "Create and update tasks",
+    
+    # Analytics access
+    "read:analytics": "Read analytics and reports",
+    "read:cohorts": "Read cohort and comparative data",
+    
+    # Token management
+    "manage:tokens": "Create, revoke, and manage API tokens",
+    
+    # Consent management
+    "read:consents": "Read consent and permission data",
+    "write:consents": "Create and update consent records",
+    
+    # Administrative scopes
+    "admin:users": "Full user management access",
+    "admin:system": "System administration access"
+}
+
+# Scope to RBAC Permission Mapping
+SCOPE_RBAC_MAPPING = {
+    "read:clients": ["client", "agency", "navigator"],
+    "write:clients": ["agency", "navigator"],
+    "read:action_plans": ["client", "provider", "agency", "navigator"],
+    "write:action_plans": ["provider", "agency", "navigator"],
+    "read:tasks": ["client", "provider", "agency", "navigator"],
+    "write:tasks": ["provider", "agency", "navigator"],
+    "read:analytics": ["agency", "navigator"],
+    "read:cohorts": ["agency", "navigator"],
+    "manage:tokens": ["agency", "navigator"],
+    "read:consents": ["client", "agency", "navigator"],
+    "write:consents": ["agency", "navigator"],
+    "admin:users": ["navigator"],
+    "admin:system": ["navigator"]
+}
 
 # Standardized Engagement Data Models
 class StandardizedEngagementRequest(BaseModel):
@@ -1348,6 +1477,129 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Optio
         )
         return None
 
+# Enhanced Rate Limiting for API Hardening
+class APIRateLimiter:
+    """Enhanced rate limiter with sliding window and proper HTTP headers"""
+    
+    def __init__(self):
+        self.cache = {}
+        self.config = {
+            "default": {"requests": 120, "window": 60, "burst": 30, "burst_window": 10},
+            "auth": {"requests": 10, "window": 300, "burst": 5, "burst_window": 60},
+            "upload": {"requests": 10, "window": 300, "burst": 3, "burst_window": 60}
+        }
+    
+    def get_rate_limit_info(self, identifier: str, limit_type: str = "default") -> Dict[str, int]:
+        """Get current rate limit status for identifier"""
+        current_time = int(time.time())
+        config = self.config.get(limit_type, self.config["default"])
+        
+        # Main window check
+        window_start = current_time - config["window"]
+        key = f"{identifier}:{limit_type}"
+        
+        # Clean old entries
+        if key in self.cache:
+            self.cache[key] = [
+                req_time for req_time in self.cache[key]
+                if req_time > window_start
+            ]
+        
+        main_window_count = len(self.cache.get(key, []))
+        
+        # Burst window check
+        burst_window_start = current_time - config["burst_window"]
+        burst_count = len([
+            req_time for req_time in self.cache.get(key, [])
+            if req_time > burst_window_start
+        ])
+        
+        return {
+            "limit": config["requests"],
+            "remaining": max(0, config["requests"] - main_window_count),
+            "reset": window_start + config["window"],
+            "burst_limit": config["burst"],
+            "burst_remaining": max(0, config["burst"] - burst_count),
+            "retry_after": None
+        }
+    
+    def is_rate_limited(self, identifier: str, limit_type: str = "default") -> tuple[bool, Dict[str, int]]:
+        """Check if request should be rate limited"""
+        current_time = int(time.time())
+        config = self.config.get(limit_type, self.config["default"])
+        key = f"{identifier}:{limit_type}"
+        
+        info = self.get_rate_limit_info(identifier, limit_type)
+        
+        # Check burst limit first
+        if info["burst_remaining"] <= 0:
+            info["retry_after"] = config["burst_window"]
+            return True, info
+        
+        # Check main window limit
+        if info["remaining"] <= 0:
+            info["retry_after"] = config["window"]
+            return True, info
+        
+        # Add current request to cache
+        if key not in self.cache:
+            self.cache[key] = []
+        self.cache[key].append(current_time)
+        
+        # Update remaining counts
+        info["remaining"] -= 1
+        info["burst_remaining"] -= 1
+        
+        return False, info
+
+# Global rate limiter instance
+api_rate_limiter = APIRateLimiter()
+
+def rate_limit_with_headers(limit_type: str = "default"):
+    """Enhanced rate limiting decorator with proper HTTP headers"""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(request: Request, *args, **kwargs):
+            # Get client identifier
+            client_ip = request.client.host if request.client else "unknown"
+            if "x-forwarded-for" in request.headers:
+                client_ip = request.headers["x-forwarded-for"].split(",")[0].strip()
+            
+            # Check rate limit
+            is_limited, info = api_rate_limiter.is_rate_limited(client_ip, limit_type)
+            
+            if is_limited:
+                # Create rate limit error
+                raise HTTPException(
+                    status_code=429,
+                    detail=create_polaris_error(
+                        "POL-2005",
+                        "Rate limit exceeded",
+                        429,
+                        {"rate_limit": info}
+                    ).detail,
+                    headers={
+                        "X-RateLimit-Limit": str(info["limit"]),
+                        "X-RateLimit-Remaining": str(info["remaining"]),
+                        "X-RateLimit-Reset": str(info["reset"]),
+                        "Retry-After": str(info["retry_after"]),
+                        "Content-Type": "application/problem+json"
+                    }
+                )
+            
+            # Execute the function
+            response = await func(request, *args, **kwargs)
+            
+            # Add rate limit headers to successful responses
+            if hasattr(response, "headers"):
+                response.headers["X-RateLimit-Limit"] = str(info["limit"])
+                response.headers["X-RateLimit-Remaining"] = str(info["remaining"])
+                response.headers["X-RateLimit-Reset"] = str(info["reset"])
+            
+            return response
+        return wrapper
+    return decorator
+
 # Enhanced authorization decorators with audit logging
 def require_user_with_audit(request: Request):
     """Enhanced user requirement with comprehensive audit logging"""
@@ -1383,6 +1635,225 @@ def require_user_with_audit(request: Request):
         
         return user
     return _require_user
+
+# API Token System for Public API Hardening
+class APITokenManager:
+    """Manages API tokens with scope-based authentication"""
+    
+    @staticmethod
+    def generate_token_prefix() -> str:
+        """Generate a searchable token prefix"""
+        prefix_chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+        return "pol_" + "".join(secrets.choice(prefix_chars) for _ in range(8))
+    
+    @staticmethod
+    def generate_token_secret() -> str:
+        """Generate secure random token secret"""
+        return secrets.token_urlsafe(32)
+    
+    @staticmethod
+    def hash_token_secret(secret: str) -> str:
+        """Hash token secret with salt for storage"""
+        salt = os.environ.get("TOKEN_SALT", "polaris-token-salt-2024")
+        return hashlib.sha256((secret + salt).encode()).hexdigest()
+    
+    @staticmethod
+    async def create_api_token(user_id: str, token_data: APITokenCreate) -> APITokenResponse:
+        """Create new API token"""
+        # Validate scopes
+        invalid_scopes = [scope for scope in token_data.scopes if scope not in API_SCOPES]
+        if invalid_scopes:
+            raise HTTPException(status_code=400, detail=f"Invalid scopes: {invalid_scopes}")
+        
+        # Generate token components
+        prefix = APITokenManager.generate_token_prefix()
+        secret = APITokenManager.generate_token_secret()
+        token_hash = APITokenManager.hash_token_secret(secret)
+        full_token = f"{prefix}.{secret}"
+        
+        # Create token document
+        token_id = str(uuid.uuid4())
+        token_doc = {
+            "_id": token_id,
+            "id": token_id,
+            "owner_user_id": user_id,
+            "name": token_data.name,
+            "description": token_data.description,
+            "token_prefix": prefix,
+            "token_hash": token_hash,
+            "scopes": token_data.scopes,
+            "created_at": datetime.utcnow(),
+            "last_used_at": None,
+            "expires_at": token_data.expires_at,
+            "revoked_at": None,
+            "is_active": True
+        }
+        
+        await db.api_tokens.insert_one(token_doc)
+        
+        # Log token creation
+        await AuditLogger.log_security_event(
+            event_type=SecurityEventType.API_KEY_USAGE,
+            user_id=user_id,
+            success=True,
+            details={
+                "action": "token_created",
+                "token_id": token_id,
+                "scopes": token_data.scopes
+            }
+        )
+        
+        token_out = APITokenOut(
+            id=token_id,
+            name=token_data.name,
+            token_prefix=prefix,
+            scopes=token_data.scopes,
+            created_at=token_doc["created_at"],
+            last_used_at=None,
+            expires_at=token_data.expires_at,
+            revoked_at=None,
+            is_active=True
+        )
+        
+        return APITokenResponse(token=full_token, token_info=token_out)
+    
+    @staticmethod
+    async def validate_api_token(token: str) -> Optional[dict]:
+        """Validate API token and return token info with user"""
+        try:
+            if "." not in token:
+                return None
+            
+            prefix, secret = token.split(".", 1)
+            if not prefix.startswith("pol_"):
+                return None
+            
+            # Find token by prefix
+            token_hash = APITokenManager.hash_token_secret(secret)
+            token_doc = await db.api_tokens.find_one({
+                "token_prefix": prefix,
+                "token_hash": token_hash,
+                "is_active": True,
+                "revoked_at": None
+            })
+            
+            if not token_doc:
+                return None
+            
+            # Check expiration
+            if token_doc.get("expires_at") and token_doc["expires_at"] < datetime.utcnow():
+                return None
+            
+            # Update last used
+            await db.api_tokens.update_one(
+                {"_id": token_doc["_id"]},
+                {"$set": {"last_used_at": datetime.utcnow()}}
+            )
+            
+            # Get user info
+            user = await db.users.find_one({"_id": token_doc["owner_user_id"]})
+            if not user:
+                return None
+            
+            return {
+                "token_id": token_doc["id"],
+                "user": user,
+                "scopes": token_doc["scopes"],
+                "is_api_token": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Token validation error: {e}")
+            return None
+    
+    @staticmethod
+    def check_scope_permission(required_scope: str, user_role: str, token_scopes: List[str]) -> bool:
+        """Check if token has required scope and user has RBAC permission"""
+        # Check scope presence
+        if required_scope not in token_scopes:
+            return False
+        
+        # Check RBAC mapping
+        allowed_roles = SCOPE_RBAC_MAPPING.get(required_scope, [])
+        return user_role in allowed_roles
+
+async def get_current_user_or_token(authorization: Optional[str] = Header(None)) -> Optional[dict]:
+    """Enhanced authentication supporting both JWT and API tokens"""
+    if not authorization:
+        return None
+    
+    try:
+        scheme, _, token = authorization.partition(" ")
+        if scheme.lower() != "bearer" or not token:
+            return None
+        
+        # Try API token first
+        if token.startswith("pol_"):
+            token_info = await APITokenManager.validate_api_token(token)
+            if token_info:
+                return token_info
+        
+        # Fallback to JWT token
+        user = await get_current_user(authorization)
+        if user:
+            return {
+                "user": user,
+                "scopes": [],  # JWT tokens have full access
+                "is_api_token": False
+            }
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"Authentication error: {e}")
+        return None
+
+def require_scope(required_scope: str):
+    """Decorator to require specific API scope"""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Extract auth info from dependency injection
+            auth_info = None
+            for arg in args:
+                if isinstance(arg, dict) and ("user" in arg or "scopes" in arg):
+                    auth_info = arg
+                    break
+            
+            if not auth_info:
+                raise HTTPException(status_code=401, detail="Authentication required")
+            
+            user = auth_info.get("user")
+            scopes = auth_info.get("scopes", [])
+            is_api_token = auth_info.get("is_api_token", False)
+            
+            if not user:
+                raise HTTPException(status_code=401, detail="Invalid authentication")
+            
+            # For API tokens, check scope permission
+            if is_api_token:
+                if not APITokenManager.check_scope_permission(required_scope, user["role"], scopes):
+                    await AuditLogger.log_security_event(
+                        event_type=SecurityEventType.PERMISSION_DENIED,
+                        user_id=user["id"],
+                        success=False,
+                        details={
+                            "required_scope": required_scope,
+                            "user_scopes": scopes,
+                            "user_role": user["role"]
+                        }
+                    )
+                    raise HTTPException(status_code=403, detail=f"Insufficient scope: {required_scope}")
+            
+            # For JWT tokens, check RBAC only
+            else:
+                allowed_roles = SCOPE_RBAC_MAPPING.get(required_scope, [])
+                if user["role"] not in allowed_roles:
+                    raise HTTPException(status_code=403, detail=f"Insufficient permissions for scope: {required_scope}")
+            
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 class EngagementDataProcessor:
     """Centralized engagement data processing with standardization"""
@@ -1666,7 +2137,7 @@ async def register_user(request: Request, user: UserRegistrationIn):
         return {"message": "Registration successful", "status": "approved"}
 
 @api.post("/auth/login", response_model=Token)
-@rate_limit(max_requests=10, window_seconds=300)  # 10 login attempts per 5 minutes
+@rate_limit_with_headers("auth")  # Enhanced rate limiting with headers
 async def login_user(request: Request, user: UserLogin):
     """Enhanced login with comprehensive security logging and audit trail"""
     
@@ -1905,6 +2376,104 @@ async def get_password_requirements_endpoint():
 @api.get("/auth/me", response_model=UserOut)
 async def get_current_user_info(current=Depends(require_user)):
     return UserOut(id=current["id"], email=current["email"], role=current["role"], created_at=current["created_at"])
+
+# API Token Management Endpoints
+@api_v1.post("/tokens", response_model=APITokenResponse)
+@rate_limit_with_headers("default")
+async def create_api_token(
+    request: Request,
+    token_data: APITokenCreate,
+    auth_info=Depends(get_current_user_or_token)
+):
+    """Create a new API token with specified scopes"""
+    if not auth_info or not auth_info.get("user"):
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
+    
+    user = auth_info["user"]
+    
+    # Check if user has manage:tokens scope (for API token usage) or sufficient role
+    if auth_info.get("is_api_token"):
+        if not APITokenManager.check_scope_permission("manage:tokens", user["role"], auth_info["scopes"]):
+            raise create_polaris_error("POL-1003", "Insufficient scope: manage:tokens", 403)
+    else:
+        # JWT tokens need sufficient role
+        if user["role"] not in ["agency", "navigator"]:
+            raise create_polaris_error("POL-1003", "Insufficient permissions to create API tokens", 403)
+    
+    return await APITokenManager.create_api_token(user["id"], token_data)
+
+@api_v1.get("/tokens", response_model=List[APITokenOut])
+@rate_limit_with_headers("default")
+async def list_api_tokens(
+    request: Request,
+    auth_info=Depends(get_current_user_or_token)
+):
+    """List API tokens for the authenticated user"""
+    if not auth_info or not auth_info.get("user"):
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
+    
+    user = auth_info["user"]
+    
+    # Get user's tokens
+    tokens = await db.api_tokens.find({
+        "owner_user_id": user["id"],
+        "revoked_at": None
+    }).to_list(length=100)
+    
+    return [
+        APITokenOut(
+            id=token["id"],
+            name=token["name"],
+            token_prefix=token["token_prefix"],
+            scopes=token["scopes"],
+            created_at=token["created_at"],
+            last_used_at=token.get("last_used_at"),
+            expires_at=token.get("expires_at"),
+            revoked_at=token.get("revoked_at"),
+            is_active=token.get("is_active", True)
+        )
+        for token in tokens
+    ]
+
+@api_v1.delete("/tokens/{token_id}")
+@rate_limit_with_headers("default")
+async def revoke_api_token(
+    request: Request,
+    token_id: str,
+    auth_info=Depends(get_current_user_or_token)
+):
+    """Revoke an API token"""
+    if not auth_info or not auth_info.get("user"):
+        raise create_polaris_error("POL-1001", "Authentication required", 401)
+    
+    user = auth_info["user"]
+    
+    # Find and revoke token
+    result = await db.api_tokens.update_one(
+        {"id": token_id, "owner_user_id": user["id"]},
+        {
+            "$set": {
+                "revoked_at": datetime.utcnow(),
+                "is_active": False
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise create_polaris_error("POL-1007", "Token not found", 404)
+    
+    # Log token revocation
+    await AuditLogger.log_security_event(
+        event_type=SecurityEventType.API_KEY_USAGE,
+        user_id=user["id"],
+        success=True,
+        details={
+            "action": "token_revoked",
+            "token_id": token_id
+        }
+    )
+    
+    return {"message": "Token revoked successfully"}
 
 class OAuthCallbackIn(BaseModel):
     session_id: str
@@ -15703,8 +16272,9 @@ async def external_services_health_check():
         "services": services
     }
 
-# Include router
-app.include_router(api)
+# Include routers - v1 for new hardened API, legacy for backward compatibility
+app.include_router(api_v1)  # Versioned API with hardening features
+app.include_router(api)     # Legacy API for backward compatibility
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
