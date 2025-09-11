@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SLA Breach Event",
+  "description": "Event schema for SLA breach notifications",
+  "type": "object",
+  "required": ["breach_type", "service", "threshold", "actual", "user_id"],
+  "properties": {
+    "breach_type": {
+      "type": "string",
+      "enum": ["response_time", "availability", "error_rate"],
+      "description": "Type of SLA breach"
+    },
+    "service": {
+      "type": "string",
+      "description": "Service that breached the SLA"
+    },
+    "threshold": {
+      "type": "number",
+      "description": "SLA threshold that was breached"
+    },
+    "actual": {
+      "type": "number",
+      "description": "Actual measured value"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User affected by the breach"
+    },
+    "duration": {
+      "type": "string",
+      "description": "Duration of the breach"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Severity level of the breach"
+    }
+  },
+  "additionalProperties": false
+}

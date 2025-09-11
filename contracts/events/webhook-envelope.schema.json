@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Webhook Event Envelope",
+  "description": "Standard envelope for all webhook events sent by Polaris",
+  "type": "object",
+  "required": ["id", "type", "timestamp", "data", "signature"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this event"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "assessment.completed",
+        "assessment.started",
+        "user.registered",
+        "payment.processed",
+        "license.activated",
+        "provider.matched",
+        "sla.breach.detected"
+      ],
+      "description": "Type of event"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the event occurred"
+    },
+    "data": {
+      "type": "object",
+      "description": "Event-specific payload data"
+    },
+    "signature": {
+      "type": "string",
+      "description": "HMAC signature for webhook verification"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0",
+      "description": "Event schema version"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,195 @@
+# Contract Diff Pipeline Configuration
+#
+# This file defines policies and settings for the automated contract diff pipeline
+# that guards API and event schema stability.
+
+# Policy Configuration
+policy:
+  # Whether to allow breaking changes by default
+  allow_breaking_changes: false
+  
+  # Require override token for breaking changes
+  require_override_for_breaking: true
+  
+  # Maximum number of breaking changes allowed in a single PR
+  max_breaking_changes: 0
+  
+  # Paths where breaking changes are explicitly allowed
+  allowed_breaking_paths:
+    - "paths./api/internal/"
+    - "paths./api/admin/"
+    - "paths./api/debug/"
+    - "components.schemas.InternalSchema"
+  
+  # Override tokens (in production, these should be environment variables)
+  override_tokens:
+    - "EMERGENCY_OVERRIDE"
+    - "GITHUB_WORKFLOW_OVERRIDE"
+
+# OpenAPI Filtering Configuration
+openapi_filter:
+  # Prefixes for paths that should be included in the public API
+  public_path_prefixes:
+    - "/api/auth/"
+    - "/api/assessments/"
+    - "/api/users/profile"
+    - "/api/marketplace/providers"
+    - "/api/health"
+    - "/api/webhook/"
+  
+  # Prefixes for paths that are internal-only
+  internal_only_paths:
+    - "/api/admin/"
+    - "/api/internal/"
+    - "/api/debug/"
+    - "/api/system/"
+    - "/api/metrics/"
+  
+  # Schema patterns to exclude from public API
+  internal_schema_patterns:
+    - "Internal*"
+    - "Admin*"
+    - "Debug*"
+    - "*Debug"
+    - "*Internal"
+  
+  # Operations tags that mark endpoints as internal
+  internal_tags:
+    - "internal"
+    - "admin"
+    - "debug"
+    - "system"
+
+# Event Schema Configuration
+event_schemas:
+  # Webhook event envelope schema location
+  webhook_envelope_schema: "contracts/events/webhook-envelope.schema.json"
+  
+  # SLA event schema location
+  sla_event_schema: "contracts/events/sla-breach.schema.json"
+  
+  # Event types that are considered public (webhooks)
+  public_event_types:
+    - "assessment.completed"
+    - "assessment.started"
+    - "user.registered"
+    - "payment.processed"
+    - "license.activated"
+    - "provider.matched"
+  
+  # Event types that are internal (SLA monitoring)
+  internal_event_types:
+    - "sla.breach.detected"
+    - "system.health.check"
+    - "debug.trace"
+
+# Diff Analysis Configuration
+diff_analysis:
+  # Types of changes to detect and classify
+  change_types:
+    breaking:
+      - "path_removed"
+      - "method_removed"
+      - "required_parameter_added"
+      - "required_field_added"
+      - "property_removed"
+      - "enum_value_removed"
+      - "type_changed"
+    
+    additive:
+      - "path_added"
+      - "method_added"
+      - "optional_parameter_added"
+      - "optional_field_added"
+      - "property_added"
+      - "enum_value_added"
+      - "schema_added"
+    
+    informational:
+      - "version_changed"
+      - "description_changed"
+      - "example_changed"
+      - "required_field_removed"
+      - "optional_parameter_removed"
+  
+  # Severity levels for different types of breaking changes
+  severity_levels:
+    critical:
+      - "path_removed"
+      - "required_parameter_added"
+    high:
+      - "method_removed"
+      - "required_field_added"
+      - "enum_value_removed"
+    medium:
+      - "property_removed"
+      - "type_changed"
+    low:
+      - "schema_removed"
+
+# Reporting Configuration
+reporting:
+  # Include change details in reports
+  include_details: true
+  
+  # Maximum number of changes to report per type
+  max_changes_per_type: 20
+  
+  # Whether to include schema diff details
+  include_schema_diffs: true
+  
+  # Format for diff reports (markdown, json, text)
+  report_format: "markdown"
+
+# Notification Configuration
+notifications:
+  # Slack webhook for critical breaking changes
+  slack_webhook_url: ""  # Set via environment variable
+  
+  # Email notifications for policy violations
+  email_notifications:
+    enabled: false
+    recipients: []
+  
+  # GitHub PR comments
+  github_comments:
+    enabled: true
+    include_summary: true
+    include_details: true
+
+# Validation Configuration
+validation:
+  # Whether to validate JSON Schema syntax
+  validate_json_schema: true
+  
+  # Whether to validate OpenAPI spec syntax
+  validate_openapi_spec: true
+  
+  # Whether to check for circular references
+  check_circular_references: true
+  
+  # Whether to validate example data against schemas
+  validate_examples: true
+
+# Storage Configuration
+storage:
+  # Base directory for contract storage
+  contracts_base_dir: "contracts"
+  
+  # Subdirectories for different contract types
+  subdirectories:
+    openapi: "openapi"
+    events: "events"
+    schemas: "schemas"
+  
+  # File naming conventions
+  file_naming:
+    public_api_spec: "public-v{version}.json"
+    internal_api_spec: "internal-reference.json"
+    event_schema: "{event_type}.schema.json"
+  
+  # Whether to version contract files
+  version_files: true
+  
+  # Retention policy for old contract versions
+  retention_days: 90
