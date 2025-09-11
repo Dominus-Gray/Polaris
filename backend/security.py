@@ -8,7 +8,8 @@ import hmac
 import time
 import re
 import logging
-from datetime import datetime, timedelta
+import json
+from datetime import datetime, timedelta, UTC
 from typing import Dict, List, Optional, Any
 from functools import wraps
 from fastapi import Request, HTTPException, status
@@ -347,6 +348,88 @@ class SecurityManager:
         except Exception as e:
             logger.error(f"Session security check error: {e}")
             return {'anomalies': [], 'risk_score': 0}
+
+    async def audit_sensitive_field_change(self, user_id: str, resource: str, 
+                                         resource_id: str, field_changes: Dict[str, Any],
+                                         ip_address: str = None) -> None:
+        """Enhanced audit logging for sensitive field changes"""
+        try:
+            # Calculate hashes for before/after values of sensitive fields
+            sensitive_fields = ['ssn', 'address_line1', 'address_line2', 'phone', 'notes']
+            before_hashes = {}
+            after_hashes = {}
+            field_mask = []
+            
+            for field, change_data in field_changes.items():
+                if field in sensitive_fields:
+                    field_mask.append(field)
+                    
+                    # Hash the before value (never store plaintext)
+                    if 'before' in change_data and change_data['before']:
+                        before_hashes[field] = hashlib.sha256(
+                            str(change_data['before']).encode()
+                        ).hexdigest()
+                    
+                    # Hash the after value
+                    if 'after' in change_data and change_data['after']:
+                        after_hashes[field] = hashlib.sha256(
+                            str(change_data['after']).encode()
+                        ).hexdigest()
+            
+            # Create audit log entry
+            audit_entry = {
+                '_id': self.generate_secure_token(16),
+                'timestamp': datetime.now(UTC),
+                'user_id': user_id,
+                'action': 'UPDATE_SENSITIVE_FIELDS',
+                'resource': resource,
+                'resource_id': resource_id,
+                'before_hash': json.dumps(before_hashes) if before_hashes else None,
+                'after_hash': json.dumps(after_hashes) if after_hashes else None,
+                'field_mask': field_mask,
+                'ip_address': ip_address,
+                'details': {
+                    'fields_changed': len(field_mask),
+                    'change_type': 'sensitive_field_update'
+                }
+            }
+            
+            await self.db.audit_logs.insert_one(audit_entry)
+            logger.info(f"Audited sensitive field changes for {resource}:{resource_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to audit sensitive field changes: {e}")
+    
+    async def audit_decrypt_operation(self, user_id: str, resource: str, 
+                                    fields_decrypted: List[str], client_id: str,
+                                    ip_address: str = None, sampling_rate: float = 0.1) -> None:
+        """Audit decrypt operations with configurable sampling"""
+        try:
+            # Sample to avoid log noise (only log 10% by default)
+            import random
+            if random.random() > sampling_rate:
+                return
+            
+            audit_entry = {
+                '_id': self.generate_secure_token(16),
+                'timestamp': datetime.now(UTC),
+                'user_id': user_id,
+                'action': 'DECRYPT',
+                'resource': resource,
+                'resource_id': client_id,
+                'field_mask': fields_decrypted,
+                'ip_address': ip_address,
+                'details': {
+                    'fields_count': len(fields_decrypted),
+                    'operation_type': 'field_decryption',
+                    'sampled': True
+                }
+            }
+            
+            await self.db.audit_logs.insert_one(audit_entry)
+            
+        except Exception as e:
+            logger.error(f"Failed to audit decrypt operation: {e}")
     
     async def cleanup_expired_blocks(self):
         """Clean up expired IP blocks and security events"""
