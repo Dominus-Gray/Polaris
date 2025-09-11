@@ -93,3 +93,7 @@ android-sdk/ -e
 # Environment files
 *.env
 *.env.*
+
+# Webhook test files
+webhook_infrastructure_test.py
+webhook_api_test.py

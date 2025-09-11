@@ -959,6 +959,229 @@ def rate_limit(max_requests: int, window_seconds: int):
         return wrapper
     return decorator
 
+# Webhook Utility Functions
+def generate_webhook_secret() -> str:
+    """Generate a secure random webhook secret"""
+    return secrets.token_urlsafe(32)
+
+def create_webhook_signature(payload: bytes, secret: str) -> str:
+    """Create HMAC SHA256 signature for webhook payload"""
+    signature = hashlib.sha256(secret.encode() + payload).hexdigest()
+    return f"sha256={signature}"
+
+def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
+    """Verify webhook signature"""
+    expected_signature = create_webhook_signature(payload, secret)
+    return secrets.compare_digest(signature, expected_signature)
+
+async def publish_webhook_event(event_type: str, data: Dict[str, Any], org_id: Optional[str] = None):
+    """Publish an event to the webhook system"""
+    try:
+        # Create event record
+        event_id = str(uuid.uuid4())
+        webhook_event = {
+            "_id": event_id,
+            "id": event_id,
+            "type": event_type,
+            "version": 1,
+            "occurred_at": datetime.utcnow().isoformat() + "Z",
+            "data": data,
+            "meta": {
+                "source": "polaris",
+                "schema": "polaris.event/1"
+            },
+            "created_at": datetime.utcnow(),
+            "delivered_count": 0
+        }
+        
+        # Store event
+        await db.webhook_events.insert_one(webhook_event)
+        
+        # Find matching webhook endpoints
+        query = {
+            "active": True,
+            "$or": [
+                {"events": {"$in": [event_type, "*"]}},
+                {"events": event_type}
+            ]
+        }
+        
+        # Filter by org_id if provided
+        if org_id:
+            query["$or"].append({"org_id": org_id})
+            query["$or"].append({"org_id": None})  # Global webhooks
+        else:
+            query["org_id"] = None  # Only global webhooks for system events
+            
+        endpoints = await db.webhook_endpoints.find(query).to_list(length=None)
+        
+        # Schedule delivery attempts
+        for endpoint in endpoints:
+            attempt_id = str(uuid.uuid4())
+            delivery_attempt = {
+                "_id": attempt_id,
+                "id": attempt_id,
+                "event_id": event_id,
+                "endpoint_id": endpoint["_id"],
+                "attempt_number": 1,
+                "status": "PENDING",
+                "created_at": datetime.utcnow(),
+                "next_attempt_at": datetime.utcnow()  # Immediate delivery
+            }
+            await db.webhook_delivery_attempts.insert_one(delivery_attempt)
+            
+        logger.info(f"Published webhook event {event_type} with {len(endpoints)} delivery targets")
+        
+    except Exception as e:
+        logger.error(f"Failed to publish webhook event {event_type}: {e}")
+
+async def deliver_webhook_event(attempt_id: str):
+    """Deliver a single webhook event attempt"""
+    try:
+        # Get the delivery attempt
+        attempt = await db.webhook_delivery_attempts.find_one({"_id": attempt_id})
+        if not attempt or attempt["status"] != "PENDING":
+            return
+            
+        # Get the event and endpoint
+        event = await db.webhook_events.find_one({"_id": attempt["event_id"]})
+        endpoint = await db.webhook_endpoints.find_one({"_id": attempt["endpoint_id"]})
+        
+        if not event or not endpoint:
+            await db.webhook_delivery_attempts.update_one(
+                {"_id": attempt_id},
+                {"$set": {"status": "FAILED", "error": "Event or endpoint not found"}}
+            )
+            return
+            
+        # Prepare webhook payload
+        webhook_payload = {
+            "id": event["id"],
+            "type": event["type"],
+            "occurred_at": event["occurred_at"],
+            "version": event["version"],
+            "data": event["data"],
+            "meta": event["meta"]
+        }
+        
+        payload_bytes = json.dumps(webhook_payload, sort_keys=True).encode('utf-8')
+        
+        # Create signature
+        secret = endpoint.get("secret_hash", "")
+        signature = create_webhook_signature(payload_bytes, secret)
+        
+        # Make HTTP request
+        headers = {
+            "Content-Type": "application/json",
+            "X-Polaris-Signature": signature,
+            "User-Agent": "Polaris-Webhooks/1.0"
+        }
+        
+        start_time = time.time()
+        try:
+            response = requests.post(
+                endpoint["url"], 
+                data=payload_bytes,
+                headers=headers,
+                timeout=30
+            )
+            latency_ms = int((time.time() - start_time) * 1000)
+            
+            # Update delivery attempt
+            if 200 <= response.status_code < 300:
+                await db.webhook_delivery_attempts.update_one(
+                    {"_id": attempt_id},
+                    {"$set": {
+                        "status": "DELIVERED",
+                        "response_status": response.status_code,
+                        "response_body": response.text[:1000],  # Limit response body size
+                        "latency_ms": latency_ms
+                    }}
+                )
+                
+                # Update endpoint success tracking
+                await db.webhook_endpoints.update_one(
+                    {"_id": endpoint["_id"]},
+                    {"$set": {
+                        "last_success_at": datetime.utcnow(),
+                        "failure_count": 0
+                    }}
+                )
+                
+                # Update event delivered count
+                await db.webhook_events.update_one(
+                    {"_id": event["_id"]},
+                    {"$inc": {"delivered_count": 1}}
+                )
+                
+            else:
+                # Handle failure
+                await handle_webhook_delivery_failure(attempt_id, attempt, endpoint, response.status_code, response.text, latency_ms)
+                
+        except requests.exceptions.RequestException as e:
+            latency_ms = int((time.time() - start_time) * 1000)
+            await handle_webhook_delivery_failure(attempt_id, attempt, endpoint, None, str(e), latency_ms)
+            
+    except Exception as e:
+        logger.error(f"Error delivering webhook event {attempt_id}: {e}")
+        await db.webhook_delivery_attempts.update_one(
+            {"_id": attempt_id},
+            {"$set": {"status": "FAILED", "error": str(e)}}
+        )
+
+async def handle_webhook_delivery_failure(attempt_id: str, attempt: dict, endpoint: dict, status_code: Optional[int], error: str, latency_ms: int):
+    """Handle webhook delivery failure with retry logic"""
+    max_attempts = 5
+    attempt_number = attempt["attempt_number"]
+    
+    # Update current attempt as failed
+    await db.webhook_delivery_attempts.update_one(
+        {"_id": attempt_id},
+        {"$set": {
+            "status": "FAILED" if attempt_number >= max_attempts else "FAILED",
+            "response_status": status_code,
+            "error": error[:1000],  # Limit error message size
+            "latency_ms": latency_ms
+        }}
+    )
+    
+    # Update endpoint failure tracking
+    failure_count = endpoint.get("failure_count", 0) + 1
+    await db.webhook_endpoints.update_one(
+        {"_id": endpoint["_id"]},
+        {"$set": {
+            "failure_count": failure_count,
+            "last_failure_at": datetime.utcnow()
+        }}
+    )
+    
+    # Schedule retry if not exceeded max attempts
+    if attempt_number < max_attempts:
+        # Exponential backoff: 2^attempt minutes
+        delay_minutes = 2 ** (attempt_number - 1)
+        next_attempt_time = datetime.utcnow() + timedelta(minutes=delay_minutes)
+        
+        # Create new retry attempt
+        retry_attempt_id = str(uuid.uuid4())
+        retry_attempt = {
+            "_id": retry_attempt_id,
+            "id": retry_attempt_id,
+            "event_id": attempt["event_id"],
+            "endpoint_id": attempt["endpoint_id"],
+            "attempt_number": attempt_number + 1,
+            "status": "PENDING",
+            "created_at": datetime.utcnow(),
+            "next_attempt_at": next_attempt_time
+        }
+        await db.webhook_delivery_attempts.insert_one(retry_attempt)
+        
+    else:
+        # Mark final attempt as gave up
+        await db.webhook_delivery_attempts.update_one(
+            {"_id": attempt_id},
+            {"$set": {"status": "GAVE_UP"}}
+        )
+
 try:
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     EMERGENT_OK = True
@@ -1198,6 +1421,56 @@ class ServiceRating(BaseModel):
     review_text: Optional[str] = Field(None, max_length=1000)
     would_recommend: bool
     created_at: datetime
+
+# Webhook Infrastructure Models
+class WebhookEndpoint(BaseModel):
+    """Webhook endpoint configuration model"""
+    id: Optional[str] = None
+    org_id: Optional[str] = None  # null for global/system webhooks
+    name: str = Field(..., min_length=1, max_length=100)
+    url: HttpUrl
+    secret_hash: str = Field(..., description="HMAC secret hash")
+    active: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    events: List[str] = Field(..., description="Subscribed event type filters")
+    failure_count: int = 0
+    last_failure_at: Optional[datetime] = None
+    last_success_at: Optional[datetime] = None
+    auth_type: str = Field(default="hmac", pattern="^(hmac)$")
+
+class WebhookEndpointCreate(BaseModel):
+    """Model for creating webhook endpoints"""
+    org_id: Optional[str] = None
+    name: str = Field(..., min_length=1, max_length=100)
+    url: HttpUrl
+    events: List[str] = Field(..., description="Event types to subscribe to")
+    secret: Optional[str] = Field(None, description="Optional webhook secret, auto-generated if not provided")
+
+class WebhookEvent(BaseModel):
+    """Webhook event model"""
+    id: str
+    type: str = Field(..., description="Event type (e.g., assessment.created)")
+    version: int = Field(default=1, description="Event schema version")
+    occurred_at: datetime
+    data: Dict[str, Any] = Field(..., description="Event-specific data")
+    meta: Dict[str, Any] = Field(default={"source": "polaris", "schema": "polaris.event/1"})
+    created_at: Optional[datetime] = None
+    delivered_count: int = 0
+
+class WebhookDeliveryAttempt(BaseModel):
+    """Webhook delivery attempt tracking"""
+    id: str
+    event_id: str
+    endpoint_id: str
+    attempt_number: int
+    status: str = Field(..., pattern="^(PENDING|DELIVERED|FAILED|GAVE_UP)$")
+    response_status: Optional[int] = None
+    response_body: Optional[str] = None
+    error: Optional[str] = None
+    latency_ms: Optional[int] = None
+    created_at: datetime
+    next_attempt_at: Optional[datetime] = None
 
 class ServiceTrackingMilestone(BaseModel):
     """Interactive service tracking milestones"""
@@ -1636,6 +1909,18 @@ async def register_user(request: Request, user: UserRegistrationIn):
         "terms_accepted": user.terms_accepted,
         "terms_accepted_at": datetime.utcnow()
     }
+    
+    # Publish webhook event for consent granted
+    if user.terms_accepted:
+        try:
+            await publish_webhook_event("consent.granted", {
+                "user_id": user_id,
+                "consent_type": "terms_of_service",
+                "granted_at": datetime.utcnow().isoformat() + "Z",
+                "user_role": user.role
+            })
+        except Exception as e:
+            logger.error(f"Failed to publish consent.granted webhook: {e}")
     
     # Store payment info if provided (encrypted)
     if user.payment_info:
@@ -3027,6 +3312,20 @@ async def submit_tier_response(
                     }
                 }
             )
+            
+            # Publish webhook event for assessment completion
+            try:
+                await publish_webhook_event("assessment.finalized", {
+                    "assessment_id": session_id,
+                    "user_id": session["user_id"],
+                    "area_id": session.get("area_id"),
+                    "tier_level": tier_level,
+                    "completion_score": tier_score,
+                    "completed_questions": completed_questions,
+                    "total_questions": total_questions
+                })
+            except Exception as e:
+                logger.error(f"Failed to publish assessment.finalized webhook: {e}")
         
         # Return appropriate response based on evidence requirements
         result = {
@@ -3392,6 +3691,20 @@ async def submit_assessment_response(
                 {"_id": session_id},
                 {"$set": {"status": "completed", "completed_at": datetime.utcnow()}}
             )
+            
+            # Publish webhook event for assessment completion
+            try:
+                session_data = await db.assessment_sessions.find_one({"_id": session_id})
+                await publish_webhook_event("assessment.finalized", {
+                    "assessment_id": session_id,
+                    "user_id": session_data.get("user_id"),
+                    "progress_percentage": progress_percentage,
+                    "answered_questions": answered_questions,
+                    "total_questions": total_questions,
+                    "session_type": "standard"
+                })
+            except Exception as e:
+                logger.error(f"Failed to publish assessment.finalized webhook: {e}")
         
         return {
             "success": True,
@@ -14671,6 +14984,21 @@ async def generate_branded_certificate(
             "timestamp": datetime.utcnow()
         })
         
+        # Publish webhook event for analytics completion
+        try:
+            await publish_webhook_event("analytics.projection.completed", {
+                "projection_id": certificate_id,
+                "user_id": client_user_id,
+                "projection_type": "readiness_certificate",
+                "readiness_score": score,
+                "metrics": {
+                    "areas_assessed": len(assessment.get("areas_completed", [])),
+                    "overall_score": score
+                }
+            })
+        except Exception as e:
+            logger.error(f"Failed to publish analytics.projection.completed webhook: {e}")
+        
         return {
             "certificate_id": certificate_id,
             "verification_code": verification_code,
@@ -15703,9 +16031,316 @@ async def external_services_health_check():
         "services": services
     }
 
+# Webhook Management Endpoints
+@api.post("/webhooks/endpoints", response_model=Dict[str, str])
+async def create_webhook_endpoint(endpoint: WebhookEndpointCreate, current=Depends(require_agency)):
+    """Create a new webhook endpoint"""
+    try:
+        # Generate secret if not provided
+        secret = endpoint.secret or generate_webhook_secret()
+        secret_hash = hashlib.sha256(secret.encode()).hexdigest()
+        
+        # Validate event types
+        valid_events = {
+            "assessment.created", "assessment.finalized", "action_plan.updated",
+            "consent.granted", "analytics.projection.completed", 
+            "sla.breach.opened", "sla.breach.closed",
+            "key_rotation.started", "key_rotation.completed", "*"
+        }
+        
+        invalid_events = set(endpoint.events) - valid_events
+        if invalid_events:
+            raise HTTPException(status_code=400, detail=f"Invalid event types: {invalid_events}")
+        
+        # Create endpoint record
+        endpoint_id = str(uuid.uuid4())
+        webhook_endpoint = {
+            "_id": endpoint_id,
+            "id": endpoint_id,
+            "org_id": endpoint.org_id or current.get("id"),
+            "name": endpoint.name,
+            "url": str(endpoint.url),
+            "secret_hash": secret_hash,
+            "active": True,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "events": endpoint.events,
+            "failure_count": 0,
+            "last_failure_at": None,
+            "last_success_at": None,
+            "auth_type": "hmac"
+        }
+        
+        await db.webhook_endpoints.insert_one(webhook_endpoint)
+        
+        return {
+            "id": endpoint_id,
+            "secret": secret,
+            "message": "Webhook endpoint created successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating webhook endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create webhook endpoint")
+
+@api.get("/webhooks/endpoints", response_model=List[WebhookEndpoint])
+async def list_webhook_endpoints(current=Depends(require_agency)):
+    """List webhook endpoints for current organization"""
+    try:
+        query = {"org_id": current.get("id")}
+        endpoints = await db.webhook_endpoints.find(query).to_list(length=None)
+        
+        # Remove sensitive secret_hash from response
+        for endpoint in endpoints:
+            endpoint.pop("secret_hash", None)
+            endpoint["id"] = endpoint["_id"]
+            
+        return endpoints
+        
+    except Exception as e:
+        logger.error(f"Error listing webhook endpoints: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list webhook endpoints")
+
+@api.get("/webhooks/endpoints/{endpoint_id}", response_model=WebhookEndpoint)
+async def get_webhook_endpoint(endpoint_id: str, current=Depends(require_agency)):
+    """Get a specific webhook endpoint"""
+    try:
+        endpoint = await db.webhook_endpoints.find_one({
+            "_id": endpoint_id,
+            "org_id": current.get("id")
+        })
+        
+        if not endpoint:
+            raise HTTPException(status_code=404, detail="Webhook endpoint not found")
+            
+        # Remove sensitive secret_hash from response
+        endpoint.pop("secret_hash", None)
+        endpoint["id"] = endpoint["_id"]
+        
+        return endpoint
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting webhook endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get webhook endpoint")
+
+@api.put("/webhooks/endpoints/{endpoint_id}")
+async def update_webhook_endpoint(endpoint_id: str, updates: Dict[str, Any], current=Depends(require_agency)):
+    """Update webhook endpoint configuration"""
+    try:
+        # Validate that endpoint belongs to current org
+        existing = await db.webhook_endpoints.find_one({
+            "_id": endpoint_id,
+            "org_id": current.get("id")
+        })
+        
+        if not existing:
+            raise HTTPException(status_code=404, detail="Webhook endpoint not found")
+            
+        # Prepare allowed updates
+        allowed_fields = {"name", "url", "events", "active"}
+        update_data = {k: v for k, v in updates.items() if k in allowed_fields}
+        
+        if "events" in update_data:
+            valid_events = {
+                "assessment.created", "assessment.finalized", "action_plan.updated",
+                "consent.granted", "analytics.projection.completed", 
+                "sla.breach.opened", "sla.breach.closed",
+                "key_rotation.started", "key_rotation.completed", "*"
+            }
+            invalid_events = set(update_data["events"]) - valid_events
+            if invalid_events:
+                raise HTTPException(status_code=400, detail=f"Invalid event types: {invalid_events}")
+        
+        update_data["updated_at"] = datetime.utcnow()
+        
+        await db.webhook_endpoints.update_one(
+            {"_id": endpoint_id},
+            {"$set": update_data}
+        )
+        
+        return {"message": "Webhook endpoint updated successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating webhook endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update webhook endpoint")
+
+@api.delete("/webhooks/endpoints/{endpoint_id}")
+async def delete_webhook_endpoint(endpoint_id: str, current=Depends(require_agency)):
+    """Delete a webhook endpoint"""
+    try:
+        # Validate that endpoint belongs to current org
+        result = await db.webhook_endpoints.delete_one({
+            "_id": endpoint_id,
+            "org_id": current.get("id")
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Webhook endpoint not found")
+            
+        return {"message": "Webhook endpoint deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting webhook endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete webhook endpoint")
+
+@api.get("/webhooks/events", response_model=List[Dict[str, Any]])
+async def list_webhook_events(limit: int = Query(default=50, le=100), current=Depends(require_agency)):
+    """List recent webhook events for organization"""
+    try:
+        # Get webhook endpoints for this org to filter events
+        endpoints = await db.webhook_endpoints.find({"org_id": current.get("id")}).to_list(length=None)
+        endpoint_ids = [ep["_id"] for ep in endpoints]
+        
+        if not endpoint_ids:
+            return []
+            
+        # Get recent delivery attempts for these endpoints
+        attempts = await db.webhook_delivery_attempts.find({
+            "endpoint_id": {"$in": endpoint_ids}
+        }).sort("created_at", -1).limit(limit).to_list(length=None)
+        
+        # Get corresponding events
+        event_ids = [attempt["event_id"] for attempt in attempts]
+        events = await db.webhook_events.find({
+            "_id": {"$in": event_ids}
+        }).to_list(length=None)
+        
+        # Combine event and delivery data
+        event_map = {event["_id"]: event for event in events}
+        result = []
+        
+        for attempt in attempts:
+            if attempt["event_id"] in event_map:
+                event = event_map[attempt["event_id"]]
+                result.append({
+                    "event_id": event["_id"],
+                    "event_type": event["type"],
+                    "occurred_at": event["occurred_at"],
+                    "delivery_status": attempt["status"],
+                    "attempt_number": attempt["attempt_number"],
+                    "response_status": attempt.get("response_status"),
+                    "latency_ms": attempt.get("latency_ms"),
+                    "error": attempt.get("error")
+                })
+                
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error listing webhook events: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list webhook events")
+
+@api.post("/webhooks/test/{endpoint_id}")
+async def test_webhook_endpoint(endpoint_id: str, current=Depends(require_agency)):
+    """Send a test event to a webhook endpoint"""
+    try:
+        # Validate that endpoint belongs to current org
+        endpoint = await db.webhook_endpoints.find_one({
+            "_id": endpoint_id,
+            "org_id": current.get("id")
+        })
+        
+        if not endpoint:
+            raise HTTPException(status_code=404, detail="Webhook endpoint not found")
+            
+        # Create test event
+        test_data = {
+            "test": True,
+            "message": "This is a test webhook delivery",
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+        
+        # Publish test event (will only go to this specific endpoint)
+        await publish_webhook_event("test.webhook", test_data, current.get("id"))
+        
+        return {"message": "Test webhook sent successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error testing webhook endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Failed to test webhook endpoint")
+
 # Include router
 app.include_router(api)
 
+# Background task for webhook delivery
+import asyncio
+from typing import Optional as OptionalType
+
+webhook_delivery_task: OptionalType[asyncio.Task] = None
+
+async def webhook_delivery_worker():
+    """Background worker to process pending webhook deliveries"""
+    while True:
+        try:
+            # Find pending delivery attempts that are ready
+            pending_attempts = await db.webhook_delivery_attempts.find({
+                "status": "PENDING",
+                "next_attempt_at": {"$lte": datetime.utcnow()}
+            }).limit(10).to_list(length=None)
+            
+            if pending_attempts:
+                # Process attempts concurrently
+                delivery_tasks = [
+                    deliver_webhook_event(attempt["_id"]) 
+                    for attempt in pending_attempts
+                ]
+                await asyncio.gather(*delivery_tasks, return_exceptions=True)
+                logger.info(f"Processed {len(pending_attempts)} webhook delivery attempts")
+            
+            # Wait before next batch
+            await asyncio.sleep(10)  # Check every 10 seconds
+            
+        except Exception as e:
+            logger.error(f"Error in webhook delivery worker: {e}")
+            await asyncio.sleep(30)  # Wait longer on error
+
+@app.on_event("startup")
+async def startup_webhook_delivery():
+    """Start the webhook delivery background task"""
+    global webhook_delivery_task
+    
+    # Create database indexes for webhook collections
+    try:
+        # Webhook endpoints indexes
+        await db.webhook_endpoints.create_index([("org_id", 1), ("active", 1)])
+        await db.webhook_endpoints.create_index([("events", 1)])
+        
+        # Webhook events indexes  
+        await db.webhook_events.create_index([("type", 1)])
+        await db.webhook_events.create_index([("created_at", -1)])
+        
+        # Webhook delivery attempts indexes
+        await db.webhook_delivery_attempts.create_index([
+            ("endpoint_id", 1), ("status", 1), ("next_attempt_at", 1)
+        ])
+        await db.webhook_delivery_attempts.create_index([
+            ("status", 1)
+        ], partialFilterExpression={"status": "PENDING"})
+        
+        logger.info("Created webhook database indexes")
+        
+    except Exception as e:
+        logger.warning(f"Failed to create webhook indexes: {e}")
+    
+    if webhook_delivery_task is None:
+        webhook_delivery_task = asyncio.create_task(webhook_delivery_worker())
+        logger.info("Started webhook delivery background worker")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    global webhook_delivery_task
+    if webhook_delivery_task:
+        webhook_delivery_task.cancel()
+        try:
+            await webhook_delivery_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Stopped webhook delivery background worker")
     client.close()
