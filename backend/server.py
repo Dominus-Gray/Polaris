@@ -22,7 +22,40 @@ import random
 from functools import wraps
 import time
 import json
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST, Gauge
+
+# Existing Prometheus metrics
+# ... existing metrics code ...
+
+# SLA Monitoring Prometheus Metrics
+SLA_BREACH_COUNTER = Counter(
+    'polaris_sla_breaches_total',
+    'Total number of SLA breaches',
+    ['sla_slug', 'severity', 'objective_type']
+)
+
+SLA_COMPLIANCE_GAUGE = Gauge(
+    'polaris_sla_compliance_ratio',
+    'SLA compliance ratio (0-1)',
+    ['sla_slug', 'objective_type']
+)
+
+SLA_CURRENT_VALUE_GAUGE = Gauge(
+    'polaris_sla_current_value',
+    'Current measured value for SLA metric',
+    ['sla_slug', 'objective_type']
+)
+
+SLA_TARGET_VALUE_GAUGE = Gauge(
+    'polaris_sla_target_value',
+    'Target value for SLA metric',
+    ['sla_slug', 'objective_type']
+)
+
+SLA_EVALUATION_DURATION = Histogram(
+    'polaris_sla_evaluation_duration_seconds',
+    'Time taken to evaluate all SLA definitions'
+)
 from cryptography.fernet import Fernet
 from decimal import Decimal
 
@@ -1199,6 +1232,61 @@ class ServiceRating(BaseModel):
     would_recommend: bool
     created_at: datetime
 
+# SLA Breach Detection & Notification Data Models
+class SLADefinition(BaseModel):
+    """SLA Definition model for setting service level objectives"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    slug: str = Field(..., description="Unique identifier for the SLA")
+    description: str = Field(..., description="Human-readable description of the SLA")
+    objective_type: str = Field(..., pattern="^(latency|freshness|cadence|success_rate)$")
+    target_numeric: float = Field(..., description="Target value for the objective")
+    window_minutes: int = Field(..., description="Time window for evaluation in minutes")
+    threshold_operator: str = Field(..., pattern="^(lt|lte|gt|gte|eq)$")
+    enabled: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SLAInstance(BaseModel):
+    """Active SLA monitoring instance"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sla_definition_id: str = Field(..., description="Reference to SLA definition")
+    workflow_id: Optional[str] = Field(None, description="Specific workflow being monitored")
+    entity_id: Optional[str] = Field(None, description="Specific entity (user, assessment, etc.)")
+    status: str = Field(default="active", pattern="^(active|breached|resolved|disabled)$")
+    last_evaluated: Optional[datetime] = Field(None)
+    current_value: Optional[float] = Field(None, description="Current measured value")
+    breach_count: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SLABreach(BaseModel):
+    """SLA breach event record"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sla_instance_id: str = Field(..., description="Reference to SLA instance")
+    sla_definition_id: str = Field(..., description="Reference to SLA definition")
+    breach_value: float = Field(..., description="Value that caused the breach")
+    target_value: float = Field(..., description="Expected target value")
+    severity: str = Field(default="medium", pattern="^(low|medium|high|critical)$")
+    status: str = Field(default="open", pattern="^(open|acknowledged|resolved)$")
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    acknowledged_at: Optional[datetime] = Field(None)
+    resolved_at: Optional[datetime] = Field(None)
+    resolution_notes: Optional[str] = Field(None)
+    escalation_level: int = Field(default=0)
+
+class SLANotification(BaseModel):
+    """SLA notification/alert record"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sla_breach_id: str = Field(..., description="Reference to SLA breach")
+    notification_type: str = Field(..., pattern="^(email|webhook|dashboard)$")
+    recipient: str = Field(..., description="Email address or endpoint")
+    status: str = Field(default="pending", pattern="^(pending|sent|failed|delivered)$")
+    sent_at: Optional[datetime] = Field(None)
+    delivered_at: Optional[datetime] = Field(None)
+    failure_reason: Optional[str] = Field(None)
+    retry_count: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 class ServiceTrackingMilestone(BaseModel):
     """Interactive service tracking milestones"""
     milestone_id: str
@@ -1564,6 +1652,457 @@ class EngagementDataProcessor:
                 "rating_validation": "passed"
             }
         }
+
+# SLA Breach Detection & Notification Engine
+class SLAEvaluationEngine:
+    """Core engine for evaluating SLA compliance and detecting breaches"""
+    
+    @staticmethod
+    def evaluate_objective(objective_type: str, current_value: float, target_value: float, operator: str) -> bool:
+        """Evaluate if current value meets SLA objective"""
+        if operator == "lt":
+            return current_value < target_value
+        elif operator == "lte":
+            return current_value <= target_value
+        elif operator == "gt":
+            return current_value > target_value
+        elif operator == "gte":
+            return current_value >= target_value
+        elif operator == "eq":
+            return abs(current_value - target_value) < 0.001  # Float equality with tolerance
+        return False
+    
+    @staticmethod
+    def calculate_severity(current_value: float, target_value: float, objective_type: str) -> str:
+        """Calculate breach severity based on how far off target we are"""
+        if objective_type in ["latency", "freshness"]:
+            # For time-based metrics, higher values are worse
+            breach_ratio = current_value / target_value
+            if breach_ratio >= 3.0:
+                return "critical"
+            elif breach_ratio >= 2.0:
+                return "high"
+            elif breach_ratio >= 1.5:
+                return "medium"
+            else:
+                return "low"
+        elif objective_type == "success_rate":
+            # For success rates, lower values are worse
+            difference = target_value - current_value
+            if difference >= 50:
+                return "critical"
+            elif difference >= 25:
+                return "high"
+            elif difference >= 10:
+                return "medium"
+            else:
+                return "low"
+        else:
+            return "medium"  # Default for cadence and other types
+
+class SLADataCollector:
+    """Data collectors for various SLA metrics"""
+    
+    @staticmethod
+    async def collect_assessment_completion_latency() -> Dict[str, float]:
+        """Collect assessment completion latency metrics"""
+        try:
+            # Get assessments completed in the last 24 hours
+            twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+            
+            assessments = await db.assessments.find({
+                "completed_at": {"$gte": twenty_four_hours_ago},
+                "status": "completed"
+            }).to_list(length=None)
+            
+            latencies = []
+            for assessment in assessments:
+                if assessment.get("created_at") and assessment.get("completed_at"):
+                    delta = assessment["completed_at"] - assessment["created_at"]
+                    latency_minutes = delta.total_seconds() / 60
+                    latencies.append(latency_minutes)
+            
+            if not latencies:
+                return {"avg_latency": 0.0, "max_latency": 0.0, "count": 0}
+            
+            return {
+                "avg_latency": sum(latencies) / len(latencies),
+                "max_latency": max(latencies),
+                "count": len(latencies)
+            }
+        except Exception as e:
+            logging.error(f"Error collecting assessment completion latency: {e}")
+            return {"avg_latency": 0.0, "max_latency": 0.0, "count": 0}
+    
+    @staticmethod
+    async def collect_consent_processing_latency() -> Dict[str, float]:
+        """Collect consent processing latency metrics"""
+        try:
+            # Get consent requests processed in the last 24 hours
+            twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+            
+            consents = await db.consent_requests.find({
+                "processed_at": {"$gte": twenty_four_hours_ago},
+                "status": {"$in": ["approved", "denied"]}
+            }).to_list(length=None)
+            
+            latencies = []
+            for consent in consents:
+                if consent.get("created_at") and consent.get("processed_at"):
+                    delta = consent["processed_at"] - consent["created_at"]
+                    latency_minutes = delta.total_seconds() / 60
+                    latencies.append(latency_minutes)
+            
+            if not latencies:
+                return {"avg_latency": 0.0, "max_latency": 0.0, "count": 0}
+            
+            return {
+                "avg_latency": sum(latencies) / len(latencies),
+                "max_latency": max(latencies),
+                "count": len(latencies)
+            }
+        except Exception as e:
+            logging.error(f"Error collecting consent processing latency: {e}")
+            return {"avg_latency": 0.0, "max_latency": 0.0, "count": 0}
+    
+    @staticmethod
+    async def collect_analytics_job_freshness() -> Dict[str, float]:
+        """Collect analytics job freshness metrics"""
+        try:
+            # Get the most recent analytics job completion
+            latest_job = await db.analytics_jobs.find(
+                {"status": "completed"}
+            ).sort("completed_at", -1).limit(1).to_list(length=1)
+            
+            if not latest_job:
+                return {"freshness_minutes": float('inf'), "last_run": None}
+            
+            last_completion = latest_job[0]["completed_at"]
+            freshness_minutes = (datetime.utcnow() - last_completion).total_seconds() / 60
+            
+            return {
+                "freshness_minutes": freshness_minutes,
+                "last_run": last_completion.isoformat()
+            }
+        except Exception as e:
+            logging.error(f"Error collecting analytics job freshness: {e}")
+            return {"freshness_minutes": float('inf'), "last_run": None}
+
+class SLABreachManager:
+    """Manages SLA breach lifecycle and notifications"""
+    
+    @staticmethod
+    async def detect_and_handle_breaches():
+        """Main function to detect and handle SLA breaches"""
+        start_time = time.time()
+        try:
+            # Get all active SLA definitions
+            sla_definitions = await db.sla_definitions.find({"enabled": True}).to_list(length=None)
+            
+            for sla_def in sla_definitions:
+                await SLABreachManager._evaluate_sla_definition(sla_def)
+                
+            # Record evaluation duration
+            SLA_EVALUATION_DURATION.observe(time.time() - start_time)
+                
+        except Exception as e:
+            logging.error(f"Error in breach detection: {e}")
+            SLA_EVALUATION_DURATION.observe(time.time() - start_time)
+    
+    @staticmethod
+    async def _evaluate_sla_definition(sla_def: dict):
+        """Evaluate a specific SLA definition"""
+        try:
+            # Collect current metrics based on SLA type
+            current_value = await SLABreachManager._get_current_metric_value(sla_def)
+            
+            if current_value is None:
+                return
+            
+            # Update Prometheus metrics
+            SLA_CURRENT_VALUE_GAUGE.labels(
+                sla_slug=sla_def["slug"],
+                objective_type=sla_def["objective_type"]
+            ).set(current_value)
+            
+            SLA_TARGET_VALUE_GAUGE.labels(
+                sla_slug=sla_def["slug"],
+                objective_type=sla_def["objective_type"]
+            ).set(sla_def["target_numeric"])
+            
+            # Check if SLA is met
+            is_compliant = SLAEvaluationEngine.evaluate_objective(
+                sla_def["objective_type"],
+                current_value,
+                sla_def["target_numeric"],
+                sla_def["threshold_operator"]
+            )
+            
+            # Update compliance gauge
+            SLA_COMPLIANCE_GAUGE.labels(
+                sla_slug=sla_def["slug"],
+                objective_type=sla_def["objective_type"]
+            ).set(1.0 if is_compliant else 0.0)
+            
+            # Get or create SLA instance
+            instance = await SLABreachManager._get_or_create_instance(sla_def, current_value)
+            
+            if not is_compliant and instance["status"] != "breached":
+                # Create breach record
+                await SLABreachManager._create_breach_record(sla_def, instance, current_value)
+            elif is_compliant and instance["status"] == "breached":
+                # Resolve breach
+                await SLABreachManager._resolve_breach(sla_def, instance)
+                
+        except Exception as e:
+            logging.error(f"Error evaluating SLA definition {sla_def.get('slug', 'unknown')}: {e}")
+    
+    @staticmethod
+    async def _get_current_metric_value(sla_def: dict) -> Optional[float]:
+        """Get current metric value based on SLA type"""
+        slug = sla_def["slug"]
+        
+        if "assessment_completion" in slug:
+            metrics = await SLADataCollector.collect_assessment_completion_latency()
+            return metrics.get("avg_latency")
+        elif "consent_processing" in slug:
+            metrics = await SLADataCollector.collect_consent_processing_latency()
+            return metrics.get("avg_latency")
+        elif "analytics_freshness" in slug:
+            metrics = await SLADataCollector.collect_analytics_job_freshness()
+            return metrics.get("freshness_minutes")
+        
+        return None
+    
+    @staticmethod
+    async def _get_or_create_instance(sla_def: dict, current_value: float) -> dict:
+        """Get or create SLA instance for monitoring"""
+        instance = await db.sla_instances.find_one({"sla_definition_id": sla_def["id"]})
+        
+        if not instance:
+            instance_doc = {
+                "id": str(uuid.uuid4()),
+                "sla_definition_id": sla_def["id"],
+                "status": "active",
+                "current_value": current_value,
+                "breach_count": 0,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await db.sla_instances.insert_one(instance_doc)
+            return instance_doc
+        else:
+            # Update current value and timestamp
+            await db.sla_instances.update_one(
+                {"id": instance["id"]},
+                {
+                    "$set": {
+                        "current_value": current_value,
+                        "last_evaluated": datetime.utcnow(),
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            instance["current_value"] = current_value
+            return instance
+    
+    @staticmethod
+    async def _create_breach_record(sla_def: dict, instance: dict, breach_value: float):
+        """Create a new breach record and trigger notifications"""
+        severity = SLAEvaluationEngine.calculate_severity(
+            breach_value, sla_def["target_numeric"], sla_def["objective_type"]
+        )
+        
+        # Record breach in Prometheus metrics
+        SLA_BREACH_COUNTER.labels(
+            sla_slug=sla_def["slug"],
+            severity=severity,
+            objective_type=sla_def["objective_type"]
+        ).inc()
+        
+        breach_doc = {
+            "id": str(uuid.uuid4()),
+            "sla_instance_id": instance["id"],
+            "sla_definition_id": sla_def["id"],
+            "breach_value": breach_value,
+            "target_value": sla_def["target_numeric"],
+            "severity": severity,
+            "status": "open",
+            "detected_at": datetime.utcnow(),
+            "escalation_level": 0
+        }
+        
+        await db.sla_breaches.insert_one(breach_doc)
+        
+        # Update instance status
+        await db.sla_instances.update_one(
+            {"id": instance["id"]},
+            {
+                "$set": {"status": "breached"},
+                "$inc": {"breach_count": 1}
+            }
+        )
+        
+        # Trigger notifications
+        await SLABreachManager._send_breach_notifications(breach_doc, sla_def)
+    
+    @staticmethod
+    async def _resolve_breach(sla_def: dict, instance: dict):
+        """Resolve active breaches for an SLA instance"""
+        # Mark open breaches as resolved
+        await db.sla_breaches.update_many(
+            {
+                "sla_instance_id": instance["id"],
+                "status": "open"
+            },
+            {
+                "$set": {
+                    "status": "resolved",
+                    "resolved_at": datetime.utcnow(),
+                    "resolution_notes": "SLA compliance restored"
+                }
+            }
+        )
+        
+        # Update instance status
+        await db.sla_instances.update_one(
+            {"id": instance["id"]},
+            {"$set": {"status": "active"}}
+        )
+    
+    @staticmethod
+    async def _send_breach_notifications(breach: dict, sla_def: dict):
+        """Send notifications for SLA breach"""
+        try:
+            # For now, just log the breach - notification system can be enhanced
+            logging.warning(
+                f"SLA BREACH DETECTED: {sla_def['slug']} - "
+                f"Current: {breach['breach_value']}, Target: {breach['target_value']}, "
+                f"Severity: {breach['severity']}"
+            )
+            
+            # Create notification record for audit trail
+            notification_doc = {
+                "id": str(uuid.uuid4()),
+                "sla_breach_id": breach["id"],
+                "notification_type": "dashboard",
+                "recipient": "admin",
+                "status": "sent",
+                "sent_at": datetime.utcnow(),
+                "created_at": datetime.utcnow()
+            }
+            
+            await db.sla_notifications.insert_one(notification_doc)
+            
+        except Exception as e:
+            logging.error(f"Error sending breach notifications: {e}")
+
+# Initialize default SLA definitions
+async def initialize_default_slas():
+    """Initialize default SLA definitions for key Polaris workflows"""
+    try:
+        default_slas = [
+            {
+                "id": str(uuid.uuid4()),
+                "slug": "assessment_completion_latency",
+                "description": "Assessment completion should average under 30 minutes",
+                "objective_type": "latency",
+                "target_numeric": 30.0,  # 30 minutes
+                "window_minutes": 1440,  # 24 hours
+                "threshold_operator": "lte",
+                "enabled": True,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "slug": "consent_processing_latency",
+                "description": "Consent requests should be processed within 2 hours",
+                "objective_type": "latency",
+                "target_numeric": 120.0,  # 2 hours
+                "window_minutes": 1440,  # 24 hours
+                "threshold_operator": "lte",
+                "enabled": True,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "slug": "analytics_job_freshness",
+                "description": "Analytics jobs should run at least every 6 hours",
+                "objective_type": "freshness",
+                "target_numeric": 360.0,  # 6 hours
+                "window_minutes": 360,  # 6 hours
+                "threshold_operator": "lte",
+                "enabled": True,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "slug": "action_plan_update_cadence",
+                "description": "Action plan updates should occur weekly",
+                "objective_type": "cadence",
+                "target_numeric": 10080.0,  # 7 days in minutes
+                "window_minutes": 10080,  # 7 days
+                "threshold_operator": "lte",
+                "enabled": True,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+        ]
+        
+        for sla_def in default_slas:
+            # Only create if doesn't exist
+            existing = await db.sla_definitions.find_one({"slug": sla_def["slug"]})
+            if not existing:
+                await db.sla_definitions.insert_one(sla_def)
+                logging.info(f"Created default SLA definition: {sla_def['slug']}")
+        
+    except Exception as e:
+        logging.error(f"Error initializing default SLAs: {e}")
+
+# Background task for SLA monitoring
+import asyncio
+from threading import Thread
+
+class SLAMonitorService:
+    """Background service for continuous SLA monitoring"""
+    
+    def __init__(self):
+        self.running = False
+        self.thread = None
+    
+    def start(self):
+        """Start the SLA monitoring service"""
+        if not self.running:
+            self.running = True
+            self.thread = Thread(target=self._run_monitoring_loop, daemon=True)
+            self.thread.start()
+            logging.info("SLA monitoring service started")
+    
+    def stop(self):
+        """Stop the SLA monitoring service"""
+        self.running = False
+        if self.thread:
+            self.thread.join()
+        logging.info("SLA monitoring service stopped")
+    
+    def _run_monitoring_loop(self):
+        """Main monitoring loop"""
+        while self.running:
+            try:
+                # Run SLA evaluation in new event loop (since this is a separate thread)
+                asyncio.run(SLABreachManager.detect_and_handle_breaches())
+                logging.debug("SLA evaluation cycle completed")
+            except Exception as e:
+                logging.error(f"Error in SLA monitoring loop: {e}")
+            
+            # Wait 5 minutes before next evaluation
+            time.sleep(300)
+
+# Global SLA monitoring service instance
+sla_monitor_service = SLAMonitorService()
 
 async def require_user(current=Depends(get_current_user)) -> dict:
     if not current:
@@ -15703,9 +16242,251 @@ async def external_services_health_check():
         "services": services
     }
 
+# SLA Management API Endpoints
+@api.post("/sla/definitions")
+async def create_sla_definition(sla_def: SLADefinition, current=Depends(require_roles("admin", "navigator"))):
+    """Create a new SLA definition"""
+    try:
+        # Check if slug already exists
+        existing = await db.sla_definitions.find_one({"slug": sla_def.slug})
+        if existing:
+            raise HTTPException(status_code=400, detail="SLA definition with this slug already exists")
+        
+        sla_doc = sla_def.dict()
+        await db.sla_definitions.insert_one(sla_doc)
+        
+        return {"message": "SLA definition created successfully", "id": sla_doc["id"]}
+    except Exception as e:
+        logging.error(f"Error creating SLA definition: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create SLA definition")
+
+@api.get("/sla/definitions")
+async def list_sla_definitions(current=Depends(require_roles("admin", "navigator"))):
+    """List all SLA definitions"""
+    try:
+        sla_definitions = await db.sla_definitions.find({}).to_list(length=None)
+        return sla_definitions
+    except Exception as e:
+        logging.error(f"Error listing SLA definitions: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list SLA definitions")
+
+@api.get("/sla/definitions/{sla_id}")
+async def get_sla_definition(sla_id: str, current=Depends(require_roles("admin", "navigator"))):
+    """Get a specific SLA definition"""
+    try:
+        sla_def = await db.sla_definitions.find_one({"id": sla_id})
+        if not sla_def:
+            raise HTTPException(status_code=404, detail="SLA definition not found")
+        return sla_def
+    except Exception as e:
+        logging.error(f"Error getting SLA definition: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get SLA definition")
+
+@api.put("/sla/definitions/{sla_id}")
+async def update_sla_definition(sla_id: str, sla_def: SLADefinition, current=Depends(require_roles("admin", "navigator"))):
+    """Update an SLA definition"""
+    try:
+        sla_def.updated_at = datetime.utcnow()
+        result = await db.sla_definitions.update_one(
+            {"id": sla_id},
+            {"$set": sla_def.dict()}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="SLA definition not found")
+        
+        return {"message": "SLA definition updated successfully"}
+    except Exception as e:
+        logging.error(f"Error updating SLA definition: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update SLA definition")
+
+@api.delete("/sla/definitions/{sla_id}")
+async def delete_sla_definition(sla_id: str, current=Depends(require_roles("admin", "navigator"))):
+    """Delete an SLA definition"""
+    try:
+        result = await db.sla_definitions.delete_one({"id": sla_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="SLA definition not found")
+        
+        return {"message": "SLA definition deleted successfully"}
+    except Exception as e:
+        logging.error(f"Error deleting SLA definition: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete SLA definition")
+
+@api.get("/sla/instances")
+async def list_sla_instances(current=Depends(require_roles("admin", "navigator"))):
+    """List all SLA instances with current status"""
+    try:
+        instances = await db.sla_instances.find({}).to_list(length=None)
+        
+        # Enrich with SLA definition details
+        for instance in instances:
+            sla_def = await db.sla_definitions.find_one({"id": instance["sla_definition_id"]})
+            if sla_def:
+                instance["sla_definition"] = {
+                    "slug": sla_def["slug"],
+                    "description": sla_def["description"],
+                    "objective_type": sla_def["objective_type"],
+                    "target_numeric": sla_def["target_numeric"]
+                }
+        
+        return instances
+    except Exception as e:
+        logging.error(f"Error listing SLA instances: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list SLA instances")
+
+@api.get("/sla/breaches")
+async def list_sla_breaches(
+    status: Optional[str] = Query(None, regex="^(open|acknowledged|resolved)$"),
+    severity: Optional[str] = Query(None, regex="^(low|medium|high|critical)$"),
+    current=Depends(require_roles("admin", "navigator"))
+):
+    """List SLA breaches with optional filtering"""
+    try:
+        filter_criteria = {}
+        if status:
+            filter_criteria["status"] = status
+        if severity:
+            filter_criteria["severity"] = severity
+        
+        breaches = await db.sla_breaches.find(filter_criteria).sort("detected_at", -1).to_list(length=100)
+        
+        # Enrich with SLA definition details
+        for breach in breaches:
+            sla_def = await db.sla_definitions.find_one({"id": breach["sla_definition_id"]})
+            if sla_def:
+                breach["sla_definition"] = {
+                    "slug": sla_def["slug"],
+                    "description": sla_def["description"],
+                    "objective_type": sla_def["objective_type"]
+                }
+        
+        return breaches
+    except Exception as e:
+        logging.error(f"Error listing SLA breaches: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list SLA breaches")
+
+@api.put("/sla/breaches/{breach_id}/acknowledge")
+async def acknowledge_sla_breach(breach_id: str, current=Depends(require_roles("admin", "navigator"))):
+    """Acknowledge an SLA breach"""
+    try:
+        result = await db.sla_breaches.update_one(
+            {"id": breach_id, "status": "open"},
+            {
+                "$set": {
+                    "status": "acknowledged",
+                    "acknowledged_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Open breach not found")
+        
+        return {"message": "SLA breach acknowledged successfully"}
+    except Exception as e:
+        logging.error(f"Error acknowledging SLA breach: {e}")
+        raise HTTPException(status_code=500, detail="Failed to acknowledge SLA breach")
+
+@api.put("/sla/breaches/{breach_id}/resolve")
+async def resolve_sla_breach(
+    breach_id: str,
+    resolution_notes: str = None,
+    current=Depends(require_roles("admin", "navigator"))
+):
+    """Resolve an SLA breach"""
+    try:
+        result = await db.sla_breaches.update_one(
+            {"id": breach_id, "status": {"$in": ["open", "acknowledged"]}},
+            {
+                "$set": {
+                    "status": "resolved",
+                    "resolved_at": datetime.utcnow(),
+                    "resolution_notes": resolution_notes
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Active breach not found")
+        
+        return {"message": "SLA breach resolved successfully"}
+    except Exception as e:
+        logging.error(f"Error resolving SLA breach: {e}")
+        raise HTTPException(status_code=500, detail="Failed to resolve SLA breach")
+
+@api.get("/sla/metrics")
+async def get_sla_metrics(current=Depends(require_roles("admin", "navigator"))):
+    """Get current SLA metrics and compliance status"""
+    try:
+        # Collect current metrics
+        assessment_metrics = await SLADataCollector.collect_assessment_completion_latency()
+        consent_metrics = await SLADataCollector.collect_consent_processing_latency()
+        analytics_metrics = await SLADataCollector.collect_analytics_job_freshness()
+        
+        # Get breach summary
+        total_breaches = await db.sla_breaches.count_documents({})
+        open_breaches = await db.sla_breaches.count_documents({"status": "open"})
+        critical_breaches = await db.sla_breaches.count_documents({"severity": "critical", "status": "open"})
+        
+        # Get active SLA definitions count
+        active_slas = await db.sla_definitions.count_documents({"enabled": True})
+        
+        return {
+            "current_metrics": {
+                "assessment_completion": assessment_metrics,
+                "consent_processing": consent_metrics,
+                "analytics_freshness": analytics_metrics
+            },
+            "breach_summary": {
+                "total_breaches": total_breaches,
+                "open_breaches": open_breaches,
+                "critical_breaches": critical_breaches
+            },
+            "sla_summary": {
+                "active_definitions": active_slas,
+                "last_evaluation": datetime.utcnow().isoformat()
+            }
+        }
+    except Exception as e:
+        logging.error(f"Error getting SLA metrics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get SLA metrics")
+
+@api.post("/sla/evaluate")
+async def trigger_sla_evaluation(current=Depends(require_roles("admin", "navigator"))):
+    """Manually trigger SLA evaluation for all active definitions"""
+    try:
+        await SLABreachManager.detect_and_handle_breaches()
+        return {"message": "SLA evaluation completed successfully"}
+    except Exception as e:
+        logging.error(f"Error triggering SLA evaluation: {e}")
+        raise HTTPException(status_code=500, detail="Failed to trigger SLA evaluation")
+
+@api.get("/sla/notifications")
+async def list_sla_notifications(current=Depends(require_roles("admin", "navigator"))):
+    """List SLA notifications/alerts"""
+    try:
+        notifications = await db.sla_notifications.find({}).sort("created_at", -1).limit(100).to_list(length=100)
+        return notifications
+    except Exception as e:
+        logging.error(f"Error listing SLA notifications: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list SLA notifications")
+
 # Include router
 app.include_router(api)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize SLA system on startup"""
+    try:
+        await initialize_default_slas()
+        sla_monitor_service.start()
+        logging.info("SLA Breach Detection & Notification system initialized")
+    except Exception as e:
+        logging.error(f"Error initializing SLA system: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    sla_monitor_service.stop()
     client.close()
