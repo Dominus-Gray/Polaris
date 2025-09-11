@@ -125,6 +125,15 @@ function isOptionalToRequiredChange(change, pathStr) {
         const addedRequired = change.newValue.filter((item) => !change.oldValue.includes(item));
         return addedRequired.length > 0;
     }
+    // Check if we're modifying an individual element in a required array
+    // and it's adding a new required field
+    if (pathStr.includes('.required.') && change.oldValue !== change.newValue) {
+        // Get the parent path to check if this is a required array modification
+        const pathParts = change.path;
+        if (pathParts.length >= 2 && pathParts[pathParts.length - 2] === 'required') {
+            return true; // Changing required array elements is breaking
+        }
+    }
     return false;
 }
 function isDeprecatedRemoval(change, config) {
