@@ -286,6 +286,239 @@ async def ai_resources(req: AIResourcesReq, current=Depends(require_user)):
         logger.exception("AI resources failed")
         raise HTTPException(status_code=500, detail=f"AI error: {e}")
 
+# --------------- Action Plan Versioning & Recommendation Engine ---------------
+from enum import Enum
+from typing import Union, Any
+import json
+
+class ActionPlanStatus(str, Enum):
+    draft = "draft"
+    suggested = "suggested"
+    active = "active"
+    archived = "archived"
+
+class Goal(BaseModel):
+    id: str
+    title: str
+    description: str
+    target_metrics: Optional[Dict[str, Any]] = None
+    timeframe: Optional[str] = None
+    assigned_roles: List[str] = []
+
+class Intervention(BaseModel):
+    id: str
+    goal_id: str
+    title: str
+    description: str
+    type: str  # e.g., "training", "process_improvement", "tool_adoption"
+    resources_required: List[str] = []
+    estimated_duration: Optional[str] = None
+
+class ActionPlan(BaseModel):
+    id: str
+    client_id: str
+    version: int
+    status: ActionPlanStatus
+    goals: List[Goal]
+    interventions: List[Intervention]
+    generated_by_type: Optional[str] = None  # e.g., "rule_engine", "manual"
+    supersedes_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    updated_at: datetime
+
+class PlanSeries(BaseModel):
+    id: str
+    client_id: str
+    active_plan_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+class ActionPlanDiff(BaseModel):
+    id: str
+    from_plan_id: str
+    to_plan_id: str
+    summary_json: Dict[str, Any]
+    created_at: datetime
+
+class RecommendationProvider:
+    """Abstract interface for recommendation providers"""
+    
+    def generate_plan(self, client_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate a plan proposal with goals, interventions, and metadata"""
+        raise NotImplementedError
+
+class RuleBasedBaselineRecommendationProvider(RecommendationProvider):
+    """Stub provider using simple heuristic rules"""
+    
+    def __init__(self, rules_config: Dict[str, Any] = None):
+        self.rules = rules_config or self._get_default_rules()
+    
+    def _get_default_rules(self) -> Dict[str, Any]:
+        return {
+            "risk_score_thresholds": {
+                "high": {"min": 75, "goals": ["Improve financial management", "Enhance compliance"]},
+                "medium": {"min": 50, "goals": ["Standardize processes", "Documentation improvement"]},
+                "low": {"min": 0, "goals": ["Maintain current standards"]}
+            }
+        }
+    
+    def generate_plan(self, client_context: Dict[str, Any]) -> Dict[str, Any]:
+        risk_score = client_context.get("risk_score", 0)
+        readiness_percent = client_context.get("readiness_percent", 0)
+        
+        # Determine risk level and associated goals
+        if risk_score >= 75 or readiness_percent < 25:
+            risk_level = "high"
+        elif risk_score >= 50 or readiness_percent < 50:
+            risk_level = "medium"
+        else:
+            risk_level = "low"
+        
+        rule_goals = self.rules["risk_score_thresholds"][risk_level]["goals"]
+        
+        goals = []
+        interventions = []
+        
+        for i, goal_title in enumerate(rule_goals):
+            goal_id = f"goal_{i+1}"
+            goals.append({
+                "id": goal_id,
+                "title": goal_title,
+                "description": f"Auto-generated goal: {goal_title}",
+                "target_metrics": {"completion_rate": 100},
+                "timeframe": "3 months",
+                "assigned_roles": ["client"]
+            })
+            
+            # Add default intervention for each goal
+            interventions.append({
+                "id": f"intervention_{i+1}",
+                "goal_id": goal_id,
+                "title": f"Implementation plan for {goal_title}",
+                "description": f"Systematic approach to achieve {goal_title}",
+                "type": "process_improvement",
+                "resources_required": ["time", "documentation"],
+                "estimated_duration": "4-6 weeks"
+            })
+        
+        return {
+            "goals": goals,
+            "interventions": interventions,
+            "metadata": {
+                "rationale": [f"Based on {risk_level} risk assessment"],
+                "source_tags": ["rule_engine", risk_level],
+                "generation_context": client_context
+            }
+        }
+
+class ActionPlanRecommender:
+    """Service for orchestrating action plan recommendations"""
+    
+    def __init__(self, provider: RecommendationProvider):
+        self.provider = provider
+    
+    async def generate_recommendation(self, client_id: str) -> str:
+        """Generate and persist a suggested action plan for a client"""
+        # Load client context
+        client_context = await self._load_client_context(client_id)
+        
+        # Generate plan proposal
+        proposal = self.provider.generate_plan(client_context)
+        
+        # Get next version number for this client
+        next_version = await self._get_next_version_number(client_id)
+        
+        # Create action plan document
+        plan_id = str(uuid.uuid4())
+        plan_doc = {
+            "_id": plan_id,
+            "id": plan_id,
+            "client_id": client_id,
+            "version": next_version,
+            "status": ActionPlanStatus.suggested.value,
+            "goals": proposal["goals"],
+            "interventions": proposal["interventions"],
+            "generated_by_type": "rule_engine",
+            "supersedes_id": None,
+            "metadata": proposal.get("metadata", {}),
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Persist the plan
+        await db.action_plans.insert_one(plan_doc)
+        
+        # Emit domain event
+        await self._emit_event("ActionPlanSuggested", {
+            "plan_id": plan_id,
+            "client_id": client_id,
+            "version": next_version,
+            "generated_by": "rule_engine"
+        })
+        
+        return plan_id
+    
+    async def _load_client_context(self, client_id: str) -> Dict[str, Any]:
+        """Load client profile and latest assessments for context"""
+        # Simplified for MVP - would load actual client data
+        return {
+            "client_id": client_id,
+            "risk_score": 60,  # Would be computed from assessments
+            "readiness_percent": 45,  # Would be computed from latest assessment
+            "assessment_gaps": ["financial_management", "compliance"],
+            "industry": "technology"
+        }
+    
+    async def _get_next_version_number(self, client_id: str) -> int:
+        """Get the next version number for this client's action plans"""
+        latest = await db.action_plans.find_one(
+            {"client_id": client_id},
+            sort=[("version", -1)]
+        )
+        return (latest.get("version") if latest else 0) + 1
+    
+    async def _emit_event(self, event_type: str, payload: Dict[str, Any]):
+        """Emit domain event for observability"""
+        event_doc = {
+            "_id": str(uuid.uuid4()),
+            "event_type": event_type,
+            "payload": payload,
+            "created_at": datetime.utcnow()
+        }
+        await db.domain_events.insert_one(event_doc)
+        logger.info(f"Emitted event: {event_type}", extra={"event": payload})
+
+# Action Plan API Models
+class ActionPlanCreateReq(BaseModel):
+    goals: List[Goal]
+    interventions: List[Intervention]
+    metadata: Optional[Dict[str, Any]] = None
+
+class ActionPlanResp(BaseModel):
+    id: str
+    client_id: str
+    version: int
+    status: ActionPlanStatus
+    goals: List[Goal]
+    interventions: List[Intervention]
+    generated_by_type: Optional[str] = None
+    supersedes_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    updated_at: datetime
+
+class ActionPlanDiffResp(BaseModel):
+    id: str
+    from_plan_id: str
+    to_plan_id: str
+    summary: Dict[str, Any]
+    created_at: datetime
+
+# Initialize recommender with default provider
+default_provider = RuleBasedBaselineRecommendationProvider()
+action_plan_recommender = ActionPlanRecommender(default_provider)
+
 # --------------- Assessment fees (agency & client) ---------------
 ASSESSMENT_TIERING = os.environ.get("ASSESSMENT_TIERING", "flat")  # flat | volume
 ASSESSMENT_FLAT_AMOUNT = float(os.environ.get("ASSESSMENT_FLAT_AMOUNT", 100))
@@ -468,6 +701,244 @@ async def agency_impact(current=Depends(require_role("agency"))):
         else:
             buckets["75_100"] += 1
     return {"invites": {"total": invites_total, "paid": invites_paid, "accepted": invites_accepted}, "revenue": {"assessment_fees": assessment_revenue}, "opportunities": {"count": opp_count}, "certificates": {"issued": cert_count}, "readiness_buckets": buckets}
+
+# --------------- Action Plan API Endpoints ---------------
+
+async def compute_action_plan_diff(from_plan: Dict[str, Any], to_plan: Dict[str, Any]) -> Dict[str, Any]:
+    """Compute differences between two action plans"""
+    diff = {
+        "added": {"goals": [], "interventions": []},
+        "removed": {"goals": [], "interventions": []},
+        "changed": {"goals": [], "interventions": []}
+    }
+    
+    # Compare goals
+    from_goals = {g["id"]: g for g in from_plan.get("goals", [])}
+    to_goals = {g["id"]: g for g in to_plan.get("goals", [])}
+    
+    # Added goals
+    for goal_id, goal in to_goals.items():
+        if goal_id not in from_goals:
+            diff["added"]["goals"].append(goal)
+    
+    # Removed goals
+    for goal_id, goal in from_goals.items():
+        if goal_id not in to_goals:
+            diff["removed"]["goals"].append(goal)
+    
+    # Changed goals
+    for goal_id in from_goals:
+        if goal_id in to_goals:
+            from_goal = from_goals[goal_id]
+            to_goal = to_goals[goal_id]
+            changed_fields = []
+            
+            for field in ["title", "description", "target_metrics", "timeframe", "assigned_roles"]:
+                if from_goal.get(field) != to_goal.get(field):
+                    changed_fields.append(field)
+            
+            if changed_fields:
+                diff["changed"]["goals"].append({
+                    "id": goal_id,
+                    "fields_changed": changed_fields
+                })
+    
+    # Compare interventions (similar logic)
+    from_interventions = {i["id"]: i for i in from_plan.get("interventions", [])}
+    to_interventions = {i["id"]: i for i in to_plan.get("interventions", [])}
+    
+    for intervention_id, intervention in to_interventions.items():
+        if intervention_id not in from_interventions:
+            diff["added"]["interventions"].append(intervention)
+    
+    for intervention_id, intervention in from_interventions.items():
+        if intervention_id not in to_interventions:
+            diff["removed"]["interventions"].append(intervention)
+    
+    for intervention_id in from_interventions:
+        if intervention_id in to_interventions:
+            from_intervention = from_interventions[intervention_id]
+            to_intervention = to_interventions[intervention_id]
+            changed_fields = []
+            
+            for field in ["title", "description", "type", "resources_required", "estimated_duration"]:
+                if from_intervention.get(field) != to_intervention.get(field):
+                    changed_fields.append(field)
+            
+            if changed_fields:
+                diff["changed"]["interventions"].append({
+                    "id": intervention_id,
+                    "fields_changed": changed_fields
+                })
+    
+    return diff
+
+@api.post("/clients/{client_id}/action-plans/recommend")
+async def recommend_action_plan(client_id: str, current=Depends(require_user)):
+    """Generate a recommended action plan for a client"""
+    # Check permissions (simplified for MVP)
+    if current.get("role") not in ("navigator", "agency"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    try:
+        plan_id = await action_plan_recommender.generate_recommendation(client_id)
+        
+        # Retrieve the created plan
+        plan_doc = await db.action_plans.find_one({"_id": plan_id})
+        if not plan_doc:
+            raise HTTPException(status_code=500, detail="Failed to retrieve generated plan")
+        
+        return ActionPlanResp(**plan_doc)
+    
+    except Exception as e:
+        logger.exception(f"Failed to generate recommendation for client {client_id}")
+        raise HTTPException(status_code=500, detail=f"Recommendation failed: {str(e)}")
+
+@api.post("/action-plans/{plan_id}/activate")
+async def activate_action_plan(plan_id: str, current=Depends(require_user)):
+    """Activate a suggested action plan, archiving the previous active plan"""
+    # Check permissions
+    if current.get("role") not in ("navigator", "agency", "client"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    plan = await db.action_plans.find_one({"_id": plan_id})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Action plan not found")
+    
+    if plan["status"] not in [ActionPlanStatus.suggested.value, ActionPlanStatus.draft.value]:
+        raise HTTPException(status_code=400, detail="Can only activate suggested or draft plans")
+    
+    client_id = plan["client_id"]
+    
+    try:
+        # Start transaction-like operations
+        # Find current active plan
+        current_active = await db.action_plans.find_one({
+            "client_id": client_id,
+            "status": ActionPlanStatus.active.value
+        })
+        
+        # Archive current active plan if exists
+        if current_active:
+            await db.action_plans.update_one(
+                {"_id": current_active["_id"]},
+                {"$set": {"status": ActionPlanStatus.archived.value, "updated_at": datetime.utcnow()}}
+            )
+            
+            # Compute and store diff
+            diff_summary = await compute_action_plan_diff(current_active, plan)
+            diff_doc = {
+                "_id": str(uuid.uuid4()),
+                "from_plan_id": current_active["_id"],
+                "to_plan_id": plan_id,
+                "summary_json": diff_summary,
+                "created_at": datetime.utcnow()
+            }
+            await db.action_plan_diffs.insert_one(diff_doc)
+            
+            # Update plan with supersedes reference
+            await db.action_plans.update_one(
+                {"_id": plan_id},
+                {"$set": {"supersedes_id": current_active["_id"]}}
+            )
+        
+        # Activate the new plan
+        await db.action_plans.update_one(
+            {"_id": plan_id},
+            {"$set": {"status": ActionPlanStatus.active.value, "updated_at": datetime.utcnow()}}
+        )
+        
+        # Update plan series
+        await db.plan_series.update_one(
+            {"client_id": client_id},
+            {
+                "$set": {"active_plan_id": plan_id, "updated_at": datetime.utcnow()},
+                "$setOnInsert": {"_id": str(uuid.uuid4()), "client_id": client_id, "created_at": datetime.utcnow()}
+            },
+            upsert=True
+        )
+        
+        # Emit events
+        await action_plan_recommender._emit_event("ActionPlanVersionActivated", {
+            "plan_id": plan_id,
+            "client_id": client_id,
+            "version": plan["version"],
+            "supersedes_id": current_active["_id"] if current_active else None
+        })
+        
+        if current_active:
+            await action_plan_recommender._emit_event("ActionPlanDiffComputed", {
+                "from_plan_id": current_active["_id"],
+                "to_plan_id": plan_id,
+                "client_id": client_id
+            })
+        
+        # Return updated plan
+        updated_plan = await db.action_plans.find_one({"_id": plan_id})
+        return ActionPlanResp(**updated_plan)
+        
+    except Exception as e:
+        logger.exception(f"Failed to activate action plan {plan_id}")
+        raise HTTPException(status_code=500, detail=f"Activation failed: {str(e)}")
+
+@api.get("/action-plans/{plan_id}/diffs")
+async def get_action_plan_diffs(plan_id: str, current=Depends(require_user)):
+    """Get diffs related to an action plan (both directions)"""
+    # Check permissions
+    if current.get("role") not in ("navigator", "agency", "client"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Find diffs where this plan is either from or to
+    diffs = await db.action_plan_diffs.find({
+        "$or": [
+            {"from_plan_id": plan_id},
+            {"to_plan_id": plan_id}
+        ]
+    }).sort("created_at", -1).to_list(100)
+    
+    diff_responses = []
+    for diff in diffs:
+        diff_responses.append(ActionPlanDiffResp(
+            id=diff["_id"],
+            from_plan_id=diff["from_plan_id"],
+            to_plan_id=diff["to_plan_id"],
+            summary=diff["summary_json"],
+            created_at=diff["created_at"]
+        ))
+    
+    return {"diffs": diff_responses}
+
+@api.get("/clients/{client_id}/action-plans")
+async def get_client_action_plans(client_id: str, status: Optional[str] = None, current=Depends(require_user)):
+    """Get action plans for a client, optionally filtered by status"""
+    # Check permissions (simplified)
+    if current.get("role") not in ("navigator", "agency", "client"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    query = {"client_id": client_id}
+    if status:
+        query["status"] = status
+    
+    plans = await db.action_plans.find(query).sort("version", -1).to_list(100)
+    
+    plan_responses = []
+    for plan in plans:
+        plan_responses.append(ActionPlanResp(**plan))
+    
+    return {"action_plans": plan_responses}
+
+@api.get("/action-plans/{plan_id}")
+async def get_action_plan(plan_id: str, current=Depends(require_user)):
+    """Get a specific action plan by ID"""
+    # Check permissions
+    if current.get("role") not in ("navigator", "agency", "client"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    plan = await db.action_plans.find_one({"_id": plan_id})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Action plan not found")
+    
+    return ActionPlanResp(**plan)
 
 # --------------- Financial Core + Matching remain as implemented above ---------------
 # ... existing financial endpoints ...

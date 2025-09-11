@@ -1,0 +1,116 @@
+# Action Plan Recommendation Rules Configuration
+# Used by RuleBasedBaselineRecommendationProvider
+
+risk_score_thresholds:
+  high:
+    min: 75
+    goals:
+      - "Strengthen financial management systems"
+      - "Implement comprehensive compliance framework"
+      - "Establish risk mitigation protocols"
+      - "Enhance documentation and record-keeping"
+    interventions:
+      financial_management:
+        type: "training"
+        description: "Comprehensive financial management training program"
+        duration: "8 weeks"
+        resources: ["financial_advisor", "accounting_software", "training_materials"]
+      compliance:
+        type: "process_improvement"
+        description: "Develop and implement compliance management system"
+        duration: "12 weeks"
+        resources: ["compliance_consultant", "documentation_tools", "audit_preparation"]
+  
+  medium:
+    min: 50
+    goals:
+      - "Standardize operational processes"
+      - "Improve documentation practices"
+      - "Enhance quality control measures"
+      - "Strengthen vendor relationships"
+    interventions:
+      process_standardization:
+        type: "process_improvement"
+        description: "Document and standardize key business processes"
+        duration: "6 weeks"
+        resources: ["process_consultant", "documentation_tools"]
+      quality_control:
+        type: "tool_adoption"
+        description: "Implement quality management system"
+        duration: "4 weeks"
+        resources: ["quality_management_software", "training"]
+  
+  low:
+    min: 0
+    goals:
+      - "Maintain current operational standards"
+      - "Pursue growth opportunities"
+      - "Optimize existing processes"
+    interventions:
+      optimization:
+        type: "process_improvement"
+        description: "Optimize current processes for efficiency"
+        duration: "3 weeks"
+        resources: ["process_analyst", "optimization_tools"]
+
+readiness_percent_adjustments:
+  # Additional goals based on specific readiness gaps
+  below_25:
+    goals:
+      - "Establish basic business structure"
+      - "Implement fundamental compliance measures"
+  below_50:
+    goals:
+      - "Improve operational consistency"
+      - "Enhance documentation systems"
+  below_75:
+    goals:
+      - "Refine advanced processes"
+      - "Prepare for growth scaling"
+
+area_specific_recommendations:
+  business_structure:
+    low_score_goals:
+      - "Formalize business entity structure"
+      - "Obtain necessary licenses and permits"
+    interventions:
+      - type: "legal_consultation"
+        description: "Legal review of business structure"
+        duration: "2 weeks"
+  
+  financial_management:
+    low_score_goals:
+      - "Implement formal accounting system"
+      - "Establish regular financial reporting"
+    interventions:
+      - type: "system_implementation"
+        description: "Deploy accounting software and processes"
+        duration: "4 weeks"
+  
+  operations:
+    low_score_goals:
+      - "Document operational procedures"
+      - "Implement quality control systems"
+    interventions:
+      - type: "process_documentation"
+        description: "Create operational procedure manuals"
+        duration: "3 weeks"
+
+default_timeframes:
+  training: "4-8 weeks"
+  process_improvement: "6-12 weeks"
+  tool_adoption: "2-6 weeks"
+  system_implementation: "4-10 weeks"
+  legal_consultation: "1-3 weeks"
+  process_documentation: "2-6 weeks"
+
+metadata_templates:
+  rationale_patterns:
+    - "Based on {risk_level} risk assessment (score: {risk_score})"
+    - "Readiness level at {readiness_percent}% indicates need for {focus_area}"
+    - "Assessment gaps identified in: {gap_areas}"
+  
+  source_tags:
+    - "rule_engine"
+    - "automated_recommendation"
+    - "baseline_provider"
