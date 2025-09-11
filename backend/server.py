@@ -15703,8 +15703,80 @@ async def external_services_health_check():
         "services": services
     }
 
+# Analytics Integration
+ENABLE_ANALYTICS = os.environ.get("ENABLE_ANALYTICS", "true").lower() == "true"
+
+if ENABLE_ANALYTICS:
+    try:
+        # Add analytics module to path
+        import sys
+        sys.path.append(os.path.join(os.path.dirname(__file__)))
+        
+        from analytics.api import analytics_router
+        from analytics.observability import (
+            analytics_events_ingested_total, analytics_projection_cycles_total,
+            analytics_projection_cycle_duration_seconds, analytics_data_lag_seconds,
+            DataLagMonitor
+        )
+        from analytics.ingestion import EventIngestionService
+        
+        # Include analytics router
+        app.include_router(analytics_router, prefix="/api")
+        
+        # Initialize analytics services
+        analytics_ingestion_service = EventIngestionService(db)
+        analytics_data_lag_monitor = DataLagMonitor(db)
+        
+        # Helper function to emit analytics events
+        async def emit_analytics_event(event_type: str, event_data: dict):
+            """Emit analytics event if analytics is enabled"""
+            if analytics_ingestion_service:
+                try:
+                    await analytics_ingestion_service.ingest_domain_event(event_type, event_data)
+                except Exception as e:
+                    logger.error(f"Failed to emit analytics event: {e}")
+        
+        logger.info("Analytics module integrated successfully")
+        
+    except ImportError as e:
+        logger.warning(f"Analytics module not available: {e}")
+        analytics_ingestion_service = None
+        analytics_data_lag_monitor = None
+        
+        async def emit_analytics_event(event_type: str, event_data: dict):
+            """No-op when analytics is not available"""
+            pass
+else:
+    logger.info("Analytics disabled via ENABLE_ANALYTICS=false")
+    analytics_ingestion_service = None
+    analytics_data_lag_monitor = None
+    
+    async def emit_analytics_event(event_type: str, event_data: dict):
+        """No-op when analytics is disabled"""
+        pass
+
 # Include router
 app.include_router(api)
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize analytics monitoring on startup"""
+    if analytics_data_lag_monitor:
+        # Start periodic data lag monitoring
+        asyncio.create_task(periodic_data_lag_update())
+        logger.info("Analytics monitoring started")
+
+async def periodic_data_lag_update():
+    """Periodically update analytics data lag metrics"""
+    while True:
+        try:
+            if analytics_data_lag_monitor:
+                await analytics_data_lag_monitor.update_data_lag_metric()
+        except Exception as e:
+            logger.error(f"Error updating data lag metric: {e}")
+        
+        # Update every 30 seconds
+        await asyncio.sleep(30)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
