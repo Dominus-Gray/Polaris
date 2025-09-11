@@ -1,0 +1,133 @@
+{
+    "name": "Polaris Platform Development",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/app",
+    
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.pylint",
+                "ms-python.black-formatter",
+                "ms-python.isort",
+                "ms-python.mypy-type-checker",
+                "ms-vscode.vscode-json",
+                "bradlc.vscode-tailwindcss",
+                "ms-vscode.vscode-typescript-next",
+                "esbenp.prettier-vscode",
+                "ms-vscode.makefile-tools",
+                "ms-vscode.docker",
+                "hashicorp.terraform",
+                "redhat.vscode-yaml",
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+                "ms-vsliveshare.vsliveshare",
+                "GitHub.copilot",
+                "GitHub.copilot-chat",
+                "ms-python.debugpy",
+                "ms-toolsai.jupyter",
+                "ms-toolsai.vscode-jupyter-cell-tags",
+                "ms-toolsai.vscode-jupyter-slideshow"
+            ],
+            "settings": {
+                "python.pythonPath": "/usr/local/bin/python",
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.linting.flake8Enabled": true,
+                "python.linting.mypyEnabled": true,
+                "python.formatting.provider": "black",
+                "python.formatting.blackArgs": ["--line-length=88"],
+                "python.sortImports.args": ["--profile", "black"],
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": true
+                },
+                "files.exclude": {
+                    "**/__pycache__": true,
+                    "**/*.pyc": true,
+                    "**/node_modules": true,
+                    "**/.git": true,
+                    "**/.pytest_cache": true,
+                    "**/venv": true,
+                    "**/.venv": true
+                },
+                "terminal.integrated.shell.linux": "/bin/bash",
+                "workbench.colorTheme": "Dark+ (default dark)",
+                "git.autofetch": true,
+                "files.watcherExclude": {
+                    "**/node_modules/**": true,
+                    "**/.git/objects/**": true,
+                    "**/.git/subtree-cache/**": true,
+                    "**/venv/**": true,
+                    "**/__pycache__/**": true
+                }
+            }
+        }
+    },
+    
+    "forwardPorts": [
+        8000,   // Main application
+        27017,  // MongoDB
+        6379,   // Redis
+        16686,  // Jaeger UI
+        9090,   // Prometheus
+        3000    // Grafana
+    ],
+    
+    "portsAttributes": {
+        "8000": {
+            "label": "Polaris API",
+            "protocol": "http"
+        },
+        "27017": {
+            "label": "MongoDB"
+        },
+        "6379": {
+            "label": "Redis"
+        },
+        "16686": {
+            "label": "Jaeger UI",
+            "protocol": "http"
+        },
+        "9090": {
+            "label": "Prometheus",
+            "protocol": "http"
+        },
+        "3000": {
+            "label": "Grafana",
+            "protocol": "http"
+        }
+    },
+    
+    "postCreateCommand": [
+        "bash", "-c", 
+        "make bootstrap && make migrate && echo 'Development environment ready! Run make run-dev to start the server.'"
+    ],
+    
+    "postStartCommand": "echo 'Polaris Platform DevContainer started. Available commands: make help'",
+    
+    "remoteUser": "polaris",
+    
+    "mounts": [
+        "source=${localWorkspaceFolder}/.git,target=/app/.git,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/logs,target=/var/log/polaris,type=bind,consistency=cached"
+    ],
+    
+    "containerEnv": {
+        "ENVIRONMENT": "development",
+        "LOG_LEVEL": "DEBUG",
+        "ENABLE_TRACING": "true",
+        "ENABLE_METRICS": "true",
+        "MONGO_URL": "mongodb://mongodb:27017",
+        "DB_NAME": "polaris_dev",
+        "REDIS_URL": "redis://redis:6379",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://jaeger:14250"
+    }
+}
