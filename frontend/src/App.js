@@ -21,6 +21,7 @@ import CapabilityStatementBuilder from './pages/CapabilityStatementBuilder';
 import ProviderVerification from './pages/ProviderVerification';
 import ActionPlanPage from './pages/ActionPlanPage';
 import CertificationCenter from './pages/CertificationCenter';
+import SystemHealthDashboard from './pages/SystemHealthDashboard';
 
 // Enhanced error boundary for production stability
 import ClientRemediationFilters from './components/ClientRemediationFilters';
@@ -9176,6 +9177,12 @@ function Header(){
                   </svg>
                   <span>Analytics</span>
                 </Link>
+                <Link className="nav-item" to="/navigator/system-health">
+                  <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>System Health</span>
+                </Link>
               </>
             )}
             
@@ -9624,6 +9631,7 @@ function AppShell(){
           <Route path="/agency" element={<AgencyHome />} />
           <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
           <Route path="/navigator/evidence-review" element={<NavigatorEvidenceReview />} />
+          <Route path="/navigator/system-health" element={<SystemHealthDashboard />} />
           <Route path="/agency/business-intelligence" element={<AgencyBusinessIntelligence />} />
           {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
           <Route path="/opportunities" element={<OpportunitiesPage />} />
