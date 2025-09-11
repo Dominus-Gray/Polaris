@@ -474,6 +474,23 @@ async def agency_impact(current=Depends(require_role("agency"))):
 
 # Include router and CORS (unchanged)
 app.include_router(api)
+
+# Initialize security features
+@app.on_event("startup")
+async def startup_security():
+    """Initialize security features on startup"""
+    try:
+        from .security_integration import init_security_features
+        security_components = await init_security_features(app, db, get_current_user, require_role)
+        if security_components:
+            app.state.security = security_components
+            logger.info("✅ Security features initialized")
+        else:
+            logger.warning("⚠️ Security features not initialized")
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize security features: {e}")
+        # Continue startup without security features for development
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
