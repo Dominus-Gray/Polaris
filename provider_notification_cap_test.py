@@ -93,8 +93,8 @@ class ProviderNotificationCapTester:
         try:
             request_data = {
                 "area_id": "area5",
-                "budget_range": "$5,000-$10,000", 
-                "timeline": "30-60 days",
+                "budget_range": "5000-15000", 
+                "timeline": "1-2 months",
                 "description": "Test cap"
             }
             
