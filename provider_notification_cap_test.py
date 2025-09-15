@@ -5,7 +5,7 @@ Testing the provider notification cap change as requested in review.
 
 Test Requirements:
 1) As client.qa, create a new professional help request via POST /api/service-requests/professional-help 
-   (area_id=area5, budget_range="$5,000-$10,000", timeline="30-60 days", description="Test cap")
+   (area_id=area5, budget_range="5000-15000", timeline="1-2 months", description="Test cap")
 2) Capture providers_notified count; expect <= 5
 3) Query GET /api/service-requests/{request_id}/responses/enhanced with client token
 4) Confirm response_limit_reached reflects True when >=5 responses exist
