@@ -8440,6 +8440,7 @@ function ServiceRequestPage(){
   const [requestId, setRequestId] = useState('');
   const [matches, setMatches] = useState([]);
   const [responses, setResponses] = useState([]);
+  const [showResponsesLimitBanner, setShowResponsesLimitBanner] = useState(false);
   const [myServices, setMyServices] = useState([]);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [agreedFee, setAgreedFee] = useState('');
