@@ -8676,6 +8676,7 @@ function ServiceRequestPage(){
           >
             Service History
           </button>
+          <button className="btn btn-primary" onClick={createRequest} data-testid="btn-create-request">Create Service Request</button>
         </div>
       </div>
 
