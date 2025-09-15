@@ -2799,7 +2799,9 @@ async def get_assessment_schema():
 # Enhanced Tier-Based Assessment System API Endpoints
 @api.get("/assessment/schema/tier-based")
 async def get_tier_based_assessment_schema(current_user: dict = Depends(get_current_user)):
-    """Get the tier-based assessment schema with client's tier access levels"""
+    """Get the tier-based assessment schema with client's tier access levels.
+    Returns both legacy keys (id/title) and compatibility keys (area_id/area_name).
+    """
     try:
         # Get client's agency tier configuration
         client_tier_access = await get_client_tier_access(current_user["id"])
@@ -2812,7 +2814,9 @@ async def get_tier_based_assessment_schema(current_user: dict = Depends(get_curr
         for area in ASSESSMENT_SCHEMA["areas"]:
             area_data = {
                 "id": area["id"],
+                "area_id": area["id"],  # compatibility for consumers expecting area_id
                 "title": area["title"],
+                "area_name": area["title"],  # compatibility for consumers expecting area_name
                 "description": area["description"],
                 "tiers": []
             }
