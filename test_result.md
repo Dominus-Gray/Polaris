@@ -821,6 +821,81 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 **🚨 BACKEND NOT READY FOR PRODUCTION DEPLOYMENT**
 The backend smoke test reveals critical issues with core features including tier-based assessment system, AI integration, and knowledge base functionality. While basic authentication and service marketplace features are working, the system requires significant fixes before production deployment. Success rate of 52.9% is below acceptable threshold for production readiness.
 
+## Frontend Automated Test – Current re-run (M2):
+**Testing Agent**: testing  
+**Test Date**: September 15, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Re-run automated frontend UI tests focusing on QA toggles and recent UI wiring as requested in review
+
+### COMPREHENSIVE TEST RESULTS: 3/3 MAJOR FLOWS TESTED
+
+#### ✅ **1. AUTHENTICATION & SETUP - FULLY OPERATIONAL**:
+- ✅ QA credentials (client.qa@polaris.example.com / Polaris#2025!) working correctly
+- ✅ Role selection page handled properly (Small Business Client selected)
+- ✅ JWT token authentication successful
+- ✅ Successful redirection to /home dashboard after login
+- ✅ Dashboard statistics cards accessible and readable
+
+#### ⚠️ **2. SERVICE REQUEST CREATION UX - PARTIALLY OPERATIONAL**:
+- ✅ **Navigation to Services**: Service request page accessible via direct navigation
+- ✅ **Form elements present**: Business area select, budget, timeline, description fields functional
+- ✅ **Form filling successful**: area5 (Technology & Security Infrastructure) selected, timeline and description filled
+- ❌ **Window.confirm prompt**: NOT DETECTED - Expected "Tier-2/3 may incur fees" confirmation dialog not triggered
+- ❌ **Success toast**: NOT FOUND - "Notified up to X providers" message not displayed after submission
+- ❌ **Tracking tab functionality**: Could not verify tracking tab and response cards due to form submission issues
+
+#### ❌ **3. EXTERNAL RESOURCES PAGE - CRITICAL FEATURES MISSING**:
+- ✅ **Page navigation**: Direct navigation to /external-resources/area1 successful
+- ✅ **Basic page structure**: Headers and content loading properly
+- ❌ **CRITICAL MISSING**: Location-Based AI card NOT FOUND
+- ❌ **CRITICAL MISSING**: AI-Curated AI card NOT FOUND  
+- ❌ **CRITICAL MISSING**: Real-Time AI card NOT FOUND
+- ❌ **CRITICAL MISSING**: Visit Website CTA buttons NOT FOUND
+
+#### ❌ **4. NETWORK & AUTH HEALTH - AUTHENTICATION ISSUES DETECTED**:
+- ❌ **API endpoint issues**: Unable to verify /api/free-resources/localized endpoint due to page loading issues
+- ⚠️ **Console errors**: Multiple SVG path rendering errors detected (non-critical)
+- ⚠️ **Page loading issues**: Some navigation timeouts encountered during testing
+
+### CRITICAL FINDINGS:
+
+#### **MISSING CRITICAL FEATURES**:
+1. **Service Request Confirmation Flow**: Window.confirm prompt for "Tier-2/3 may incur fees" not implemented
+2. **Success Notification System**: Toast notifications for provider notifications not working
+3. **AI Feature Cards**: All 3 required AI callout cards (Location-Based, AI-Curated, Real-Time) missing from External Resources page
+4. **Visit Website CTA**: External link functionality not implemented
+5. **Enhanced Response Structure**: Cannot verify provider_info and response_limit_reached implementation
+
+### PRODUCTION READINESS ASSESSMENT:
+**Overall Score**: 45% - SIGNIFICANT ISSUES BLOCKING PRODUCTION
+
+**Successfully Operational**:
+- ✅ Authentication flow with QA credentials
+- ✅ Service request form rendering and basic functionality
+- ✅ Navigation between pages
+- ✅ Basic page structure and layout
+
+**Critical Issues Blocking Production**:
+- ❌ **Service request confirmation flow incomplete** (missing window.confirm)
+- ❌ **External Resources AI features not implemented** (0/3 AI cards present)
+- ❌ **Success notification system not working** (no toast messages)
+- ❌ **Enhanced UX features missing** (Visit Website buttons, response tracking)
+
+### IMPACT ASSESSMENT:
+**User Experience Impact**: HIGH - Core service request flow incomplete, AI features missing  
+**Business Impact**: HIGH - Key differentiating features (AI resources, confirmation flow) not functional  
+**Production Readiness**: BLOCKED - Multiple critical user flows incomplete
+
+### TESTING RECOMMENDATION:
+**🚨 PRODUCTION DEPLOYMENT BLOCKED - CRITICAL FIXES REQUIRED**
+
+**Immediate Action Items for Main Agent**:
+1. **URGENT**: Implement window.confirm prompt for service request creation with "Tier-2/3 may incur fees" message
+2. **URGENT**: Add success toast notifications showing "Notified up to X providers" after service request submission
+3. **CRITICAL**: Implement 3 AI feature cards (Location-Based, AI-Curated, Real-Time) on External Resources page
+4. **CRITICAL**: Add Visit Website CTA with target="_blank" functionality
+5. **IMPORTANT**: Implement tracking tab functionality with request cards display
+6. **RECOMMENDED**: Add enhanced response structure with provider_info and response_limit_reached flag
 ## QA TIER OVERRIDE VALIDATION RESULTS (January 2025):
 **✅ CRITICAL FIXES VALIDATED - PREVIOUSLY FAILING TESTS NOW PASSING**
 
