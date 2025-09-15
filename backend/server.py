@@ -544,7 +544,7 @@ PRODUCTION_SECURITY_CONFIG = {
     "MFA_REQUIRED_ROLES": ["agency", "navigator", "admin"],
     
     # API Security
-    "RATE_LIMIT_PER_MINUTE": 100,
+    "RATE_LIMIT_PER_MINUTE": int(os.environ.get("RATE_LIMIT_PER_MINUTE", "100")),
     "API_KEY_LENGTH": 64,
     "REQUIRE_HTTPS": os.environ.get("REQUIRE_HTTPS", "true").lower() == "true",
     "ALLOWED_HOSTS": os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,*.emergentagent.com").split(","),
