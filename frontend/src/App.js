@@ -8524,6 +8524,11 @@ function ServiceRequestPage(){
       return;
     }
 
+    // Tier pricing confirmation UX before creation
+    const confirmMsg = `You are creating a request in ${req.area_id}.\n\nTier-2/3 provider matching may incur fees. Do you want to proceed?`;
+    const confirmed = window.confirm(confirmMsg);
+    if (!confirmed) return;
+
     try {
       const payload = { 
         budget: parseFloat(req.budget.replace(/[^0-9.-]+/g, '')) || 0,
@@ -8533,10 +8538,11 @@ function ServiceRequestPage(){
         description: req.description
       };
       
-      const { data } = await axios.post(`${API}/match/request`, payload);
-      setRequestId(data.request_id);
-      toast.success('Service request created successfully');
-      await loadRequestData(data.request_id);
+      // Use capped provider notifications endpoint
+      const { data } = await axios.post(`${API}/service-requests/professional-help`, payload);
+      setRequestId(data.request_id || data.id);
+      toast.success(`Service request created. Notified up to ${data.providers_notified ?? 0} providers.`);
+      await loadRequestData(data.request_id || data.id);
     } catch (e) { 
       toast.error('Failed to create service request', { description: e.response?.data?.detail || e.message }); 
     }
