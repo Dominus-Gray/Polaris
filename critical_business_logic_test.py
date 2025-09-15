@@ -23,7 +23,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
+BASE_URL = "https://production-guru.preview.emergentagent.com/api"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"
 QA_CLIENT_PASSWORD = "Polaris#2025!"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"

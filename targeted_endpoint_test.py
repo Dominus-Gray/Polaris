@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
+BASE_URL = "https://production-guru.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},

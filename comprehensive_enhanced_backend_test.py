@@ -17,7 +17,7 @@ from datetime import datetime
 import uuid
 
 # Configuration
-BACKEND_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
 
 # Test Credentials (QA accounts)
 TEST_CREDENTIALS = {

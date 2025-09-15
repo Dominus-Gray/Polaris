@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://biz-matchmaker-1.preview.emergentagent.com/api';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://production-guru.preview.emergentagent.com/api';
 
 function ActionPlanPage() {
   const { sessionId } = useParams();

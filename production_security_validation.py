@@ -20,7 +20,7 @@ import sys
 import uuid
 
 # Configuration
-BASE_URL = "https://biz-matchmaker-1.preview.emergentagent.com/api"
+BASE_URL = "https://production-guru.preview.emergentagent.com/api"
 
 class ProductionSecurityValidator:
     def __init__(self):

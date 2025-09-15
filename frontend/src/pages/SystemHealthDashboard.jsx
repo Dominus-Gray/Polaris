@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://biz-matchmaker-1.preview.emergentagent.com/api';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://production-guru.preview.emergentagent.com/api';
 
 function SystemHealthDashboard() {
   const [healthData, setHealthData] = useState(null);
