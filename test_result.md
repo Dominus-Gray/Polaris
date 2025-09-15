@@ -706,6 +706,29 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 
 **System Status**: All critical user journeys tested and operational. Frontend-backend integration working correctly. Authentication persistence resolved. UI/UX meets accessibility standards. Ready for production use.
 
+## Frontend Automated Test – Targeted re-run (M2):
+**Testing Agent**: testing  
+**Test Date**: September 15, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Targeted UI checks with explicit selectors as requested in review
+
+### TARGETED TEST RESULTS SUMMARY:
+
+#### ⚠️ **1. SERVICE REQUEST PAGE - PARTIAL IMPLEMENTATION**:
+- ✅ **Create Service Request button found** with data-testid=btn-create-request
+- ❌ **Tier confirmation modal missing** - data-testid=modal-tier-confirm not found
+- ❌ **Proceed button missing** - data-testid=btn-confirm-tier not found  
+- ❌ **Success notifications missing** - No "Notified up to" toast or banner data-testid=banner-providers-notified
+
+#### ✅ **2. EXTERNAL RESOURCES PAGE - FULLY IMPLEMENTED**:
+- ✅ **All 3 AI feature cards found**: "Location-Based", "AI-Curated", "Real-Time"
+- ✅ **8 "Visit Website" buttons found and visible** in resource cards
+- ✅ Professional gradient header with enhanced visual design
+
+#### ✅ **3. API ENDPOINT HEALTH - NO 401 ERRORS**:
+- ✅ **No 401 errors detected** on /api/free-resources/localized endpoint
+- ✅ Authentication working correctly for external resources access
+
 ## COMPREHENSIVE BACKEND SMOKE TEST RESULTS (January 2025):
 **🎯 BACKEND SMOKE TEST COMPLETE - 52.9% SUCCESS RATE ACHIEVED**
 
