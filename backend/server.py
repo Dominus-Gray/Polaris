@@ -559,6 +559,9 @@ security_logger = logging.getLogger("polaris.security")
 audit_logger = logging.getLogger("polaris.audit")
 compliance_logger = logging.getLogger("polaris.compliance")
 
+# Ensure security log directory exists
+os.makedirs('/var/log/polaris', exist_ok=True)
+
 for logger in [security_logger, audit_logger, compliance_logger]:
     logger.setLevel(logging.INFO)
     
