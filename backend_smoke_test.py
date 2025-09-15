@@ -259,7 +259,7 @@ class BackendSmokeTest:
         if 'client' in self.tokens:
             request_data = {
                 "area_id": "area5",
-                "budget_range": "$1,000-$2,500",
+                "budget_range": "1500-5000",
                 "timeline": "2-4 weeks",
                 "description": "Need cybersecurity assessment and compliance framework setup for government contracting readiness"
             }
