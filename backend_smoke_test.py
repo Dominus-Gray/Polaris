@@ -362,7 +362,7 @@ class BackendSmokeTest:
                     # Test payment endpoint
                     payment_data = {
                         "request_id": request_id,
-                        "provider_id": self.tokens.get('provider_user_id', 'test-provider-id')
+                        "provider_id": "test-provider-id"
                     }
                     
                     response, response_time = self.make_request(
