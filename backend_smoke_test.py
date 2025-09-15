@@ -388,8 +388,9 @@ class BackendSmokeTest:
         """Test Knowledge Base and AI functionality"""
         print("\n🧠 Testing Knowledge Base & AI Features...")
         
-        # Test knowledge base areas
-        response, response_time = self.make_request('GET', '/knowledge-base/areas')
+        # Test knowledge base areas with authentication
+        auth_token = self.tokens.get('client')
+        response, response_time = self.make_request('GET', '/knowledge-base/areas', auth_token=auth_token)
         
         if response.status_code == 200:
             try:
@@ -404,7 +405,8 @@ class BackendSmokeTest:
                     area_id = first_area.get('area_id', 'area1')
                     
                     content_response, content_time = self.make_request(
-                        'GET', f'/knowledge-base/areas/{area_id}/content'
+                        'GET', f'/knowledge-base/areas/{area_id}/content',
+                        auth_token=auth_token
                     )
                     
                     self.log_test("Knowledge Base Content", content_response.status_code == 200,
@@ -420,7 +422,7 @@ class BackendSmokeTest:
         if 'client' in self.tokens:
             ai_question = {
                 "question": "What are the key requirements for cybersecurity compliance in government contracting?",
-                "context": "area5"
+                "area_id": "area5"
             }
             
             response, response_time = self.make_request(
