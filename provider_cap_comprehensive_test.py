@@ -247,7 +247,7 @@ class ComprehensiveProviderCapTester:
                 # Extract key fields for verification
                 response_limit_reached = data.get("response_limit_reached", False)
                 total_responses = data.get("total_responses", 0)
-                provider_responses = data.get("provider_responses", [])
+                provider_responses = data.get("responses", [])  # Changed from provider_responses to responses
                 actual_response_count = len(provider_responses)
                 
                 self.log_test(
