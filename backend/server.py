@@ -44,6 +44,13 @@ async def get_client_tier_access(user_id: str) -> Dict[str, int]:
         if not user or user.get("role") != "client":
             return {}
         
+        # QA override: grant Tier 3 for all areas to test accounts (non-provider roles)
+        try:
+            if user.get("email", "").endswith("@polaris.example.com"):
+                return {f"area{i}": 3 for i in range(1, 11)}
+        except Exception:
+            pass
+        
         license_code = user.get("license_code")
         if not license_code:
             # Default to tier 1 for all areas
