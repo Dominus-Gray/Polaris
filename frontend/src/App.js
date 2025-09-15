@@ -8543,16 +8543,16 @@ function ServiceRequestPage(){
   };
 
   const createRequest = async () => {
-    if (!req.budget || !req.timeline || !req.description) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    // Tier pricing confirmation UX before creation (modal-based)
+    // Open modal first for confirmation; validate on confirm for better automation/testability
     setShowTierConfirmModal(true);
   };
 
   const confirmCreateRequest = async () => {
+    // Validate required fields before submitting
+    if (!req.budget || !req.timeline || !req.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
     try {
       const payload = { 
         budget: parseFloat(req.budget.replace(/[^0-9.-]+/g, '')) || 0,
