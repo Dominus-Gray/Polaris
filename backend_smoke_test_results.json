@@ -1,0 +1,89 @@
+{
+  "test_start": "2025-09-15T17:26:24.087269",
+  "total_tests": 8,
+  "passed_tests": 1,
+  "failed_tests": 7,
+  "test_details": [
+    {
+      "test_name": "Login - Client",
+      "success": false,
+      "status_code": 400,
+      "response_time_ms": 35.95,
+      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.123440"
+    },
+    {
+      "test_name": "Login - Provider",
+      "success": false,
+      "status_code": 400,
+      "response_time_ms": 46.43,
+      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.169975"
+    },
+    {
+      "test_name": "Login - Navigator",
+      "success": false,
+      "status_code": 400,
+      "response_time_ms": 45.82,
+      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.215919"
+    },
+    {
+      "test_name": "Login - Agency",
+      "success": false,
+      "status_code": 400,
+      "response_time_ms": 45.95,
+      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.261979"
+    },
+    {
+      "test_name": "Assessment Schema",
+      "success": false,
+      "status_code": 500,
+      "response_time_ms": 43.78,
+      "details": "{\"error\":true,\"error_code\":\"POL-6001\",\"message\":\"Failed to load tier-based assessment schema\",\"times",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.305861"
+    },
+    {
+      "test_name": "Knowledge Base Areas",
+      "success": false,
+      "status_code": 401,
+      "response_time_ms": 43.92,
+      "details": "{\"error\":true,\"error_code\":\"POL-1001\",\"message\":\"Not authenticated\",\"timestamp\":\"2025-09-15T17:26:24",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.349877"
+    },
+    {
+      "test_name": "Health Check",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 43.97,
+      "details": "Status: ok",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.393976"
+    },
+    {
+      "test_name": "Metrics Endpoint",
+      "success": false,
+      "status_code": 404,
+      "response_time_ms": 44.91,
+      "details": "Metrics endpoint not available",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:26:24.438977"
+    }
+  ],
+  "performance_metrics": {
+    "average_response_time_ms": 43.84,
+    "min_response_time_ms": 35.95,
+    "max_response_time_ms": 46.43,
+    "p95_response_time_ms": 46.43
+  },
+  "critical_issues": [],
+  "warnings": [],
+  "test_end": "2025-09-15T17:26:24.439069"
+}
