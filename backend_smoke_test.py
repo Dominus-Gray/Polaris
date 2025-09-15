@@ -128,8 +128,9 @@ class BackendSmokeTest:
                     self.status_code = 0
                     self.text = str(error_exception)
                     self.headers = {}
+                    self.error_exception = error_exception
                 def json(self):
-                    return {"error": str(error_exception)}
+                    return {"error": str(self.error_exception)}
             return MockResponse(e), response_time
 
     def test_auth_flows(self):
