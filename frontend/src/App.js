@@ -3042,17 +3042,36 @@ function ExternalResourcesPage() {
       const city = profile.city || 'San Antonio';
       const state = profile.state || 'Texas';
       
-      // Call AI-powered external resources endpoint
+      // Ensure auth header present and retry on 401 with fallback
       const token = localStorage.getItem('polaris_token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      const response = await axios.get(`${API}/free-resources/localized`, {
+      const doFetch = async () => axios.get(`${API}/free-resources/localized`, {
         headers,
         params: {
           area_id: areaId,
-          maturity_gaps: profile.maturity_gaps || ''
+          maturity_gaps: profile.maturity_gaps || '',
+          city,
+          state
         }
       });
+
+      let response;
+      try {
+        response = await doFetch();
+      } catch (e) {
+        if (e?.response?.status === 401) {
+          // Try refreshing headers and retry once
+          const t = localStorage.getItem('polaris_token');
+          const h = t ? { 'Authorization': `Bearer ${t}` } : {};
+          response = await axios.get(`${API}/free-resources/localized`, {
+            headers: h,
+            params: { area_id: areaId, maturity_gaps: profile.maturity_gaps || '', city, state }
+          });
+        } else {
+          throw e;
+        }
+      }
       
       if (response.data && response.data.resources) {
         setResources(response.data.resources);
