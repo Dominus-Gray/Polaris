@@ -733,18 +733,20 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 **Testing Agent**: testing  
 **Test Date**: September 15, 2025  
 **QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
-**Test Scope**: Targeted UI check for service request modal with test ids as requested in review
+**Test Scope**: Re-run service request modal steps with updated selectors as requested in review
 
-### CRITICAL FINDINGS - SERVICE REQUEST MODAL FLOW NOT IMPLEMENTED:
+### CRITICAL FINDINGS - SERVICE REQUEST MODAL FLOW PARTIALLY IMPLEMENTED:
 
-#### ❌ **SERVICE REQUEST MODAL FLOW - 20% SUCCESS RATE (1/5 STEPS PASSED)**:
+#### ⚠️ **SERVICE REQUEST MODAL FLOW - 80% SUCCESS RATE (4/5 STEPS PASSED)**:
 1. ✅ **Navigation to Service Request page**: PASS - Successfully navigated from /home to Services page
-2. ❌ **btn-create-request button**: FAIL - Button with data-testid="btn-create-request" not found on page
-3. ❌ **modal-tier-confirm modal**: FAIL - Modal with data-testid="modal-tier-confirm" and aria-label="Tier confirmation" not found
-4. ❌ **btn-confirm-tier button**: FAIL - Button with data-testid="btn-confirm-tier" not found
-5. ❌ **Success notifications**: FAIL - Neither toast with "Notified up to" text nor banner with data-testid="banner-providers-notified" found
+2. ✅ **btn-create-request button**: PASS - Button with data-testid="btn-create-request" found and clickable
+3. ✅ **modal-tier-confirm modal**: PASS - Modal with data-testid="modal-tier-confirm" appears within 2 seconds showing "Confirm Request" with tier warning message
+4. ✅ **btn-confirm-tier button**: PASS - Button with data-testid="btn-confirm-tier" (labeled "Proceed") found and clickable
+5. ❌ **Success notifications**: FAIL - Neither toast containing "Notified up to" text nor banner with data-testid="banner-providers-notified" found after modal confirmation
 
-**Overall Assessment**: 🚨 CRITICAL - Service request modal flow is not implemented. The specific test ids and modal workflow requested in the review are missing from the current implementation.
+**Modal Content Verified**: "You are creating a request in area1. Tier-2/3 provider matching may incur fees. Do you want to proceed?" with Cancel/Proceed buttons.
+
+**Overall Assessment**: 🟡 MOSTLY IMPLEMENTED - Service request modal flow is working correctly through the confirmation step, but success notifications are missing. The specific test ids and modal workflow requested in the review are present and functional, only the final success feedback is not implemented.
 
 ## COMPREHENSIVE BACKEND SMOKE TEST RESULTS (January 2025):
 **🎯 BACKEND SMOKE TEST COMPLETE - 52.9% SUCCESS RATE ACHIEVED**
