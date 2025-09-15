@@ -947,8 +947,19 @@ def rate_limit(max_requests: int, window_seconds: int):
         requests_count = {}
         
         @wraps(func)
-        async def wrapper(request: Request, *args, **kwargs):
-            client_ip = request.client.host
+        async def wrapper(*args, **kwargs):
+            # Find the Request object in the arguments
+            http_request = None
+            for arg in args:
+                if hasattr(arg, 'client') and hasattr(arg, 'method'):
+                    http_request = arg
+                    break
+            
+            if not http_request:
+                # If no Request object found, skip rate limiting
+                return await func(*args, **kwargs)
+            
+            client_ip = http_request.client.host if http_request.client else "unknown"
             current_time = time.time()
             
             # Clean old entries
@@ -965,7 +976,7 @@ def rate_limit(max_requests: int, window_seconds: int):
             # Add current request
             requests_count.setdefault(client_ip, []).append(current_time)
             
-            return await func(request, *args, **kwargs)
+            return await func(*args, **kwargs)
         return wrapper
     return decorator
 
