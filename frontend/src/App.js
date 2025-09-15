@@ -8546,10 +8546,14 @@ function ServiceRequestPage(){
       // Use capped provider notifications endpoint
       const { data } = await axios.post(`${API}/service-requests/professional-help`, payload);
       setRequestId(data.request_id || data.id);
-      toast.success(`Service request created. Notified up to ${data.providers_notified ?? 0} providers.`);
+      setProvidersNotifiedCount(data.providers_notified ?? 0);
+      setShowProvidersNotifiedBanner(true);
+      toast.success(`Service request created. Notified up to ${data.providers_notified ?? 0} providers.`, { duration: 5000 });
       await loadRequestData(data.request_id || data.id);
     } catch (e) { 
       toast.error('Failed to create service request', { description: e.response?.data?.detail || e.message }); 
+    } finally {
+      setShowTierConfirmModal(false);
     }
   };
 
