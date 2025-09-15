@@ -8506,12 +8506,12 @@ function ServiceRequestPage(){
 
   const loadRequestData = async (reqId) => {
     try {
-      // Load provider responses for this service request
-      const responsesRes = await axios.get(`${API}/service-requests/${reqId}/responses`);
+      // Load enhanced provider responses (first 5)
+      const responsesRes = await axios.get(`${API}/service-requests/${reqId}/responses/enhanced`);
       setResponses(responsesRes.data.responses || []);
+      setShowResponsesLimitBanner(!!responsesRes.data.response_limit_reached);
       // Optionally, load more detailed request info
       const reqRes = await axios.get(`${API}/service-requests/${reqId}`);
-      // If your backend returns any suggested matches, you can set them here
       setMatches(reqRes.data.suggested_matches || []);
     } catch (e) {
       console.error('Failed to load request data:', e);
