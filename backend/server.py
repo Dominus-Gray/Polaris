@@ -46,7 +46,7 @@ async def get_client_tier_access(user_id: str) -> Dict[str, int]:
         
         # QA override: grant Tier 3 for all areas to test accounts (non-provider roles)
         try:
-            if user.get("email", "").endswith("@polaris.example.com"):
+            if os.environ.get("QA_TIER_OVERRIDE", "false").lower() == "true" and user.get("email", "").endswith("@polaris.example.com"):
                 return {f"area{i}": 3 for i in range(1, 11)}
         except Exception:
             pass
