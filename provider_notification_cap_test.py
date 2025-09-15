@@ -95,7 +95,7 @@ class ProviderNotificationCapTester:
                 "area_id": "area5",
                 "budget_range": "5000-15000", 
                 "timeline": "1-2 months",
-                "description": "Test cap"
+                "description": "Test cap verification for provider notification limits"
             }
             
             response = self.session.post(
