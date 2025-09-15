@@ -1,89 +1,170 @@
 {
-  "test_start": "2025-09-15T17:26:24.087269",
-  "total_tests": 8,
-  "passed_tests": 1,
-  "failed_tests": 7,
+  "test_start": "2025-09-15T17:27:43.384501",
+  "total_tests": 17,
+  "passed_tests": 11,
+  "failed_tests": 6,
   "test_details": [
     {
       "test_name": "Login - Client",
-      "success": false,
-      "status_code": 400,
-      "response_time_ms": 35.95,
-      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 25.96,
+      "details": "Token received: 309 chars",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.123440"
+      "timestamp": "2025-09-15T17:27:43.410732"
+    },
+    {
+      "test_name": "Auth/Me - Client",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 45.15,
+      "details": "User: client.qa@polaris.example.com, Role: client",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:43.455969"
     },
     {
       "test_name": "Login - Provider",
-      "success": false,
-      "status_code": 400,
-      "response_time_ms": 46.43,
-      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 59.82,
+      "details": "Token received: 315 chars",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.169975"
+      "timestamp": "2025-09-15T17:27:43.515921"
+    },
+    {
+      "test_name": "Auth/Me - Provider",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 44.89,
+      "details": "User: provider.qa@polaris.example.com, Role: provider",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:43.560918"
     },
     {
       "test_name": "Login - Navigator",
-      "success": false,
-      "status_code": 400,
-      "response_time_ms": 45.82,
-      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 58.89,
+      "details": "Token received: 317 chars",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.215919"
+      "timestamp": "2025-09-15T17:27:43.619932"
+    },
+    {
+      "test_name": "Auth/Me - Navigator",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 44.86,
+      "details": "User: navigator.qa@polaris.example.com, Role: navigator",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:43.664910"
     },
     {
       "test_name": "Login - Agency",
-      "success": false,
-      "status_code": 400,
-      "response_time_ms": 45.95,
-      "details": "Login failed: {\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-1001\",\"message\":\"Invalid authenti",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 58.93,
+      "details": "Token received: 309 chars",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.261979"
+      "timestamp": "2025-09-15T17:27:43.723952"
+    },
+    {
+      "test_name": "Auth/Me - Agency",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 44.88,
+      "details": "User: agency.qa@polaris.example.com, Role: agency",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:43.768961"
     },
     {
       "test_name": "Assessment Schema",
       "success": false,
       "status_code": 500,
-      "response_time_ms": 43.78,
+      "response_time_ms": 43.82,
       "details": "{\"error\":true,\"error_code\":\"POL-6001\",\"message\":\"Failed to load tier-based assessment schema\",\"times",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.305861"
+      "timestamp": "2025-09-15T17:27:43.812886"
+    },
+    {
+      "test_name": "Tier Session Creation",
+      "success": false,
+      "status_code": 422,
+      "response_time_ms": 44.92,
+      "details": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"area_id\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"htt",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:43.857892"
+    },
+    {
+      "test_name": "Service Request Creation",
+      "success": false,
+      "status_code": 400,
+      "response_time_ms": 45.96,
+      "details": "{\"error\":true,\"error_code\":\"POL-6000\",\"message\":{\"error_code\":\"POL-3002\",\"message\":\"Required field m",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:43.903946"
     },
     {
       "test_name": "Knowledge Base Areas",
       "success": false,
       "status_code": 401,
-      "response_time_ms": 43.92,
-      "details": "{\"error\":true,\"error_code\":\"POL-1001\",\"message\":\"Not authenticated\",\"timestamp\":\"2025-09-15T17:26:24",
+      "response_time_ms": 43.97,
+      "details": "{\"error\":true,\"error_code\":\"POL-1001\",\"message\":\"Not authenticated\",\"timestamp\":\"2025-09-15T17:27:43",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.349877"
+      "timestamp": "2025-09-15T17:27:43.992924"
+    },
+    {
+      "test_name": "AI Assistance",
+      "success": false,
+      "status_code": 422,
+      "response_time_ms": 44.92,
+      "details": "{\"detail\":[{\"type\":\"dict_type\",\"loc\":[\"body\",\"context\"],\"msg\":\"Input should be a valid dictionary\",\"",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:44.037947"
+    },
+    {
+      "test_name": "Analytics Event Logging",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": null,
+      "details": "Logged 3 events",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:44.187883"
+    },
+    {
+      "test_name": "Navigator Analytics Aggregation",
+      "success": true,
+      "status_code": 200,
+      "response_time_ms": 48.0,
+      "details": "Total: 3, Areas: 1",
+      "response_snippet": null,
+      "timestamp": "2025-09-15T17:27:44.236001"
     },
     {
       "test_name": "Health Check",
       "success": true,
       "status_code": 200,
-      "response_time_ms": 43.97,
+      "response_time_ms": 43.86,
       "details": "Status: ok",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.393976"
+      "timestamp": "2025-09-15T17:27:44.279965"
     },
     {
       "test_name": "Metrics Endpoint",
       "success": false,
       "status_code": 404,
-      "response_time_ms": 44.91,
+      "response_time_ms": 43.89,
       "details": "Metrics endpoint not available",
       "response_snippet": null,
-      "timestamp": "2025-09-15T17:26:24.438977"
+      "timestamp": "2025-09-15T17:27:44.323924"
     }
   ],
   "performance_metrics": {
-    "average_response_time_ms": 43.84,
-    "min_response_time_ms": 35.95,
-    "max_response_time_ms": 46.43,
-    "p95_response_time_ms": 46.43
+    "average_response_time_ms": 46.42,
+    "min_response_time_ms": 25.96,
+    "max_response_time_ms": 59.82,
+    "p95_response_time_ms": 59.82
   },
   "critical_issues": [],
   "warnings": [],
-  "test_end": "2025-09-15T17:26:24.439069"
+  "test_end": "2025-09-15T17:27:44.323987"
 }
