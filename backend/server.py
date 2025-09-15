@@ -6777,7 +6777,7 @@ async def request_professional_help(request_data: StandardizedEngagementRequest,
             "role": "provider", 
             "approval_status": "approved",
             "is_active": True
-        }).to_list(length=None)
+        }).sort("created_at", 1).to_list(length=5)
         
         notifications_sent = 0
         for provider in matching_providers:
