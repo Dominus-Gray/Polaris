@@ -8529,11 +8529,11 @@ function ServiceRequestPage(){
       return;
     }
 
-    // Tier pricing confirmation UX before creation
-    const confirmMsg = `You are creating a request in ${req.area_id}.\n\nTier-2/3 provider matching may incur fees. Do you want to proceed?`;
-    const confirmed = window.confirm(confirmMsg);
-    if (!confirmed) return;
+    // Tier pricing confirmation UX before creation (modal-based)
+    setShowTierConfirmModal(true);
+  };
 
+  const confirmCreateRequest = async () => {
     try {
       const payload = { 
         budget: parseFloat(req.budget.replace(/[^0-9.-]+/g, '')) || 0,
