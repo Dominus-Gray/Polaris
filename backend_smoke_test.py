@@ -178,8 +178,9 @@ class BackendSmokeTest:
         """Test tier-based assessment system"""
         print("\n📊 Testing Tier-Based Assessment System...")
         
-        # Test assessment schema
-        response, response_time = self.make_request('GET', '/assessment/schema/tier-based')
+        # Test assessment schema with client token (may require authentication)
+        auth_token = self.tokens.get('client')
+        response, response_time = self.make_request('GET', '/assessment/schema/tier-based', auth_token=auth_token)
         
         if response.status_code == 200:
             try:
