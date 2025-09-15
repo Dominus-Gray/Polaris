@@ -14414,6 +14414,24 @@ async def get_prometheus_metrics():
         logger.error(f"Prometheus metrics failed: {e}")
         return {"error": str(e)}
 
+
+# Prometheus metrics alias for standard scrapers
+@api.get("/metrics")
+async def get_prometheus_metrics_alias():
+    try:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        # Best-effort refresh
+        try:
+            from production_monitoring import ProductionMonitor
+            monitor = ProductionMonitor(client)
+            await monitor.collect_system_metrics()
+        except Exception:
+            pass
+        return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    except Exception as e:
+        logger.error(f"Prometheus metrics alias failed: {e}")
+        return {"error": str(e)}
+
 # Bulk Operations
 @api.post("/bulk/update-users")
 async def bulk_update_users(
