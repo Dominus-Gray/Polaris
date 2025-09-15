@@ -631,6 +631,23 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 **🚨 BACKEND NOT READY FOR PRODUCTION DEPLOYMENT**
 The backend smoke test reveals critical issues with core features including tier-based assessment system, AI integration, and knowledge base functionality. While basic authentication and service marketplace features are working, the system requires significant fixes before production deployment. Success rate of 52.9% is below acceptable threshold for production readiness.
 
+## Backend Smoke Test – Current run
+
+**🎯 FOCUSED BACKEND SMOKE RETEST RESULTS (January 2025)**
+**Testing Agent**: testing  
+**Test Date**: January 2025  
+**Backend URL**: http://127.0.0.1:8001  
+**Success Rate**: 40.0% (2/5 tests passed)
+
+**✅ PASSED TESTS:**
+1. GET /api/assessment/schema/tier-based - area10 "Competitive Advantage & Market Position" present with all required keys
+2. GET /api/knowledge-base/area1/content - has_access=true with proper templates/guides/checklists arrays
+
+**❌ FAILED TESTS:**
+1. POST /api/assessment/tier-session - HTTP 403 (Agency tier access restriction for area5/tier3)
+2. POST /api/knowledge-base/ai-assistance - HTTP 500 (Internal Server Error - EMERGENT_LLM_KEY issue)
+3. GET /api/system/prometheus-metrics - Missing '# HELP' text (psutil module not found)
+
 ## CURRENT IMPLEMENTATION STATUS (January 2025):
 **✅ CRITICAL TASKS COMPLETED:**
 
