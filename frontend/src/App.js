@@ -8762,13 +8762,13 @@ function ServiceRequestPage(){
 
                 {/* Tier confirmation modal */}
                 {showTierConfirmModal && (
-                  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" role="dialog" aria-modal="true" data-testid="modal-tier-confirm">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Tier confirmation" data-testid="modal-tier-confirm">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" tabIndex={-1} autoFocus>
                       <h4 className="text-lg font-semibold mb-2">Confirm Request</h4>
                       <p className="text-sm text-slate-700 mb-4">You are creating a request in {req.area_id}. Tier-2/3 provider matching may incur fees. Do you want to proceed?</p>
                       <div className="flex justify-end gap-2">
-                        <button className="btn" onClick={()=>setShowTierConfirmModal(false)}>Cancel</button>
-                        <button className="btn btn-primary" onClick={confirmCreateRequest} data-testid="btn-confirm-tier">Proceed</button>
+                        <button className="btn" onClick={()=>setShowTierConfirmModal(false)} aria-label="Cancel">Cancel</button>
+                        <button className="btn btn-primary" onClick={()=>setTimeout(()=>confirmCreateRequest(), 100)} data-testid="btn-confirm-tier" aria-label="Proceed">Proceed</button>
                       </div>
                     </div>
                   </div>
