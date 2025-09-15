@@ -8447,6 +8447,10 @@ function ServiceRequestPage(){
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('create'); // 'create', 'tracking', 'history'
+  // M2 QA/testability enhancements
+  const [showTierConfirmModal, setShowTierConfirmModal] = useState(false);
+  const [showProvidersNotifiedBanner, setShowProvidersNotifiedBanner] = useState(false);
+  const [providersNotifiedCount, setProvidersNotifiedCount] = useState(0);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
