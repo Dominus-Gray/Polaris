@@ -349,9 +349,9 @@ class ComprehensiveProviderCapTester:
         if self.provider_token:
             self.submit_provider_response()
         
-        # Step 4: Query enhanced responses and verify logic
-        if not self.query_enhanced_responses():
-            print("❌ Enhanced responses query failed.")
+        # Step 4: Query responses and verify logic
+        if not self.query_responses():
+            print("❌ Responses query failed.")
             return False
         
         # Generate summary
