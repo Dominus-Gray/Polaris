@@ -8736,10 +8736,30 @@ function ServiceRequestPage(){
                 </div>
 
                 <div className="md:col-span-2">
-                  <button className="btn btn-primary" onClick={createRequest}>
+                  <button className="btn btn-primary" onClick={createRequest} data-testid="btn-create-request">
                     Create Service Request
                   </button>
                 </div>
+
+                {/* Tier confirmation modal */}
+                {showTierConfirmModal && (
+                  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" role="dialog" aria-modal="true" data-testid="modal-tier-confirm">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                      <h4 className="text-lg font-semibold mb-2">Confirm Request</h4>
+                      <p className="text-sm text-slate-700 mb-4">You are creating a request in {req.area_id}. Tier-2/3 provider matching may incur fees. Do you want to proceed?</p>
+                      <div className="flex justify-end gap-2">
+                        <button className="btn" onClick={()=>setShowTierConfirmModal(false)}>Cancel</button>
+                        <button className="btn btn-primary" onClick={confirmCreateRequest} data-testid="btn-confirm-tier">Proceed</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {showProvidersNotifiedBanner && (
+                  <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded" data-testid="banner-providers-notified">
+                    <div className="text-sm text-emerald-900">Request created. Notified up to {providersNotifiedCount} providers.</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
