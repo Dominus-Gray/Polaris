@@ -268,15 +268,30 @@ body { @apply bg-slate-50 text-slate-900; }
 }
 
 /* Enhanced Input Styles */
-.input-enhanced {
-  @apply border rounded-lg px-4 py-3 text-sm transition-all duration-200;
+.input, .input-enhanced, select.input, textarea.input {
+  @apply border rounded-lg px-4 py-3 text-sm transition-all duration-200 bg-white;
   background: linear-gradient(135deg, rgb(255, 255, 255) 0%, rgb(249, 250, 251) 100%);
   border: 1px solid rgb(226, 232, 240);
 }
 
-.input-enhanced:focus {
+.input:focus, .input-enhanced:focus, select.input:focus, textarea.input:focus {
   @apply outline-none ring-2 ring-blue-500 ring-opacity-50 border-blue-300;
 }
+
+/* Accessible focus ring for interactive elements */
+.btn:focus-visible, .link:focus-visible, .nav-item:focus-visible, .menu-item:focus-visible {
+  @apply outline-none ring-2 ring-offset-2 ring-blue-500;
+}
+
+/* Disabled styles for buttons */
+.btn[disabled], .btn.disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+/* Helper and error text styles */
+.form-label { @apply block text-sm font-medium text-slate-700 mb-2; }
+.helper-text { @apply text-xs text-slate-500 mt-1; }
+.error-text { @apply text-xs text-rose-600 mt-1; }
 
 /* Enhanced Landing Page Styles */
 .hero-gradient {
