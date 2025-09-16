@@ -8549,7 +8549,7 @@ function ServiceRequestPage(){
 
   const confirmCreateRequest = async () => {
     // Validate required fields before submitting
-    if (!req.budget || !req.timeline || !req.description) {
+    if (!req.budget_range || !req.timeline || !req.description) {
       toast.error('Please fill in all required fields');
       return;
     }
