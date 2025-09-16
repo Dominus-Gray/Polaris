@@ -8555,11 +8555,11 @@ function ServiceRequestPage(){
     }
     try {
       const payload = { 
-        budget: parseFloat(req.budget.replace(/[^0-9.-]+/g, '')) || 0,
-        payment_pref: 'card',
+        budget_range: req.budget_range,
         timeline: req.timeline,
         area_id: req.area_id,
-        description: req.description
+        description: req.description,
+        priority: 'medium'
       };
       
       // Use capped provider notifications endpoint
