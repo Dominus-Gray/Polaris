@@ -8715,7 +8715,7 @@ function ServiceRequestPage(){
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Timeline *</label>
-                  <select className="input w-full" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})}>
+                  <select className="input w-full" value={req.timeline} onChange={e=>setReq({...req, timeline:e.target.value})} data-testid="select-timeline">
                     <option value="">Select timeline</option>
                     {timelineOptions.map(timeline => (
                       <option key={timeline} value={timeline}>{timeline}</option>
