@@ -729,6 +729,47 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 - ✅ **No 401 errors detected** on /api/free-resources/localized endpoint
 - ✅ Authentication working correctly for external resources access
 
+## Frontend Automated Test – Targeted re-run (M2) - FINAL:
+**Testing Agent**: testing  
+**Test Date**: September 16, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Complete targeted service request modal flow test as requested in review
+
+### COMPREHENSIVE TARGETED TEST RESULTS:
+
+#### ✅ **1. AUTHENTICATION & NAVIGATION - FULLY OPERATIONAL**:
+- ✅ QA credentials (client.qa@polaris.example.com / Polaris#2025!) working correctly
+- ✅ Role selection (Small Business Client) handled properly
+- ✅ Successful login and navigation to Services page
+- ✅ Create Request tab activation working
+
+#### ✅ **2. FORM FIELD POPULATION - PRECISELY AS REQUESTED**:
+- ✅ **Business Area**: Technology & Security Infrastructure (area5) selected correctly
+- ✅ **Budget**: $2500 (value '2500') selected correctly
+- ✅ **Timeline**: 'Within 2 weeks' selected correctly
+- ✅ **Description**: 'QA automation submission for modal flow – expecting providers notified' filled correctly
+
+#### ✅ **3. MODAL CONFIRMATION FLOW - WORKING CORRECTLY**:
+- ✅ **Create Service Request button**: Found with data-testid="btn-create-request" and clicked successfully
+- ✅ **Tier confirmation modal**: Modal with data-testid="modal-tier-confirm" appeared correctly
+- ✅ **Modal content**: Shows "You are creating a request in area5. Tier-2/3 provider matching may incur fees. Do you want to proceed?"
+- ✅ **Proceed button**: Button with data-testid="btn-confirm-tier" found and clicked successfully
+
+#### ❌ **4. SUCCESS NOTIFICATIONS - BACKEND API FAILURE**:
+- ❌ **Critical Backend Error**: API call to `/api/service-requests/professional-help` returned 400 error
+- ❌ **Toast notifications**: No toast containing "Notified up to" text found (due to API failure)
+- ❌ **Banner notifications**: No banner with data-testid="banner-providers-notified" found (due to API failure)
+- ❌ **Root Cause**: Backend validation or processing issue preventing service request creation
+
+### FINAL ASSESSMENT:
+**Overall Score**: 75% (3/4 major components working)
+- ✅ Authentication & Navigation: 100%
+- ✅ Form Field Population: 100% 
+- ✅ Modal Confirmation Flow: 100%
+- ❌ Success Notifications: 0% (blocked by backend 400 error)
+
+**CRITICAL FINDING**: The frontend modal flow is implemented correctly with all required data-testid attributes and functionality. However, the backend API `/api/service-requests/professional-help` is returning a 400 error, preventing the success notifications from appearing. This is a **backend issue**, not a frontend implementation problem.
+
 ## TARGETED SERVICE REQUEST MODAL TEST - Current run (September 2025):
 **Testing Agent**: testing  
 **Test Date**: September 15, 2025  
