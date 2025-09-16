@@ -8705,9 +8705,11 @@ function ServiceRequestPage(){
                   <label className="block text-sm font-medium text-slate-700 mb-2">Budget (USD) *</label>
                   <select className="input w-full" value={req.budget_range} onChange={e=>setReq({...req, budget_range:e.target.value})} data-testid="select-budget">
                     <option value="">Select budget range</option>
-                    {budgetRanges.map(amount => (
-                      <option key={amount} value={amount}>${amount}</option>
-                    ))}
+                    <option value="under-500">Under $500</option>
+                    <option value="500-1500">$500 - $1,500</option>
+                    <option value="1500-5000">$1,500 - $5,000</option>
+                    <option value="5000-15000">$5,000 - $15,000</option>
+                    <option value="over-15000">Over $15,000</option>
                   </select>
                 </div>
 
