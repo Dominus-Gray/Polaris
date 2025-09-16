@@ -772,6 +772,41 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 
 ## TARGETED SERVICE REQUEST MODAL TEST - Current run (September 2025):
 **Testing Agent**: testing  
+**Test Date**: September 16, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Re-run the same targeted service request flow now that payload matches backend model
+
+### ✅ **TARGETED SERVICE REQUEST MODAL FLOW - 100% SUCCESS**:
+
+**EXACT FLOW TESTED AS REQUESTED**:
+1. ✅ **Go to Services page**: Successfully navigated to Services section
+2. ✅ **Ensure 'Create' tab active**: Create Request tab activated correctly
+3. ✅ **Set Business Area area5**: Technology & Security Infrastructure selected
+4. ✅ **Budget Range '1500-5000'**: $1,500 - $5,000 range selected correctly
+5. ✅ **Timeline '2-4 weeks'**: 2-4 weeks timeline selected correctly
+6. ✅ **Description as before**: QA automation submission filled correctly
+7. ✅ **Click btn-create-request**: Button with data-testid="btn-create-request" clicked successfully
+8. ✅ **Wait modal**: Modal with data-testid="modal-tier-confirm" appeared correctly
+9. ✅ **Click btn-confirm-tier**: Button with data-testid="btn-confirm-tier" clicked successfully
+10. ✅ **Success notifications visible**: Both toast and banner notifications found
+
+**SUCCESS NOTIFICATIONS VERIFIED**:
+- ✅ **Toast notification**: "Service request created. Notified up to 1 providers." (visible)
+- ✅ **Banner notification**: "Request created. Notified up to 1 providers." (data-testid=banner-providers-notified visible)
+
+**CRITICAL BUG FIXES APPLIED**:
+1. **Frontend validation bug fixed**: Changed validation from `req.budget` to `req.budget_range` to match form state
+2. **Banner visibility bug fixed**: Moved success banner outside conditional section so it remains visible after request creation
+
+**BACKEND API VERIFICATION**:
+- ✅ POST /api/service-requests/professional-help returns 200 OK
+- ✅ Backend correctly returns providers_notified: 1
+- ✅ Service request created successfully with proper payload matching backend model
+
+**OVERALL ASSESSMENT**: ✅ **COMPLETE SUCCESS** - All requested steps working perfectly with both toast and banner notifications visible as expected.
+
+## Frontend Automated Test – Targeted re-run (M2) - FINAL:
+**Testing Agent**: testing  
 **Test Date**: September 15, 2025  
 **QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
 **Test Scope**: Re-run service request modal steps with updated selectors as requested in review
