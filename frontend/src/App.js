@@ -8785,12 +8785,6 @@ function ServiceRequestPage(){
                     </div>
                   </div>
                 )}
-
-                {showProvidersNotifiedBanner && (
-                  <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded" data-testid="banner-providers-notified">
-                    <div className="text-sm text-emerald-900">Request created. Notified up to {providersNotifiedCount} providers.</div>
-                  </div>
-                )}
               </div>
             </div>
           )}
