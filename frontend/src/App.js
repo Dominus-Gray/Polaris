@@ -8470,6 +8470,9 @@ function ServiceRequestPage(){
   const [showTierConfirmModal, setShowTierConfirmModal] = useState(false);
   const [showProvidersNotifiedBanner, setShowProvidersNotifiedBanner] = useState(false);
   const [providersNotifiedCount, setProvidersNotifiedCount] = useState(0);
+  // Unified state management
+  const [responsesLoading, setResponsesLoading] = useState(false);
+  const [reqError, setReqError] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
