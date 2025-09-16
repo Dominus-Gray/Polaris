@@ -8842,14 +8842,41 @@ function ServiceRequestPage(){
 
               <div className="bg-white rounded-lg shadow-sm border p-6">
                 <h3 className="text-lg font-semibold mb-4">Service Requests Received</h3>
-                {showResponsesLimitBanner && (
+
+                {/* Unified loading state */}
+                {responsesLoading && (
+                  <div className="state-loading"><div className="spinner" /></div>
+                )}
+
+                {/* Unified error state */}
+                {!responsesLoading && !!reqError && (
+                  <div className="state-error mb-3">
+                    <div className="title">Unable to load responses</div>
+                    <div className="sub">{reqError}</div>
+                  </div>
+                )}
+
+                {/* Limit banner */}
+                {!responsesLoading && !reqError && showResponsesLimitBanner && (
                   <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded">
                     <div className="text-sm text-amber-900">
                       Showing first 5 responses. <span title="We limit the initial view to the first 5 provider responses to streamline decision-making and ensure quality.">Why only 5?</span>
                     </div>
                   </div>
                 )}
-                <div className="space-y-4">
+                
+                {/* Empty state */}
+                {!responsesLoading && !reqError && responses.length === 0 && (
+                  <div className="state-empty">
+                    <div className="icon">🔍</div>
+                    <div className="title">No responses yet</div>
+                    <div className="sub">Providers are reviewing your request. Check back soon or invite providers.</div>
+                  </div>
+                )}
+
+                {/* Responses */}
+                {!responsesLoading && !reqError && responses.length > 0 && (
+                  <div className="space-y-4">
                   {responses.map(r => (
                     <div key={r.id || r._id} className="border rounded-lg p-4 hover:bg-slate-50">
                       <div className="flex justify-between items-start mb-3">
