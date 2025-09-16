@@ -8802,8 +8802,8 @@ function ServiceRequestPage(){
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Service Request Tracking</h3>
                 <div className="flex gap-2">
-                  <button className="btn" onClick={inviteProviders}>Invite Providers</button>
-                  <button className="btn" onClick={refresh}>Refresh</button>
+                  <button className="btn btn-outline" onClick={inviteProviders} aria-label="Invite Providers">Invite Providers</button>
+                  <button className="btn btn-outline" onClick={refresh} aria-label="Refresh responses">Refresh</button>
                 </div>
               </div>
               
