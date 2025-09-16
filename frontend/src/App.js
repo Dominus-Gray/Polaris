@@ -8532,6 +8532,8 @@ function ServiceRequestPage(){
   };
 
   const loadRequestData = async (reqId) => {
+    setResponsesLoading(true);
+    setReqError('');
     try {
       // Load enhanced provider responses (first 5)
       const responsesRes = await axios.get(`${API}/service-requests/${reqId}/responses/enhanced`);
@@ -8542,6 +8544,9 @@ function ServiceRequestPage(){
       setMatches(reqRes.data.suggested_matches || []);
     } catch (e) {
       console.error('Failed to load request data:', e);
+      setReqError(e.response?.data?.detail?.message || e.message || 'Failed to load request data');
+    } finally {
+      setResponsesLoading(false);
     }
   };
 
