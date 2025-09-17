@@ -15636,7 +15636,8 @@ async def system_health_check():
         status = {
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
-            "version": "1.0.0",
+            "version": os.environ.get("POLARIS_VERSION", "dev"),
+            "git_sha": os.environ.get("POLARIS_GIT_SHA", "unknown"),
             "services": {
                 "database": {
                     "status": "healthy",
