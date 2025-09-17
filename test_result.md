@@ -803,7 +803,72 @@ The major accessibility issues have been resolved. Users can now read all dashbo
 - ✅ Backend correctly returns providers_notified: 1
 - ✅ Service request created successfully with proper payload matching backend model
 
-**OVERALL ASSESSMENT**: ✅ **COMPLETE SUCCESS** - All requested steps working perfectly with both toast and banner notifications visible as expected.
+## Frontend Automated Test – UX Consistency Run (September 2025):
+**Testing Agent**: testing  
+**Test Date**: September 17, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Comprehensive UX consistency validation for Client role covering Knowledge Base, Assessment, and Service Requests
+
+### COMPREHENSIVE UX CONSISTENCY TEST RESULTS:
+
+#### ⚠️ **A) KNOWLEDGE BASE (/knowledge-base) - AUTHENTICATION ISSUES**:
+- ⚠️ **Initial unified loading state**: No loading state detected (may have loaded quickly)
+- ✅ **Areas grid cards render**: Found 4 area cards in grid layout
+- ✅ **Area navigation**: Successfully clicked first available area card
+- ⚠️ **Resource viewer**: Found Guides but Templates missing
+- ❌ **Download button**: Not visible in resource viewer
+- ❌ **401/404 errors**: Found 4 authentication errors on knowledge base API calls
+
+#### ⚠️ **B) ASSESSMENT (main page) - AUTHENTICATION BLOCKING**:
+- ✅ **Page renders**: Assessment page loads without console errors
+- ❌ **Area cards**: No area cards with title text found due to authentication issues
+- ⚠️ **Tier Access Loading Issue**: "Unable to load tier-based assessment areas" error displayed
+
+#### ⚠️ **C) SERVICE REQUESTS (sanity) - AUTHENTICATION PREVENTING FUNCTIONALITY**:
+- ✅ **Page loads**: Service Request page accessible
+- ❌ **Create Service Request button**: data-testid=btn-create-request not found
+- ❌ **Authentication errors**: 401 errors preventing proper page functionality
+
+### CRITICAL AUTHENTICATION ISSUES IDENTIFIED:
+- **401 Unauthorized errors** on multiple API endpoints preventing full functionality
+- **Token persistence issues** causing authentication to expire during navigation
+- **Knowledge Base API calls failing** with authentication errors (/api/knowledge-base/areas, /api/knowledge-base/access)
+- **Service engagement API calls failing** with 401 responses (/api/engagements/my-services)
+
+### NETWORK & CONSOLE HEALTH SUMMARY:
+- **Console Errors**: 12 red console errors detected (primarily authentication-related)
+- **Network Errors**: 6 network errors (all 401 authentication failures)
+- **API Endpoints Affected**: /api/knowledge-base/areas, /api/knowledge-base/access, /api/engagements/my-services
+
+### UNIFIED STATES OBSERVED:
+- **Loading states**: Tier Access Loading Issue displayed with proper error messaging
+- **Error handling**: Authentication errors properly caught and displayed to user
+- **Navigation**: Role selection and basic page navigation working correctly
+
+### PRODUCTION READINESS ASSESSMENT:
+**Overall Score**: 60% - AUTHENTICATION ISSUES BLOCKING FULL FUNCTIONALITY
+
+**Successfully Operational**:
+- ✅ Role selection and basic authentication flow
+- ✅ Page navigation and routing working
+- ✅ Basic UI rendering and layout
+- ✅ Error handling and user feedback
+
+**Critical Issues Blocking Production**:
+- ❌ **Authentication token management failing** across page navigation
+- ❌ **Knowledge Base functionality blocked** by 401 errors
+- ❌ **Service Request functionality incomplete** due to authentication issues
+- ❌ **API integration failing** for protected endpoints
+
+### TESTING RECOMMENDATION:
+**🚨 AUTHENTICATION FIXES REQUIRED BEFORE PRODUCTION**
+
+**Immediate Action Items for Main Agent**:
+1. **URGENT**: Fix authentication token persistence across page navigation
+2. **CRITICAL**: Resolve 401 errors on Knowledge Base API endpoints
+3. **IMPORTANT**: Fix Service Request page authentication integration
+4. **RECOMMENDED**: Implement proper error handling for authentication failures
+
 
 ## Frontend Automated Test – Targeted re-run (M2) - FINAL:
 **Testing Agent**: testing  
