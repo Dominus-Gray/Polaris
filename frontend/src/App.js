@@ -1560,6 +1560,11 @@ function KnowledgeBasePage(){
   const [aiMessages, setAIMessages] = useState([]);
   const [aiInput, setAIInput] = useState('');
   const [aiLoading, setAILoading] = useState(false);
+  // Unified state flags for KB
+  const [kbLoading, setKbLoading] = useState(false);
+  const [kbError, setKbError] = useState('');
+  const [areaResLoading, setAreaResLoading] = useState(false);
+  const [areaResError, setAreaResError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
