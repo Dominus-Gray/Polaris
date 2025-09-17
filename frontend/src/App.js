@@ -9752,6 +9752,7 @@ function OpportunitiesPage(){
 
 function VersionBadge(){
   const [info, setInfo] = useState(null);
+  const [copied, setCopied] = useState(false);
   useEffect(() => {
     (async () => {
       try {
@@ -9761,11 +9762,14 @@ function VersionBadge(){
     })();
   }, []);
   if (!info) return null;
+  const fullLabel = `Release ${info.version}${info.sha ? ` (${info.sha})` : ''} @ ${info.ts || ''}`;
   return (
     <div className="fixed bottom-3 right-3 z-40">
       <div className="px-3 py-1 rounded-full text-xs shadow-sm border bg-white/90 text-slate-700 flex items-center gap-2">
-        <span title={info.ts}>Release {info.version}</span>
-        {info.sha && <span className="text-slate-400">({info.sha})</span>}
+        <span title={info.ts}>{fullLabel}</span>
+        <button className="text-blue-600 hover:text-blue-700" aria-label="Copy build info" onClick={() => { navigator.clipboard.writeText(fullLabel).then(()=>{ setCopied(true); setTimeout(()=>setCopied(false), 1200); }); }}>
+          {copied ? 'Copied' : 'Copy'}
+        </button>
       </div>
     </div>
   );
