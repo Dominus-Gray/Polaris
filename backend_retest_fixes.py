@@ -130,13 +130,14 @@ class BackendRetestRunner:
                     
                     # Validate response structure
                     checks = []
-                    if "provider_info" in data and data["provider_info"]:
-                        if data["provider_info"].get("business_name") is not None:
+                    if "responses" in data and data["responses"]:
+                        provider_info = data["responses"][0].get("provider_info", {})
+                        if provider_info.get("business_name") is not None:
                             checks.append("✅ provider_info.business_name not null")
                         else:
                             checks.append("❌ provider_info.business_name is null")
                     else:
-                        checks.append("❌ provider_info missing or empty")
+                        checks.append("❌ responses array missing or empty")
                         
                     if "total_responses" in data and data["total_responses"] >= 1:
                         checks.append("✅ total_responses >= 1")
