@@ -104,6 +104,21 @@ import 'uplot/dist/uPlot.min.css';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Global axios configuration for auth and base URL
+axios.defaults.baseURL = API;
+axios.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem('polaris_token');
+    if (token) {
+      config.headers = config.headers || {};
+      if (!config.headers['Authorization']) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+  } catch {}
+  return config;
+});
+
 function PolarisLogo({ size = 22, variant = 'default' }) {
   const logoColor = variant === 'white' ? '#ffffff' : '#0F172A';
   const starColor = variant === 'white' ? '#ffffff' : '#2563EB';
