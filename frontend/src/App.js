@@ -2219,7 +2219,7 @@ function KnowledgeBasePage(){
                 {/* Action Area */}
                 {!isUnlocked ? (
                   <div className="text-center py-4 border-t border-slate-100">
-                    <p className="text-sm text-slate-600 mb-4">
+                    <p className="text-sm text-slate-600 mb-2">
                       🎯 AI-powered templates, guides, and compliance resources
                     </p>
                     <button 
@@ -2227,6 +2227,7 @@ function KnowledgeBasePage(){
                       onClick={() => unlockArea(area.id)}
                       disabled={paymentLoading}
                       className="text-white"
+                      aria-describedby={kbHelpAreaId === area.id ? `kb-help-${area.id}` : undefined}
                     >
                       {paymentLoading ? (
                         <span className="flex items-center gap-2">
@@ -2237,6 +2238,14 @@ function KnowledgeBasePage(){
                         `Unlock for $20`
                       )}
                     </button>
+                    <div className="mt-2 text-xs text-slate-500">
+                      <button className="underline" onClick={()=>setKbHelpAreaId(kbHelpAreaId === area.id ? null : area.id)} aria-controls={`kb-help-${area.id}`} aria-expanded={kbHelpAreaId === area.id}>Why is this paid?</button>
+                    </div>
+                    {kbHelpAreaId === area.id && (
+                      <div id={`kb-help-${area.id}`} role="region" className="mt-2 text-xs text-slate-700 bg-slate-50 border border-slate-200 p-2 rounded">
+                        Access to premium templates and AI-assisted guidance requires a small fee to support content quality, platform operations, and continuous updates.
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="border-t border-slate-100 pt-4">
