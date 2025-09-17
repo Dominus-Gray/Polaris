@@ -8968,6 +8968,7 @@ function ServiceRequestPage(){
               </div>
             </div>
           )}
+        </>
       )}
 
       {/* Engagements & Tracking Tab */}
