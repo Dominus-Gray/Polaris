@@ -8957,8 +8957,9 @@ function ServiceRequestPage(){
         </>
       )}
 
-      {/* Engagements & Tracking Tab */}
-      {activeTab === 'tracking' && (
+      <>
+        {/* Engagements & Tracking Tab */}
+        {activeTab === 'tracking' && (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h3 className="text-lg font-semibold mb-4">Active Engagements & Service Tracking</h3>
