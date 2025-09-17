@@ -2118,6 +2118,21 @@ function KnowledgeBasePage(){
       )}
 
       {/* Knowledge Base Areas Grid */}
+      {/* Unified KB states */}
+      {kbLoading && (<div className="state-loading"><div className="spinner" /></div>)}
+      {!kbLoading && !!kbError && (
+        <div className="state-error mb-6">
+          <div className="title">Unable to load areas</div>
+          <div className="sub">{kbError}</div>
+        </div>
+      )}
+      {!kbLoading && !kbError && areas.length === 0 && (
+        <div className="state-empty mb-6">
+          <div className="icon">📚</div>
+          <div className="title">No areas available</div>
+          <div className="sub">Please try again later or contact support.</div>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {areas.map((area) => {
           const isUnlocked = userAccess?.has_all_access || userAccess?.unlocked_areas?.includes(area.id);
