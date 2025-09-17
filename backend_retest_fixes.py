@@ -356,7 +356,7 @@ class BackendRetestRunner:
                     form_data.add_field('question_id', 'test_question_id')
                     
                     with open(temp_file_path, 'rb') as f:
-                        form_data.add_field('file', f, filename='test_evidence.txt', content_type='text/plain')
+                        form_data.add_field('files', f, filename='test_evidence.txt', content_type='text/plain')
                         
                         headers = self.get_auth_headers("client")
                         async with self.session.post(f"{BASE_URL}/assessment/evidence", 
