@@ -95,6 +95,13 @@ class BackendRetestRunner:
             
         # Step 2: Provider response as provider.qa
         try:
+            # Get provider user ID first
+            headers = self.get_auth_headers("provider")
+            async with self.session.get(f"{BASE_URL}/auth/me", headers=headers) as response:
+                if response.status == 200:
+                    provider_data = await response.json()
+                    self.provider_id = provider_data["id"]
+                    
             response_data = {
                 "request_id": self.service_request_id,
                 "proposed_fee": 2000,
@@ -102,12 +109,10 @@ class BackendRetestRunner:
                 "proposal_note": "QA test response"
             }
             
-            headers = self.get_auth_headers("provider")
             async with self.session.post(f"{BASE_URL}/provider/respond-to-request", 
                                        json=response_data, headers=headers) as response:
                 if response.status in [200, 201]:
                     data = await response.json()
-                    self.provider_id = data.get("provider_id")
                     results["passed"] += 1
                     results["details"].append("✅ Provider response submitted successfully")
                     print(f"   ✅ Provider response submitted")
