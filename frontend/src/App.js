@@ -1610,6 +1610,8 @@ function KnowledgeBasePage(){
   };
 
   const loadAreaResources = async (areaId) => {
+    setAreaResLoading(true);
+    setAreaResError('');
     try {
       // Use axios defaults - no need for manual auth headers
       const { data } = await axios.get(`${API}/knowledge-base/${areaId}/content`);
