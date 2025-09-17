@@ -8710,9 +8710,8 @@ function ServiceRequestPage(){
         </div>
       )}
 
-      <>
-        {/* Create Request Tab */}
-        {activeTab === 'create' && (
+      {/* Create Request Tab */}
+      {activeTab === 'create' && (
         <>
           {!requestId && (
             <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
