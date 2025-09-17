@@ -8965,6 +8965,7 @@ function ServiceRequestPage(){
                     <div className="text-sm text-slate-500">No service requests yet. Providers will respond soon.</div>
                   )}
                 </div>
+                )}
               </div>
             </div>
           )}
