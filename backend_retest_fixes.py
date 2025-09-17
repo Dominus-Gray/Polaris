@@ -224,6 +224,7 @@ class BackendRetestRunner:
                     "agreed_fee": 1500,
                     "provider_id": self.provider_id,
                     "origin_url": "http://localhost",
+                    "payment_method": "stripe",
                     "request_id": self.service_request_id
                 }
                 
