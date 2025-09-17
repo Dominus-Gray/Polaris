@@ -7054,25 +7054,37 @@ async def get_enhanced_service_responses(
         
         enhanced_responses = []
         for response in responses:
+            provider_id = response.get("provider_id")
+            if not provider_id:
+                logger.warning(f"Provider response missing provider_id for request {request_id}: {response}")
+                continue
             # Get provider's enhanced profile
             enhanced_profile = await db.enhanced_provider_profiles.find_one({
-                "provider_id": response["provider_id"]
+                "provider_id": provider_id
             })
             
             # Get provider's basic info
-            provider_user = await db.users.find_one({"_id": response["provider_id"]})
-            business_profile = await db.business_profiles.find_one({"user_id": response["provider_id"]})
+            provider_user = await db.users.find_one({"_id": provider_id}) or {}
+            business_profile = await db.business_profiles.find_one({"user_id": provider_id}) or {}
             
-            # Calculate average rating
-            ratings = await db.service_ratings.find({"provider_id": response["provider_id"]}).to_list(None)
-            avg_rating = sum(r["overall_rating"] for r in ratings) / len(ratings) if ratings else None
+            # Calculate average rating safely
+            ratings = await db.service_ratings.find({"provider_id": provider_id}).to_list(None)
+            avg_rating = (sum((r.get("overall_rating") or 0) for r in ratings) / len(ratings)) if ratings else None
             total_ratings = len(ratings)
             
+            business_name = None
+            if enhanced_profile and enhanced_profile.get("business_name"):
+                business_name = enhanced_profile.get("business_name")
+            elif business_profile and business_profile.get("company_name"):
+                business_name = business_profile.get("company_name")
+            else:
+                business_name = provider_user.get("company_name") or provider_user.get("full_name") or "Unknown Business"
+            
             enhanced_response = {
-                "response_id": response["_id"],
-                "provider_id": response["provider_id"],
+                "response_id": response.get("_id"),
+                "provider_id": provider_id,
                 "proposed_fee": response.get("proposed_fee"),
-                "fee_formatted": f"${response.get('proposed_fee', 0):,.2f}",
+                "fee_formatted": f"${(response.get('proposed_fee') or 0):,.2f}",
                 "estimated_timeline": response.get("estimated_timeline"),
                 "proposal_note": response.get("proposal_note"),
                 "status": response.get("status", "pending"),
@@ -7080,25 +7092,25 @@ async def get_enhanced_service_responses(
                 
                 # Enhanced provider info
                 "provider_info": {
-                    "business_name": enhanced_profile.get("business_name", "Unknown Business") if enhanced_profile else business_profile.get("company_name", "Unknown Business"),
-                    "tagline": enhanced_profile.get("tagline", "") if enhanced_profile else "",
-                    "overview": enhanced_profile.get("overview", "") if enhanced_profile else "",
-                    "years_experience": enhanced_profile.get("years_experience", 0) if enhanced_profile else 0,
-                    "team_size": enhanced_profile.get("team_size", "Not specified") if enhanced_profile else "Not specified",
-                    "location": enhanced_profile.get("location", "Not specified") if enhanced_profile else "Not specified",
-                    "specializations": enhanced_profile.get("specializations", []) if enhanced_profile else [],
-                    "certifications": enhanced_profile.get("certifications", []) if enhanced_profile else [],
-                    "portfolio_highlights": enhanced_profile.get("portfolio_highlights", []) if enhanced_profile else [],
-                    "response_time_avg": enhanced_profile.get("response_time_avg", "Not specified") if enhanced_profile else "Not specified",
-                    "pricing_model": enhanced_profile.get("pricing_model", "Not specified") if enhanced_profile else "Not specified",
-                    "availability": enhanced_profile.get("availability", "Unknown") if enhanced_profile else "Unknown"
+                    "business_name": business_name,
+                    "tagline": (enhanced_profile or {}).get("tagline", ""),
+                    "overview": (enhanced_profile or {}).get("overview", ""),
+                    "years_experience": (enhanced_profile or {}).get("years_experience", 0),
+                    "team_size": (enhanced_profile or {}).get("team_size", "Not specified"),
+                    "location": (enhanced_profile or {}).get("location", "Not specified"),
+                    "specializations": (enhanced_profile or {}).get("specializations", []),
+                    "certifications": (enhanced_profile or {}).get("certifications", []),
+                    "portfolio_highlights": (enhanced_profile or {}).get("portfolio_highlights", []),
+                    "response_time_avg": (enhanced_profile or {}).get("response_time_avg", "Not specified"),
+                    "pricing_model": (enhanced_profile or {}).get("pricing_model", "Not specified"),
+                    "availability": (enhanced_profile or {}).get("availability", "Unknown")
                 },
                 
                 # Ratings and reviews
                 "rating_summary": {
-                    "average_rating": round(avg_rating, 1) if avg_rating else None,
+                    "average_rating": round(avg_rating, 1) if avg_rating is not None else None,
                     "total_ratings": total_ratings,
-                    "rating_display": f"{avg_rating:.1f}/5.0 ({total_ratings} reviews)" if avg_rating else "No ratings yet"
+                    "rating_display": f"{avg_rating:.1f}/5.0 ({total_ratings} reviews)" if avg_rating is not None else "No ratings yet"
                 }
             }
             
