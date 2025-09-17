@@ -4789,7 +4789,7 @@ async def get_payment_status(session_id: str, current=Depends(require_user)):
         raise HTTPException(status_code=500, detail=f"Payment status check failed: {str(e)}")
 
 @api.post("/payments/service-request")
-async def create_service_payment(request: Request, payload: ServiceRequestPaymentIn, current=Depends(require_user)):
+async def create_service_payment(request: Request, payload: ServiceRequestPaymentIn = Body(...), current=Depends(require_user)):
     """Create payment for service request"""
     if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
         raise HTTPException(status_code=503, detail="Payment service unavailable")
