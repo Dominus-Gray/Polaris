@@ -9814,10 +9814,11 @@ function AppShell(){
   }, []);
   
   const showLanding = location.pathname === '/' && !me;
+  const SHOW_BADGE = (process.env.REACT_APP_SHOW_VERSION_BADGE || 'true').toLowerCase() === 'true';
   return (
     <div className="app-shell">
       {!showLanding && <Header />}
-      {!showLanding && <VersionBadge />}
+      {!showLanding && SHOW_BADGE && <VersionBadge />}
       {showLanding ? (
         <Landing />
       ) : (
