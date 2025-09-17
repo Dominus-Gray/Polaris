@@ -8717,8 +8717,6 @@ function ServiceRequestPage(){
           <button className="btn btn-primary" onClick={createRequest} data-testid="btn-create-request">Create Service Request</button>
         </div>
       </div>
-
-      <>
         {/* Success notification banner - shown after request creation */}
         {activeTab === 'create' && showProvidersNotifiedBanner && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6" data-testid="banner-providers-notified">
