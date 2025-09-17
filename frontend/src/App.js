@@ -9791,6 +9791,7 @@ function AppShell(){
   return (
     <div className="app-shell">
       {!showLanding && <Header />}
+      {!showLanding && <VersionBadge />}
       {showLanding ? (
         <Landing />
       ) : (
