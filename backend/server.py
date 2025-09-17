@@ -4676,7 +4676,7 @@ async def set_engagement_status(engagement_id: str, payload: EngagementStatusIn,
 
 # ---------------- Payment Endpoints ----------------
 @api.post("/payments/v1/checkout/session")
-async def create_payment_session(request: Request, payload: PaymentTransactionIn, current=Depends(require_user)):
+async def create_payment_session(request: Request, payload: PaymentTransactionIn = Body(...), current=Depends(require_user)):
     """Create Stripe checkout session"""
     if not STRIPE_AVAILABLE or not STRIPE_API_KEY:
         raise HTTPException(status_code=503, detail="Payment service unavailable")
