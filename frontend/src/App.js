@@ -9749,6 +9749,28 @@ function OpportunitiesPage(){
   );
 }
 
+
+function VersionBadge(){
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await axios.get(`${API}/health/system`);
+        setInfo({ version: data.version || 'dev', sha: (data.git_sha||'').slice(0,7), ts: data.timestamp });
+      } catch (e) { /* non-blocking */ }
+    })();
+  }, []);
+  if (!info) return null;
+  return (
+    <div className="fixed bottom-3 right-3 z-40">
+      <div className="px-3 py-1 rounded-full text-xs shadow-sm border bg-white/90 text-slate-700 flex items-center gap-2">
+        <span title={info.ts}>Release {info.version}</span>
+        {info.sha && <span className="text-slate-400">({info.sha})</span>}
+      </div>
+    </div>
+  );
+}
+
 function AppShell(){
   useAuthHeader();
   const location = useLocation();
