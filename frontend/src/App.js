@@ -1580,6 +1580,7 @@ function KnowledgeBasePage(){
       // Use axios defaults - no need for manual auth headers
       const { data } = await axios.get(`${API}/knowledge-base/areas`);
       setAreas(data.areas || []);
+      setKbLoading(false);
     } catch (e) {
       console.error('Failed to load knowledge base areas:', e);
       setKbError(e.response?.data?.detail || 'Unable to load knowledge base areas');
