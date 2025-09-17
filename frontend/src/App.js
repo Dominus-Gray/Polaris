@@ -8937,7 +8937,12 @@ function ServiceRequestPage(){
                 {!responsesLoading && !reqError && showResponsesLimitBanner && (
                   <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded">
                     <div className="text-sm text-amber-900">
-                      Showing first 5 responses. <span title="We limit the initial view to the first 5 provider responses to streamline decision-making and ensure quality.">Why only 5?</span>
+                      Showing first 5 responses. <button className="underline" onClick={()=>setShowCapHelp(true)} aria-expanded={showCapHelp} aria-controls="cap-help">Why only 5?</button>
+                      {showCapHelp && (
+                        <div id="cap-help" role="region" aria-live="polite" className="mt-2 text-xs text-amber-900 bg-amber-100 border border-amber-200 p-2 rounded">
+                          We display the first five provider responses to streamline comparison and decision-making. You can revisit the request later to see additional responses.
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
