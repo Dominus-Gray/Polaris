@@ -8550,6 +8550,7 @@ function ServiceRequestPage(){
   // Unified state management
   const [responsesLoading, setResponsesLoading] = useState(false);
   const [reqError, setReqError] = useState('');
+  const [showCapHelp, setShowCapHelp] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
