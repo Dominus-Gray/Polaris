@@ -183,6 +183,7 @@ class BackendRetestRunner:
             kb_payment_data = {
                 "package_id": "knowledge_base_single",
                 "origin_url": "http://localhost",
+                "payment_method": "stripe",
                 "metadata": {"area_id": "area1"}
             }
             
