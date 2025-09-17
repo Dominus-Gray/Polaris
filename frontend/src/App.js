@@ -913,6 +913,31 @@ function ProfilePage(){
 
 function AssessmentPage(){
   const navigate = useNavigate();
+  // Initialize loading for assessment
+  useEffect(() => {
+    try {
+      setLoading(false);
+    } catch (e) {
+      setAssessmentError(e.message || 'Unable to initialize assessment');
+      setLoading(false);
+    }
+  }, []);
+
+  // Early unified states
+  if (loading) {
+    return <div className="container mt-6 max-w-4xl"><div className="state-loading"><div className="spinner" /></div></div>;
+  }
+  if (assessmentError) {
+    return (
+      <div className="container mt-6 max-w-4xl">
+        <div className="state-error">
+          <div className="title">Unable to load assessment</div>
+          <div className="sub">{assessmentError}</div>
+        </div>
+      </div>
+    );
+  }
+
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
   const [availableAreas, setAvailableAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState(null);
