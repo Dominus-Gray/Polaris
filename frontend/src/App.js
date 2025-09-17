@@ -1205,7 +1205,7 @@ function AssessmentPage(){
                   <strong>Required Deliverable:</strong> {question.deliverable}
                 </div>
                 <div className="text-sm text-green-700">
-                  <strong>Acceptable Alternatives:</strong> {question.alternatives}
+                  <strong>Acceptable Alternatives:</strong> {question.alternatives} <button className="underline ml-2" onClick={()=>alert('Evidence is required for Tier 2/3. You can upload documents, images, or PDFs. For large files, we use chunked uploads.')} aria-label="Why evidence required?">Why?</button>
                 </div>
                 <div className="bg-white rounded p-3 text-sm text-slate-600">
                   <div className="space-y-2">
