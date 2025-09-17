@@ -1793,9 +1793,12 @@ function KnowledgeBasePage(){
       setSelectedArea(areaId);
     } catch (e) {
       console.error('Failed to load area resources:', e);
+      setAreaResError(e.response?.data?.detail || 'Unable to load area resources');
       toast.error('Failed to load resources', {
         description: e.response?.data?.detail || 'Unable to load area resources'
       });
+    } finally {
+      setAreaResLoading(false);
     }
   };
 
