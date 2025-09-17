@@ -1606,6 +1606,8 @@ function KnowledgeBasePage(){
   const [kbError, setKbError] = useState('');
   const [areaResLoading, setAreaResLoading] = useState(false);
   const [areaResError, setAreaResError] = useState('');
+  // Paywall help toggle per area
+  const [kbHelpAreaId, setKbHelpAreaId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
