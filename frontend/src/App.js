@@ -909,6 +909,7 @@ function AssessmentPage(){
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showAreaNavigation, setShowAreaNavigation] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [assessmentError, setAssessmentError] = useState('');
   const [tierAccess, setTierAccess] = useState({});
   
   // Redirect non-clients to home
