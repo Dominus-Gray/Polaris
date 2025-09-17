@@ -1568,17 +1568,20 @@ function KnowledgeBasePage(){
   const navigate = useNavigate();
 
   useEffect(() => {
+    setKbLoading(true);
     loadKnowledgeBaseAreas();
     loadUserAccess();
   }, []);
 
   const loadKnowledgeBaseAreas = async () => {
+    setKbError('');
     try {
       // Use axios defaults - no need for manual auth headers
       const { data } = await axios.get(`${API}/knowledge-base/areas`);
       setAreas(data.areas || []);
     } catch (e) {
       console.error('Failed to load knowledge base areas:', e);
+      setKbError(e.response?.data?.detail || 'Unable to load knowledge base areas');
       // Fallback to static areas if API fails
       setAreas([
         { id: 'area1', title: 'Business Formation & Registration', description: 'Essential business setup, licensing, and legal registration requirements', resources: 12 },
