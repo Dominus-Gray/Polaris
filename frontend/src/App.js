@@ -1167,6 +1167,20 @@ function AssessmentPage(){
     return null;
   };
 
+  const startTierSession = async (areaId, tier = 3) => {
+    try {
+      const form = new FormData();
+      form.append('area_id', areaId);
+      form.append('tier_level', String(tier));
+      const { data } = await axios.post(`${API}/assessment/tier-session`, form);
+      setBackendSession(data);
+      setBackendQuestions(data.questions || []);
+      toast.success(`Tier ${tier} session started for ${data.area_title}`);
+    } catch (e) {
+      toast.error('Failed to start assessment session', { description: e.response?.data?.detail || e.message });
+    }
+  };
+
   const nextArea = () => {
     if (isLastArea) {
       // Calculate completion and redirect to home
