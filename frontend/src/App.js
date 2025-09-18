@@ -1045,6 +1045,10 @@ function AssessmentPage(){
   const currentAreaData = assessmentAreas[currentArea];
   const isLastArea = currentArea === assessmentAreas.length - 1;
 
+  // Backend-driven tier session state
+  const [backendSession, setBackendSession] = useState(null);
+  const [backendQuestions, setBackendQuestions] = useState([]);
+
   const handleAnswer = async (questionId, answer) => {
     setAnswers(prev => ({
       ...prev,
