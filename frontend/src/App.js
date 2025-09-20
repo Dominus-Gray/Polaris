@@ -47,12 +47,6 @@ import RPLeadDetail from './components/RPLeadDetail';
 import RPRequirementsAdmin from './components/RPRequirementsAdmin';
 import RPSharePage from './components/RPSharePage';
 
-// RP CRM-lite components (flagged)
-import RPLeadsList from './components/RPLeadsList';
-import RPLeadDetail from './components/RPLeadDetail';
-import RPRequirementsAdmin from './components/RPRequirementsAdmin';
-import RPSharePage from './components/RPSharePage';
-
 class PolarisErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
