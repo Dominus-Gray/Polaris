@@ -9281,6 +9281,7 @@ function ProviderServiceRequestsPage(){
 function Header(){
   const navigate = useNavigate();
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const SHOW_RP_CRM = (process.env.REACT_APP_SHOW_RP_CRM || 'true').toLowerCase() === 'true';
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
