@@ -15861,7 +15861,7 @@ async def v2_set_rp_requirements(payload: Dict[str, Any] = Body(...), current=De
 
 @api.get("/v2/rp/requirements")
 async def v2_get_rp_requirements(rp_type: str = Query("generic"), current=Depends(require_user)):
-    doc = await db.rp_requirements.find_one({"rp_type": rp_type.lower()})
+    doc = await db.rp_requirements.find_one({"rp_type": rp_type.lower()}, {"_id": 0})
     return doc or {"rp_type": rp_type, "required_fields": []}
 
 async def build_rp_data_package(sbc_id: str, rp_type: str = "generic") -> Dict[str, Any]:
