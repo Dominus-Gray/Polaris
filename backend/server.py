@@ -15760,6 +15760,195 @@ async def external_services_health_check():
     }
 
 # Include router
+
+# --------------------------
+# V2 Additive: Zipcode-based Matching and RP CRM-lite (Feature-flagged)
+# --------------------------
+
+def _flag(name: str, default: str = "false") -> bool:
+    try:
+        return os.environ.get(name, default).lower() == "true"
+    except Exception:
+        return False
+
+async def get_zip_centroid(zip_code: str):
+    if not zip_code:
+        return None
+    z = await db.zip_centroids.find_one({"zip": str(zip_code)})
+    if not z:
+        return None
+    try:
+        return {"lat": float(z.get("lat")), "lng": float(z.get("lng"))}
+    except Exception:
+        return None
+
+from math import cos, asin, sqrt
+
+def haversine_miles(lat1: float, lon1: float, lat2: float, lon2: float):
+    try:
+        p = 0.017453292519943295
+        a = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p)*cos(lat2*p)*(1-cos((lon2-lon1)*p))/2
+        return 3958.7613 * 2 * asin(sqrt(a))
+    except Exception:
+        return None
+
+@api.post("/admin/zip-centroids")
+async def admin_upload_zip_centroids(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Admin/Agency: upload zipcode centroids. Body: {centroids:[{zip,lat,lng}]}"""
+    if not current or current.get("role") not in ["admin", "agency"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    centroids = payload.get("centroids") or []
+    if not isinstance(centroids, list) or not centroids:
+        raise HTTPException(status_code=400, detail="centroids array required")
+    count = 0
+    for c in centroids:
+        try:
+            z = str(c.get("zip"))
+            lat = float(c.get("lat")); lng = float(c.get("lng"))
+            await db.zip_centroids.update_one({"zip": z}, {"$set": {"zip": z, "lat": lat, "lng": lng}}, upsert=True)
+            count += 1
+        except Exception:
+            continue
+    return {"count": count}
+
+@api.post("/v2/matching/search-by-zip")
+async def v2_matching_search_by_zip(payload: Dict[str, Any] = Body(...), current=Depends(require_role("client"))):
+    if not _flag("ENABLE_V2_APIS"):
+        return {"enabled": False, "message": "ENABLE_V2_APIS is false"}
+    if not _flag("ENABLE_RADIUS_MATCHING"):
+        return {"enabled": False, "message": "ENABLE_RADIUS_MATCHING is false"}
+    zipcode = str(payload.get("zip") or payload.get("zipcode") or "").strip()
+    radius = float(payload.get("radius_miles", 50))
+    if not zipcode:
+        raise HTTPException(status_code=400, detail="zip is required")
+    center = await get_zip_centroid(zipcode)
+    if not center:
+        return {"providers": [], "count": 0, "note": "Zip centroid not found. Upload centroids via /api/admin/zip-centroids."}
+    providers = await db.users.find({"role": "provider", "approval_status": "approved", "is_active": True}).limit(1000).to_list(1000)
+    results = []
+    for pdoc in providers:
+        prov_zip = (pdoc.get("location") or {}).get("zipcode") or pdoc.get("zipcode")
+        if not prov_zip:
+            b = await db.business_profiles.find_one({"user_id": pdoc.get("_id")})
+            prov_zip = (b or {}).get("zipcode")
+        if not prov_zip:
+            continue
+        cz = await get_zip_centroid(str(prov_zip))
+        if not cz:
+            continue
+        d = haversine_miles(center["lat"], center["lng"], cz["lat"], cz["lng"]) or 9999
+        if d <= radius:
+            results.append({
+                "providerId": pdoc.get("_id"),
+                "businessName": pdoc.get("company_name") or pdoc.get("name") or "Unknown Business",
+                "distanceMiles": round(d, 1),
+                "rating": pdoc.get("rating")
+            })
+    results.sort(key=lambda r: r["distanceMiles"])
+    top5_ids = [r["providerId"] for r in results[:5]]
+    for r in results:
+        r["inTop5"] = r["providerId"] in top5_ids
+    return {"providers": results, "count": len(results)}
+
+@api.post("/v2/rp/requirements")
+async def v2_set_rp_requirements(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    if not current or current.get("role") not in ["admin", "agency"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    rp_type = (payload.get("rp_type") or "generic").lower()
+    fields = payload.get("required_fields") or []
+    await db.rp_requirements.update_one({"rp_type": rp_type}, {"$set": {"rp_type": rp_type, "required_fields": fields, "updated_at": datetime.utcnow()}}, upsert=True)
+    return {"rp_type": rp_type, "count": len(fields)}
+
+@api.get("/v2/rp/requirements")
+async def v2_get_rp_requirements(rp_type: str = Query("generic"), current=Depends(require_user)):
+    doc = await db.rp_requirements.find_one({"rp_type": rp_type.lower()})
+    return doc or {"rp_type": rp_type, "required_fields": []}
+
+async def build_rp_data_package(sbc_id: str, rp_type: str = "generic") -> Dict[str, Any]:
+    user = await db.users.find_one({"_id": sbc_id}) or {}
+    readiness = await db.readiness_scores.find_one({"sbc_id": sbc_id}) or {}
+    req = await db.rp_requirements.find_one({"rp_type": rp_type.lower()}) or {"required_fields": []}
+    pkg = {
+        "business_name": user.get("company_name") or user.get("name"),
+        "industry_sector": user.get("industry"),
+        "location_city": (user.get("location") or {}).get("city"),
+        "location_zipcode": (user.get("location") or {}).get("zipcode"),
+        "readiness_score": readiness.get("overall"),
+        "domains": readiness.get("domains"),
+        "contact_person": user.get("name"),
+        "contact_email": user.get("email"),
+        "contact_phone": user.get("phone"),
+        "website": user.get("website"),
+        "licenses_status": user.get("licenses_status"),
+        "insurance_status": user.get("insurance_status"),
+        "compliant_status": user.get("compliant_status"),
+        "required_by_rp": req.get("required_fields", [])
+    }
+    missing = []
+    for f in req.get("required_fields", []):
+        v = pkg
+        for part in f.split('.'):
+            v = v.get(part) if isinstance(v, dict) else None
+        if v in [None, "", []]:
+            missing.append(f)
+    return {"package": pkg, "missing": missing}
+
+@api.get("/v2/rp/package-preview")
+async def v2_package_preview(rp_type: str = Query("generic"), current=Depends(require_role("client"))):
+    result = await build_rp_data_package(current["id"], rp_type)
+    return result
+
+@api.post("/v2/rp/leads")
+async def v2_create_rp_lead(payload: Dict[str, Any] = Body(...), current=Depends(require_role("client"))):
+    if not _flag("ENABLE_V2_APIS"):
+        return {"enabled": False, "message": "ENABLE_V2_APIS is false"}
+    rp_id = payload.get("rp_id")
+    rp_type = (payload.get("rp_type") or "generic").lower()
+    result = await build_rp_data_package(current["id"], rp_type)
+    lead_id = str(uuid.uuid4())
+    doc = {
+        "_id": lead_id,
+        "lead_id": lead_id,
+        "sbc_id": current["id"],
+        "rp_id": rp_id,
+        "rp_type": rp_type,
+        "package_json": result["package"],
+        "missing_prerequisites": result["missing"],
+        "status": "new",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    await db.rp_leads.insert_one(doc)
+    return {"lead_id": lead_id, "status": "new", "missing": result["missing"]}
+
+@api.get("/v2/rp/leads")
+async def v2_list_rp_leads(status: str = Query(None), current=Depends(require_user)):
+    q: Dict[str, Any] = {}
+    if current and current.get("role") in ["admin", "agency", "rp", "resource_partner"]:
+        if status:
+            q["status"] = status
+    else:
+        q["sbc_id"] = current["id"] if current else None
+        if status:
+            q["status"] = status
+    leads = await db.rp_leads.find(q).sort("created_at", -1).to_list(200)
+    return {"leads": leads}
+
+@api.patch("/v2/rp/leads/{lead_id}")
+async def v2_update_rp_lead(lead_id: str, payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    lead = await db.rp_leads.find_one({"_id": lead_id})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    updates = {"updated_at": datetime.utcnow()}
+    allowed_status = ["new", "working", "contacted", "approved", "rejected"]
+    if payload.get("status") in allowed_status and current and current.get("role") in ["admin", "agency", "rp", "resource_partner"]:
+        updates["status"] = payload.get("status")
+    if payload.get("notes"):
+        updates["notes"] = DataValidator.sanitize_text(payload.get("notes"), 1000)
+    await db.rp_leads.update_one({"_id": lead_id}, {"$set": updates})
+    return {"lead_id": lead_id, "updated": True}
+
+
 app.include_router(api)
 
 @app.on_event("shutdown")
