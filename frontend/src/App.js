@@ -9881,6 +9881,15 @@ function AppShell(){
           <Route path="/navigator/analytics" element={<NavigatorAnalyticsPage />} />
           <Route path="/navigator/evidence-review" element={<NavigatorEvidenceReview />} />
           <Route path="/navigator/system-health" element={<SystemHealthDashboard />} />
+          {/* RP CRM-lite (flagged) */}
+          { (process.env.REACT_APP_SHOW_RP_CRM || 'true').toLowerCase()==='true' && (
+            <>
+              <Route path="/rp" element={<RPLeadsList />} />
+              <Route path="/rp/lead/:id" element={<RPLeadDetail />} />
+              <Route path="/rp/requirements" element={<RPRequirementsAdmin />} />
+              <Route path="/rp/share" element={<RPSharePage />} />
+            </>
+          )}
           <Route path="/agency/business-intelligence" element={<AgencyBusinessIntelligence />} />
           {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
           <Route path="/opportunities" element={<OpportunitiesPage />} />
