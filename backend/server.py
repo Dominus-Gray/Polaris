@@ -15761,6 +15761,29 @@ async def external_services_health_check():
 
 # Include router
 
+# Additional RP requirements utilities
+@api.post("/v2/rp/requirements/bulk")
+async def v2_set_rp_requirements_bulk(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    if not current or current.get("role") not in ["admin", "agency"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    items = payload.get("items") or []
+    if not isinstance(items, list) or not items:
+        raise HTTPException(status_code=400, detail="items array required")
+    count = 0
+    for it in items:
+        rp_type = (it.get("rp_type") or "generic").lower()
+        fields = it.get("required_fields") or []
+        await db.rp_requirements.update_one({"rp_type": rp_type}, {"$set": {"rp_type": rp_type, "required_fields": fields, "updated_at": datetime.utcnow()}}, upsert=True)
+        count += 1
+    return {"updated": count}
+
+@api.get("/v2/rp/requirements/all")
+async def v2_list_rp_requirements_all(current=Depends(require_user)):
+    cursor = db.rp_requirements.find({}, {"_id": 0}).sort("rp_type", 1)
+    items = await cursor.to_list(length=200)
+    return {"items": items}
+
+
 # --------------------------
 # V2 Additive: Zipcode-based Matching and RP CRM-lite (Feature-flagged)
 # --------------------------
