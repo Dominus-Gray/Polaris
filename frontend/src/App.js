@@ -29,6 +29,11 @@ import AssessmentResults from './components/AssessmentResults';
 
 import AgencyContractMatching from './pages/AgencyContractMatching';
 
+// RP CRM-lite Components
+import RPLeadsList from './components/RPLeadsList';
+import RPLeadDetail from './components/RPLeadDetail';
+import RPSharePage from './components/RPSharePage';
+import RPRequirementsAdmin from './components/RPRequirementsAdmin';
 
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
