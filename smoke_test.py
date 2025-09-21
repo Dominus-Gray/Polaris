@@ -154,15 +154,16 @@ class BackendSmokeTest:
             
             if response.status_code == 200:
                 data = response.json()
-                # Check for expected dashboard structure
-                expected_keys = ["assessment_progress", "service_requests", "notifications"]
-                has_expected_structure = any(key in data for key in expected_keys)
+                # Check for actual dashboard structure
+                expected_keys = ["readiness", "completion_percentage", "active_services", "assessment_areas"]
+                has_expected_structure = all(key in data for key in expected_keys)
                 
                 if has_expected_structure:
-                    details = "Dashboard data loaded successfully"
-                    if "service_requests" in data:
-                        sr_count = len(data.get("service_requests", []))
-                        details += f", {sr_count} service requests"
+                    readiness = data.get("readiness", 0)
+                    completion = data.get("completion_percentage", 0)
+                    active_services = data.get("active_services", 0)
+                    
+                    details = f"Dashboard loaded: {readiness}% readiness, {completion}% completion, {active_services} active services"
                     
                     self.log_test(
                         "Client dashboard data", 
@@ -175,7 +176,7 @@ class BackendSmokeTest:
                     self.log_test(
                         "Client dashboard data", 
                         False, 
-                        f"Unexpected dashboard structure: {list(data.keys())}",
+                        f"Missing expected keys. Got: {list(data.keys())}",
                         response_time
                     )
             else:
