@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 export default function RPSharePage(){
   const [rpTypes, setRpTypes] = useState([]);
   const [rpType, setRpType] = useState('lenders');
