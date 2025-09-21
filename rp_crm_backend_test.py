@@ -123,7 +123,7 @@ def test_rp_crm_workflow():
     try:
         response = requests.post(
             f"{BASE_URL}/v2/rp/requirements/bulk",
-            json=RP_REQUIREMENTS_BULK,
+            json={"items": RP_REQUIREMENTS_BULK},
             headers=agency_headers,
             timeout=15
         )
