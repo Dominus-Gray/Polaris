@@ -466,6 +466,25 @@ The implemented authentication fixes have SUCCESSFULLY resolved all critical 401
 **✅ V2 ENDPOINTS PRODUCTION READY**
 All requested V2 endpoints are fully operational with QA credentials. The system demonstrates excellent stability, proper data structures, and correct role-based access control. Ready for production deployment.
 
+## RP CRM-lite – Backend Seed & Smoke (QA) (September 2025):
+**Testing Agent**: testing  
+**Test Date**: September 21, 2025  
+**QA Credentials Used**: agency.qa@polaris.example.com / client.qa@polaris.example.com  
+**Test Scope**: Seed default RP requirement templates via API and verify leads flows
+
+### RP CRM-LITE WORKFLOW TEST RESULTS: 100% SUCCESS RATE (8/8 TESTS PASSED)
+
+✅ **Agency authentication successful** - JWT token obtained for agency.qa@polaris.example.com  
+✅ **Bulk seed successful: 8 RP types updated** - POST /api/v2/rp/requirements/bulk processed all templates  
+✅ **Agency can see 9 RP requirements** - GET /api/v2/rp/requirements/all returns complete list  
+✅ **Client authentication successful** - JWT token obtained for client.qa@polaris.example.com  
+✅ **Client can see 9 RP requirements** - Proper visibility for client role confirmed  
+✅ **Package preview working: 10 missing items identified** - GET /api/v2/rp/package-preview?rp_type=lenders shows missing prerequisites  
+✅ **Lead created: d2a3478f... status=new** - POST /api/v2/rp/leads successfully creates lead with proper structure  
+✅ **Agency can see 5 leads** - GET /api/v2/rp/leads shows all leads including newly created one
+
+**PASS** - RP CRM-lite backend fully operational with proper authentication, requirements seeding (lenders, bonding_agents, investors, business_development_orgs, procurement_offices, prime_contractors, accelerators, banks), package preview functionality, and lead generation workflow. All 8 RP requirement templates successfully seeded with expected field counts (10-11 fields each). Lead creation and visibility working correctly with proper role-based access control.
+
 ## FINAL UI/UX FIXES VALIDATION RESULTS (January 2025):
 **✅ CRITICAL ACCESSIBILITY FIXES VALIDATION COMPLETE**
 
