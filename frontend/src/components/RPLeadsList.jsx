@@ -87,6 +87,11 @@ export default function RPLeadsList() {
           {me?.role === 'client' && (
             <Link to="/rp/share" className="btn btn-primary">Create Share Package</Link>
           )}
+          {leads.length > 0 && (
+            <button onClick={exportToCSV} className="btn btn-outline">
+              📥 Export CSV
+            </button>
+          )}
         </div>
       </div>
 
