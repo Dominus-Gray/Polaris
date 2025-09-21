@@ -13,7 +13,7 @@ import tempfile
 import os
 
 # Test Configuration
-BASE_URL = "https://production-guru.preview.emergentagent.com/api"  # Using production URL from frontend/.env
+BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"  # Using production URL from frontend/.env
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"}

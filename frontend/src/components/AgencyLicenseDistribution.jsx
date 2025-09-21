@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://production-guru.preview.emergentagent.com';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://smallbiz-assist.preview.emergentagent.com';
 
 function AgencyLicenseDistribution() {
   const [licenseBalance, setLicenseBalance] = useState({ tier1: 0, tier2: 0, tier3: 0 });

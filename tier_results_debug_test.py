@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://production-guru.preview.emergentagent.com/api"
+BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "email": "client.qa@polaris.example.com",
     "password": "Polaris#2025!"

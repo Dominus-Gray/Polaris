@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://production-guru.preview.emergentagent.com';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://smallbiz-assist.preview.emergentagent.com';
 
 function NavigatorEvidenceReview() {
   const [pendingEvidence, setPendingEvidence] = useState([]);

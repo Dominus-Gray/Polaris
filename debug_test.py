@@ -6,7 +6,7 @@ Debug test to check actual responses from Knowledge Base endpoints for providers
 import requests
 import json
 
-BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 
 PROVIDER_CREDENTIALS = {
     "email": "provider.qa@polaris.example.com",

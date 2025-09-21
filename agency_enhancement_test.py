@@ -34,7 +34,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://production-guru.preview.emergentagent.com/api"
+BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"
 QA_AGENCY_PASSWORD = "Polaris#2025!"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"

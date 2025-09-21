@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 
 # Test credentials from test_result.md
 NAVIGATOR_EMAIL = "navigator.qa@polaris.example.com"

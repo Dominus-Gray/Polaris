@@ -10,7 +10,7 @@ import sys
 from datetime import datetime, timezone
 
 # Configuration
-BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "email": "agency.qa@polaris.example.com",
     "password": "Polaris#2025!"
@@ -169,7 +169,7 @@ class Microsoft365IntegrationTester:
         try:
             connection_data = {
                 "auth_code": "mock_auth_code_12345",
-                "redirect_uri": "https://production-guru.preview.emergentagent.com/auth/callback",
+                "redirect_uri": "https://smallbiz-assist.preview.emergentagent.com/auth/callback",
                 "tenant_id": "demo_tenant_id"
             }
             
@@ -253,7 +253,7 @@ class Microsoft365IntegrationTester:
                     "business_name": "Test Business LLC",
                     "pending_areas": ["Business Formation", "Financial Operations"],
                     "completion_percentage": 65,
-                    "assessment_url": "https://production-guru.preview.emergentagent.com/assessment"
+                    "assessment_url": "https://smallbiz-assist.preview.emergentagent.com/assessment"
                 }
             }
             
@@ -645,7 +645,7 @@ import sys
 import os
 
 # Configuration
-BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "email": "agency.qa@polaris.example.com",
     "password": "Polaris#2025!"
@@ -828,7 +828,7 @@ class QuickBooksIntegrationTester:
             connection_data = {
                 "auth_code": "mock_auth_code_12345",
                 "realm_id": "123456789012345",
-                "redirect_uri": "https://production-guru.preview.emergentagent.com/quickbooks/callback"
+                "redirect_uri": "https://smallbiz-assist.preview.emergentagent.com/quickbooks/callback"
             }
             
             response = self.session.post(
@@ -1531,7 +1531,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://production-guru.preview.emergentagent.com/api"
+BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"
 QA_CLIENT_PASSWORD = "Polaris#2025!"
 QA_PROVIDER_EMAIL = "provider.qa@polaris.example.com"

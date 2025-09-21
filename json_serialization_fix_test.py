@@ -20,7 +20,7 @@ import sys
 import uuid
 
 # Configuration
-BASE_URL = "https://production-guru.preview.emergentagent.com/api"
+BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 TEST_EMAIL = "test.user@example.com"
 TEST_PASSWORD = "TestPassword123!"  # Meets 12+ char requirements
 

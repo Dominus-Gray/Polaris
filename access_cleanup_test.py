@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 # Test configuration
-BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 
 # Test credentials
 PROVIDER_CREDENTIALS = {

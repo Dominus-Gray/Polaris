@@ -29,7 +29,7 @@ import sys
 import os
 
 # Configuration
-BASE_URL = "https://production-guru.preview.emergentagent.com/api"
+BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},

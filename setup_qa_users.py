@@ -9,7 +9,7 @@ import json
 import uuid
 
 # Configuration
-BACKEND_URL = "https://production-guru.preview.emergentagent.com/api"
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
 
 # QA Credentials to create
 QA_USERS = [
