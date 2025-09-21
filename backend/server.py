@@ -998,6 +998,12 @@ REQUEST_DURATION = Histogram('polaris_request_duration_seconds', 'HTTP request d
 AI_REQUEST_DURATION = Histogram('polaris_ai_request_duration_seconds', 'AI request duration', ['feature'])
 ERROR_COUNT = Counter('polaris_errors_total', 'Total errors', ['error_code', 'endpoint'])
 
+# RP CRM-lite specific metrics
+RP_LEADS_CREATED = Counter('polaris_rp_leads_created_total', 'Total RP leads created', ['rp_type'])
+RP_LEADS_UPDATED = Counter('polaris_rp_leads_updated_total', 'Total RP lead updates', ['status_from', 'status_to'])
+RP_PACKAGE_PREVIEWS = Counter('polaris_rp_package_previews_total', 'Total RP package previews', ['rp_type'])
+RP_REQUIREMENTS_SEEDED = Counter('polaris_rp_requirements_seeded_total', 'Total RP requirements seeded', ['rp_type'])
+
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
