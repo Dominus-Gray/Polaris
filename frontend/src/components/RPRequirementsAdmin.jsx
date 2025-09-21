@@ -41,7 +41,7 @@ export default function RPRequirementsAdmin(){
   const loadAll = async () => {
     setLoading(true); setMsg('');
     try {
-      const { data } = await axios.get('/v2/rp/requirements/all');
+      const { data } = await axios.get(`${API}/v2/rp/requirements/all`);
       setItems(data.items || []);
     } catch (e) {
       setMsg(e.response?.data?.detail || e.message);
