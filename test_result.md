@@ -485,6 +485,66 @@ All requested V2 endpoints are fully operational with QA credentials. The system
 
 **PASS** - RP CRM-lite backend fully operational with proper authentication, requirements seeding (lenders, bonding_agents, investors, business_development_orgs, procurement_offices, prime_contractors, accelerators, banks), package preview functionality, and lead generation workflow. All 8 RP requirement templates successfully seeded with expected field counts (10-11 fields each). Lead creation and visibility working correctly with proper role-based access control.
 
+## RP CRM-lite – QA UI Pass (September 2025):
+**Testing Agent**: testing  
+**Test Date**: September 21, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / navigator.qa@polaris.example.com / agency.qa@polaris.example.com  
+**Test Scope**: Targeted UI automation pass for new RP CRM-lite flows (feature-flagged) across roles using QA creds
+
+### RP CRM-LITE UI TEST RESULTS: MIXED SUCCESS - FRONTEND COMPONENTS WORKING, API INTEGRATION ISSUES
+
+#### ✅ **FRONTEND COMPONENTS FULLY OPERATIONAL**:
+- ✅ **RP Share Page (/rp/share)**: Component renders correctly with "Share with Resource Partner" heading, dropdown for RP types (lenders selected), and "Preview Package" button functional
+- ✅ **RP Leads List (/rp)**: Component renders with "Resource Partner Leads" heading, status filter dropdown, and proper table structure for lead display
+- ✅ **RP Requirements Admin (/rp/requirements)**: Component renders with "RP Requirements (Admin/Agency)" heading, "Seed Defaults" button, RP Type dropdown, and configured RP types list
+- ✅ **RP Lead Detail (/rp/lead/:id)**: Route structure exists and components are properly imported in App.js
+
+#### ❌ **CRITICAL API INTEGRATION ISSUES**:
+- ❌ **Double API Prefix Bug**: All RP API calls showing `/api/api/v2/rp/` instead of `/api/v2/rp/` causing 404 errors
+- ❌ **8 Failed API Requests**: All RP endpoints returning 404 due to incorrect URL construction
+- ❌ **Authentication Flow Issues**: Role selection page not progressing to login form, preventing full workflow testing
+
+#### 🔄 **PARTIAL WORKFLOW TESTING**:
+- 🔄 **Client Share Flow**: Frontend components accessible but API calls failing due to URL issues
+- 🔄 **Agency Review Flow**: Components render but cannot test full workflow due to authentication issues
+- 🔄 **Requirements Seeding**: "Seed Defaults" button present but API calls fail with 404
+
+#### ✅ **CONSOLE & NETWORK HEALTH**:
+- ✅ **No 401 Authentication Loops**: No authentication errors detected
+- ✅ **No Server Errors (5xx)**: No backend server errors
+- ❌ **8 Critical Console Errors**: All related to 404 API endpoint failures
+- ✅ **SVG Warnings Filtered**: Non-critical rendering issues ignored
+
+### PRODUCTION READINESS ASSESSMENT:
+**Overall Score**: 60% - **FRONTEND READY, API INTEGRATION BLOCKED**
+
+**Successfully Implemented**:
+- ✅ All 4 RP CRM-lite React components (RPLeadsList, RPLeadDetail, RPRequirementsAdmin, RPSharePage)
+- ✅ Proper routing configuration in App.js for /rp, /rp/lead/:id, /rp/requirements, /rp/share
+- ✅ Feature flag REACT_APP_SHOW_RP_CRM working (components accessible)
+- ✅ Professional UI design with proper headings, forms, and navigation
+
+**Critical Issues Blocking Production**:
+- ❌ **API URL Construction Bug**: Double `/api` prefix causing all RP endpoints to return 404
+- ❌ **Authentication Flow Issues**: Role selection not progressing to login form
+- ❌ **Complete Workflow Testing Blocked**: Cannot verify end-to-end functionality due to API issues
+
+### IMPACT ASSESSMENT:
+**User Experience Impact**: HIGH - Users can access RP pages but all functionality fails due to API errors  
+**Business Impact**: HIGH - RP CRM-lite feature completely non-functional despite UI being ready  
+**Production Readiness**: BLOCKED - API integration must be fixed before deployment
+
+### TESTING RECOMMENDATION:
+**🚨 PRODUCTION DEPLOYMENT BLOCKED - CRITICAL API FIXES REQUIRED**
+
+**Immediate Action Items for Main Agent**:
+1. **URGENT**: Fix double `/api` prefix in RP API URL construction (should be `/api/v2/rp/` not `/api/api/v2/rp/`)
+2. **URGENT**: Resolve authentication flow issues preventing role selection progression
+3. **CRITICAL**: Test complete RP workflows after API fixes
+4. **IMPORTANT**: Verify backend v2 RP endpoints are properly enabled and accessible
+
+**Screenshots Captured**: 4 screenshots showing RP components rendering correctly but with API failures
+
 ## FINAL UI/UX FIXES VALIDATION RESULTS (January 2025):
 **✅ CRITICAL ACCESSIBILITY FIXES VALIDATION COMPLETE**
 
