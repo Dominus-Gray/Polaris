@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 export default function RPLeadDetail(){
   const { id } = useParams();
   const [lead, setLead] = useState(null);
