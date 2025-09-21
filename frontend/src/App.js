@@ -7512,7 +7512,6 @@ function AgencyHome(){
           )}
         </div>
       </div>
-    </div>
   );
 }
 
