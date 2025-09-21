@@ -36,6 +36,23 @@ function ReadinessDashboard() {
     loadDashboardData();
   }, [timeframe]);
 
+  const loadRpcCounts = async () => {
+    try{
+      setRpLoading(true);
+      const { data } = await axios.get('/v2/rp/leads');
+      const items = data.leads || [];
+      const counts = {
+        total: items.length,
+        new: items.filter(x=>x.status==='new').length,
+        working: items.filter(x=>x.status==='working').length,
+        approved: items.filter(x=>x.status==='approved').length
+      };
+      setRpCounts(counts);
+    }catch(e){ /* ignore */ }
+    finally{ setRpLoading(false); }
+  };
+  useEffect(()=>{ loadRpcCounts(); }, []);
+
   const loadDashboardData = async () => {
     try {
       const response = await axios.get(`${API}/readiness/dashboard?timeframe=${timeframe}`);
