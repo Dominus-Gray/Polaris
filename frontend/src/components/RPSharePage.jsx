@@ -12,7 +12,7 @@ export default function RPSharePage(){
 
   const loadTypes = async () => {
     try{
-      const { data } = await axios.get('/api/v2/rp/requirements/all');
+      const { data } = await axios.get('/v2/rp/requirements/all');
       const items = data.items || [];
       setRpTypes(items.map(i=>i.rp_type));
       if(items.length && !items.find(i=>i.rp_type===rpType)) setRpType(items[0].rp_type);
