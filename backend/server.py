@@ -15948,6 +15948,10 @@ async def v2_create_rp_lead(payload: Dict[str, Any] = Body(...), current=Depends
         "updated_at": datetime.utcnow()
     }
     await db.rp_leads.insert_one(doc)
+    
+    # Track RP lead creation in metrics
+    RP_LEADS_CREATED.labels(rp_type=rp_type).inc()
+    
     return {"lead_id": lead_id, "status": "new", "missing": result["missing"]}
 
 @api.get("/v2/rp/leads")
