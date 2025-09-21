@@ -99,13 +99,6 @@ import ProfileSettings from "./components/ProfileSettings";
 import AdminDashboard from "./components/AdminDashboard";
 import 'uplot/dist/uPlot.min.css';
 
-// Import RP CRM-lite components
-import Login from './components/Login.jsx';
-import RPLeadsList from './components/RPLeadsList.jsx';
-import RPLeadDetail from './components/RPLeadDetail.jsx';
-import RPRequirementsAdmin from './components/RPRequirementsAdmin.jsx';
-import RPSharePage from './components/RPSharePage.jsx';
-
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
