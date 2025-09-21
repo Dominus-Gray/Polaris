@@ -8724,6 +8724,15 @@ function AppShell(){
           <Route path="/agency/business-intelligence" element={<AgencyBusinessIntelligence />} />
           {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
           <Route path="/opportunities" element={<OpportunitiesPage />} />
+          {/* RP CRM-lite Routes */}
+          {process.env.REACT_APP_SHOW_RP_CRM === 'true' && (
+            <>
+              <Route path="/rp" element={<RPLeadsList />} />
+              <Route path="/rp/lead/:id" element={<RPLeadDetail />} />
+              <Route path="/rp/share" element={<RPSharePage />} />
+              <Route path="/rp/requirements" element={<RPRequirementsAdmin />} />
+            </>
+          )}
           <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
         </Routes>
       )}
