@@ -545,6 +545,82 @@ All requested V2 endpoints are fully operational with QA credentials. The system
 
 **Screenshots Captured**: 4 screenshots showing RP components rendering correctly but with API failures
 
+## RP CRM-lite – QA UI Pass (Post‑Fixes, Sept 2025):
+**Testing Agent**: testing  
+**Test Date**: September 21, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / agency.qa@polaris.example.com  
+**Test Scope**: Re-run RP CRM-lite targeted UI automation after API path fixes with comprehensive workflow testing
+
+### RP CRM-LITE UI TEST RESULTS: ✅ COMPLETE SUCCESS - ALL WORKFLOWS OPERATIONAL
+
+#### ✅ **A) CLIENT SHARE FLOW - 100% SUCCESS**:
+1. **Login → /rp/share**: ✅ Client authentication successful (client.qa@polaris.example.com)
+2. **Preview package for rp_type=lenders**: ✅ JSON and Missing list rendered correctly with 10 missing prerequisites
+3. **Create Lead**: ✅ Lead created successfully, redirected to /rp, new lead visible at top (ID: fed9ff64-76b4-42fd-94ec-504e4df98060)
+
+#### ✅ **B) AGENCY REVIEW FLOW - 100% SUCCESS**:
+4. **Login as agency**: ✅ Agency authentication successful (agency.qa@polaris.example.com)
+5. **Filter status=new**: ✅ Lead filtering working correctly
+6. **Open first lead**: ✅ Lead detail page loaded with complete package JSON and missing prerequisites
+7. **Update status to "working", add notes, Save**: ✅ Lead updated successfully with QA test notes
+
+#### ✅ **C) REQUIREMENTS ADMIN - 100% SUCCESS**:
+8. **Navigate to /rp/requirements**: ✅ Admin page loaded correctly
+9. **Seed Defaults**: ✅ Successfully seeded 9 RP types (≥8 required): accelerators, bank, banks, bonding_agents, business_development_orgs, investors, lenders, prime_contractors, procurement_offices
+
+#### ✅ **D) HEALTH CHECK - 100% SUCCESS**:
+- ✅ **No 401 loops**: Zero authentication errors detected
+- ✅ **Protected /v2/rp/* are 2xx**: All 17 API requests successful (100% success rate)
+- ✅ **No red console errors**: Only benign SVG hydration warnings (filtered as requested)
+- ✅ **Network Health**: All RP endpoints responding correctly with proper status codes
+
+### COMPREHENSIVE API VERIFICATION:
+**17/17 RP API Requests Successful (100% Success Rate)**:
+- ✅ GET /v2/rp/requirements/all (multiple calls) - 200 OK
+- ✅ GET /v2/rp/package-preview?rp_type=lenders - 200 OK  
+- ✅ POST /v2/rp/leads - 200 OK
+- ✅ GET /v2/rp/leads (multiple calls) - 200 OK
+- ✅ GET /v2/rp/leads?status=new - 200 OK
+- ✅ PATCH /v2/rp/leads/{id} - 200 OK
+- ✅ POST /v2/rp/requirements/bulk - 200 OK
+
+### PRODUCTION READINESS ASSESSMENT:
+**Overall Score**: 100% - **FULLY OPERATIONAL AND PRODUCTION READY**
+
+**Successfully Verified**:
+- ✅ Complete client share workflow with package preview and lead creation
+- ✅ Complete agency review workflow with lead management and status updates
+- ✅ Complete requirements admin workflow with default seeding
+- ✅ All authentication flows working correctly for both roles
+- ✅ All API integrations functional with correct URL construction
+- ✅ Professional UI components rendering correctly
+- ✅ Proper error handling and user feedback
+- ✅ Network health excellent with zero failed requests
+
+**Key Improvements Since Previous Test**:
+- ✅ **API URL Construction Fixed**: No more double `/api` prefix issues
+- ✅ **Authentication Flow Resolved**: Role selection and login working seamlessly
+- ✅ **Complete Workflow Testing**: All end-to-end flows verified successfully
+- ✅ **Backend Integration**: All v2 RP endpoints properly enabled and accessible
+
+### IMPACT ASSESSMENT:
+**User Experience Impact**: EXCELLENT - All RP CRM-lite functionality working smoothly  
+**Business Impact**: HIGH POSITIVE - RP CRM-lite feature fully functional and ready for production  
+**Production Readiness**: ✅ READY FOR DEPLOYMENT
+
+### TESTING RECOMMENDATION:
+**✅ PRODUCTION DEPLOYMENT APPROVED - ALL SYSTEMS OPERATIONAL**
+
+**Quality Verification Complete**:
+- ✅ Client can successfully share packages with resource partners
+- ✅ Agency can effectively review and manage leads
+- ✅ Admin can configure RP requirements with default templates
+- ✅ All API endpoints responding correctly with proper authentication
+- ✅ UI components professional and fully functional
+- ✅ No critical errors or blocking issues identified
+
+**Screenshots Captured**: 5 comprehensive screenshots showing successful workflows across all RP CRM-lite features
+
 ## FINAL UI/UX FIXES VALIDATION RESULTS (January 2025):
 **✅ CRITICAL ACCESSIBILITY FIXES VALIDATION COMPLETE**
 
