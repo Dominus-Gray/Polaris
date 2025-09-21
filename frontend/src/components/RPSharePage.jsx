@@ -26,7 +26,7 @@ export default function RPSharePage(){
   const loadPreview = async () => {
     setLoading(true); setError(''); setPreview(null);
     try{
-      const { data } = await axios.get('/v2/rp/package-preview', { params: { rp_type: rpType } });
+      const { data } = await axios.get(`${API}/v2/rp/package-preview`, { params: { rp_type: rpType } });
       setPreview(data);
     }catch(e){ setError(e.response?.data?.detail || e.message); }
     finally{ setLoading(false); }
