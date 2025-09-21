@@ -168,6 +168,26 @@ function ReadinessDashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* RP CRM-lite Summary */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-slate-600">Resource Partner Leads</h3>
+            <span className="text-2xl">🤝</span>
+          </div>
+          {rpLoading ? (
+            <div className="h-6 bg-slate-200 rounded" />
+          ) : (
+            <div className="text-sm text-slate-700 space-y-1">
+              <div className="flex items-center justify-between"><span>Total</span><span className="font-semibold">{rpCounts.total}</span></div>
+              <div className="flex items-center justify-between"><span>New</span><span className="font-semibold">{rpCounts.new}</span></div>
+              <div className="flex items-center justify-between"><span>Working</span><span className="font-semibold">{rpCounts.working}</span></div>
+              <div className="flex items-center justify-between"><span>Approved</span><span className="font-semibold">{rpCounts.approved}</span></div>
+            </div>
+          )}
+          <div className="mt-3 text-right">
+            <button className="btn btn-primary btn-sm" onClick={()=>window.location.href='/rp/share'}>Create Share Package</button>
+          </div>
+        </div>
         {/* Overall Progress */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
