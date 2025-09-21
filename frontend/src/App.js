@@ -9410,6 +9410,23 @@ function Header(){
             {me.role === 'agency' && (
               <Link className="nav-item" to="/agency">
                 <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            {(process.env.REACT_APP_SHOW_RP_CRM || 'true').toLowerCase()==='true' && me.role === 'client' && (
+              <Link className="nav-item" to="/rp/share">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7H7a2 2 0 00-2 2v8a2 2 0 002 2h10a2 2 0 002-2v-3M5 9l7 4 7-4M15 3h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>Share with RP</span>
+              </Link>
+            )}
+
+            {(process.env.REACT_APP_SHOW_RP_CRM || 'true').toLowerCase()==='true' && (me.role === 'navigator' || me.role === 'agency' || me.role === 'rp' || me.role === 'resource_partner') && (
+              <Link className="nav-item" to="/rp">
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h12M3 17h18"/></svg>
+                <span>RP CRM</span>
+              </Link>
+            )}
+
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 <span>Agency Portal</span>
