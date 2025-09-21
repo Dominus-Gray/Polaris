@@ -15780,6 +15780,10 @@ async def v2_set_rp_requirements_bulk(payload: Dict[str, Any] = Body(...), curre
         rp_type = (it.get("rp_type") or "generic").lower()
         fields = it.get("required_fields") or []
         await db.rp_requirements.update_one({"rp_type": rp_type}, {"$set": {"rp_type": rp_type, "required_fields": fields, "updated_at": datetime.utcnow()}}, upsert=True)
+        
+        # Track RP requirements seeded in metrics
+        RP_REQUIREMENTS_SEEDED.labels(rp_type=rp_type).inc()
+        
         count += 1
     return {"updated": count}
 
