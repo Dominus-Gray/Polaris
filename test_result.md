@@ -820,6 +820,92 @@ The critical JSX blocking issue has been resolved. Both frontend and backend are
 
 **Impact Assessment**: The JSX fix has NOT impacted backend functionality. All core endpoints that power the user experience are working correctly with fast response times and proper data structures.
 
+## RP CRM-lite – API Integration Test After Fixes (September 2025):
+**Testing Agent**: testing  
+**Test Date**: September 21, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / agency.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Focused test to verify API URL fixes are working correctly as requested in review
+
+### RP CRM-LITE API INTEGRATION TEST RESULTS: ✅ 100% SUCCESS RATE (6/6 CRITERIA PASSED)
+
+#### ✅ **API INTEGRATION VERIFICATION - COMPLETE SUCCESS**:
+**All RP API calls now use correct `/api/v2/rp/` prefix (not `/api/api/v2/rp/`)**
+- ✅ **6 RP API requests made with correct prefix**: 0 double prefix issues detected
+- ✅ **Network Analysis**: GET /api/v2/rp/requirements/all, GET /api/v2/rp/package-preview, POST /api/v2/rp/leads, GET /api/v2/rp/leads
+- ✅ **All requests successful**: 6/6 returned 200 OK status codes
+- ✅ **Zero 404 errors**: No "not found" errors on any RP endpoints
+
+#### ✅ **CLIENT SHARE FLOW - FULLY OPERATIONAL**:
+**Tested with client.qa@polaris.example.com / Polaris#2025!**
+- ✅ **Login and navigation to /rp/share**: Successful authentication and page access
+- ✅ **RP types dropdown loads successfully**: 9 options loaded (lenders, banks, bonding_agents, investors, etc.)
+- ✅ **Select "lenders" and click "Preview Package"**: Package preview functionality working correctly
+- ✅ **JSON preview and missing prerequisites load correctly**: Both sections rendered with proper data
+- ✅ **Create lead and confirm successful creation**: Lead created successfully with proper navigation to leads list
+
+#### ✅ **AGENCY REQUIREMENTS ADMIN - FULLY OPERATIONAL**:
+**Tested with agency.qa@polaris.example.com / Polaris#2025!**
+- ✅ **Login and navigation to /rp/requirements**: Successful authentication and page access
+- ✅ **"Seed Defaults" button functionality**: Successfully seeded 9 RP requirement templates
+- ✅ **RP types populated after seeding**: All configured RP types displayed with proper field lists
+- ✅ **Admin interface working**: RP type dropdown, field configuration, and save functionality operational
+
+#### ✅ **NETWORK HEALTH CHECK - PERFECT RESULTS**:
+- ✅ **All RP API requests return 200 status codes**: 6/6 successful responses, 0 errors
+- ✅ **No 404 errors in network tab**: Zero "not found" errors detected
+- ✅ **All endpoints use correct `/api/v2/rp/` format**: No double prefix issues found
+- ✅ **Response times excellent**: All API calls completed successfully within 3 seconds
+
+### CRITICAL FINDINGS - API FIXES SUCCESSFUL:
+
+#### ✅ **DOUBLE API PREFIX BUG RESOLVED**:
+- ✅ **Previous Issue**: API calls were using `/api/api/v2/rp/` causing 404 errors
+- ✅ **Current Status**: All API calls correctly use `/api/v2/rp/` prefix
+- ✅ **Verification**: 6 API requests monitored, 0 double prefix issues detected
+
+#### ✅ **COMPLETE WORKFLOW FUNCTIONALITY**:
+- ✅ **Client Share Workflow**: Login → Navigate to /rp/share → Select RP type → Preview package → Create lead → View leads list
+- ✅ **Agency Admin Workflow**: Login → Navigate to /rp/requirements → Seed defaults → View configured RP types
+- ✅ **Authentication Integration**: Both client and agency QA credentials working correctly
+- ✅ **Data Persistence**: Leads created successfully and visible in leads list
+
+#### ✅ **UI COMPONENTS OPERATIONAL**:
+- ✅ **RP Share Page**: All components rendering correctly with proper functionality
+- ✅ **RP Requirements Admin**: Admin interface fully functional with seeding capability
+- ✅ **RP Leads List**: Leads table displaying correctly with proper data
+- ✅ **Navigation**: All RP routes accessible and working correctly
+
+### SUCCESS CRITERIA FROM REVIEW REQUEST:
+1. ✅ **All RP API calls use correct `/api/v2/rp/` prefix** - ACHIEVED (6/6 requests correct)
+2. ✅ **RP types dropdown loads successfully** - ACHIEVED (9 options loaded)
+3. ✅ **Package preview functionality works** - ACHIEVED (JSON + missing prerequisites)
+4. ✅ **Lead creation successful** - ACHIEVED (with proper navigation)
+5. ✅ **All RP API requests return 200 status codes** - ACHIEVED (6/6 successful)
+6. ✅ **No 404 errors in network tab** - ACHIEVED (0 errors detected)
+
+### PRODUCTION READINESS ASSESSMENT:
+**Overall Score**: 100% - **RP CRM-LITE FULLY OPERATIONAL AND PRODUCTION READY**
+
+**Key Achievements**:
+- ✅ API URL fixes successfully implemented and verified
+- ✅ Complete client share workflow operational
+- ✅ Agency requirements admin fully functional
+- ✅ All network requests successful with proper status codes
+- ✅ Zero critical errors or blocking issues identified
+- ✅ Authentication integration working correctly for both roles
+
+### TESTING RECOMMENDATION:
+**✅ RP CRM-LITE API INTEGRATION FIXES SUCCESSFUL - PRODUCTION DEPLOYMENT APPROVED**
+
+**Quality Verification Complete**:
+- ✅ All API endpoints responding correctly with proper URL format
+- ✅ Client share flow fully operational with QA credentials
+- ✅ Agency requirements admin working correctly
+- ✅ Network health excellent with 100% success rate
+- ✅ No 404 errors or API integration issues detected
+
+**Impact Assessment**: The API URL fixes have successfully resolved the double prefix issue that was causing 404 errors. All RP CRM-lite functionality is now working correctly and ready for production use.
+
 ## FINAL UI/UX FIXES VALIDATION RESULTS (January 2025):
 **✅ CRITICAL ACCESSIBILITY FIXES VALIDATION COMPLETE**
 
