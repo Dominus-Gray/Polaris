@@ -31,7 +31,7 @@ export default function RPSharePage(){
 
   const createLead = async () => {
     try{
-      await axios.post('/api/v2/rp/leads', { rp_type: rpType });
+      await axios.post('/v2/rp/leads', { rp_type: rpType });
       navigate('/rp');
     }catch(e){ alert(e.response?.data?.detail || e.message); }
   };
