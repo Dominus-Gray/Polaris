@@ -56,7 +56,7 @@ export default function RPRequirementsAdmin(){
   const saveOne = async () => {
     try{
       const arr = fields.split('\n').map(s=>s.trim()).filter(Boolean);
-      await axios.post('/api/v2/rp/requirements', { rp_type: rpType, required_fields: arr });
+      await axios.post('/v2/rp/requirements', { rp_type: rpType, required_fields: arr });
       setFields('');
       await loadAll();
     }catch(e){ setMsg(e.response?.data?.detail || e.message); }
