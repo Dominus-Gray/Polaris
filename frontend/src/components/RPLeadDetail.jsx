@@ -17,7 +17,7 @@ export default function RPLeadDetail(){
   const loadLead = async () => {
     setLoading(true); setError("");
     try {
-      const { data } = await axios.get(`/v2/rp/leads`);
+      const { data } = await axios.get(`${API}/v2/rp/leads`);
       const all = data.leads || [];
       const found = all.find(l => (l.lead_id||l._id) === id);
       if (!found) throw new Error('Lead not found');
