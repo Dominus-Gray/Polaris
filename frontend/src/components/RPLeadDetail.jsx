@@ -33,7 +33,7 @@ export default function RPLeadDetail(){
 
   const save = async () => {
     try {
-      await axios.patch(`/api/v2/rp/leads/${id}`, { status, notes });
+      await axios.patch(`/v2/rp/leads/${id}`, { status, notes });
       await loadLead();
     } catch (e) {
       alert(e.response?.data?.detail || e.message);
