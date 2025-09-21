@@ -186,11 +186,12 @@ def test_rp_crm_workflow():
         
         if response.status_code == 200:
             data = response.json()
-            if isinstance(data, list) and len(data) >= 8:
-                results.append(f"✅ Client can see {len(data)} RP requirements")
-                print(f"   📋 Client sees {len(data)} requirement templates")
+            items = data.get("items", [])
+            if isinstance(items, list) and len(items) >= 8:
+                results.append(f"✅ Client can see {len(items)} RP requirements")
+                print(f"   📋 Client sees {len(items)} requirement templates")
             else:
-                results.append(f"⚠️ Client sees {len(data) if isinstance(data, list) else 0} requirements (expected ≥8)")
+                results.append(f"⚠️ Client sees {len(items) if isinstance(items, list) else 0} requirements (expected ≥8)")
         else:
             results.append(f"❌ Client requirements fetch failed: {response.status_code}")
     except Exception as e:
