@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 const DEFAULT_ITEMS = [
   { rp_type: 'lenders', required_fields: [
     'contact_email','readiness_score','annual_revenue','average_monthly_revenue','ar_ap_summary','merchant_processing_history','years_in_business','beneficial_owners','licenses_status','insurance_status','good_standing_attestation'
