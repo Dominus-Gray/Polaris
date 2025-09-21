@@ -15925,6 +15925,10 @@ async def build_rp_data_package(sbc_id: str, rp_type: str = "generic") -> Dict[s
 @api.get("/v2/rp/package-preview")
 async def v2_package_preview(rp_type: str = Query("generic"), current=Depends(require_role("client"))):
     result = await build_rp_data_package(current["id"], rp_type)
+    
+    # Track RP package preview in metrics
+    RP_PACKAGE_PREVIEWS.labels(rp_type=rp_type).inc()
+    
     return result
 
 @api.post("/v2/rp/leads")
