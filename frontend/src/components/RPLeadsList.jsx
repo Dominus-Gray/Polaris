@@ -28,6 +28,47 @@ export default function RPLeadsList() {
     }
   };
 
+  const exportToCSV = () => {
+    if (leads.length === 0) {
+      alert('No leads to export');
+      return;
+    }
+
+    const csvHeaders = ['Lead ID', 'RP Type', 'Status', 'Missing Prerequisites', 'Created Date', 'Notes'];
+    const csvRows = leads.map(lead => [
+      lead.lead_id || lead._id || '',
+      lead.rp_type || '',
+      lead.status || '',
+      (lead.missing_prerequisites || []).join('; '),
+      lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '',
+      (lead.notes || '').replace(/,/g, ';') // Replace commas to avoid CSV issues
+    ]);
+
+    const csvContent = [csvHeaders, ...csvRows]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rp_leads_export_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    // Show success toast
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300';
+    toast.innerHTML = '✅ CSV export downloaded successfully!';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 2000);
+  };
+
   useEffect(() => { loadLeads(); }, [status]);
 
   return (
