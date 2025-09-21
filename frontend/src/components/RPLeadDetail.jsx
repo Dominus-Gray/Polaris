@@ -38,6 +38,16 @@ export default function RPLeadDetail(){
     try {
       await axios.patch(`${API}/v2/rp/leads/${id}`, { status, notes });
       await loadLead();
+      
+      // Show success toast
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300';
+      toast.innerHTML = '✅ Lead updated successfully!';
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 2000);
     } catch (e) {
       alert(e.response?.data?.detail || e.message);
     }
