@@ -15976,10 +15976,18 @@ async def v2_update_rp_lead(lead_id: str, payload: Dict[str, Any] = Body(...), c
     lead = await db.rp_leads.find_one({"_id": lead_id})
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
+    
+    # Track status changes for metrics
+    old_status = lead.get("status", "unknown")
+    new_status = payload.get("status")
+    
     updates = {"updated_at": datetime.utcnow()}
     allowed_status = ["new", "working", "contacted", "approved", "rejected"]
     if payload.get("status") in allowed_status and current and current.get("role") in ["admin", "agency", "rp", "resource_partner"]:
         updates["status"] = payload.get("status")
+        # Track status change in metrics
+        if new_status != old_status:
+            RP_LEADS_UPDATED.labels(status_from=old_status, status_to=new_status).inc()
     if payload.get("notes"):
         updates["notes"] = DataValidator.sanitize_text(payload.get("notes"), 1000)
     await db.rp_leads.update_one({"_id": lead_id}, {"$set": updates})
