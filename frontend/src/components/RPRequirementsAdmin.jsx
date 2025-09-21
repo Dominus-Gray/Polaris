@@ -51,7 +51,7 @@ export default function RPRequirementsAdmin(){
 
   const seedDefaults = async () => {
     try{
-      await axios.post('/v2/rp/requirements/bulk', { items: DEFAULT_ITEMS });
+      await axios.post(`${API}/v2/rp/requirements/bulk`, { items: DEFAULT_ITEMS });
       await loadAll();
     }catch(e){ setMsg(e.response?.data?.detail || e.message); }
   };
