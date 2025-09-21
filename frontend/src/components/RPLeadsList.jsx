@@ -19,7 +19,7 @@ export default function RPLeadsList() {
     try {
       const params = {};
       if (status) params.status = status;
-      const { data } = await axios.get(`/v2/rp/leads`, { params });
+      const { data } = await axios.get(`${API}/v2/rp/leads`, { params });
       setLeads(data.leads || []);
     } catch (e) {
       setError(e.response?.data?.detail || e.message);
