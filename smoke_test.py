@@ -267,27 +267,37 @@ class BackendSmokeTest:
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list):
-                    leads_count = len(data)
-                    
-                    details = f"Retrieved {leads_count} leads"
-                    if leads_count > 0:
-                        first_lead = data[0]
-                        if "lead_id" in first_lead:
-                            details += f", first lead ID: {first_lead['lead_id'][:8]}..."
-                    
-                    self.log_test(
-                        "V2 RP Leads endpoint", 
-                        True, 
-                        details,
-                        response_time
-                    )
-                    return True
+                # Check for actual response structure with 'leads' key
+                if isinstance(data, dict) and "leads" in data:
+                    leads = data["leads"]
+                    if isinstance(leads, list):
+                        leads_count = len(leads)
+                        
+                        details = f"Retrieved {leads_count} leads"
+                        if leads_count > 0:
+                            first_lead = leads[0]
+                            if "lead_id" in first_lead:
+                                details += f", first lead ID: {first_lead['lead_id'][:8]}..."
+                        
+                        self.log_test(
+                            "V2 RP Leads endpoint", 
+                            True, 
+                            details,
+                            response_time
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "V2 RP Leads endpoint", 
+                            False, 
+                            f"'leads' is not a list: {type(leads)}",
+                            response_time
+                        )
                 else:
                     self.log_test(
                         "V2 RP Leads endpoint", 
                         False, 
-                        f"Expected array, got: {type(data)}",
+                        f"Expected dict with 'leads' key, got: {type(data)} with keys {list(data.keys()) if isinstance(data, dict) else 'N/A'}",
                         response_time
                     )
             else:
