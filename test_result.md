@@ -545,6 +545,55 @@ All requested V2 endpoints are fully operational with QA credentials. The system
 
 **Screenshots Captured**: 4 screenshots showing RP components rendering correctly but with API failures
 
+## RP CRM-lite – Dashboard Summary QA (Sept 2025):
+**Testing Agent**: testing  
+**Test Date**: September 21, 2025  
+**QA Credentials Used**: client.qa@polaris.example.com / Polaris#2025!  
+**Test Scope**: Short UI automation pass focused on new Dashboard summary card and overall RP CRM-lite readiness
+
+### RP CRM-LITE DASHBOARD SUMMARY QA TEST RESULTS: AUTHENTICATION FLOW BLOCKED
+
+#### ❌ **CRITICAL AUTHENTICATION ISSUE**:
+- **Role Selection Page Blocking Login**: Application shows "Choose Your User Type" page but does not progress to login form
+- **No Login Form Access**: Multiple attempts to access login form failed (direct navigation to /login returns "No routes matched location")
+- **Authentication Flow Incomplete**: Cannot test dashboard RP components without successful authentication
+
+#### 🔄 **ATTEMPTED WORKAROUNDS**:
+- ✅ **Role Selection Attempted**: Tried clicking "Small Business Client" card
+- ✅ **Direct Navigation Attempted**: Tried navigating to /login and /home directly
+- ✅ **Multiple Login Approaches**: Attempted various selectors and navigation methods
+- ❌ **All Authentication Methods Failed**: Unable to reach functional login form
+
+#### 📸 **SCREENSHOTS CAPTURED**:
+1. **Initial Page**: Shows role selection screen with "Choose Your User Type"
+2. **Dashboard Attempt**: Shows same role selection screen after navigation attempts
+3. **Error State**: Final state showing persistent role selection page
+
+#### ⚠️ **CONSOLE WARNINGS DETECTED**:
+- `No routes matched location "/login"` - Indicates routing configuration issue
+- Multiple route matching failures for login-related URLs
+
+### IMPACT ASSESSMENT:
+**User Experience Impact**: CRITICAL - Users cannot access the application beyond role selection  
+**Business Impact**: HIGH - RP CRM-lite dashboard features completely inaccessible  
+**Production Readiness**: BLOCKED - Authentication flow must be fixed before deployment
+
+### TESTING RECOMMENDATION:
+**🚨 PRODUCTION DEPLOYMENT BLOCKED - CRITICAL AUTHENTICATION FIXES REQUIRED**
+
+**Immediate Action Items for Main Agent**:
+1. **URGENT**: Fix role selection to login form progression
+2. **CRITICAL**: Ensure /login route is properly configured in React Router
+3. **ESSENTIAL**: Test complete authentication flow with QA credentials
+4. **REQUIRED**: Verify dashboard accessibility after successful login
+
+**Unable to Test Due to Authentication Block**:
+- ❌ Resource Partner Leads card verification
+- ❌ Create Share Package button functionality  
+- ❌ Navigation to /rp/share
+- ❌ RP type dropdown and package preview
+- ❌ JSON preview and Missing Prerequisites list
+
 ## RP CRM-lite – QA UI Pass (Post‑Fixes, Sept 2025):
 **Testing Agent**: testing  
 **Test Date**: September 21, 2025  
