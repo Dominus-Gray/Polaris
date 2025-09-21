@@ -28,6 +28,9 @@ function ReadinessDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('6months'); // 3months, 6months, 1year, all
+  // RP CRM-lite summary
+  const [rpCounts, setRpCounts] = useState({ total: 0, new: 0, working: 0, approved: 0 });
+  const [rpLoading, setRpLoading] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
