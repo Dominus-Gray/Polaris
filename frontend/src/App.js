@@ -9907,6 +9907,8 @@ function AppShell(){
               <Route path="/rp/share" element={<RPSharePage />} />
             </>
           )}
+
+          {/* Dashboard summary card injection handled inside ReadinessDashboard component (already imported) */}
           <Route path="/agency/business-intelligence" element={<AgencyBusinessIntelligence />} />
           {/* <Route path="/brand-preview" element={<BrandPreview />} /> */}
           <Route path="/opportunities" element={<OpportunitiesPage />} />
