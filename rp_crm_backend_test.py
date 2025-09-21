@@ -257,13 +257,14 @@ def test_rp_crm_workflow():
         
         if response.status_code == 200:
             data = response.json()
-            if isinstance(data, list):
-                lead_count = len(data)
+            leads = data.get("leads", [])
+            if isinstance(leads, list):
+                lead_count = len(leads)
                 results.append(f"✅ Agency can see {lead_count} leads")
                 print(f"   📋 Agency sees {lead_count} total leads")
                 
                 # Look for recent lead
-                recent_leads = [lead for lead in data if lead.get("status") == "new"]
+                recent_leads = [lead for lead in leads if lead.get("status") == "new"]
                 if recent_leads:
                     print(f"   🆕 Found {len(recent_leads)} new leads")
             else:
