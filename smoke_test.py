@@ -209,22 +209,32 @@ class BackendSmokeTest:
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list):
-                    rp_count = len(data)
-                    rp_types = [item.get("rp_type", "unknown") for item in data[:3]]
-                    
-                    self.log_test(
-                        "V2 RP Requirements endpoint", 
-                        True, 
-                        f"Retrieved {rp_count} RP requirements, types: {rp_types}",
-                        response_time
-                    )
-                    return True
+                # Check for actual response structure with 'items' key
+                if isinstance(data, dict) and "items" in data:
+                    items = data["items"]
+                    if isinstance(items, list):
+                        rp_count = len(items)
+                        rp_types = [item.get("rp_type", "unknown") for item in items[:3]]
+                        
+                        self.log_test(
+                            "V2 RP Requirements endpoint", 
+                            True, 
+                            f"Retrieved {rp_count} RP requirements, types: {rp_types}",
+                            response_time
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "V2 RP Requirements endpoint", 
+                            False, 
+                            f"'items' is not a list: {type(items)}",
+                            response_time
+                        )
                 else:
                     self.log_test(
                         "V2 RP Requirements endpoint", 
                         False, 
-                        f"Expected array, got: {type(data)}",
+                        f"Expected dict with 'items' key, got: {type(data)} with keys {list(data.keys()) if isinstance(data, dict) else 'N/A'}",
                         response_time
                     )
             else:
