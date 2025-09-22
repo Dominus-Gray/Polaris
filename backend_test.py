@@ -1,5 +1,573 @@
 #!/usr/bin/env python3
 """
+Quick Backend Health Check After UX Improvements
+Testing Agent: testing
+Test Date: December 2025
+Test Scope: Quick verification that UX improvements haven't broken core backend functionality
+"""
+
+import requests
+import json
+import time
+from datetime import datetime
+
+# Configuration
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
+
+# QA Test Credentials
+QA_CREDENTIALS = {
+    "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
+    "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
+    "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},
+    "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"}
+}
+
+class BackendHealthChecker:
+    def __init__(self):
+        self.results = []
+        self.tokens = {}
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'User-Agent': 'Polaris-Backend-Health-Check/1.0'
+        })
+
+    def log_result(self, test_name, status, details="", response_code=None, response_time=None):
+        """Log test result"""
+        result = {
+            "test": test_name,
+            "status": "✅ PASS" if status else "❌ FAIL",
+            "details": details,
+            "response_code": response_code,
+            "response_time": f"{response_time:.3f}s" if response_time else None,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.results.append(result)
+        print(f"{result['status']}: {test_name} - {details}")
+
+    def authenticate_role(self, role):
+        """Authenticate a specific role and store token"""
+        try:
+            start_time = time.time()
+            credentials = QA_CREDENTIALS[role]
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=credentials,
+                timeout=10
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "access_token" in data:
+                    self.tokens[role] = data["access_token"]
+                    self.log_result(
+                        f"Authentication - {role.title()} Role",
+                        True,
+                        f"Successfully authenticated {role} user",
+                        response.status_code,
+                        response_time
+                    )
+                    return True
+                else:
+                    self.log_result(
+                        f"Authentication - {role.title()} Role",
+                        False,
+                        "No access token in response",
+                        response.status_code,
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_result(
+                    f"Authentication - {role.title()} Role",
+                    False,
+                    f"Authentication failed: {response.text[:100]}",
+                    response.status_code,
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                f"Authentication - {role.title()} Role",
+                False,
+                f"Exception during authentication: {str(e)[:100]}"
+            )
+            return False
+
+    def test_dashboard_endpoint(self, role):
+        """Test dashboard data endpoint for specific role"""
+        if role not in self.tokens:
+            self.log_result(
+                f"Dashboard Data - {role.title()}",
+                False,
+                "No authentication token available"
+            )
+            return False
+
+        try:
+            start_time = time.time()
+            headers = {"Authorization": f"Bearer {self.tokens[role]}"}
+            
+            response = self.session.get(
+                f"{BACKEND_URL}/home/{role}",
+                headers=headers,
+                timeout=10
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    # Basic structure validation
+                    if isinstance(data, dict) and len(data) > 0:
+                        self.log_result(
+                            f"Dashboard Data - {role.title()}",
+                            True,
+                            f"Dashboard data loaded successfully with {len(data)} fields",
+                            response.status_code,
+                            response_time
+                        )
+                        return True
+                    else:
+                        self.log_result(
+                            f"Dashboard Data - {role.title()}",
+                            False,
+                            "Empty or invalid dashboard data structure",
+                            response.status_code,
+                            response_time
+                        )
+                        return False
+                except json.JSONDecodeError:
+                    self.log_result(
+                        f"Dashboard Data - {role.title()}",
+                        False,
+                        "Invalid JSON response",
+                        response.status_code,
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_result(
+                    f"Dashboard Data - {role.title()}",
+                    False,
+                    f"Dashboard endpoint failed: {response.text[:100]}",
+                    response.status_code,
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                f"Dashboard Data - {role.title()}",
+                False,
+                f"Exception during dashboard test: {str(e)[:100]}"
+            )
+            return False
+
+    def test_rp_crm_endpoints(self):
+        """Quick test of v2 RP endpoints"""
+        if "agency" not in self.tokens:
+            self.log_result(
+                "RP CRM-lite Endpoints",
+                False,
+                "No agency authentication token available"
+            )
+            return False
+
+        try:
+            headers = {"Authorization": f"Bearer {self.tokens['agency']}"}
+            
+            # Test RP requirements endpoint
+            start_time = time.time()
+            response = self.session.get(
+                f"{BACKEND_URL}/v2/rp/requirements/all",
+                headers=headers,
+                timeout=10
+            )
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    if isinstance(data, list):
+                        self.log_result(
+                            "RP CRM-lite - Requirements Endpoint",
+                            True,
+                            f"RP requirements loaded successfully ({len(data)} items)",
+                            response.status_code,
+                            response_time
+                        )
+                        
+                        # Test RP leads endpoint if requirements work
+                        start_time = time.time()
+                        leads_response = self.session.get(
+                            f"{BACKEND_URL}/v2/rp/leads",
+                            headers=headers,
+                            timeout=10
+                        )
+                        response_time = time.time() - start_time
+                        
+                        if leads_response.status_code == 200:
+                            leads_data = leads_response.json()
+                            self.log_result(
+                                "RP CRM-lite - Leads Endpoint",
+                                True,
+                                f"RP leads loaded successfully ({len(leads_data)} items)",
+                                leads_response.status_code,
+                                response_time
+                            )
+                            return True
+                        else:
+                            self.log_result(
+                                "RP CRM-lite - Leads Endpoint",
+                                False,
+                                f"Leads endpoint failed: {leads_response.text[:100]}",
+                                leads_response.status_code,
+                                response_time
+                            )
+                            return False
+                    else:
+                        self.log_result(
+                            "RP CRM-lite - Requirements Endpoint",
+                            False,
+                            "Invalid requirements data structure",
+                            response.status_code,
+                            response_time
+                        )
+                        return False
+                except json.JSONDecodeError:
+                    self.log_result(
+                        "RP CRM-lite - Requirements Endpoint",
+                        False,
+                        "Invalid JSON response",
+                        response.status_code,
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "RP CRM-lite - Requirements Endpoint",
+                    False,
+                    f"Requirements endpoint failed: {response.text[:100]}",
+                    response.status_code,
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "RP CRM-lite Endpoints",
+                False,
+                f"Exception during RP CRM test: {str(e)[:100]}"
+            )
+            return False
+
+    def test_assessment_system(self):
+        """Basic assessment schema and session creation tests"""
+        if "client" not in self.tokens:
+            self.log_result(
+                "Assessment System",
+                False,
+                "No client authentication token available"
+            )
+            return False
+
+        try:
+            headers = {"Authorization": f"Bearer {self.tokens['client']}"}
+            
+            # Test assessment schema endpoint
+            start_time = time.time()
+            response = self.session.get(
+                f"{BACKEND_URL}/assessment/schema/tier-based",
+                headers=headers,
+                timeout=10
+            )
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    if "areas" in data and isinstance(data["areas"], list):
+                        area_count = len(data["areas"])
+                        self.log_result(
+                            "Assessment System - Schema",
+                            True,
+                            f"Assessment schema loaded successfully ({area_count} areas)",
+                            response.status_code,
+                            response_time
+                        )
+                        
+                        # Test session creation
+                        session_data = {
+                            "area_id": "area1",
+                            "tier": 1
+                        }
+                        
+                        start_time = time.time()
+                        session_response = self.session.post(
+                            f"{BACKEND_URL}/assessment/tier-session",
+                            headers=headers,
+                            json=session_data,
+                            timeout=10
+                        )
+                        response_time = time.time() - start_time
+                        
+                        if session_response.status_code == 200:
+                            session_result = session_response.json()
+                            if "session_id" in session_result:
+                                self.log_result(
+                                    "Assessment System - Session Creation",
+                                    True,
+                                    f"Assessment session created successfully",
+                                    session_response.status_code,
+                                    response_time
+                                )
+                                return True
+                            else:
+                                self.log_result(
+                                    "Assessment System - Session Creation",
+                                    False,
+                                    "No session_id in response",
+                                    session_response.status_code,
+                                    response_time
+                                )
+                                return False
+                        else:
+                            self.log_result(
+                                "Assessment System - Session Creation",
+                                False,
+                                f"Session creation failed: {session_response.text[:100]}",
+                                session_response.status_code,
+                                response_time
+                            )
+                            return False
+                    else:
+                        self.log_result(
+                            "Assessment System - Schema",
+                            False,
+                            "Invalid schema data structure",
+                            response.status_code,
+                            response_time
+                        )
+                        return False
+                except json.JSONDecodeError:
+                    self.log_result(
+                        "Assessment System - Schema",
+                        False,
+                        "Invalid JSON response",
+                        response.status_code,
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Assessment System - Schema",
+                    False,
+                    f"Schema endpoint failed: {response.text[:100]}",
+                    response.status_code,
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Assessment System",
+                False,
+                f"Exception during assessment test: {str(e)[:100]}"
+            )
+            return False
+
+    def test_service_request_system(self):
+        """Basic service request creation workflow"""
+        if "client" not in self.tokens:
+            self.log_result(
+                "Service Request System",
+                False,
+                "No client authentication token available"
+            )
+            return False
+
+        try:
+            headers = {"Authorization": f"Bearer {self.tokens['client']}"}
+            
+            # Test service request creation
+            request_data = {
+                "area_id": "area5",
+                "budget_range": "1500-5000",
+                "timeline": "1-2 months",
+                "description": "Quick health check test for service request creation workflow"
+            }
+            
+            start_time = time.time()
+            response = self.session.post(
+                f"{BACKEND_URL}/service-requests/professional-help",
+                headers=headers,
+                json=request_data,
+                timeout=10
+            )
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    if "request_id" in data:
+                        request_id = data["request_id"]
+                        self.log_result(
+                            "Service Request System - Creation",
+                            True,
+                            f"Service request created successfully (ID: {request_id[:8]}...)",
+                            response.status_code,
+                            response_time
+                        )
+                        
+                        # Test request retrieval
+                        start_time = time.time()
+                        get_response = self.session.get(
+                            f"{BACKEND_URL}/service-requests/{request_id}",
+                            headers=headers,
+                            timeout=10
+                        )
+                        response_time = time.time() - start_time
+                        
+                        if get_response.status_code == 200:
+                            self.log_result(
+                                "Service Request System - Retrieval",
+                                True,
+                                f"Service request retrieved successfully",
+                                get_response.status_code,
+                                response_time
+                            )
+                            return True
+                        else:
+                            self.log_result(
+                                "Service Request System - Retrieval",
+                                False,
+                                f"Request retrieval failed: {get_response.text[:100]}",
+                                get_response.status_code,
+                                response_time
+                            )
+                            return False
+                    else:
+                        self.log_result(
+                            "Service Request System - Creation",
+                            False,
+                            "No request_id in response",
+                            response.status_code,
+                            response_time
+                        )
+                        return False
+                except json.JSONDecodeError:
+                    self.log_result(
+                        "Service Request System - Creation",
+                        False,
+                        "Invalid JSON response",
+                        response.status_code,
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Service Request System - Creation",
+                    False,
+                    f"Service request creation failed: {response.text[:100]}",
+                    response.status_code,
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Service Request System",
+                False,
+                f"Exception during service request test: {str(e)[:100]}"
+            )
+            return False
+
+    def run_health_check(self):
+        """Run complete backend health check"""
+        print("🔍 STARTING QUICK BACKEND HEALTH CHECK AFTER UX IMPROVEMENTS")
+        print("=" * 70)
+        
+        # 1. Authentication Endpoints - Test all 4 QA roles
+        print("\n1️⃣ AUTHENTICATION ENDPOINTS")
+        auth_success = 0
+        for role in ["client", "agency", "provider", "navigator"]:
+            if self.authenticate_role(role):
+                auth_success += 1
+        
+        # 2. Dashboard Data Endpoints
+        print("\n2️⃣ DASHBOARD DATA ENDPOINTS")
+        dashboard_success = 0
+        for role in ["client", "agency", "provider", "navigator"]:
+            if self.test_dashboard_endpoint(role):
+                dashboard_success += 1
+        
+        # 3. RP CRM-lite Endpoints
+        print("\n3️⃣ RP CRM-LITE ENDPOINTS")
+        rp_success = self.test_rp_crm_endpoints()
+        
+        # 4. Assessment System
+        print("\n4️⃣ ASSESSMENT SYSTEM")
+        assessment_success = self.test_assessment_system()
+        
+        # 5. Service Request System
+        print("\n5️⃣ SERVICE REQUEST SYSTEM")
+        service_request_success = self.test_service_request_system()
+        
+        # Summary
+        print("\n" + "=" * 70)
+        print("📊 HEALTH CHECK SUMMARY")
+        print("=" * 70)
+        
+        total_tests = len(self.results)
+        passed_tests = len([r for r in self.results if "✅ PASS" in r["status"]])
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {total_tests - passed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        
+        print(f"\n🔐 Authentication: {auth_success}/4 roles working")
+        print(f"📊 Dashboard Data: {dashboard_success}/4 endpoints working")
+        print(f"🤝 RP CRM-lite: {'✅ Working' if rp_success else '❌ Failed'}")
+        print(f"📋 Assessment System: {'✅ Working' if assessment_success else '❌ Failed'}")
+        print(f"🛠️ Service Requests: {'✅ Working' if service_request_success else '❌ Failed'}")
+        
+        # Overall health assessment
+        if success_rate >= 90:
+            print(f"\n🟢 OVERALL HEALTH: EXCELLENT ({success_rate:.1f}%)")
+            print("✅ Backend is healthy after UX improvements")
+        elif success_rate >= 75:
+            print(f"\n🟡 OVERALL HEALTH: GOOD ({success_rate:.1f}%)")
+            print("⚠️ Minor issues detected, but core functionality working")
+        else:
+            print(f"\n🔴 OVERALL HEALTH: NEEDS ATTENTION ({success_rate:.1f}%)")
+            print("❌ Significant issues detected, requires investigation")
+        
+        # Failed tests details
+        failed_tests = [r for r in self.results if "❌ FAIL" in r["status"]]
+        if failed_tests:
+            print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"  • {test['test']}: {test['details']}")
+        
+        return success_rate >= 75
+
+if __name__ == "__main__":
+    checker = BackendHealthChecker()
+    success = checker.run_health_check()
+    
+    if success:
+        print("\n✅ HEALTH CHECK PASSED - Backend is stable after UX improvements")
+    else:
+        print("\n❌ HEALTH CHECK FAILED - Backend issues detected after UX improvements")
+"""
 Microsoft 365 Integration Testing Suite
 Testing the new Microsoft 365 integration endpoints as requested in review.
 """
