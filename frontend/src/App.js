@@ -6558,6 +6558,23 @@ function AgencyHome(){
               >
                 Account Settings
               </button>
+              {/* RP CRM-lite Navigation - Feature flagged */}
+              {process.env.REACT_APP_SHOW_RP_CRM === 'true' && (
+                <>
+                  <button
+                    onClick={() => window.location.href = '/rp'}
+                    className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 border-l pl-4"
+                  >
+                    📊 RP Leads
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/rp/requirements'}
+                    className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700"
+                  >
+                    ⚙️ RP Admin
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
