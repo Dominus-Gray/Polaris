@@ -688,3 +688,100 @@ body { @apply bg-slate-50 text-slate-900; }
 .celebration-modal {
   animation: celebration-bounce 0.6s ease-out;
 }
+
+/* Mobile-First Responsive Design Enhancements */
+@media (max-width: 768px) {
+  /* Mobile Dashboard Grid Optimizations */
+  .dashboard-grid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  /* Mobile Navigation */
+  .nav-tabs {
+    @apply overflow-x-auto whitespace-nowrap;
+  }
+  
+  .nav-tabs button {
+    @apply flex-shrink-0;
+  }
+  
+  /* Mobile Statistics Cards */
+  .stats-grid {
+    @apply grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+  
+  /* Mobile Activity Feed */
+  .activity-feed {
+    @apply space-y-2;
+  }
+  
+  .activity-item {
+    @apply p-3 text-sm;
+  }
+  
+  /* Mobile Onboarding */
+  .onboarding-modal {
+    @apply mx-4 max-w-full;
+  }
+  
+  /* Mobile Form Elements */
+  .btn {
+    @apply w-full sm:w-auto;
+  }
+  
+  .btn-group {
+    @apply flex-col sm:flex-row gap-2;
+  }
+  
+  /* Mobile Tables */
+  .responsive-table {
+    @apply block overflow-x-auto whitespace-nowrap;
+  }
+  
+  .table-mobile-card {
+    @apply border rounded-lg p-4 mb-4 block;
+  }
+  
+  /* Mobile Headers */
+  .dashboard-header {
+    @apply text-center sm:text-left;
+  }
+  
+  .dashboard-header h1 {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  /* Mobile Recommendations */
+  .recommendations-grid {
+    @apply grid-cols-1 gap-3;
+  }
+  
+  /* Mobile RP Features */
+  .rp-grid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  /* Mobile Progress Bars */
+  .progress-container {
+    @apply px-4;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small mobile optimizations */
+  .container {
+    @apply px-4;
+  }
+  
+  .card-padding {
+    @apply p-4;
+  }
+  
+  .text-responsive {
+    @apply text-sm;
+  }
+  
+  .button-stack {
+    @apply flex-col gap-2;
+  }
+}
