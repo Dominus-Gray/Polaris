@@ -59,42 +59,42 @@
       "test": "Auth_client",
       "success": true,
       "details": "Successfully authenticated client user",
-      "timestamp": "2025-08-29T21:37:04.173536",
+      "timestamp": "2025-09-22T14:20:33.689168",
       "data": {}
     },
     {
       "test": "Auth_agency",
       "success": true,
       "details": "Successfully authenticated agency user",
-      "timestamp": "2025-08-29T21:37:04.247060",
+      "timestamp": "2025-09-22T14:20:33.764641",
       "data": {}
     },
     {
       "test": "Auth_provider",
       "success": true,
       "details": "Successfully authenticated provider user",
-      "timestamp": "2025-08-29T21:37:04.320981",
+      "timestamp": "2025-09-22T14:20:33.839291",
       "data": {}
     },
     {
       "test": "Auth_navigator",
       "success": true,
       "details": "Successfully authenticated navigator user",
-      "timestamp": "2025-08-29T21:37:04.396702",
+      "timestamp": "2025-09-22T14:20:33.911221",
       "data": {}
     },
     {
       "test": "Assessment Session Creation",
       "success": false,
       "details": "Session creation failed: 422",
-      "timestamp": "2025-08-29T21:37:04.457486",
+      "timestamp": "2025-09-22T14:20:33.968571",
       "data": {}
     },
     {
       "test": "Agency Tier Configuration",
       "success": true,
       "details": "Agency has 10 areas configured with 3 pricing tiers",
-      "timestamp": "2025-08-29T21:37:04.517528",
+      "timestamp": "2025-09-22T14:20:34.030952",
       "data": {
         "areas_configured": 10,
         "pricing_tiers": 3
@@ -104,7 +104,7 @@
       "test": "Agency Billing Integration",
       "success": true,
       "details": "Billing tracks 0 assessments with tier usage: {'tier1': 0, 'tier2': 0, 'tier3': 0}",
-      "timestamp": "2025-08-29T21:37:04.573885",
+      "timestamp": "2025-09-22T14:20:34.096370",
       "data": {
         "total_assessments": 0,
         "tier_usage": {
@@ -118,7 +118,7 @@
       "test": "Agency-Client Data Integration",
       "success": false,
       "details": "Client tier access properly reflects agency configuration (0/0 areas match)",
-      "timestamp": "2025-08-29T21:37:04.629273",
+      "timestamp": "2025-09-22T14:20:34.156334",
       "data": {
         "matching_areas": 0,
         "total_areas": 0
@@ -128,7 +128,7 @@
       "test": "Knowledge Base Areas Access",
       "success": true,
       "details": "Accessed 9 KB areas, 0 unlocked for QA user",
-      "timestamp": "2025-08-29T21:37:04.708229",
+      "timestamp": "2025-09-22T14:20:34.232180",
       "data": {
         "total_areas": 9,
         "unlocked_areas": 0
@@ -138,16 +138,16 @@
       "test": "Analytics Data Posting",
       "success": true,
       "details": "Successfully posted client activity analytics",
-      "timestamp": "2025-08-29T21:37:04.766701",
+      "timestamp": "2025-09-22T14:20:34.291043",
       "data": {}
     },
     {
       "test": "Navigator Analytics Integration",
       "success": true,
-      "details": "Navigator sees 14 total interactions, area5 has 0 interactions",
-      "timestamp": "2025-08-29T21:37:05.824622",
+      "details": "Navigator sees 1 total interactions, area5 has 0 interactions",
+      "timestamp": "2025-09-22T14:20:35.350349",
       "data": {
-        "total_interactions": 14,
+        "total_interactions": 1,
         "area5_count": 0
       }
     },
@@ -155,12 +155,12 @@
       "test": "Provider Notification Integration",
       "success": true,
       "details": "Provider has 0 total notifications, 0 service-related",
-      "timestamp": "2025-08-29T21:37:05.881741",
+      "timestamp": "2025-09-22T14:20:35.406772",
       "data": {
         "total_notifications": 0,
         "service_notifications": 0
       }
     }
   ],
-  "timestamp": "2025-08-29T21:37:05.886433"
+  "timestamp": "2025-09-22T14:20:35.411049"
 }
