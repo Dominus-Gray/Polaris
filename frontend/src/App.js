@@ -6752,6 +6752,11 @@ function AgencyHome(){
     loadData();
   }, []);
 
+  const handleLicensePurchase = (licenseType) => {
+    // Handle license purchase logic
+    console.log('License purchase:', licenseType);
+  };
+
   // Quick action handlers with actual functionality
   const handleQuickAction = async (action) => {
     switch (action) {
