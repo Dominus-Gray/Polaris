@@ -189,7 +189,19 @@ function TierBasedAssessmentPage() {
       const resultsResponse = await axios.get(`${API}/api/assessment/results/${sessionId}`, authHeaders);
       const results = resultsResponse.data;
       
-      // 2. Trigger dashboard updates
+      // 2. Trigger celebration based on score
+      const score = results.completion_info?.tier_completion_score || 0;
+      const areaName = results.area_info?.area_name || 'Business Area';
+      
+      if (score >= 90) {
+        triggerCelebration(`Excellent! You scored ${score}% in ${areaName}`, 'milestone');
+      } else if (score >= 70) {
+        triggerCelebration(`Great progress! You scored ${score}% in ${areaName}`, 'progress');
+      } else {
+        triggerCelebration(`Assessment completed for ${areaName}!`, 'success');
+      }
+      
+      // 3. Trigger dashboard updates
       await axios.post(`${API}/api/realtime/dashboard-update`, {
         user_id: me.id,
         update_type: 'assessment_completed',
@@ -201,8 +213,7 @@ function TierBasedAssessmentPage() {
         }
       }, authHeaders);
       
-      // 3. Check for gaps and generate recommendations
-      const score = results.completion_info?.tier_completion_score || 0;
+      // 4. Check for gaps and generate recommendations
       const hasGaps = score < 80;
       
       if (hasGaps) {
