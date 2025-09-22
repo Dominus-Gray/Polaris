@@ -6270,7 +6270,16 @@ function NavigatorHome(){
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
   
   return (
-    <div className="container mt-6 max-w-7xl">
+    <>
+      {/* Onboarding Flow */}
+      {needsOnboarding && !onboardingLoading && (
+        <OnboardingFlow 
+          userRole="navigator" 
+          onComplete={completeOnboarding}
+        />
+      )}
+      
+      <div className="container mt-6 max-w-7xl">
       {/* Enhanced Header */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-sm p-6 text-white mb-6">
         <div className="flex items-center justify-between">
