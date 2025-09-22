@@ -6715,6 +6715,7 @@ function AgencyHome(){
   const [pipelineData, setPipelineData] = useState(null);
   const [businessData, setBusinessData] = useState(null);
   const [impact, setImpact] = useState(null);
+  const [tierInfo, setTierInfo] = useState({ tier: 'Professional', price: 50 });
   const [loading, setLoading] = useState(true);
   // Load dashboard data focused on contract pipeline
   useEffect(() => {
