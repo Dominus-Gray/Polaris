@@ -480,6 +480,125 @@ function ReadinessDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Personalized Action Items & Recommendations */}
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900">Recommended Next Steps</h3>
+          </div>
+          <span className="text-sm text-green-600 font-medium">Priority Actions</span>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Smart recommendations based on current state */}
+          {(dashboardData?.completion_percentage || 0) < 30 && (
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-semibold text-sm">1</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-slate-900 mb-1">Complete Your Assessment</h4>
+                  <p className="text-sm text-slate-600 mb-3">Start with the Legal & Compliance area - it's foundational for procurement readiness.</p>
+                  <button 
+                    className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={() => navigate('/assessment')}
+                  >
+                    Start Assessment →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {(dashboardData?.critical_gaps || 0) > 0 && (
+            <div className="bg-white rounded-lg p-4 border border-orange-100">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-orange-600 font-semibold text-sm">!</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-slate-900 mb-1">Address Critical Gaps</h4>
+                  <p className="text-sm text-slate-600 mb-3">You have {dashboardData.critical_gaps} areas needing immediate attention for procurement readiness.</p>
+                  <button 
+                    className="text-sm bg-orange-600 text-white px-3 py-1.5 rounded-lg hover:bg-orange-700 transition-colors"
+                    onClick={() => navigate('/service-request')}
+                  >
+                    Find Expert Help →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {(dashboardData?.current_score || 0) >= 50 && (dashboardData?.current_score || 0) < 70 && (
+            <div className="bg-white rounded-lg p-4 border border-purple-100">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-purple-600 font-semibold text-sm">🎯</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-slate-900 mb-1">You're Making Great Progress!</h4>
+                  <p className="text-sm text-slate-600 mb-3">Just {70 - (dashboardData.current_score || 0)}% more to reach certification threshold.</p>
+                  <button 
+                    className="text-sm bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 transition-colors"
+                    onClick={() => navigate('/assessment')}
+                  >
+                    Continue Assessment →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {(dashboardData?.current_score || 0) >= 70 && (
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-green-600 font-semibold text-sm">🏆</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-slate-900 mb-1">Certification Ready!</h4>
+                  <p className="text-sm text-slate-600 mb-3">Congratulations! You've achieved procurement readiness. Time to apply for opportunities.</p>
+                  <button 
+                    className="text-sm bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors"
+                    onClick={() => window.open('https://sam.gov', '_blank')}
+                  >
+                    Browse Opportunities →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Always show knowledge base recommendation */}
+          <div className="bg-white rounded-lg p-4 border border-indigo-100">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-medium text-slate-900 mb-1">Explore Resources</h4>
+                <p className="text-sm text-slate-600 mb-3">Access templates, guides, and best practices to accelerate your progress.</p>
+                <button 
+                  className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
+                  onClick={() => navigate('/knowledge')}
+                >
+                  Browse Knowledge Base →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
