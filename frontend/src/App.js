@@ -35,6 +35,9 @@ import RPLeadDetail from './components/RPLeadDetail';
 import RPSharePage from './components/RPSharePage';
 import RPRequirementsAdmin from './components/RPRequirementsAdmin';
 
+// Onboarding Component
+import OnboardingFlow, { useOnboardingStatus } from './components/OnboardingFlow';
+
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
