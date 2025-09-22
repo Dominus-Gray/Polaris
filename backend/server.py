@@ -16802,6 +16802,182 @@ async def add_performance_headers(request: Request, call_next):
     
     return response
 
+# Webhook System for External Integrations
+@api.post("/webhooks/register")
+async def register_webhook(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Register webhook endpoint for event notifications"""
+    try:
+        url = payload.get("url")
+        events = payload.get("events", [])
+        secret = payload.get("secret", "")
+        
+        if not url or not events:
+            raise HTTPException(status_code=400, detail="URL and events are required")
+        
+        # Validate URL format
+        import re
+        url_pattern = re.compile(r'^https?://[^\s/$.?#].[^\s]*$')
+        if not url_pattern.match(url):
+            raise HTTPException(status_code=400, detail="Invalid webhook URL format")
+        
+        # Validate events
+        valid_events = [
+            "assessment.completed", "service_request.created", "service_request.responded",
+            "engagement.status_changed", "rp_lead.created", "rp_lead.status_changed",
+            "user.registered", "certificate.issued", "payment.completed"
+        ]
+        
+        invalid_events = [e for e in events if e not in valid_events]
+        if invalid_events:
+            raise HTTPException(status_code=400, detail=f"Invalid events: {invalid_events}")
+        
+        # Create webhook registration
+        webhook_id = str(uuid.uuid4())
+        webhook_doc = {
+            "_id": webhook_id,
+            "webhook_id": webhook_id,
+            "user_id": current["id"],
+            "url": url,
+            "events": events,
+            "secret": secret,
+            "active": True,
+            "created_at": datetime.utcnow(),
+            "last_triggered": None,
+            "success_count": 0,
+            "failure_count": 0
+        }
+        
+        await db.webhooks.insert_one(webhook_doc)
+        
+        return {
+            "webhook_id": webhook_id,
+            "url": url,
+            "events": events,
+            "status": "registered"
+        }
+        
+    except Exception as e:
+        logger.error(f"Webhook registration error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to register webhook")
+
+@api.get("/webhooks/list")
+async def list_webhooks(current=Depends(require_user)):
+    """List user's registered webhooks"""
+    try:
+        webhooks = await db.webhooks.find(
+            {"user_id": current["id"], "active": True}
+        ).to_list(50)
+        
+        webhook_list = []
+        for webhook in webhooks:
+            webhook_list.append({
+                "webhook_id": webhook["webhook_id"],
+                "url": webhook["url"],
+                "events": webhook["events"],
+                "created_at": webhook["created_at"].isoformat(),
+                "success_count": webhook.get("success_count", 0),
+                "failure_count": webhook.get("failure_count", 0)
+            })
+        
+        return {"webhooks": webhook_list}
+        
+    except Exception as e:
+        logger.error(f"List webhooks error: {e}")
+        return {"webhooks": []}
+
+@api.delete("/webhooks/{webhook_id}")
+async def delete_webhook(webhook_id: str, current=Depends(require_user)):
+    """Delete webhook registration"""
+    try:
+        result = await db.webhooks.update_one(
+            {"webhook_id": webhook_id, "user_id": current["id"]},
+            {"$set": {"active": False, "deleted_at": datetime.utcnow()}}
+        )
+        
+        if result.modified_count > 0:
+            return {"webhook_id": webhook_id, "status": "deleted"}
+        else:
+            raise HTTPException(status_code=404, detail="Webhook not found")
+            
+    except Exception as e:
+        logger.error(f"Delete webhook error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete webhook")
+
+# Webhook trigger utility function
+async def trigger_webhooks(event_type: str, event_data: Dict[str, Any], user_id: str = None):
+    """Trigger webhooks for specific event"""
+    try:
+        # Find active webhooks for this event type
+        query = {"active": True, "events": event_type}
+        if user_id:
+            query["user_id"] = user_id
+        
+        webhooks = await db.webhooks.find(query).to_list(100)
+        
+        for webhook in webhooks:
+            try:
+                # Prepare webhook payload
+                payload = {
+                    "event": event_type,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "data": event_data,
+                    "metadata": {
+                        "webhook_id": webhook["webhook_id"],
+                        "attempt": 1,
+                        "signature": "sha256=..."  # Would implement HMAC signature
+                    }
+                }
+                
+                # Send webhook (async in background)
+                import asyncio
+                asyncio.create_task(send_webhook(webhook, payload))
+                
+            except Exception as e:
+                logger.error(f"Webhook trigger error for {webhook['webhook_id']}: {e}")
+        
+    except Exception as e:
+        logger.error(f"Webhook system error: {e}")
+
+async def send_webhook(webhook: Dict, payload: Dict):
+    """Send individual webhook with retry logic"""
+    import aiohttp
+    import asyncio
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    webhook["url"],
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                    timeout=aiohttp.ClientTimeout(total=10)
+                ) as response:
+                    if response.status == 200:
+                        # Update success count
+                        await db.webhooks.update_one(
+                            {"webhook_id": webhook["webhook_id"]},
+                            {
+                                "$inc": {"success_count": 1},
+                                "$set": {"last_triggered": datetime.utcnow()}
+                            }
+                        )
+                        return
+                    else:
+                        raise Exception(f"HTTP {response.status}")
+                        
+        except Exception as e:
+            if attempt == max_retries - 1:
+                # Update failure count on final attempt
+                await db.webhooks.update_one(
+                    {"webhook_id": webhook["webhook_id"]},
+                    {"$inc": {"failure_count": 1}}
+                )
+                logger.error(f"Webhook failed after {max_retries} attempts: {e}")
+            else:
+                # Wait before retry
+                await asyncio.sleep(2 ** attempt)
+
 
 app.include_router(api)
 
