@@ -5540,7 +5540,16 @@ function ProviderHome(){
   if(!data) return <div className="container mt-6"><div className="skel h-10 w-40"/><div className="skel h-32 w-full mt-2"/></div>;
   
   return (
-    <div className="container mt-6 max-w-7xl">
+    <>
+      {/* Onboarding Flow */}
+      {needsOnboarding && !onboardingLoading && (
+        <OnboardingFlow 
+          userRole="provider" 
+          onComplete={completeOnboarding}
+        />
+      )}
+      
+      <div className="container mt-6 max-w-7xl">
       {/* Profile Completion Banner - Show if profile not complete */}
       {!data.profile_complete && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
