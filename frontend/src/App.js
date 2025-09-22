@@ -38,6 +38,9 @@ import RPRequirementsAdmin from './components/RPRequirementsAdmin';
 // Onboarding Component
 import OnboardingFlow, { useOnboardingStatus } from './components/OnboardingFlow';
 
+// Mobile Navigation Component
+import MobileNavigation from './components/MobileNavigation';
+
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
