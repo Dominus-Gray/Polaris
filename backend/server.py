@@ -16978,6 +16978,221 @@ async def send_webhook(webhook: Dict, payload: Dict):
                 # Wait before retry
                 await asyncio.sleep(2 ** attempt)
 
+# User Training & Support System Endpoints
+@api.post("/support/tickets/create")
+async def create_support_ticket(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Create new support ticket"""
+    try:
+        subject = payload.get("subject", "").strip()
+        description = payload.get("description", "").strip()
+        category = payload.get("category", "general")
+        priority = payload.get("priority", "medium")
+        
+        if not subject or not description:
+            raise HTTPException(status_code=400, detail="Subject and description are required")
+        
+        ticket_id = str(uuid.uuid4())
+        ticket = {
+            "_id": ticket_id,
+            "ticket_id": ticket_id,
+            "user_id": current["id"],
+            "user_email": current.get("email"),
+            "user_role": current.get("role"),
+            "subject": DataValidator.sanitize_text(subject, 200),
+            "description": DataValidator.sanitize_text(description, 2000),
+            "category": category,
+            "priority": priority,
+            "status": "open",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "assigned_agent": None,
+            "replies": [],
+            "tags": []
+        }
+        
+        await db.support_tickets.insert_one(ticket)
+        
+        # Auto-tag based on content and category
+        auto_tags = []
+        if "assessment" in description.lower():
+            auto_tags.append("assessment")
+        if "payment" in description.lower() or "billing" in description.lower():
+            auto_tags.append("billing")
+        if "error" in description.lower() or "bug" in description.lower():
+            auto_tags.append("technical")
+        
+        if auto_tags:
+            await db.support_tickets.update_one(
+                {"_id": ticket_id},
+                {"$set": {"tags": auto_tags}}
+            )
+        
+        return {
+            "ticket_id": ticket_id,
+            "status": "created",
+            "estimated_response": "24 hours",
+            "category": category,
+            "priority": priority
+        }
+        
+    except Exception as e:
+        logger.error(f"Support ticket creation error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create support ticket")
+
+@api.get("/support/tickets")
+async def get_user_support_tickets(current=Depends(require_user)):
+    """Get user's support tickets"""
+    try:
+        tickets = await db.support_tickets.find(
+            {"user_id": current["id"]}
+        ).sort("created_at", -1).to_list(50)
+        
+        ticket_list = []
+        for ticket in tickets:
+            ticket_list.append({
+                "id": ticket["ticket_id"],
+                "subject": ticket["subject"],
+                "category": ticket["category"],
+                "priority": ticket["priority"],
+                "status": ticket["status"],
+                "created_at": ticket["created_at"].isoformat(),
+                "updated_at": ticket["updated_at"].isoformat(),
+                "replies_count": len(ticket.get("replies", [])),
+                "last_reply": ticket.get("replies", [{}])[-1].get("created_at", ticket["created_at"]).isoformat() if ticket.get("replies") else None
+            })
+        
+        return {"tickets": ticket_list}
+        
+    except Exception as e:
+        logger.error(f"Get support tickets error: {e}")
+        return {"tickets": []}
+
+@api.post("/community/discussions/create")
+async def create_community_discussion(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Create new community discussion post"""
+    try:
+        title = payload.get("title", "").strip()
+        content = payload.get("content", "").strip()
+        category = payload.get("category", "general")
+        
+        if not title or not content:
+            raise HTTPException(status_code=400, detail="Title and content are required")
+        
+        discussion_id = str(uuid.uuid4())
+        discussion = {
+            "_id": discussion_id,
+            "discussion_id": discussion_id,
+            "author_id": current["id"],
+            "author_name": current.get("name", current.get("email", "Anonymous")),
+            "author_role": current.get("role"),
+            "title": DataValidator.sanitize_text(title, 200),
+            "content": DataValidator.sanitize_text(content, 5000),
+            "category": category,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "replies": [],
+            "views": 0,
+            "likes": [],
+            "pinned": False,
+            "locked": False,
+            "tags": []
+        }
+        
+        await db.community_discussions.insert_one(discussion)
+        
+        return {
+            "discussion_id": discussion_id,
+            "status": "created",
+            "title": title,
+            "category": category
+        }
+        
+    except Exception as e:
+        logger.error(f"Community discussion creation error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create discussion")
+
+@api.get("/community/discussions")
+async def get_community_discussions(category: str = Query(None), limit: int = Query(20)):
+    """Get community discussions"""
+    try:
+        query = {"locked": {"$ne": True}}
+        if category:
+            query["category"] = category
+        
+        discussions = await db.community_discussions.find(query).sort([
+            ("pinned", -1), ("updated_at", -1)
+        ]).limit(limit).to_list(limit)
+        
+        discussion_list = []
+        for disc in discussions:
+            discussion_list.append({
+                "id": disc["discussion_id"],
+                "title": disc["title"],
+                "author": disc["author_name"],
+                "author_role": disc["author_role"],
+                "category": disc["category"],
+                "created_at": disc["created_at"].isoformat(),
+                "updated_at": disc["updated_at"].isoformat(),
+                "replies_count": len(disc.get("replies", [])),
+                "views": disc.get("views", 0),
+                "likes_count": len(disc.get("likes", [])),
+                "preview": disc["content"][:150] + "..." if len(disc["content"]) > 150 else disc["content"],
+                "tags": disc.get("tags", []),
+                "pinned": disc.get("pinned", False)
+            })
+        
+        return {"discussions": discussion_list}
+        
+    except Exception as e:
+        logger.error(f"Get community discussions error: {e}")
+        return {"discussions": []}
+
+@api.post("/tutorials/complete")
+async def complete_tutorial(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Mark tutorial as completed for user"""
+    try:
+        tutorial_id = payload.get("tutorial_id")
+        if not tutorial_id:
+            raise HTTPException(status_code=400, detail="Tutorial ID required")
+        
+        completion_record = {
+            "_id": str(uuid.uuid4()),
+            "user_id": current["id"],
+            "tutorial_id": tutorial_id,
+            "completed_at": datetime.utcnow(),
+            "user_role": current.get("role")
+        }
+        
+        await db.tutorial_completions.insert_one(completion_record)
+        
+        return {
+            "tutorial_id": tutorial_id,
+            "completed": True,
+            "completed_at": completion_record["completed_at"].isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Tutorial completion error: {e}")
+        return {"completed": False, "error": "Failed to mark tutorial as completed"}
+
+@api.get("/tutorials/progress")
+async def get_tutorial_progress(current=Depends(require_user)):
+    """Get user's tutorial progress"""
+    try:
+        completions = await db.tutorial_completions.find(
+            {"user_id": current["id"]}
+        ).to_list(100)
+        
+        progress = {}
+        for completion in completions:
+            progress[completion["tutorial_id"]] = True
+        
+        return {"progress": progress}
+        
+    except Exception as e:
+        logger.error(f"Tutorial progress error: {e}")
+        return {"progress": {}}
+
 
 app.include_router(api)
 
