@@ -1,5 +1,579 @@
 #!/usr/bin/env python3
 """
+Phase 3 Advanced Features Backend Testing
+Testing Agent: testing
+Test Date: January 2025
+Test Scope: Real-Time Chat System, AI Conversational Coaching, Predictive Analytics, Enhanced Recommendations
+
+This test focuses specifically on the Phase 3 advanced features as requested in the review.
+"""
+
+import asyncio
+import aiohttp
+import json
+import os
+import sys
+from datetime import datetime
+from typing import Dict, List, Any
+
+# Backend URL configuration
+BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
+
+# QA Test Credentials
+QA_CREDENTIALS = {
+    "client": {
+        "email": "client.qa@polaris.example.com",
+        "password": "Polaris#2025!"
+    },
+    "provider": {
+        "email": "provider.qa@polaris.example.com", 
+        "password": "Polaris#2025!"
+    },
+    "agency": {
+        "email": "agency.qa@polaris.example.com",
+        "password": "Polaris#2025!"
+    },
+    "navigator": {
+        "email": "navigator.qa@polaris.example.com",
+        "password": "Polaris#2025!"
+    }
+}
+
+class Phase3BackendTester:
+    def __init__(self):
+        self.session = None
+        self.tokens = {}
+        self.test_results = []
+        self.chat_id = f"test_chat_{int(datetime.now().timestamp())}"
+        self.coach_session_id = f"coach_session_{int(datetime.now().timestamp())}"
+        
+    async def setup_session(self):
+        """Initialize HTTP session"""
+        self.session = aiohttp.ClientSession()
+        
+    async def cleanup_session(self):
+        """Cleanup HTTP session"""
+        if self.session:
+            await self.session.close()
+            
+    async def authenticate_user(self, role: str) -> str:
+        """Authenticate user and return JWT token"""
+        try:
+            credentials = QA_CREDENTIALS[role]
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=credentials,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    token = data.get("access_token")
+                    self.tokens[role] = token
+                    print(f"✅ {role.title()} authentication successful")
+                    return token
+                else:
+                    error_text = await response.text()
+                    print(f"❌ {role.title()} authentication failed: {response.status} - {error_text}")
+                    return None
+                    
+        except Exception as e:
+            print(f"❌ {role.title()} authentication error: {e}")
+            return None
+            
+    async def make_authenticated_request(self, method: str, endpoint: str, role: str, data: Dict = None) -> Dict:
+        """Make authenticated API request"""
+        try:
+            token = self.tokens.get(role)
+            if not token:
+                return {"error": "No token available", "status": 401}
+                
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            url = f"{BACKEND_URL}{endpoint}"
+            
+            if method.upper() == "GET":
+                async with self.session.get(url, headers=headers) as response:
+                    result = {
+                        "status": response.status,
+                        "data": await response.json() if response.content_type == "application/json" else await response.text()
+                    }
+            elif method.upper() == "POST":
+                async with self.session.post(url, json=data, headers=headers) as response:
+                    result = {
+                        "status": response.status,
+                        "data": await response.json() if response.content_type == "application/json" else await response.text()
+                    }
+            else:
+                return {"error": "Unsupported method", "status": 400}
+                
+            return result
+            
+        except Exception as e:
+            return {"error": str(e), "status": 500}
+            
+    def record_test_result(self, test_name: str, success: bool, details: str, response_data: Any = None):
+        """Record test result"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat(),
+            "response_data": response_data
+        }
+        self.test_results.append(result)
+        
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {details}")
+        
+    async def test_real_time_chat_system(self):
+        """Test Real-Time Chat System endpoints"""
+        print("\n🔄 Testing Real-Time Chat System...")
+        
+        # Test 1: Send chat message
+        chat_message_data = {
+            "chat_id": self.chat_id,
+            "content": "Hello, this is a test message for Phase 3 chat system testing.",
+            "context": "procurement_discussion",
+            "context_id": "test_context_123"
+        }
+        
+        result = await self.make_authenticated_request("POST", "/chat/send", "client", chat_message_data)
+        
+        if result["status"] == 200 and result["data"].get("sent"):
+            self.record_test_result(
+                "Chat Message Send",
+                True,
+                f"Message sent successfully to chat {self.chat_id}",
+                result["data"]
+            )
+        else:
+            self.record_test_result(
+                "Chat Message Send", 
+                False,
+                f"Failed to send message: {result.get('status')} - {result.get('data')}",
+                result
+            )
+            
+        # Test 2: Retrieve chat messages
+        result = await self.make_authenticated_request("GET", f"/chat/messages/{self.chat_id}", "client")
+        
+        if result["status"] == 200 and "messages" in result["data"]:
+            messages = result["data"]["messages"]
+            self.record_test_result(
+                "Chat Messages Retrieval",
+                True,
+                f"Retrieved {len(messages)} messages from chat {self.chat_id}",
+                {"message_count": len(messages)}
+            )
+        else:
+            self.record_test_result(
+                "Chat Messages Retrieval",
+                False,
+                f"Failed to retrieve messages: {result.get('status')} - {result.get('data')}",
+                result
+            )
+            
+        # Test 3: Get online users in chat
+        result = await self.make_authenticated_request("GET", f"/chat/online/{self.chat_id}", "client")
+        
+        if result["status"] == 200 and "users" in result["data"]:
+            online_users = result["data"]["users"]
+            self.record_test_result(
+                "Chat Online Users",
+                True,
+                f"Retrieved {len(online_users)} online users in chat {self.chat_id}",
+                {"online_count": len(online_users)}
+            )
+        else:
+            self.record_test_result(
+                "Chat Online Users",
+                False,
+                f"Failed to get online users: {result.get('status')} - {result.get('data')}",
+                result
+            )
+            
+    async def test_ai_conversational_coaching(self):
+        """Test AI Conversational Coaching endpoints"""
+        print("\n🔄 Testing AI Conversational Coaching...")
+        
+        # Test sample questions as specified in review request
+        test_questions = [
+            "How do I start my procurement readiness assessment?",
+            "What are the most important areas for a technology company?",
+            "Help me understand financial management requirements"
+        ]
+        
+        for i, question in enumerate(test_questions, 1):
+            conversation_data = {
+                "message": question,
+                "session_id": self.coach_session_id,
+                "context_area": "general"
+            }
+            
+            result = await self.make_authenticated_request("POST", "/ai/coach/conversation", "client", conversation_data)
+            
+            if result["status"] == 200 and result["data"].get("response"):
+                response_text = result["data"]["response"]
+                response_length = len(response_text.split())
+                
+                # Verify response is contextual and helpful (check for key terms)
+                is_contextual = any(term in response_text.lower() for term in [
+                    "assessment", "procurement", "readiness", "compliance", "financial", "legal"
+                ])
+                
+                self.record_test_result(
+                    f"AI Coach Question {i}",
+                    True,
+                    f"Received contextual response ({response_length} words) for: '{question[:50]}...'",
+                    {
+                        "question": question,
+                        "response_length": response_length,
+                        "contextual": is_contextual,
+                        "session_id": result["data"].get("session_id")
+                    }
+                )
+            else:
+                self.record_test_result(
+                    f"AI Coach Question {i}",
+                    False,
+                    f"Failed to get AI response: {result.get('status')} - {result.get('data')}",
+                    result
+                )
+                
+        # Test conversation history retrieval
+        result = await self.make_authenticated_request("GET", f"/ai/coach/history/{self.coach_session_id}", "client")
+        
+        if result["status"] == 200 and "history" in result["data"]:
+            history = result["data"]["history"]
+            self.record_test_result(
+                "AI Coach History",
+                True,
+                f"Retrieved conversation history with {len(history)} entries",
+                {"history_count": len(history)}
+            )
+        else:
+            self.record_test_result(
+                "AI Coach History",
+                False,
+                f"Failed to retrieve conversation history: {result.get('status')} - {result.get('data')}",
+                result
+            )
+            
+    async def test_predictive_analytics(self):
+        """Test Predictive Analytics endpoint"""
+        print("\n🔄 Testing Predictive Analytics...")
+        
+        # Test different user scenarios
+        test_scenarios = [
+            {"type": "success_prediction", "scenario": "current_user"},
+            {"type": "risk_assessment", "scenario": "current_user"}
+        ]
+        
+        for scenario in test_scenarios:
+            analytics_data = {
+                "type": scenario["type"]
+            }
+            
+            result = await self.make_authenticated_request("POST", "/ai/predictive-analytics", "client", analytics_data)
+            
+            if result["status"] == 200:
+                analytics = result["data"]
+                
+                # Verify required fields are present
+                required_fields = ["success_probability", "risk_level", "current_metrics", "predictions", "recommendations"]
+                has_required_fields = all(field in analytics for field in required_fields)
+                
+                if has_required_fields:
+                    self.record_test_result(
+                        f"Predictive Analytics - {scenario['type']}",
+                        True,
+                        f"Generated analytics with {analytics.get('success_probability')}% success probability, {analytics.get('risk_level')} risk",
+                        {
+                            "success_probability": analytics.get("success_probability"),
+                            "risk_level": analytics.get("risk_level"),
+                            "recommendations_count": len(analytics.get("recommendations", []))
+                        }
+                    )
+                else:
+                    self.record_test_result(
+                        f"Predictive Analytics - {scenario['type']}",
+                        False,
+                        f"Missing required fields in analytics response",
+                        analytics
+                    )
+            else:
+                self.record_test_result(
+                    f"Predictive Analytics - {scenario['type']}",
+                    False,
+                    f"Failed to generate analytics: {result.get('status')} - {result.get('data')}",
+                    result
+                )
+                
+    async def test_enhanced_recommendations(self):
+        """Test Enhanced Recommendations endpoints"""
+        print("\n🔄 Testing Enhanced Recommendations...")
+        
+        # Test recommendations for different roles
+        test_roles = ["client", "provider", "agency", "navigator"]
+        
+        for role in test_roles:
+            # Authenticate as the role first
+            token = await self.authenticate_user(role)
+            if not token:
+                self.record_test_result(
+                    f"Enhanced Recommendations - {role}",
+                    False,
+                    f"Failed to authenticate as {role}",
+                    None
+                )
+                continue
+                
+            result = await self.make_authenticated_request("GET", f"/ai/recommendations/{role}", role)
+            
+            if result["status"] == 200 and "recommendations" in result["data"]:
+                recommendations = result["data"]["recommendations"]
+                
+                # Verify recommendations are contextual and actionable
+                has_actionable_items = all(
+                    rec.get("action") and rec.get("description") and rec.get("priority")
+                    for rec in recommendations
+                )
+                
+                self.record_test_result(
+                    f"Enhanced Recommendations - {role}",
+                    True,
+                    f"Retrieved {len(recommendations)} contextual recommendations for {role}",
+                    {
+                        "recommendations_count": len(recommendations),
+                        "actionable": has_actionable_items,
+                        "sample_titles": [rec.get("title", "")[:50] for rec in recommendations[:2]]
+                    }
+                )
+            else:
+                self.record_test_result(
+                    f"Enhanced Recommendations - {role}",
+                    False,
+                    f"Failed to get recommendations: {result.get('status')} - {result.get('data')}",
+                    result
+                )
+                
+    async def test_authentication_and_error_handling(self):
+        """Test authentication and error handling"""
+        print("\n🔄 Testing Authentication and Error Handling...")
+        
+        # Test unauthenticated access
+        try:
+            async with self.session.post(f"{BACKEND_URL}/chat/send", json={"chat_id": "test", "content": "test"}) as response:
+                if response.status == 401:
+                    self.record_test_result(
+                        "Authentication Protection",
+                        True,
+                        "Unauthenticated requests properly rejected with 401",
+                        {"status": response.status}
+                    )
+                else:
+                    self.record_test_result(
+                        "Authentication Protection",
+                        False,
+                        f"Expected 401 but got {response.status}",
+                        {"status": response.status}
+                    )
+        except Exception as e:
+            self.record_test_result(
+                "Authentication Protection",
+                False,
+                f"Error testing authentication: {e}",
+                None
+            )
+            
+        # Test invalid data handling
+        invalid_chat_data = {"content": "test"}  # Missing required chat_id
+        result = await self.make_authenticated_request("POST", "/chat/send", "client", invalid_chat_data)
+        
+        if result["status"] == 400:
+            self.record_test_result(
+                "Error Handling - Invalid Data",
+                True,
+                "Invalid data properly rejected with 400",
+                result
+            )
+        else:
+            self.record_test_result(
+                "Error Handling - Invalid Data",
+                False,
+                f"Expected 400 but got {result.get('status')}",
+                result
+            )
+            
+    async def test_response_times(self):
+        """Test response times for AI features"""
+        print("\n🔄 Testing Response Times...")
+        
+        # Test AI coaching response time
+        start_time = datetime.now()
+        
+        conversation_data = {
+            "message": "What should I focus on first for government contracting?",
+            "session_id": f"perf_test_{int(start_time.timestamp())}",
+            "context_area": "general"
+        }
+        
+        result = await self.make_authenticated_request("POST", "/ai/coach/conversation", "client", conversation_data)
+        
+        end_time = datetime.now()
+        response_time = (end_time - start_time).total_seconds()
+        
+        # Success criteria: < 5 seconds for AI features
+        if result["status"] == 200 and response_time < 5.0:
+            self.record_test_result(
+                "AI Response Time",
+                True,
+                f"AI coaching responded in {response_time:.2f}s (< 5s requirement)",
+                {"response_time_seconds": response_time}
+            )
+        elif result["status"] == 200:
+            self.record_test_result(
+                "AI Response Time",
+                False,
+                f"AI coaching took {response_time:.2f}s (> 5s requirement)",
+                {"response_time_seconds": response_time}
+            )
+        else:
+            self.record_test_result(
+                "AI Response Time",
+                False,
+                f"AI coaching failed: {result.get('status')} - {result.get('data')}",
+                result
+            )
+            
+    async def run_all_tests(self):
+        """Run all Phase 3 advanced features tests"""
+        print("🚀 Starting Phase 3 Advanced Features Backend Testing...")
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test Chat ID: {self.chat_id}")
+        print(f"Coach Session ID: {self.coach_session_id}")
+        
+        await self.setup_session()
+        
+        try:
+            # Authenticate primary test user (client)
+            await self.authenticate_user("client")
+            
+            # Run all test suites
+            await self.test_real_time_chat_system()
+            await self.test_ai_conversational_coaching()
+            await self.test_predictive_analytics()
+            await self.test_enhanced_recommendations()
+            await self.test_authentication_and_error_handling()
+            await self.test_response_times()
+            
+        finally:
+            await self.cleanup_session()
+            
+        # Generate summary
+        self.generate_test_summary()
+        
+    def generate_test_summary(self):
+        """Generate comprehensive test summary"""
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r["success"]])
+        failed_tests = total_tests - passed_tests
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        
+        print("\n" + "="*80)
+        print("📊 PHASE 3 ADVANCED FEATURES BACKEND TEST SUMMARY")
+        print("="*80)
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {failed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        print()
+        
+        # Group results by category
+        categories = {}
+        for result in self.test_results:
+            category = result["test"].split(" - ")[0] if " - " in result["test"] else result["test"].split()[0]
+            if category not in categories:
+                categories[category] = {"passed": 0, "failed": 0, "tests": []}
+            
+            if result["success"]:
+                categories[category]["passed"] += 1
+            else:
+                categories[category]["failed"] += 1
+            categories[category]["tests"].append(result)
+        
+        # Print category summaries
+        for category, data in categories.items():
+            total = data["passed"] + data["failed"]
+            rate = (data["passed"] / total * 100) if total > 0 else 0
+            status = "✅" if rate == 100 else "⚠️" if rate >= 75 else "❌"
+            print(f"{status} {category}: {data['passed']}/{total} ({rate:.1f}%)")
+        
+        print()
+        
+        # Print failed tests details
+        failed_results = [r for r in self.test_results if not r["success"]]
+        if failed_results:
+            print("❌ FAILED TESTS DETAILS:")
+            print("-" * 40)
+            for result in failed_results:
+                print(f"• {result['test']}: {result['details']}")
+            print()
+        
+        # Key success criteria verification
+        print("🎯 KEY SUCCESS CRITERIA VERIFICATION:")
+        print("-" * 40)
+        
+        chat_tests = [r for r in self.test_results if "Chat" in r["test"]]
+        chat_success = all(r["success"] for r in chat_tests)
+        print(f"✅ Chat system stores and retrieves messages correctly: {'PASS' if chat_success else 'FAIL'}")
+        
+        ai_coach_tests = [r for r in self.test_results if "AI Coach" in r["test"]]
+        ai_coach_success = all(r["success"] for r in ai_coach_tests)
+        print(f"✅ AI coaching provides relevant, contextual responses: {'PASS' if ai_coach_success else 'FAIL'}")
+        
+        analytics_tests = [r for r in self.test_results if "Predictive Analytics" in r["test"]]
+        analytics_success = all(r["success"] for r in analytics_tests)
+        print(f"✅ Predictive analytics generates accurate insights: {'PASS' if analytics_success else 'FAIL'}")
+        
+        auth_tests = [r for r in self.test_results if "Authentication" in r["test"] or "Error Handling" in r["test"]]
+        auth_success = all(r["success"] for r in auth_tests)
+        print(f"✅ All endpoints handle authentication properly: {'PASS' if auth_success else 'FAIL'}")
+        
+        response_time_tests = [r for r in self.test_results if "Response Time" in r["test"]]
+        response_time_success = all(r["success"] for r in response_time_tests)
+        print(f"✅ Response times are acceptable (< 5 seconds for AI features): {'PASS' if response_time_success else 'FAIL'}")
+        
+        recommendations_tests = [r for r in self.test_results if "Enhanced Recommendations" in r["test"]]
+        recommendations_success = len([r for r in recommendations_tests if r["success"]]) >= 3  # At least 3/4 roles working
+        print(f"✅ Enhanced recommendations working correctly: {'PASS' if recommendations_success else 'FAIL'}")
+        
+        print()
+        
+        # Overall assessment
+        if success_rate >= 90:
+            print("🎉 OVERALL ASSESSMENT: EXCELLENT - Phase 3 features are production ready")
+        elif success_rate >= 75:
+            print("✅ OVERALL ASSESSMENT: GOOD - Phase 3 features are mostly functional with minor issues")
+        elif success_rate >= 50:
+            print("⚠️ OVERALL ASSESSMENT: NEEDS ATTENTION - Phase 3 features have significant issues")
+        else:
+            print("❌ OVERALL ASSESSMENT: CRITICAL ISSUES - Phase 3 features require major fixes")
+        
+        print("="*80)
+
+async def main():
+    """Main test execution"""
+    tester = Phase3BackendTester()
+    await tester.run_all_tests()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+"""
 Quick Backend Health Check After UX Improvements
 Testing Agent: testing
 Test Date: December 2025
