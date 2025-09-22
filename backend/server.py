@@ -1868,6 +1868,9 @@ async def login_user(request: Request, user: UserLogin):
         request_id=request_id
     )
     
+    # Track login metrics for monitoring
+    USER_LOGINS.labels(role=db_user["role"]).inc()
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 # GDPR Compliance API Endpoints
