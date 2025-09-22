@@ -6731,6 +6731,7 @@ function AgencyHome(){
           certificatesIssued: data?.certificates?.issued || 12
         });
         setBusinessData(data);
+        setImpact(data);
       } catch (error) {
         console.error('Error loading agency data:', error);
         setPipelineData({
