@@ -6544,7 +6544,7 @@ function NavigatorHome(){
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
