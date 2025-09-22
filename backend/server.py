@@ -16782,7 +16782,7 @@ async def detailed_health_check():
         }
 
 # Performance Optimization - Caching Headers
-@api.middleware("http")
+@app.middleware("http")
 async def add_performance_headers(request: Request, call_next):
     """Add performance and caching headers for production"""
     response = await call_next(request)
