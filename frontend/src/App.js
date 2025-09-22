@@ -6186,6 +6186,7 @@ function ProviderHome(){
         </div>
       </div>
     </div>
+    </>
   );
 }
 
