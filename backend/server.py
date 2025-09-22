@@ -16360,6 +16360,257 @@ async def mark_chat_messages_read(payload: Dict[str, Any] = Body(...), current=D
         logger.error(f"Mark read error: {e}")
         raise HTTPException(status_code=500, detail="Failed to mark messages as read")
 
+# Advanced AI Features - Conversational Coaching
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    EMERGENT_AI_AVAILABLE = True
+except ImportError:
+    EMERGENT_AI_AVAILABLE = False
+    logger.warning("Emergent AI integration not available")
+
+@api.post("/ai/coach/conversation")
+async def ai_coach_conversation(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """AI-powered conversational coaching for procurement readiness"""
+    if not EMERGENT_AI_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI coaching service unavailable")
+    
+    try:
+        user_message = payload.get("message", "").strip()
+        session_id = payload.get("session_id", f"coach_{current['id']}")
+        context_area = payload.get("context_area", "general")
+        
+        if not user_message:
+            raise HTTPException(status_code=400, detail="Message is required")
+        
+        # Get user's current assessment data for context
+        user_data = await db.users.find_one({"id": current["id"]})
+        assessment_sessions = await db.tier_assessment_sessions.find({"user_id": current["id"]}).to_list(10)
+        
+        # Build context for AI coach
+        user_context = {
+            "role": current.get("role", "client"),
+            "email": current.get("email", ""),
+            "assessment_completion": len(assessment_sessions),
+            "total_areas": 10,
+            "completion_percentage": (len(assessment_sessions) / 10) * 100 if assessment_sessions else 0
+        }
+        
+        # Calculate readiness areas that need attention
+        weak_areas = []
+        for session in assessment_sessions:
+            if session.get("completion_percentage", 0) < 70:
+                area_name = session.get("area_name", "Unknown Area")
+                weak_areas.append(area_name)
+        
+        # Create AI coach system message
+        system_message = f"""You are an expert procurement readiness coach helping small businesses become government contracting ready.
+
+USER CONTEXT:
+- Role: {user_context['role']}
+- Assessment Progress: {user_context['completion_percentage']:.1f}% complete ({user_context['assessment_completion']}/10 areas)
+- Areas needing attention: {', '.join(weak_areas[:3]) if weak_areas else 'All areas strong'}
+
+COACHING STYLE:
+- Be encouraging and supportive
+- Provide specific, actionable advice
+- Reference POLARIS assessment areas when relevant
+- Keep responses under 200 words
+- Use bullet points for action items
+- Be conversational but professional
+
+ASSESSMENT AREAS FOR REFERENCE:
+1. Legal & Compliance - Business formation, licenses, registrations
+2. Financial Management - Accounting, cash flow, financial controls
+3. Technology & Security - IT infrastructure, cybersecurity, data protection
+4. Operations Management - Quality systems, supply chain, efficiency
+5. Marketing & Sales - Branding, customer acquisition, market positioning
+6. Human Resources - Staff management, policies, training
+7. Performance Tracking - KPIs, reporting, continuous improvement
+8. Risk Management - Insurance, contingency planning, compliance
+9. Supply Chain - Vendor management, procurement processes
+10. Competitive Advantage - Unique value, differentiation, market position
+
+Focus on helping them understand what they need to do next to improve their procurement readiness."""
+
+        # Initialize conversation with context
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        # Send user message
+        user_msg = UserMessage(text=user_message)
+        response = await chat.send_message(user_msg)
+        
+        # Store conversation in database for history
+        conversation_record = {
+            "_id": str(uuid.uuid4()),
+            "user_id": current["id"],
+            "session_id": session_id,
+            "user_message": user_message,
+            "ai_response": response,
+            "context_area": context_area,
+            "user_context": user_context,
+            "timestamp": datetime.utcnow()
+        }
+        
+        await db.ai_coach_conversations.insert_one(conversation_record)
+        
+        # Track AI request metrics
+        AI_REQUEST_DURATION.labels(feature="ai_coach").observe(1.0)  # Placeholder timing
+        
+        return {
+            "response": response,
+            "session_id": session_id,
+            "context": user_context,
+            "suggestions": weak_areas[:2] if weak_areas else ["Continue current progress", "Explore advanced features"]
+        }
+        
+    except Exception as e:
+        logger.error(f"AI coach conversation error: {e}")
+        # Fallback response for reliability
+        return {
+            "response": "I'm here to help with your procurement readiness journey! Could you please rephrase your question? I can assist with assessment guidance, compliance requirements, or connecting you with expert resources.",
+            "session_id": session_id,
+            "context": {"fallback": True},
+            "suggestions": ["Start with Legal & Compliance assessment", "Review Financial Management requirements"]
+        }
+
+@api.get("/ai/coach/history/{session_id}")
+async def get_coach_conversation_history(session_id: str, current=Depends(require_user)):
+    """Get conversation history for AI coaching session"""
+    try:
+        conversations = await db.ai_coach_conversations.find(
+            {"user_id": current["id"], "session_id": session_id}
+        ).sort("timestamp", 1).to_list(50)
+        
+        history = []
+        for conv in conversations:
+            history.append({
+                "user_message": conv["user_message"],
+                "ai_response": conv["ai_response"],
+                "timestamp": conv["timestamp"].isoformat(),
+                "context_area": conv.get("context_area", "general")
+            })
+        
+        return {"history": history, "session_id": session_id}
+        
+    except Exception as e:
+        logger.error(f"Coach history error: {e}")
+        return {"history": [], "session_id": session_id}
+
+@api.post("/ai/predictive-analytics")
+async def generate_predictive_analytics(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Generate predictive analytics for user success and outcomes"""
+    try:
+        analysis_type = payload.get("type", "success_prediction")
+        target_user_id = payload.get("target_user_id", current["id"])
+        
+        # Verify permissions for accessing other user data
+        if target_user_id != current["id"] and current.get("role") not in ["navigator", "agency", "admin"]:
+            raise HTTPException(status_code=403, detail="Unauthorized to analyze other users")
+        
+        # Get comprehensive user data
+        target_user = await db.users.find_one({"id": target_user_id})
+        if not target_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get assessment and engagement data
+        assessment_sessions = await db.tier_assessment_sessions.find({"user_id": target_user_id}).to_list(20)
+        service_requests = await db.service_requests.find({"user_id": target_user_id}).to_list(10)
+        rp_leads = await db.rp_leads.find({"sbc_id": target_user_id}).to_list(10)
+        
+        # Calculate metrics
+        total_assessments = len(assessment_sessions)
+        avg_score = sum(s.get("completion_percentage", 0) for s in assessment_sessions) / max(1, total_assessments)
+        service_engagement = len(service_requests)
+        rp_engagement = len(rp_leads)
+        
+        # Calculate readiness areas that need attention
+        weak_areas = []
+        for session in assessment_sessions:
+            if session.get("completion_percentage", 0) < 70:
+                area_name = session.get("area_name", "Unknown Area")
+                weak_areas.append(area_name)
+        
+        # Time-based analysis
+        last_activity = datetime.min
+        for session in assessment_sessions:
+            session_time = session.get("updated_at", datetime.min)
+            if session_time > last_activity:
+                last_activity = session_time
+        
+        days_since_activity = (datetime.utcnow() - last_activity).days if last_activity != datetime.min else 999
+        
+        # Predictive scoring algorithm
+        base_score = avg_score
+        engagement_bonus = min(20, service_engagement * 5)
+        rp_bonus = min(15, rp_engagement * 3)
+        activity_penalty = min(30, days_since_activity * 2)
+        
+        success_probability = max(5, min(95, base_score + engagement_bonus + rp_bonus - activity_penalty))
+        
+        # Risk assessment
+        risk_factors = []
+        if days_since_activity > 14:
+            risk_factors.append("Inactive for 2+ weeks")
+        if avg_score < 40:
+            risk_factors.append("Low assessment scores")
+        if service_engagement == 0 and avg_score < 60:
+            risk_factors.append("No professional support engagement")
+        
+        risk_level = "high" if len(risk_factors) >= 2 else "medium" if len(risk_factors) == 1 else "low"
+        
+        # Generate recommendations
+        recommendations = []
+        if avg_score < 70:
+            recommendations.append("Focus on completing assessments in Legal & Compliance and Financial Management")
+        if service_engagement == 0 and avg_score < 60:
+            recommendations.append("Consider engaging a service provider for expert guidance")
+        if days_since_activity > 7:
+            recommendations.append("Regular engagement is key - aim for weekly progress updates")
+        if rp_engagement == 0 and avg_score > 60:
+            recommendations.append("You're ready to explore Resource Partner opportunities")
+        
+        analytics = {
+            "user_id": target_user_id,
+            "user_name": target_user.get("name", target_user.get("email", "Unknown")),
+            "analysis_type": analysis_type,
+            "success_probability": round(success_probability, 1),
+            "risk_level": risk_level,
+            "risk_factors": risk_factors,
+            "current_metrics": {
+                "assessment_completion": f"{avg_score:.1f}%",
+                "total_assessments": total_assessments,
+                "service_engagement": service_engagement,
+                "rp_engagement": rp_engagement,
+                "days_since_activity": days_since_activity
+            },
+            "predictions": {
+                "certification_timeline": f"{max(4, 16 - (avg_score/10))} weeks" if avg_score < 70 else "Ready for certification",
+                "contract_readiness": "High" if avg_score > 80 else "Medium" if avg_score > 60 else "Developing",
+                "recommended_focus": weak_areas[:2] if weak_areas else ["Continue current progress"]
+            },
+            "recommendations": recommendations[:3],
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+        # Store analytics for future reference
+        await db.predictive_analytics.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": target_user_id,
+            "analyst_id": current["id"],
+            "analytics": analytics,
+            "created_at": datetime.utcnow()
+        })
+        
+        return analytics
+        
+    except Exception as e:
+        logger.error(f"Predictive analytics error: {e}")
+        raise HTTPException(status_code=500, detail="Unable to generate predictive analytics")
+
 
 app.include_router(api)
 
