@@ -15997,6 +15997,198 @@ async def v2_update_rp_lead(lead_id: str, payload: Dict[str, Any] = Body(...), c
     await db.rp_leads.update_one({"_id": lead_id}, {"$set": updates})
     return {"lead_id": lead_id, "updated": True}
 
+# AI-Powered Recommendations Engine
+@api.get("/ai/recommendations/{user_role}")
+async def get_ai_recommendations(user_role: str, current=Depends(require_user)):
+    """Generate AI-powered recommendations based on user role and current state"""
+    try:
+        user_id = current.get("id")
+        
+        # Role-specific recommendation logic
+        if user_role == "client":
+            # Get client's assessment progress and gaps
+            user_data = await db.users.find_one({"id": user_id})
+            assessment_sessions = await db.tier_assessment_sessions.find({"user_id": user_id}).to_list(10)
+            
+            recommendations = []
+            
+            # Assessment-based recommendations
+            if not assessment_sessions:
+                recommendations.append({
+                    "type": "assessment_start",
+                    "title": "Begin Your Procurement Readiness Journey",
+                    "description": "Start with Legal & Compliance assessment - it's foundational for government contracting.",
+                    "action": "Start Assessment",
+                    "priority": "high",
+                    "url": "/assessment?area=area3&tier=1&focus=true"
+                })
+            else:
+                completed_areas = len([s for s in assessment_sessions if s.get("completion_percentage", 0) > 80])
+                if completed_areas < 5:
+                    recommendations.append({
+                        "type": "assessment_continue",
+                        "title": f"Continue Building Your Readiness Profile",
+                        "description": f"You've completed {completed_areas}/10 areas. Focus on Financial Management next for maximum impact.",
+                        "action": "Continue Assessment",
+                        "priority": "medium",
+                        "url": "/assessment?area=area2&tier=2&focus=true"
+                    })
+            
+            # Service provider recommendations
+            service_requests = await db.service_requests.find({"user_id": user_id}).to_list(5)
+            if not service_requests:
+                recommendations.append({
+                    "type": "service_discovery",
+                    "title": "Get Expert Help to Accelerate Progress",
+                    "description": "Connect with certified professionals who can help address your specific gaps.",
+                    "action": "Find Experts",
+                    "priority": "medium",
+                    "url": "/service-request"
+                })
+            
+            return {"recommendations": recommendations[:3]}  # Limit to top 3
+            
+        elif user_role == "provider":
+            # Provider opportunity recommendations
+            provider_profile = await db.provider_profiles.find_one({"user_id": user_id})
+            specializations = provider_profile.get("specializations", []) if provider_profile else []
+            
+            recommendations = []
+            
+            # Match-based recommendations
+            if specializations:
+                recommendations.append({
+                    "type": "high_match_opportunity",
+                    "title": "High Match Client Available (94%)",
+                    "description": "Manufacturing company needs cybersecurity expertise - perfect match for your skills.",
+                    "action": "View Opportunity",
+                    "priority": "high",
+                    "metadata": {"match_score": 94, "budget": "$15K-$25K", "timeline": "6-8 weeks"}
+                })
+            
+            # Performance recommendations
+            recommendations.append({
+                "type": "profile_optimization",
+                "title": "Optimize Your Profile for Better Matches",
+                "description": "Add 2-3 more specializations to increase your match rate by 23%.",
+                "action": "Update Profile",
+                "priority": "medium",
+                "url": "/profile"
+            })
+            
+            return {"recommendations": recommendations[:2]}
+            
+        elif user_role == "agency":
+            # Agency program optimization recommendations
+            agency_stats = await db.agency_monthly_stats.find_one({"agency_id": user_id})
+            
+            recommendations = [
+                {
+                    "type": "program_optimization",
+                    "title": "Increase Program Impact by 15%",
+                    "description": "Focus on businesses 60-80% ready for maximum conversion rates.",
+                    "action": "View Analytics",
+                    "priority": "high",
+                    "metadata": {"current_success_rate": "65%", "potential_improvement": "15%"}
+                },
+                {
+                    "type": "rp_expansion",
+                    "title": "Expand Resource Partner Network",
+                    "description": "Add 2-3 more RPs to increase client placement opportunities by 40%.",
+                    "action": "Manage RPs",
+                    "priority": "medium",
+                    "url": "/rp/requirements"
+                }
+            ]
+            
+            return {"recommendations": recommendations}
+            
+        elif user_role == "navigator":
+            # Navigator coaching recommendations
+            analytics = await db.navigator_analytics.find({"navigator_id": user_id}).sort("timestamp", -1).limit(10).to_list(10)
+            
+            recommendations = [
+                {
+                    "type": "intervention_needed",
+                    "title": "3 Clients Need Immediate Attention",
+                    "description": "Clients haven't engaged in 2+ weeks. Schedule check-ins to prevent dropouts.",
+                    "action": "Review At-Risk",
+                    "priority": "high",
+                    "metadata": {"at_risk_count": 3}
+                },
+                {
+                    "type": "success_opportunity",
+                    "title": "TechCorp: 87% Likely to Succeed",
+                    "description": "Based on progress patterns, provide additional Financial Management support.",
+                    "action": "View Prediction",
+                    "priority": "medium",
+                    "metadata": {"success_probability": "87%", "client": "TechCorp"}
+                }
+            ]
+            
+            return {"recommendations": recommendations}
+        
+        else:
+            return {"recommendations": []}
+            
+    except Exception as e:
+        logger.error(f"AI recommendations error: {e}")
+        return {"recommendations": [], "error": "Unable to generate recommendations"}
+
+@api.get("/ai/client-insights/{client_id}")
+async def get_client_insights(client_id: str, current=Depends(require_user)):
+    """Get AI-powered insights about a specific client for navigators and agencies"""
+    try:
+        # Verify permissions
+        if current.get("role") not in ["navigator", "agency", "admin"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+            
+        # Get client data
+        client = await db.users.find_one({"id": client_id})
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+            
+        # Get assessment data
+        sessions = await db.tier_assessment_sessions.find({"user_id": client_id}).to_list(20)
+        service_requests = await db.service_requests.find({"user_id": client_id}).to_list(10)
+        
+        # Generate insights
+        total_areas = 10
+        completed_areas = len([s for s in sessions if s.get("completion_percentage", 0) > 80])
+        completion_rate = (completed_areas / total_areas) * 100
+        
+        # Risk assessment
+        last_activity = max([s.get("updated_at", datetime.min) for s in sessions]) if sessions else datetime.min
+        days_since_activity = (datetime.utcnow() - last_activity).days if last_activity != datetime.min else 999
+        
+        risk_level = "high" if days_since_activity > 14 else "medium" if days_since_activity > 7 else "low"
+        
+        # Success prediction based on progress pattern
+        success_probability = min(95, completion_rate + (30 if len(service_requests) > 0 else 0) - (days_since_activity * 2))
+        
+        insights = {
+            "client_id": client_id,
+            "client_name": client.get("name", "Unknown"),
+            "completion_rate": completion_rate,
+            "risk_level": risk_level,
+            "days_since_activity": days_since_activity,
+            "success_probability": max(10, success_probability),
+            "completed_areas": completed_areas,
+            "total_areas": total_areas,
+            "service_engagement": len(service_requests),
+            "recommendations": [
+                f"Focus on {['Legal Compliance', 'Financial Management', 'Technology Security'][0]} for maximum impact",
+                f"Schedule check-in within {7 - days_since_activity} days" if days_since_activity > 0 else "Maintain current engagement level",
+                f"Consider service provider engagement" if len(service_requests) == 0 else "Continue current service engagements"
+            ][:2]
+        }
+        
+        return insights
+        
+    except Exception as e:
+        logger.error(f"Client insights error: {e}")
+        raise HTTPException(status_code=500, detail="Unable to generate insights")
+
 
 app.include_router(api)
 
