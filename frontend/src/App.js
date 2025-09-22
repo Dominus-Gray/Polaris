@@ -4524,7 +4524,16 @@ function ClientHome(){
   // Note: Removed profile_complete check - clients should see dashboard even without complete profile
   
   return (
-    <div className="container mt-6">
+    <>
+      {/* Onboarding Flow */}
+      {needsOnboarding && !onboardingLoading && (
+        <OnboardingFlow 
+          userRole="client" 
+          onComplete={completeOnboarding}
+        />
+      )}
+      
+      <div className="container mt-6">
       {/* Enhanced Dashboard Header with Personalized Greeting */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 mb-6">
         <div className="flex items-center justify-between">
