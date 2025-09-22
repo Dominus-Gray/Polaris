@@ -128,6 +128,58 @@ function TierBasedAssessmentPage() {
     }
   };
 
+  // Micro-celebration function for assessment progress
+  const triggerCelebration = (message, type = 'success') => {
+    const celebration = document.createElement('div');
+    celebration.className = 'fixed inset-0 z-50 flex items-center justify-center pointer-events-none';
+    celebration.innerHTML = `
+      <div class="bg-white rounded-2xl shadow-2xl border p-8 text-center transform animate-bounce pointer-events-auto">
+        <div class="text-6xl mb-4">${type === 'milestone' ? '🏆' : type === 'progress' ? '🎯' : '🎉'}</div>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">${message}</h3>
+        <p class="text-slate-600 mb-4">Keep up the great work!</p>
+        <div class="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto"></div>
+      </div>
+    `;
+    
+    document.body.appendChild(celebration);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      celebration.style.opacity = '0';
+      celebration.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        if (celebration.parentNode) {
+          document.body.removeChild(celebration);
+        }
+      }, 300);
+    }, 3000);
+    
+    // Add confetti effect
+    const colors = ['#3B82F6', '#8B5CF6', '#06D6A0', '#F59E0B', '#EF4444'];
+    for (let i = 0; i < 50; i++) {
+      const confetti = document.createElement('div');
+      confetti.style.cssText = `
+        position: fixed;
+        top: -10px;
+        left: ${Math.random() * 100}%;
+        width: 10px;
+        height: 10px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius: 50%;
+        z-index: 40;
+        pointer-events: none;
+        animation: confetti-fall 3s linear forwards;
+      `;
+      document.body.appendChild(confetti);
+      
+      setTimeout(() => {
+        if (confetti.parentNode) {
+          document.body.removeChild(confetti);
+        }
+      }, 3000);
+    }
+  };
+
   // Comprehensive assessment completion handler with integrated workflow
   const handleAssessmentCompletion = async (sessionId) => {
     try {
