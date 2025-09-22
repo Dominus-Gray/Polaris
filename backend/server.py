@@ -16189,6 +16189,177 @@ async def get_client_insights(client_id: str, current=Depends(require_user)):
         logger.error(f"Client insights error: {e}")
         raise HTTPException(status_code=500, detail="Unable to generate insights")
 
+# Real-Time Chat System Endpoints
+@api.post("/chat/send")
+async def send_chat_message(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Send a chat message in a specific context"""
+    try:
+        chat_id = payload.get("chat_id")
+        content = payload.get("content", "").strip()
+        context = payload.get("context", "general")
+        context_id = payload.get("context_id")
+        
+        if not chat_id or not content:
+            raise HTTPException(status_code=400, detail="chat_id and content required")
+        
+        # Create message document
+        message = {
+            "_id": str(uuid.uuid4()),
+            "chat_id": chat_id,
+            "sender_id": current["id"],
+            "sender_name": current.get("name", current.get("email", "Unknown")),
+            "sender_role": current.get("role", "user"),
+            "content": DataValidator.sanitize_text(content, 1000),
+            "context": context,
+            "context_id": context_id,
+            "timestamp": datetime.utcnow(),
+            "read_by": [current["id"]],  # Sender has automatically read
+            "edited": False,
+            "deleted": False
+        }
+        
+        await db.chat_messages.insert_one(message)
+        
+        # Update chat participants
+        await db.chat_participants.update_one(
+            {"chat_id": chat_id, "user_id": current["id"]},
+            {
+                "$set": {
+                    "chat_id": chat_id,
+                    "user_id": current["id"],
+                    "user_role": current.get("role"),
+                    "last_seen": datetime.utcnow(),
+                    "active": True
+                }
+            },
+            upsert=True
+        )
+        
+        return {"message_id": message["_id"], "sent": True, "timestamp": message["timestamp"]}
+        
+    except Exception as e:
+        logger.error(f"Chat send error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send message")
+
+@api.get("/chat/messages/{chat_id}")
+async def get_chat_messages(chat_id: str, current=Depends(require_user)):
+    """Get messages for a specific chat"""
+    try:
+        # Verify user has access to this chat
+        participant = await db.chat_participants.find_one({
+            "chat_id": chat_id,
+            "user_id": current["id"]
+        })
+        
+        if not participant:
+            # Auto-add user to chat if they're accessing it
+            await db.chat_participants.insert_one({
+                "_id": str(uuid.uuid4()),
+                "chat_id": chat_id,
+                "user_id": current["id"],
+                "user_role": current.get("role"),
+                "joined_at": datetime.utcnow(),
+                "last_seen": datetime.utcnow(),
+                "active": True
+            })
+        
+        # Get recent messages (last 50)
+        messages = await db.chat_messages.find(
+            {"chat_id": chat_id, "deleted": {"$ne": True}}
+        ).sort("timestamp", -1).limit(50).to_list(50)
+        
+        # Reverse to show oldest first
+        messages.reverse()
+        
+        # Mark messages as read by current user
+        message_ids = [m["_id"] for m in messages if current["id"] not in m.get("read_by", [])]
+        if message_ids:
+            await db.chat_messages.update_many(
+                {"_id": {"$in": message_ids}},
+                {"$addToSet": {"read_by": current["id"]}}
+            )
+        
+        # Clean message data for frontend
+        clean_messages = []
+        for msg in messages:
+            clean_messages.append({
+                "id": msg["_id"],
+                "sender_id": msg["sender_id"],
+                "sender_name": msg["sender_name"],
+                "sender_role": msg["sender_role"],
+                "content": msg["content"],
+                "timestamp": msg["timestamp"].isoformat(),
+                "read": current["id"] in msg.get("read_by", [])
+            })
+        
+        return {"messages": clean_messages}
+        
+    except Exception as e:
+        logger.error(f"Chat messages error: {e}")
+        return {"messages": []}
+
+@api.get("/chat/online/{chat_id}")
+async def get_online_chat_users(chat_id: str, current=Depends(require_user)):
+    """Get online users in a specific chat"""
+    try:
+        # Users are considered online if they've been active in the last 5 minutes
+        five_minutes_ago = datetime.utcnow() - timedelta(minutes=5)
+        
+        participants = await db.chat_participants.find({
+            "chat_id": chat_id,
+            "last_seen": {"$gte": five_minutes_ago},
+            "active": True
+        }).to_list(20)
+        
+        # Get user details
+        user_ids = [p["user_id"] for p in participants]
+        users = await db.users.find(
+            {"id": {"$in": user_ids}},
+            {"id": 1, "name": 1, "email": 1, "role": 1}
+        ).to_list(20)
+        
+        # Combine participant and user data
+        online_users = []
+        for user in users:
+            participant = next((p for p in participants if p["user_id"] == user["id"]), None)
+            if participant:
+                online_users.append({
+                    "id": user["id"],
+                    "name": user.get("name", user.get("email", "Unknown")),
+                    "role": user.get("role", "user"),
+                    "last_seen": participant["last_seen"].isoformat()
+                })
+        
+        return {"users": online_users}
+        
+    except Exception as e:
+        logger.error(f"Online users error: {e}")
+        return {"users": []}
+
+@api.post("/chat/mark-read")
+async def mark_chat_messages_read(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Mark chat messages as read by current user"""
+    try:
+        chat_id = payload.get("chat_id")
+        if not chat_id:
+            raise HTTPException(status_code=400, detail="chat_id required")
+        
+        # Mark all messages in chat as read by current user
+        await db.chat_messages.update_many(
+            {
+                "chat_id": chat_id,
+                "sender_id": {"$ne": current["id"]},  # Don't mark own messages
+                "read_by": {"$ne": current["id"]}  # Only unread messages
+            },
+            {"$addToSet": {"read_by": current["id"]}}
+        )
+        
+        return {"marked_read": True}
+        
+    except Exception as e:
+        logger.error(f"Mark read error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to mark messages as read")
+
 
 app.include_router(api)
 
