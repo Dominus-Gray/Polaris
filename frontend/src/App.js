@@ -8898,8 +8898,8 @@ function Landing(){
         </div>
       </section>
 
-      {/* Auth Section - Only show when needed */}
-      {step !== 'role-selection' && (
+      {/* Auth Section - Always show when step is login or register */}
+      {(step === 'login' || step === 'register' || selectedRole) && (
         <section className="container section" id="auth">
           <div className="max-w-md mx-auto">
             <AuthWidget selectedRole={selectedRole} onBackToRoleSelection={() => setStep('role-selection')} />
