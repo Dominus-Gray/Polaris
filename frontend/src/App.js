@@ -4953,6 +4953,67 @@ function ClientHome(){
                 )}
               </div>
               
+              {/* Real-Time Activity Feed */}
+              <div className="bg-white border rounded-lg p-6 mt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-green-600 font-medium">Live</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-100">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">Assessment progress updated</p>
+                      <p className="text-xs text-slate-600">Your Financial Management assessment score improved to 67%</p>
+                      <p className="text-xs text-slate-400 mt-1">2 minutes ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-2-2V10a2 2 0 012-2h8z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">New service provider response</p>
+                      <p className="text-xs text-slate-600">TechSolutions Inc. submitted a proposal for your cybersecurity needs</p>
+                      <p className="text-xs text-slate-400 mt-1">15 minutes ago</p>
+                    </div>
+                    <button className="text-blue-600 hover:text-blue-700 text-xs font-medium">View →</button>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">New knowledge base resource</p>
+                      <p className="text-xs text-slate-600">Financial Planning Template added to your recommended resources</p>
+                      <p className="text-xs text-slate-400 mt-1">1 hour ago</p>
+                    </div>
+                    <button className="text-purple-600 hover:text-purple-700 text-xs font-medium">Download →</button>
+                  </div>
+                </div>
+              </div>
+              
               <div className="mt-6 flex gap-3">
                 <button className="btn btn-primary" onClick={()=>navigate('/service-request')}>Request Service Provider</button>
                 <button 
