@@ -139,8 +139,9 @@ class DataInterconnectivityTester:
             return False
             
         try:
-            # Use first generated license code
-            license_code = self.generated_license_codes[0]
+            # Use first generated license code - extract just the code string
+            license_data = self.generated_license_codes[0]
+            license_code = license_data.get("license_code") if isinstance(license_data, dict) else license_data
             
             # Register a new client with the license code
             registration_data = {
