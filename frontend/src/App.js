@@ -6806,7 +6806,16 @@ function AgencyHome(){
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <>
+      {/* Onboarding Flow */}
+      {needsOnboarding && !onboardingLoading && (
+        <OnboardingFlow 
+          userRole="agency" 
+          onComplete={completeOnboarding}
+        />
+      )}
+      
+      <div className="min-h-screen bg-slate-50">
       {/* Streamlined Navigation - No redundant tabs */}
       <nav className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
