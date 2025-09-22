@@ -304,17 +304,17 @@ class BackendHealthChecker:
                             response_time
                         )
                         
-                        # Test session creation - use correct format
+                        # Test session creation - use form data format
                         session_data = {
                             "area_id": "area1",
-                            "tier_level": 1
+                            "tier_level": "1"
                         }
                         
                         start_time = time.time()
                         session_response = self.session.post(
                             f"{BACKEND_URL}/assessment/tier-session",
-                            headers=headers,
-                            json=session_data,
+                            headers={"Authorization": f"Bearer {self.tokens['client']}"},
+                            data=session_data,  # Use data instead of json for form data
                             timeout=10
                         )
                         response_time = time.time() - start_time
