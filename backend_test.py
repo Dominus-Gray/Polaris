@@ -313,7 +313,10 @@ class BackendHealthChecker:
                         start_time = time.time()
                         session_response = self.session.post(
                             f"{BACKEND_URL}/assessment/tier-session",
-                            headers={"Authorization": f"Bearer {self.tokens['client']}"},
+                            headers={
+                                "Authorization": f"Bearer {self.tokens['client']}",
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
                             data=session_data,  # Use data instead of json for form data
                             timeout=10
                         )
