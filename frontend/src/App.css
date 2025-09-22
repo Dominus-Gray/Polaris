@@ -660,3 +660,31 @@ body { @apply bg-slate-50 text-slate-900; }
 
 /* Enhanced Assessment Page */
 .assessment-overview { @apply bg-slate-50 border border-slate-200 rounded-lg p-6 mb-6; background-image: linear-gradient(135deg, rgba(27, 54, 93, 0.03) 0%, rgba(74, 144, 194, 0.03) 100%); }
+
+/* Celebration animations */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes celebration-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+}
+
+.celebration-modal {
+  animation: celebration-bounce 0.6s ease-out;
+}
