@@ -6710,6 +6710,7 @@ function NavigatorAnalyticsPage(){
 }
 
 function AgencyHome(){
+  const { needsOnboarding, loading: onboardingLoading, completeOnboarding } = useOnboardingStatus('agency');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [pipelineData, setPipelineData] = useState(null);
   const [businessData, setBusinessData] = useState(null);
