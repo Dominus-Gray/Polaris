@@ -194,11 +194,13 @@ class BackendHealthChecker:
             if response.status_code == 200:
                 try:
                     data = response.json()
-                    if isinstance(data, list):
+                    # Handle both direct array and object with items key
+                    items = data if isinstance(data, list) else data.get("items", [])
+                    if isinstance(items, list):
                         self.log_result(
                             "RP CRM-lite - Requirements Endpoint",
                             True,
-                            f"RP requirements loaded successfully ({len(data)} items)",
+                            f"RP requirements loaded successfully ({len(items)} items)",
                             response.status_code,
                             response_time
                         )
