@@ -9195,7 +9195,7 @@ function AppShell(){
               <Route path="/rp/requirements" element={<RPRequirementsAdmin />} />
             </>
           )}
-          <Route path="/" element={<Navigate to={me?'/home':'/'} replace />} />
+          <Route path="/" element={me ? <Navigate to="/home" replace /> : <Landing />} />
         </Routes>
       )}
       <Toaster richColors position="top-center" />
