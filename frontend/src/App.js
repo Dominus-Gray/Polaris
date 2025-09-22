@@ -4520,10 +4520,43 @@ function ClientHome(){
   
   return (
     <div className="container mt-6">
-      {/* Enhanced Dashboard Header */}
+      {/* Enhanced Dashboard Header with Personalized Greeting */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold mb-2">Welcome to Your Procurement Readiness Dashboard</h1>
-        <p className="opacity-90">Track your assessment progress, manage gaps, and access professional services</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">Welcome back, {me?.name || 'Valued Client'}! 👋</h1>
+            <p className="opacity-90">You're on track to achieve procurement readiness - let's continue your journey</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold mb-1">{data?.readiness || 0}%</div>
+            <div className="text-sm opacity-75">Overall Readiness</div>
+            <div className="text-xs opacity-60">Target: 70% for certification</div>
+          </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Procurement Readiness Journey</span>
+            <span className="text-sm">
+              {Math.round((data?.readiness || 0) / 70 * 100)}% to certification
+            </span>
+          </div>
+          <div className="w-full bg-white/20 rounded-full h-3">
+            <div 
+              className="bg-white rounded-full h-3 transition-all duration-500 relative overflow-hidden"
+              style={{ width: `${Math.min((data?.readiness || 0), 100)}%` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/30 animate-pulse"></div>
+            </div>
+          </div>
+          <div className="flex justify-between text-xs mt-2 opacity-75">
+            <span>Getting Started</span>
+            <span>Assessment Complete</span>
+            <span>Procurement Ready</span>
+            <span>Certified</span>
+          </div>
+        </div>
         
         {/* Enhanced Dashboard Statistics with Forced Dark Text */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
