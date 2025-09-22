@@ -304,10 +304,10 @@ class BackendHealthChecker:
                             response_time
                         )
                         
-                        # Test session creation
+                        # Test session creation - use correct format
                         session_data = {
                             "area_id": "area1",
-                            "tier": 1
+                            "tier_level": 1
                         }
                         
                         start_time = time.time()
