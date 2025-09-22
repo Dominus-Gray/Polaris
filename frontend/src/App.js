@@ -6191,6 +6191,7 @@ function ProviderHome(){
 }
 
 function NavigatorHome(){
+  const { needsOnboarding, loading: onboardingLoading, completeOnboarding } = useOnboardingStatus('navigator');
   // Guard against null crashes and show skeletons while loading
   const [data, setData] = useState(null);
   const [pendingProviders, setPendingProviders] = useState([]);
