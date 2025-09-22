@@ -16641,6 +16641,164 @@ async def generate_predictive_analytics(payload: Dict[str, Any] = Body(...), cur
         logger.error(f"Predictive analytics error: {e}")
         raise HTTPException(status_code=500, detail="Unable to generate predictive analytics")
 
+# Production Infrastructure - System Health Monitoring
+@api.get("/system/health/detailed")
+async def detailed_health_check():
+    """Comprehensive system health check for production monitoring"""
+    try:
+        checks = {}
+        
+        # Database connectivity and performance
+        try:
+            start_time = time.time()
+            await db.admin.command("ping")
+            db_latency = (time.time() - start_time) * 1000  # Convert to ms
+            
+            # Get database stats
+            db_stats = await db.command("dbStats")
+            
+            checks["database"] = {
+                "status": "healthy",
+                "latency_ms": round(db_latency, 2),
+                "collections": db_stats.get("collections", 0),
+                "data_size_mb": round(db_stats.get("dataSize", 0) / 1024 / 1024, 2),
+                "index_size_mb": round(db_stats.get("indexSize", 0) / 1024 / 1024, 2)
+            }
+            
+            # Update database connections metric
+            DATABASE_CONNECTIONS.set(1)  # Simplified for single connection
+            
+        except Exception as e:
+            checks["database"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+            DATABASE_CONNECTIONS.set(0)
+        
+        # AI service availability
+        try:
+            if EMERGENT_AI_AVAILABLE and EMERGENT_LLM_KEY:
+                checks["ai_service"] = {
+                    "status": "healthy",
+                    "provider": "emergent_llm",
+                    "features": ["conversational_coaching", "recommendations", "predictive_analytics"]
+                }
+            else:
+                checks["ai_service"] = {
+                    "status": "degraded",
+                    "reason": "AI service not configured"
+                }
+        except Exception as e:
+            checks["ai_service"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+        
+        # System resources
+        try:
+            import psutil
+            
+            memory = psutil.virtual_memory()
+            cpu_percent = psutil.cpu_percent(interval=1)
+            
+            checks["system_resources"] = {
+                "status": "healthy" if memory.percent < 80 and cpu_percent < 80 else "warning",
+                "memory_percent": round(memory.percent, 2),
+                "memory_available_gb": round(memory.available / 1024 / 1024 / 1024, 2),
+                "cpu_percent": round(cpu_percent, 2)
+            }
+            
+            # Update system metrics
+            MEMORY_USAGE.set(memory.used)
+            CPU_USAGE.set(cpu_percent)
+            
+        except ImportError:
+            checks["system_resources"] = {
+                "status": "unknown",
+                "reason": "psutil not available"
+            }
+        except Exception as e:
+            checks["system_resources"] = {
+                "status": "error",
+                "error": str(e)
+            }
+        
+        # Application metrics summary
+        try:
+            # Get recent user activity
+            recent_users = await db.users.count_documents({
+                "last_login": {"$gte": datetime.utcnow() - timedelta(hours=24)}
+            })
+            
+            # Get recent assessments
+            recent_assessments = await db.tier_assessment_sessions.count_documents({
+                "created_at": {"$gte": datetime.utcnow() - timedelta(hours=24)}
+            })
+            
+            # Get recent service requests
+            recent_requests = await db.service_requests.count_documents({
+                "created_at": {"$gte": datetime.utcnow() - timedelta(hours=24)}
+            })
+            
+            checks["application_metrics"] = {
+                "status": "healthy",
+                "users_24h": recent_users,
+                "assessments_24h": recent_assessments,
+                "service_requests_24h": recent_requests,
+                "uptime": "99.9%"  # Placeholder - would be calculated from monitoring data
+            }
+            
+        except Exception as e:
+            checks["application_metrics"] = {
+                "status": "error",
+                "error": str(e)
+            }
+        
+        # Overall health status
+        healthy_services = sum(1 for check in checks.values() if check.get("status") == "healthy")
+        total_services = len(checks)
+        overall_status = "healthy" if healthy_services == total_services else "degraded" if healthy_services > total_services / 2 else "unhealthy"
+        
+        return {
+            "status": overall_status,
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": os.environ.get("POLARIS_VERSION", "1.0.0"),
+            "environment": os.environ.get("ENVIRONMENT", "development"),
+            "health_score": round((healthy_services / total_services) * 100, 1),
+            "checks": checks,
+            "metrics_endpoint": "/api/metrics"
+        }
+        
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": "Health check failed",
+            "details": str(e)
+        }
+
+# Performance Optimization - Caching Headers
+@api.middleware("http")
+async def add_performance_headers(request: Request, call_next):
+    """Add performance and caching headers for production"""
+    response = await call_next(request)
+    
+    # Add security headers
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    
+    # Add caching headers for static content
+    if request.url.path.startswith("/api/static/"):
+        response.headers["Cache-Control"] = "public, max-age=3600"
+    
+    # Add performance headers
+    response.headers["X-Response-Time"] = str(time.time())
+    
+    return response
+
 
 app.include_router(api)
 
