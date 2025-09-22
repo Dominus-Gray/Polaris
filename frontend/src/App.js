@@ -6333,6 +6333,102 @@ function NavigatorHome(){
                   </button>
                 </div>
               </div>
+
+              {/* AI-Powered Client Guidance Dashboard */}
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-100 rounded-lg">
+                      <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900">AI Coaching Insights</h3>
+                  </div>
+                  <div className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-medium">Live</div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Client Risk Assessment */}
+                  <div className="bg-white rounded-lg p-4 border border-orange-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-orange-600">3</div>
+                        <div className="text-sm font-medium text-slate-700">At-Risk Clients</div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-600 mb-3">Haven't engaged in 2+ weeks. Intervention recommended.</p>
+                    <button className="w-full text-sm bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                      Review At-Risk Clients
+                    </button>
+                  </div>
+                  
+                  {/* Success Predictions */}
+                  <div className="bg-white rounded-lg p-4 border border-green-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-green-600">87%</div>
+                        <div className="text-sm font-medium text-slate-700">Success Prediction</div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-600 mb-3">TechCorp likely to achieve procurement readiness based on current progress.</p>
+                    <button className="w-full text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                      View Predictions
+                    </button>
+                  </div>
+                  
+                  {/* Intervention Recommendations */}
+                  <div className="bg-white rounded-lg p-4 border border-blue-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-blue-600">5</div>
+                        <div className="text-sm font-medium text-slate-700">Smart Actions</div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-600 mb-3">AI recommendations for improving client outcomes and engagement.</p>
+                    <button className="w-full text-sm bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                      View Recommendations
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Regional Impact Visualization */}
+                <div className="mt-6 bg-white rounded-lg p-6 border">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Regional Economic Development Impact</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-emerald-600 mb-2">34%</div>
+                      <div className="text-sm font-medium text-slate-700">Regional Improvement</div>
+                      <div className="text-xs text-slate-500">Procurement readiness this quarter</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600 mb-2">$2.3M</div>
+                      <div className="text-sm font-medium text-slate-700">Contracts Secured</div>
+                      <div className="text-xs text-slate-500">By guided businesses</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-600 mb-2">156</div>
+                      <div className="text-sm font-medium text-slate-700">Jobs Created</div>
+                      <div className="text-xs text-slate-500">Through program impact</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
