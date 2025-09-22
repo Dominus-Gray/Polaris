@@ -1004,6 +1004,36 @@ RP_LEADS_UPDATED = Counter('polaris_rp_leads_updated_total', 'Total RP lead upda
 RP_PACKAGE_PREVIEWS = Counter('polaris_rp_package_previews_total', 'Total RP package previews', ['rp_type'])
 RP_REQUIREMENTS_SEEDED = Counter('polaris_rp_requirements_seeded_total', 'Total RP requirements seeded', ['rp_type'])
 
+# Production User Activity Metrics
+USER_LOGINS = Counter('polaris_user_logins_total', 'User login events', ['role'])
+USER_SESSIONS = Histogram('polaris_user_session_duration_seconds', 'User session duration', ['role'])
+DASHBOARD_VIEWS = Counter('polaris_dashboard_views_total', 'Dashboard page views', ['role', 'tab'])
+
+# Assessment Metrics
+ASSESSMENTS_STARTED = Counter('polaris_assessments_started_total', 'Assessment sessions started', ['area_id'])
+ASSESSMENTS_COMPLETED = Counter('polaris_assessments_completed_total', 'Assessment sessions completed', ['area_id'])
+ASSESSMENT_SCORES = Histogram('polaris_assessment_scores', 'Assessment completion scores', ['area_id'])
+
+# Service Provider Metrics  
+SERVICE_REQUESTS_CREATED = Counter('polaris_service_requests_total', 'Service requests created', ['area_id'])
+PROVIDER_RESPONSES = Counter('polaris_provider_responses_total', 'Provider responses submitted')
+ENGAGEMENTS_STARTED = Counter('polaris_engagements_started_total', 'Service engagements started')
+
+# Knowledge Base Metrics
+KB_ARTICLES_ACCESSED = Counter('polaris_kb_articles_accessed_total', 'Knowledge base article views', ['area_id'])
+KB_DOWNLOADS = Counter('polaris_kb_downloads_total', 'Knowledge base downloads', ['template_type'])
+AI_ASSISTANCE_REQUESTS = Counter('polaris_ai_assistance_requests_total', 'AI assistance requests', ['area_id'])
+
+# System Health Metrics
+DATABASE_CONNECTIONS = Gauge('polaris_database_connections_active', 'Active database connections')
+MEMORY_USAGE = Gauge('polaris_memory_usage_bytes', 'Memory usage in bytes')
+CPU_USAGE = Gauge('polaris_cpu_usage_percent', 'CPU usage percentage')
+
+# Business Metrics
+CERTIFICATES_ISSUED = Counter('polaris_certificates_issued_total', 'Certificates issued')
+LICENSE_USAGE = Counter('polaris_licenses_used_total', 'License codes used', ['agency_id'])
+PAYMENT_TRANSACTIONS = Counter('polaris_payments_total', 'Payment transactions', ['type'])
+
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
