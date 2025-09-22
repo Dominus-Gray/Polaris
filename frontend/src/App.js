@@ -4173,6 +4173,7 @@ function BusinessProfileForm(){
 // ---------------- Home Pages ----------------
 function ClientHome(){
   const me = JSON.parse(localStorage.getItem('polaris_me')||'null');
+  const { needsOnboarding, loading: onboardingLoading, completeOnboarding } = useOnboardingStatus('client');
   const [planner, setPlanner] = useState({ loading: true, tasks: [] });
   const loadPlanner = async () => {
     try {
