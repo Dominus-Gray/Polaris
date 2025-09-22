@@ -39,7 +39,7 @@ function ReadinessDashboard() {
   const loadRpcCounts = async () => {
     try{
       setRpLoading(true);
-      const { data } = await axios.get('/v2/rp/leads');
+      const { data } = await axios.get(`${API}/v2/rp/leads`);
       const items = data.leads || [];
       const counts = {
         total: items.length,
