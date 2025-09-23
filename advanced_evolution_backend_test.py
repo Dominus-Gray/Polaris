@@ -160,22 +160,22 @@ class AdvancedEvolutionTester:
         if result["status"] == 200:
             prediction = result["data"]
             
-            # Verify ML prediction structure
-            required_fields = ["success_probability", "confidence_score", "risk_factors", "recommendations", "industry_adjustments"]
+            # Verify ML prediction structure (actual API fields)
+            required_fields = ["success_probability", "confidence_level", "risk_factors", "recommendations", "prediction_factors"]
             has_required_fields = all(field in prediction for field in required_fields)
             
             if has_required_fields:
                 success_prob = prediction.get("success_probability", 0)
-                confidence = prediction.get("confidence_score", 0)
+                confidence = prediction.get("confidence_level", 0)
                 
                 self.record_test_result(
                     "ML Success Prediction",
                     True,
-                    f"ML prediction generated: {success_prob}% success probability with {confidence}% confidence",
+                    f"ML prediction generated: {success_prob}% success probability with {confidence*100:.1f}% confidence",
                     {
                         "success_probability": success_prob,
-                        "confidence_score": confidence,
-                        "industry_adjustments": prediction.get("industry_adjustments", {}),
+                        "confidence_level": confidence,
+                        "prediction_factors": prediction.get("prediction_factors", {}),
                         "risk_factors_count": len(prediction.get("risk_factors", []))
                     }
                 )
