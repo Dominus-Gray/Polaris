@@ -4806,7 +4806,11 @@ function ClientHome(){
               { id: 'services', label: 'Services', icon: '🔧' },
               { id: 'marketplace', label: 'Find Providers', icon: '🏪' },
               { id: 'assessment', label: 'Assessment', icon: '📝' },
-              { id: 'certificates', label: 'Certificates', icon: '🏆' }
+              { id: 'certificates', label: 'Certificates', icon: '🏆' },
+              { id: 'ai_features', label: 'AI Assistant', icon: '🤖' },
+              { id: 'documents', label: 'Document Analysis', icon: '📄' },
+              { id: 'opportunities', label: 'Gov Opportunities', icon: '🏛️' },
+              { id: 'analytics', label: 'Advanced Analytics', icon: '📈' }
             ].map((tab) => (
               <button
                 key={tab.id}
