@@ -242,23 +242,23 @@ class AdvancedEvolutionTester:
             if result["status"] == 200:
                 modeling_data = result["data"]
                 
-                # Verify predictive modeling structure
-                required_fields = ["forecasts", "growth_projections", "risk_assessment", "recommended_actions"]
+                # Verify predictive modeling structure (actual API fields)
+                required_fields = ["user_profile", "growth_trajectory", "risk_analysis", "strategic_recommendations"]
                 has_required_fields = all(field in modeling_data for field in required_fields)
                 
                 if has_required_fields:
-                    forecasts = len(modeling_data.get("forecasts", []))
-                    projections = len(modeling_data.get("growth_projections", []))
+                    trajectory = modeling_data.get("growth_trajectory", {})
+                    recommendations = len(modeling_data.get("strategic_recommendations", []))
                     
                     self.record_test_result(
                         "Predictive Modeling",
                         True,
-                        f"Predictive modeling generated: {forecasts} forecasts, {projections} growth projections",
+                        f"Predictive modeling generated: growth trajectory with {recommendations} strategic recommendations",
                         {
-                            "forecasts_count": forecasts,
-                            "projections_count": projections,
-                            "risk_level": modeling_data.get("risk_assessment", {}).get("level"),
-                            "actions_count": len(modeling_data.get("recommended_actions", []))
+                            "has_growth_trajectory": bool(trajectory),
+                            "recommendations_count": recommendations,
+                            "risk_level": modeling_data.get("risk_analysis", {}).get("overall_risk"),
+                            "has_user_profile": bool(modeling_data.get("user_profile"))
                         }
                     )
                 else:
