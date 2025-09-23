@@ -17193,6 +17193,277 @@ async def get_tutorial_progress(current=Depends(require_user)):
         logger.error(f"Tutorial progress error: {e}")
         return {"progress": {}}
 
+# Advanced Caching Strategy for Performance Optimization
+import json
+from functools import lru_cache
+from typing import Optional, Callable, Any
+
+class SmartCache:
+    """Intelligent caching system with TTL and invalidation"""
+    
+    def __init__(self):
+        self.cache = {}
+        self.cache_times = {}
+    
+    def set(self, key: str, value: Any, ttl: int = 3600):
+        """Set cache value with TTL"""
+        self.cache[key] = value
+        self.cache_times[key] = datetime.utcnow() + timedelta(seconds=ttl)
+    
+    def get(self, key: str) -> Optional[Any]:
+        """Get cache value if not expired"""
+        if key in self.cache:
+            if datetime.utcnow() < self.cache_times.get(key, datetime.min):
+                return self.cache[key]
+            else:
+                # Expired - remove from cache
+                self.cache.pop(key, None)
+                self.cache_times.pop(key, None)
+        return None
+    
+    def invalidate(self, pattern: str = None):
+        """Invalidate cache entries matching pattern"""
+        if pattern:
+            keys_to_remove = [k for k in self.cache.keys() if pattern in k]
+            for key in keys_to_remove:
+                self.cache.pop(key, None)
+                self.cache_times.pop(key, None)
+        else:
+            self.cache.clear()
+            self.cache_times.clear()
+
+# Global cache instance
+smart_cache = SmartCache()
+
+# Cached Assessment Schema Endpoint
+@api.get("/assessment/schema/cached")
+async def get_cached_assessment_schema(current=Depends(require_user)):
+    """Get assessment schema with intelligent caching"""
+    
+    cache_key = f"assessment_schema_{current.get('role', 'default')}"
+    cached_result = smart_cache.get(cache_key)
+    
+    if cached_result:
+        return cached_result
+    
+    # Generate fresh schema
+    schema_data = get_cached_assessment_schema()  # Using existing function
+    
+    # Cache for 30 minutes
+    smart_cache.set(cache_key, schema_data, ttl=1800)
+    
+    return schema_data
+
+# Cached User Dashboard Data
+@api.get("/home/cached/{role}")
+async def get_cached_dashboard_data(role: str, current=Depends(require_user)):
+    """Get dashboard data with smart caching"""
+    
+    if current.get("role") != role:
+        raise HTTPException(status_code=403, detail="Role mismatch")
+    
+    cache_key = f"dashboard_{role}_{current['id']}"
+    cached_result = smart_cache.get(cache_key)
+    
+    if cached_result:
+        # Add cache indicator
+        cached_result["cached"] = True
+        cached_result["cache_time"] = datetime.utcnow().isoformat()
+        return cached_result
+    
+    # Generate fresh dashboard data
+    if role == "client":
+        dashboard_data = await get_optimized_client_dashboard(current["id"])
+    elif role == "agency":
+        dashboard_data = await get_optimized_agency_dashboard(current["id"])
+    elif role == "provider":
+        dashboard_data = await get_optimized_provider_dashboard(current["id"])
+    elif role == "navigator":
+        dashboard_data = await get_optimized_navigator_dashboard(current["id"])
+    else:
+        dashboard_data = {"error": "Invalid role"}
+    
+    # Cache for 5 minutes
+    smart_cache.set(cache_key, dashboard_data, ttl=300)
+    
+    dashboard_data["cached"] = False
+    return dashboard_data
+
+# Optimized Dashboard Queries
+async def get_optimized_client_dashboard(user_id: str) -> Dict[str, Any]:
+    """Optimized client dashboard with single aggregation pipeline"""
+    
+    pipeline = [
+        {"$match": {"id": user_id}},
+        {"$lookup": {
+            "from": "tier_assessment_sessions",
+            "localField": "id",
+            "foreignField": "user_id", 
+            "as": "assessments"
+        }},
+        {"$lookup": {
+            "from": "service_requests",
+            "localField": "id", 
+            "foreignField": "user_id",
+            "as": "service_requests"
+        }},
+        {"$lookup": {
+            "from": "rp_leads",
+            "localField": "id",
+            "foreignField": "sbc_id",
+            "as": "rp_leads"
+        }},
+        {"$project": {
+            "email": 1,
+            "name": 1,
+            "role": 1,
+            "readiness": {"$avg": {"$ifNull": ["$assessments.completion_percentage", 0]}},
+            "completion_percentage": {
+                "$multiply": [
+                    {"$divide": [{"$size": "$assessments"}, 10]}, 
+                    100
+                ]
+            },
+            "critical_gaps": {
+                "$size": {
+                    "$filter": {
+                        "input": "$assessments",
+                        "cond": {"$lt": ["$$this.completion_percentage", 40]}
+                    }
+                }
+            },
+            "active_services": {
+                "$size": {
+                    "$filter": {
+                        "input": "$service_requests", 
+                        "cond": {"$in": ["$$this.status", ["active", "in_progress"]]}
+                    }
+                }
+            },
+            "rp_leads_count": {"$size": "$rp_leads"},
+            "last_activity": {"$max": "$assessments.updated_at"}
+        }}
+    ]
+    
+    result = await db.users.aggregate(pipeline).to_list(1)
+    return result[0] if result else {
+        "readiness": 0,
+        "completion_percentage": 0,
+        "critical_gaps": 0,
+        "active_services": 0,
+        "rp_leads_count": 0
+    }
+
+async def get_optimized_agency_dashboard(user_id: str) -> Dict[str, Any]:
+    """Optimized agency dashboard data"""
+    
+    # Get sponsored businesses count and metrics
+    agency_stats = await db.agency_client_progress.aggregate([
+        {"$match": {"agency_id": user_id}},
+        {"$lookup": {
+            "from": "users",
+            "localField": "client_id", 
+            "foreignField": "id",
+            "as": "client"
+        }},
+        {"$unwind": "$client"},
+        {"$lookup": {
+            "from": "tier_assessment_sessions",
+            "localField": "client_id",
+            "foreignField": "user_id",
+            "as": "assessments" 
+        }},
+        {"$group": {
+            "_id": None,
+            "total_businesses": {"$sum": 1},
+            "avg_readiness": {"$avg": {"$avg": "$assessments.completion_percentage"}},
+            "contract_ready": {
+                "$sum": {
+                    "$cond": [
+                        {"$gte": [{"$avg": "$assessments.completion_percentage"}, 70]},
+                        1, 0
+                    ]
+                }
+            }
+        }}
+    ]).to_list(1)
+    
+    stats = agency_stats[0] if agency_stats else {
+        "total_businesses": 0,
+        "avg_readiness": 0,
+        "contract_ready": 0
+    }
+    
+    return {
+        "sponsored_businesses": stats["total_businesses"],
+        "avg_readiness": round(stats["avg_readiness"] or 0, 1),
+        "contract_ready": stats["contract_ready"],
+        "pipeline_value": 2400000,  # Would calculate from actual contract data
+        "win_rate": 65,  # Would calculate from actual success data
+        "certificates_issued": 12  # Would count from certificates collection
+    }
+
+async def get_optimized_provider_dashboard(user_id: str) -> Dict[str, Any]:
+    """Optimized provider dashboard data"""
+    
+    # Get provider metrics with aggregation
+    provider_stats = await db.provider_responses.aggregate([
+        {"$match": {"provider_id": user_id}},
+        {"$group": {
+            "_id": None,
+            "total_responses": {"$sum": 1},
+            "accepted_responses": {
+                "$sum": {"$cond": [{"$eq": ["$status", "accepted"]}, 1, 0]}
+            },
+            "avg_proposed_fee": {"$avg": "$proposed_fee"}
+        }}
+    ]).to_list(1)
+    
+    stats = provider_stats[0] if provider_stats else {
+        "total_responses": 0,
+        "accepted_responses": 0,
+        "avg_proposed_fee": 0
+    }
+    
+    return {
+        "total_responses": stats["total_responses"],
+        "accepted_rate": round((stats["accepted_responses"] / max(1, stats["total_responses"])) * 100, 1),
+        "avg_fee": round(stats["avg_proposed_fee"] or 0, 2),
+        "rating": 4.7,  # Would calculate from reviews
+        "monthly_revenue": stats["avg_proposed_fee"] * stats["accepted_responses"]
+    }
+
+async def get_optimized_navigator_dashboard(user_id: str) -> Dict[str, Any]:
+    """Optimized navigator dashboard data"""
+    
+    # Get platform-wide statistics for navigator
+    platform_stats = await db.users.aggregate([
+        {"$group": {
+            "_id": "$role",
+            "count": {"$sum": 1},
+            "active_24h": {
+                "$sum": {
+                    "$cond": [
+                        {"$gte": ["$last_login", datetime.utcnow() - timedelta(hours=24)]},
+                        1, 0
+                    ]
+                }
+            }
+        }}
+    ]).to_list(10)
+    
+    total_users = sum(stat["count"] for stat in platform_stats)
+    active_users = sum(stat["active_24h"] for stat in platform_stats)
+    
+    return {
+        "total_users": total_users,
+        "active_users_24h": active_users,
+        "platform_health": round((active_users / max(1, total_users)) * 100, 1),
+        "pending_reviews": 0,  # Would count from pending approvals
+        "active_engagements": 0,  # Would count from active service engagements
+        "resource_usage": 42  # Would calculate from resource access logs
+    }
+
 
 app.include_router(api)
 
