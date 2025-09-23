@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, memo, useMemo, useCallback } from 'react';
+import React, { Suspense, lazy, memo, useMemo, useCallback, useState, useEffect } from 'react';
+import axios from 'axios';
 
 // Performance-Optimized Component Loading
 export const LazyComponentLoader = {
