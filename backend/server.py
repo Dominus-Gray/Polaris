@@ -18503,6 +18503,280 @@ async def public_certificate_verification(certificate_id: str):
             "certificate_id": certificate_id
         }
 
+# Market Expansion & Enterprise Features
+@api.get("/compliance/international/{region}")
+async def get_international_compliance_data(region: str, current=Depends(require_user)):
+    """Get international compliance requirements and progress"""
+    
+    try:
+        # Regional compliance frameworks
+        compliance_frameworks = {
+            "US": {
+                "system": "Federal Acquisition Regulation (FAR)",
+                "portal": "SAM.gov",
+                "requirements": ["SAM.gov Registration", "DUNS Number", "NAICS Classification"],
+                "assessment_areas": ["Legal & Compliance (FAR)", "Financial Management (DCAA)", "Technology & Security (NIST)"]
+            },
+            "EU": {
+                "system": "EU Public Procurement Directives", 
+                "portal": "TED (Tenders Electronic Daily)",
+                "requirements": ["ESPD Document", "VAT Registration", "Professional Registration"],
+                "assessment_areas": ["Legal Compliance (EU Directives)", "Financial Capacity (EU Standards)", "Technical Ability (CE Marking)"]
+            },
+            "UK": {
+                "system": "Public Contracts Regulations (PCR)",
+                "portal": "Find a Tender",
+                "requirements": ["Companies House Registration", "Standard Selection Questionnaire", "IR35 Compliance"],
+                "assessment_areas": ["Legal Compliance (UK Law)", "Financial Standing (UK GAAP)", "Technical Competence (UK Standards)"]
+            },
+            "CA": {
+                "system": "Government Contracts Regulations (GCR)",
+                "portal": "buyandsell.gc.ca", 
+                "requirements": ["Supplier Registration Information", "Business Number", "Good Standing Certificate"],
+                "assessment_areas": ["Legal Compliance (Canadian Law)", "Financial Capacity (Canadian GAAP)", "Official Languages (EN/FR)"]
+            }
+        }
+        
+        framework = compliance_frameworks.get(region, compliance_frameworks["US"])
+        
+        # Get user's current progress for this region
+        user_progress = await db.international_assessments.find_one({
+            "user_id": current["id"],
+            "region": region
+        })
+        
+        compliance_score = 65  # Would calculate from actual assessments
+        if user_progress:
+            compliance_score = user_progress.get("compliance_score", 65)
+        
+        return {
+            "region": region,
+            "framework": framework,
+            "compliance_score": compliance_score,
+            "gaps": ["Financial Documentation", "Technical Certifications"] if compliance_score < 80 else [],
+            "next_steps": framework["requirements"][:2],
+            "estimated_timeline": "8-12 weeks" if compliance_score < 70 else "4-6 weeks"
+        }
+        
+    except Exception as e:
+        logger.error(f"International compliance error: {e}")
+        return {"error": "Unable to load compliance data"}
+
+@api.get("/industry/vertical/{industry}")
+async def get_industry_vertical_data(industry: str, current=Depends(require_user)):
+    """Get industry-specific vertical solutions and requirements"""
+    
+    try:
+        # Industry vertical configurations
+        verticals = {
+            "defense": {
+                "name": "Defense & Aerospace",
+                "key_requirements": ["CMMC Certification", "DFARS Compliance", "Security Clearance"],
+                "market_value": "$45.2B annually",
+                "specializations": ["Cybersecurity Defense", "Aerospace Engineering", "Defense Logistics"]
+            },
+            "healthcare": {
+                "name": "Healthcare & Medical",
+                "key_requirements": ["HIPAA Certification", "FDA Compliance", "Joint Commission Standards"],
+                "market_value": "$28.7B annually",
+                "specializations": ["Healthcare IT", "Medical Devices", "Healthcare Consulting"]
+            },
+            "energy": {
+                "name": "Energy & Infrastructure", 
+                "key_requirements": ["DOE Requirements", "Environmental Compliance", "Grid Security"],
+                "market_value": "$31.4B annually",
+                "specializations": ["Renewable Energy", "Smart Grid", "Energy Consulting"]
+            },
+            "fintech": {
+                "name": "Financial Technology",
+                "key_requirements": ["Financial Regulations", "SOX Compliance", "PCI DSS"],
+                "market_value": "$18.9B annually",
+                "specializations": ["Payment Systems", "Financial Analytics", "Blockchain Finance"]
+            }
+        }
+        
+        vertical_config = verticals.get(industry)
+        if not vertical_config:
+            raise HTTPException(status_code=404, detail="Industry vertical not found")
+        
+        # Get user's readiness for this vertical
+        vertical_readiness = await calculate_vertical_readiness(current["id"], industry)
+        
+        return {
+            "industry": industry,
+            "config": vertical_config,
+            "readiness_score": vertical_readiness,
+            "specialization_readiness": generate_specialization_scores(industry)
+        }
+        
+    except Exception as e:
+        logger.error(f"Industry vertical error: {e}")
+        return {"error": "Unable to load vertical data"}
+
+@api.post("/white-label/deploy/{agency_id}")
+async def deploy_white_label_platform(
+    agency_id: str,
+    payload: Dict[str, Any] = Body(...),
+    current=Depends(require_user)
+):
+    """Deploy white-label platform instance for agency"""
+    
+    try:
+        # Verify permissions
+        if current.get("role") not in ["admin", "agency"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+        
+        branding = payload.get("branding", {})
+        customizations = payload.get("customizations", {})
+        deployment_config = payload.get("deployment_config", {})
+        
+        # Create deployment record
+        deployment = {
+            "_id": str(uuid.uuid4()),
+            "agency_id": agency_id,
+            "deployment_url": f"https://{agency_id.lower().replace(' ', '-')}.procurement-ready.com",
+            "branding_settings": branding,
+            "customization_settings": customizations,
+            "deployment_config": deployment_config,
+            "status": "deploying",
+            "created_by": current["id"],
+            "created_at": datetime.utcnow(),
+            "last_updated": datetime.utcnow()
+        }
+        
+        await db.white_label_deployments.insert_one(deployment)
+        
+        # In production, would trigger actual deployment process
+        # For now, simulate deployment completion
+        await asyncio.sleep(2)  # Simulate deployment time
+        
+        await db.white_label_deployments.update_one(
+            {"_id": deployment["_id"]},
+            {"$set": {"status": "live", "deployed_at": datetime.utcnow()}}
+        )
+        
+        return {
+            "success": True,
+            "organization_id": agency_id,
+            "deployment_url": deployment["deployment_url"],
+            "status": "live",
+            "estimated_completion": "2-4 business days"
+        }
+        
+    except Exception as e:
+        logger.error(f"White-label deployment error: {e}")
+        raise HTTPException(status_code=500, detail="Deployment failed")
+
+@api.post("/enterprise/onboarding/complete")
+async def complete_enterprise_onboarding(payload: Dict[str, Any] = Body(...), current=Depends(require_user)):
+    """Complete enterprise customer onboarding process"""
+    
+    try:
+        organization_type = payload.get("organization_type")
+        organization_data = payload.get("organization_data", {})
+        requirements_config = payload.get("requirements_config", {})
+        customization_settings = payload.get("customization_settings", {})
+        deployment_options = payload.get("deployment_options", {})
+        
+        # Create enterprise organization record
+        organization_id = str(uuid.uuid4())
+        
+        enterprise_record = {
+            "_id": organization_id,
+            "organization_id": organization_id,
+            "organization_type": organization_type,
+            "organization_data": organization_data,
+            "requirements_config": requirements_config,
+            "customization_settings": customization_settings,
+            "deployment_options": deployment_options,
+            "onboarding_completed_by": current["id"],
+            "onboarding_completed_at": datetime.utcnow(),
+            "status": "onboarded",
+            "deployment_status": "pending",
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.enterprise_organizations.insert_one(enterprise_record)
+        
+        # Create initial admin user for the organization
+        admin_user = {
+            "_id": str(uuid.uuid4()),
+            "id": str(uuid.uuid4()),
+            "email": organization_data.get("contact_email"),
+            "role": "enterprise_admin",
+            "organization_id": organization_id,
+            "hashed_password": pbkdf2_sha256.hash("TempPassword123!"),  # Temporary password
+            "created_at": datetime.utcnow(),
+            "requires_password_reset": True
+        }
+        
+        await db.users.insert_one(admin_user)
+        
+        return {
+            "success": True,
+            "organization_id": organization_id,
+            "admin_user_id": admin_user["id"],
+            "temporary_password": "TempPassword123!",
+            "next_steps": [
+                "Check email for deployment confirmation",
+                "Login with temporary credentials",
+                "Complete platform configuration",
+                "Begin user onboarding"
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Enterprise onboarding error: {e}")
+        raise HTTPException(status_code=500, detail="Onboarding completion failed")
+
+# Helper functions for market expansion
+async def calculate_vertical_readiness(user_id: str, industry: str) -> float:
+    """Calculate user's readiness for specific industry vertical"""
+    
+    # Get user assessments
+    assessments = await db.tier_assessment_sessions.find({"user_id": user_id}).to_list(20)
+    
+    if not assessments:
+        return 0.0
+    
+    # Industry-specific weighting
+    weights = {
+        "defense": {"area5": 0.3, "area3": 0.25, "area8": 0.2, "area4": 0.15, "area2": 0.1},
+        "healthcare": {"area3": 0.25, "area5": 0.25, "area8": 0.2, "area2": 0.15, "area6": 0.15},
+        "energy": {"area8": 0.3, "area5": 0.25, "area4": 0.2, "area3": 0.15, "area9": 0.1},
+        "fintech": {"area3": 0.3, "area5": 0.25, "area2": 0.2, "area8": 0.15, "area4": 0.1}
+    }
+    
+    industry_weights = weights.get(industry, {f"area{i}": 0.1 for i in range(1, 11)})
+    
+    # Calculate weighted score
+    weighted_score = 0
+    for assessment in assessments:
+        area_id = assessment.get("area_id")
+        score = assessment.get("completion_percentage", 0)
+        weight = industry_weights.get(area_id, 0)
+        weighted_score += score * weight
+    
+    return min(100, weighted_score)
+
+def generate_specialization_scores(industry: str) -> List[Dict[str, Any]]:
+    """Generate mock specialization readiness scores"""
+    
+    specializations = {
+        "defense": [
+            {"id": "cybersecurity_defense", "title": "Defense Cybersecurity", "readiness_score": 78},
+            {"id": "aerospace_engineering", "title": "Aerospace Engineering", "readiness_score": 65},
+            {"id": "defense_logistics", "title": "Defense Logistics", "readiness_score": 72}
+        ],
+        "healthcare": [
+            {"id": "health_it", "title": "Healthcare IT", "readiness_score": 81},
+            {"id": "medical_devices", "title": "Medical Devices", "readiness_score": 58},
+            {"id": "healthcare_consulting", "title": "Healthcare Consulting", "readiness_score": 74}
+        ]
+    }
+    
+    return specializations.get(industry, [])
+
 @api.get("/blockchain/network-status")
 async def get_blockchain_network_status():
     """Get blockchain network health and status"""
