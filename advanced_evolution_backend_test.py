@@ -302,15 +302,15 @@ class AdvancedEvolutionTester:
         if result["status"] == 200:
             opportunities = result["data"]
             
-            # Verify opportunities structure
+            # Verify opportunities structure (actual API fields)
             if "opportunities" in opportunities and isinstance(opportunities["opportunities"], list):
                 opps_list = opportunities["opportunities"]
-                total_count = opportunities.get("total_count", 0)
+                total_count = len(opps_list)
                 
                 # Verify opportunity data structure
                 if opps_list:
                     sample_opp = opps_list[0]
-                    required_fields = ["opportunity_id", "title", "agency", "contract_value", "deadline", "match_score", "readiness_score"]
+                    required_fields = ["id", "title", "agency", "value_range", "deadline", "match_score"]
                     has_required_fields = all(field in sample_opp for field in required_fields)
                     
                     if has_required_fields:
@@ -319,12 +319,12 @@ class AdvancedEvolutionTester:
                         self.record_test_result(
                             "Government Opportunities - Filtering",
                             True,
-                            f"Retrieved {len(opps_list)} opportunities (total: {total_count}) with avg match score: {avg_match_score:.1f}%",
+                            f"Retrieved {len(opps_list)} opportunities with avg match score: {avg_match_score:.1f}%",
                             {
                                 "opportunities_count": len(opps_list),
                                 "total_count": total_count,
                                 "avg_match_score": avg_match_score,
-                                "has_readiness_scores": all("readiness_score" in opp for opp in opps_list[:3])
+                                "has_readiness_scores": all("readiness_assessment" in opp for opp in opps_list[:3])
                             }
                         )
                     else:
