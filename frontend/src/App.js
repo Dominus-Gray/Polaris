@@ -9327,6 +9327,31 @@ function AppShell(){
       <div className="fixed top-4 right-4 z-30">
         <DarkModeToggle />
       </div>
+      
+      {/* Floating AI Coach */}
+      <FloatingAICoach />
+      
+      {/* International Compliance Quick Access */}
+      <div className="fixed bottom-4 left-80 z-40">
+        <button
+          onClick={() => window.location.href = '/compliance/international'}
+          className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+          title="International Compliance"
+        >
+          🌍
+        </button>
+      </div>
+      
+      {/* Industry Verticals Quick Access */}
+      <div className="fixed bottom-4 left-96 z-40">
+        <button
+          onClick={() => window.location.href = '/industry/verticals'}
+          className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+          title="Industry Verticals"
+        >
+        🏭
+        </button>
+      </div>
     </div>
   );
 }
