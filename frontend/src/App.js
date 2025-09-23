@@ -41,6 +41,12 @@ import OnboardingFlow, { useOnboardingStatus } from './components/OnboardingFlow
 // Mobile Navigation Component
 import MobileNavigation from './components/MobileNavigation';
 
+// Enhancement Components
+import { SmartErrorBoundary, NetworkStatusIndicator } from './components/EnhancedErrorHandling';
+import { PerformanceMonitoringWidget } from './components/PerformanceMonitoring';
+import { DarkModeProvider, DarkModeToggle } from './components/DarkModeSupport';
+import { VoiceNavigation } from './components/VoiceInputSupport';
+
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
