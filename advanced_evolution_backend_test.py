@@ -200,23 +200,23 @@ class AdvancedEvolutionTester:
         if result["status"] == 200:
             market_data = result["data"]
             
-            # Verify market intelligence structure
-            required_fields = ["market_trends", "opportunity_forecast", "competitive_landscape", "industry_insights"]
+            # Verify market intelligence structure (actual API fields)
+            required_fields = ["market_analysis", "opportunity_trends", "competitive_insights", "recommendations"]
             has_required_fields = all(field in market_data for field in required_fields)
             
             if has_required_fields:
-                trends_count = len(market_data.get("market_trends", []))
-                opportunities = len(market_data.get("opportunity_forecast", []))
+                trends_count = len(market_data.get("opportunity_trends", []))
+                insights_count = len(market_data.get("competitive_insights", []))
                 
                 self.record_test_result(
                     "Market Intelligence Analytics",
                     True,
-                    f"Market intelligence retrieved: {trends_count} trends, {opportunities} opportunities",
+                    f"Market intelligence retrieved: {trends_count} trends, {insights_count} competitive insights",
                     {
                         "trends_count": trends_count,
-                        "opportunities_count": opportunities,
-                        "has_competitive_data": bool(market_data.get("competitive_landscape")),
-                        "industry_insights": bool(market_data.get("industry_insights"))
+                        "insights_count": insights_count,
+                        "has_market_analysis": bool(market_data.get("market_analysis")),
+                        "recommendations_count": len(market_data.get("recommendations", []))
                     }
                 )
             else:
