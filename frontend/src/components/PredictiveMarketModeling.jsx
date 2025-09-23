@@ -181,6 +181,13 @@ export default function PredictiveMarketModeling({ userRole, industry }) {
     }
   };
 
+  const getReadinessColor = (score) => {
+    if (score >= 85) return 'text-green-600';
+    if (score >= 70) return 'text-blue-600';
+    if (score >= 50) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
   const getGrowthColor = (rate) => {
     const numericRate = parseFloat(rate.replace(/[^0-9.-]/g, ''));
     if (numericRate >= 20) return 'text-green-600';
