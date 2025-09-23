@@ -9313,6 +9313,31 @@ function AppShell(){
               <Route path="/rp/requirements" element={<RPRequirementsAdmin />} />
             </>
           )}
+          
+          {/* Advanced AI Feature Routes */}
+          <Route path="/ai/coaching" element={<AICoachingInterface />} />
+          <Route path="/ai/documents" element={<ComputerVisionDocumentAnalyzer assessmentArea="area1" />} />
+          <Route path="/ai/contracts" element={<NLPContractAnalyzer />} />
+          <Route path="/ai/analytics" element={<AdvancedAnalyticsDashboard userRole="client" />} />
+          
+          {/* Global Platform Routes */}
+          <Route path="/compliance/international" element={<InternationalComplianceModule selectedRegion="US" userRole="client" />} />
+          <Route path="/industry/verticals" element={<IndustryVerticalSolutions industry="defense" userRole="client" />} />
+          <Route path="/government/opportunities" element={<GovernmentOpportunityDashboard userRole="client" />} />
+          <Route path="/blockchain/certificates" element={<BlockchainCertificationSystem />} />
+          
+          {/* Enterprise & Admin Routes */}
+          <Route path="/enterprise/onboarding" element={<EnterpriseOnboardingSystem organizationType="agency" />} />
+          <Route path="/white-label/deployment" element={<WhiteLabelDeploymentSystem agencyId="demo-agency" />} />
+          
+          {/* Community & Support Routes */}
+          <Route path="/community" element={<CommunityHub userRole="client" />} />
+          <Route path="/support" element={<SupportTicketSystem />} />
+          <Route path="/tutorials" element={<InteractiveTutorialSystem userRole="client" currentPage="dashboard" />} />
+          
+          {/* Collaboration Routes */}
+          <Route path="/workspace/:id" element={<SharedWorkspace workspaceId="demo-workspace" workspaceType="assessment" title="Assessment Collaboration" />} />
+          
           <Route path="/" element={me ? <Navigate to="/home" replace /> : <Landing />} />
         </Routes>
       )}
