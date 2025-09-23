@@ -17464,6 +17464,247 @@ async def get_optimized_navigator_dashboard(user_id: str) -> Dict[str, Any]:
         "resource_usage": 42  # Would calculate from resource access logs
     }
 
+# Contextual AI Suggestions System
+@api.get("/ai/contextual-suggestions")
+async def get_contextual_suggestions(
+    page: str = Query(...),
+    action: str = Query(None),
+    context_data: str = Query(None),
+    current=Depends(require_user)
+):
+    """Get AI suggestions based on current page and user context"""
+    
+    try:
+        suggestions = []
+        user_id = current["id"]
+        user_role = current.get("role", "client")
+        
+        # Get user's current progress and context
+        user_data = await get_user_context_for_suggestions(user_id)
+        
+        if page == "assessment" and action == "area_selection":
+            # Suggest optimal next area based on dependencies and progress
+            completed_areas = user_data.get("completed_areas", [])
+            
+            if "area1" not in completed_areas:
+                suggestions.append({
+                    "type": "priority",
+                    "icon": "🏛️",
+                    "title": "Start with Legal & Compliance",
+                    "message": "This foundational area is essential for all government contracting. Complete this first for the strongest base.",
+                    "action": "select_area1",
+                    "confidence": 0.95,
+                    "urgency": "high",
+                    "estimated_time": "15-20 minutes"
+                })
+            elif "area2" not in completed_areas:
+                suggestions.append({
+                    "type": "logical_next",
+                    "icon": "💰",
+                    "title": "Financial Management Builds on Legal Foundation",
+                    "message": "Now that you have legal compliance covered, financial management is the next critical step.",
+                    "action": "select_area2",
+                    "confidence": 0.88,
+                    "urgency": "medium",
+                    "estimated_time": "20-25 minutes"
+                })
+            elif "area5" not in completed_areas:
+                suggestions.append({
+                    "type": "high_impact",
+                    "icon": "🔒",
+                    "title": "Technology & Security is Increasingly Critical",
+                    "message": "Cybersecurity requirements are essential for modern government contracts.",
+                    "action": "select_area5",
+                    "confidence": 0.92,
+                    "urgency": "high",
+                    "estimated_time": "25-30 minutes"
+                })
+        
+        elif page == "service_request" and action == "provider_selection":
+            # Suggest providers based on assessment gaps and success patterns
+            critical_gaps = user_data.get("critical_gaps", [])
+            if critical_gaps:
+                gap_area = critical_gaps[0]
+                suggestions.append({
+                    "type": "provider_match",
+                    "icon": "🎯",
+                    "title": f"Expert Help for {gap_area} Available",
+                    "message": f"Based on your {gap_area} gap, we recommend providers with specialized expertise in this area.",
+                    "action": f"filter_{gap_area.lower().replace(' ', '_')}",
+                    "confidence": 0.92,
+                    "urgency": "medium",
+                    "estimated_cost": "$2,500 - $5,000"
+                })
+        
+        elif page == "rp_share" and action == "rp_selection":
+            # Suggest best RP types based on readiness level
+            readiness_score = user_data.get("readiness_score", 0)
+            
+            if readiness_score >= 70:
+                suggestions.append({
+                    "type": "rp_ready",
+                    "icon": "🏆",
+                    "title": "You're Ready for Premium Resource Partners",
+                    "message": "Your high readiness score makes you attractive to lenders and prime contractors.",
+                    "action": "suggest_premium_rps",
+                    "confidence": 0.89,
+                    "urgency": "low",
+                    "benefit": "Access to larger contracts and better financing"
+                })
+            elif readiness_score >= 50:
+                suggestions.append({
+                    "type": "rp_moderate",
+                    "icon": "🤝", 
+                    "title": "Consider Business Development Organizations",
+                    "message": "Your current progress level is perfect for BDO partnerships and accelerator programs.",
+                    "action": "suggest_bdo_rps",
+                    "confidence": 0.85,
+                    "urgency": "medium",
+                    "benefit": "Mentorship and growth acceleration"
+                })
+            else:
+                suggestions.append({
+                    "type": "rp_early",
+                    "icon": "📈",
+                    "title": "Focus on Assessment Progress First",
+                    "message": "Complete more assessments to strengthen your appeal to resource partners.",
+                    "action": "continue_assessment",
+                    "confidence": 0.93,
+                    "urgency": "high",
+                    "benefit": "Stronger data package for RP sharing"
+                })
+        
+        elif page == "dashboard" and user_role == "provider":
+            # Provider-specific contextual suggestions
+            recent_opportunities = await db.service_requests.count_documents({
+                "created_at": {"$gte": datetime.utcnow() - timedelta(days=7)},
+                "status": "open"
+            })
+            
+            if recent_opportunities > 5:
+                suggestions.append({
+                    "type": "opportunity_alert",
+                    "icon": "🚀",
+                    "title": f"{recent_opportunities} New Opportunities This Week",
+                    "message": "High activity in your service areas. Quick responses improve your match rate.",
+                    "action": "view_opportunities",
+                    "confidence": 0.87,
+                    "urgency": "medium",
+                    "benefit": "First responders get priority consideration"
+                })
+        
+        elif page == "dashboard" and user_role == "agency":
+            # Agency-specific suggestions based on program performance
+            program_stats = await get_agency_performance_metrics(user_id)
+            
+            if program_stats.get("at_risk_clients", 0) > 0:
+                suggestions.append({
+                    "type": "intervention_needed",
+                    "icon": "⚠️",
+                    "title": f"{program_stats['at_risk_clients']} Clients Need Attention",
+                    "message": "These businesses haven't engaged recently and may need intervention to prevent dropout.",
+                    "action": "review_at_risk",
+                    "confidence": 0.94,
+                    "urgency": "high",
+                    "benefit": "Prevent program dropout and improve success rates"
+                })
+        
+        # Add industry-specific suggestions if context available
+        if context_data:
+            try:
+                context = json.loads(context_data)
+                industry = context.get("industry")
+                
+                if industry == "technology":
+                    suggestions.append({
+                        "type": "industry_insight",
+                        "icon": "💻",
+                        "title": "Technology Sector Focus",
+                        "message": "Tech companies typically need extra attention on cybersecurity and data protection compliance.",
+                        "action": "tech_guidance",
+                        "confidence": 0.91,
+                        "urgency": "medium",
+                        "benefit": "Industry-specific compliance advantage"
+                    })
+            except json.JSONDecodeError:
+                pass
+        
+        return {
+            "suggestions": suggestions[:3],  # Limit to top 3 suggestions
+            "context": {
+                "page": page,
+                "action": action,
+                "user_role": user_role,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Contextual suggestions error: {e}")
+        return {
+            "suggestions": [{
+                "type": "fallback",
+                "icon": "💡",
+                "title": "Continue Your Progress",
+                "message": "Keep working on your procurement readiness journey - every step counts!",
+                "action": "continue",
+                "confidence": 0.8,
+                "urgency": "low"
+            }],
+            "context": {"fallback": True}
+        }
+
+async def get_user_context_for_suggestions(user_id: str) -> Dict[str, Any]:
+    """Get comprehensive user context for AI suggestions"""
+    
+    # Get assessment progress
+    assessments = await db.tier_assessment_sessions.find({"user_id": user_id}).to_list(20)
+    completed_areas = [a.get("area_id") for a in assessments if a.get("completion_percentage", 0) > 70]
+    
+    # Get critical gaps
+    critical_gaps = []
+    for assessment in assessments:
+        if assessment.get("completion_percentage", 0) < 40:
+            area_name = assessment.get("area_name", "Unknown Area")
+            critical_gaps.append(area_name)
+    
+    # Calculate overall readiness
+    total_score = sum(a.get("completion_percentage", 0) for a in assessments)
+    readiness_score = total_score / max(len(assessments), 1)
+    
+    # Get recent activity
+    last_activity = max([a.get("updated_at", datetime.min) for a in assessments]) if assessments else datetime.min
+    days_since_activity = (datetime.utcnow() - last_activity).days if last_activity != datetime.min else 999
+    
+    return {
+        "completed_areas": completed_areas,
+        "critical_gaps": critical_gaps,
+        "readiness_score": readiness_score,
+        "total_assessments": len(assessments),
+        "days_since_activity": days_since_activity,
+        "is_active": days_since_activity < 7
+    }
+
+async def get_agency_performance_metrics(agency_id: str) -> Dict[str, Any]:
+    """Get agency performance metrics for contextual suggestions"""
+    
+    # Count at-risk clients (no activity in 14+ days)
+    at_risk_clients = await db.users.count_documents({
+        "role": "client", 
+        "last_login": {"$lt": datetime.utcnow() - timedelta(days=14)}
+    })
+    
+    # Get success metrics
+    total_clients = await db.users.count_documents({"role": "client"})
+    certified_clients = await db.certificates.count_documents({"status": "active"})
+    
+    return {
+        "at_risk_clients": at_risk_clients,
+        "total_clients": total_clients,
+        "certified_clients": certified_clients,
+        "success_rate": round((certified_clients / max(1, total_clients)) * 100, 1)
+    }
+
 
 app.include_router(api)
 
