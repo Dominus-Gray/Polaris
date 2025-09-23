@@ -47,6 +47,33 @@ import { PerformanceMonitoringWidget } from './components/PerformanceMonitoring'
 import { DarkModeProvider, DarkModeToggle } from './components/DarkModeSupport';
 import { VoiceNavigation } from './components/VoiceInputSupport';
 
+// Advanced AI Components
+import ComputerVisionDocumentAnalyzer from './components/ComputerVisionDocumentAnalyzer';
+import NLPContractAnalyzer from './components/NLPContractAnalyzer';
+import { BehavioralLearningProvider, AdaptiveDashboard } from './components/BehavioralLearningSystem';
+import PredictiveMarketModeling from './components/PredictiveMarketModeling';
+import AICoachingInterface, { FloatingAICoach } from './components/AICoachingInterface';
+
+// Global Platform Components
+import InternationalComplianceModule from './components/InternationalComplianceModule';
+import IndustryVerticalSolutions from './components/IndustryVerticalSolutions';
+import WhiteLabelDeploymentSystem from './components/WhiteLabelDeploymentSystem';
+import EnterpriseOnboardingSystem from './components/EnterpriseOnboardingSystem';
+import BlockchainCertificationSystem from './components/BlockchainCertificationSystem';
+import GovernmentOpportunityDashboard from './components/GovernmentOpportunityDashboard';
+
+// Community & Support Components
+import InteractiveTutorialSystem from './components/InteractiveTutorialSystem';
+import SupportTicketSystem from './components/SupportTicketSystem';
+import CommunityHub from './components/CommunityHub';
+import ContextualHelpSystem from './components/ContextualHelpSystem';
+import AdvancedAnalyticsDashboard from './components/AdvancedAnalyticsDashboard';
+
+// Collaboration Components  
+import LiveChatSystem from './components/LiveChatSystem';
+import SharedWorkspace from './components/SharedWorkspace';
+import IntelligentNotifications from './components/IntelligentNotifications';
+
 import ClientLocalDirectory from './pages/ClientLocalDirectory';
 
 import ProviderRequestsCenter from './components/ProviderRequestsCenter';
