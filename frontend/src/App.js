@@ -5510,6 +5510,87 @@ function ClientHome(){
               </div>
             </div>
           )}
+
+          {/* AI Features Tab - Revolutionary AI Assistant */}
+          {activeTab === 'ai_features' && (
+            <div className="space-y-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">🤖 AI-Powered Procurement Assistant</h3>
+                <p className="text-slate-600">Advanced AI tools to accelerate your procurement readiness journey</p>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* AI Coaching Interface */}
+                <div className="bg-white border rounded-lg p-6">
+                  <h4 className="font-semibold text-slate-900 mb-4">💬 Conversational AI Coach</h4>
+                  <AICoachingInterface />
+                </div>
+                
+                {/* Behavioral Learning Dashboard */}
+                <div className="bg-white border rounded-lg p-6">
+                  <h4 className="font-semibold text-slate-900 mb-4">🧠 Adaptive Intelligence</h4>
+                  <AdaptiveDashboard />
+                </div>
+              </div>
+              
+              {/* Predictive Market Modeling */}
+              <div className="bg-white border rounded-lg p-6">
+                <h4 className="font-semibold text-slate-900 mb-4">📈 Predictive Market Intelligence</h4>
+                <PredictiveMarketModeling userRole="client" industry="technology" />
+              </div>
+            </div>
+          )}
+
+          {/* Document Analysis Tab - Computer Vision & NLP */}
+          {activeTab === 'documents' && (
+            <div className="space-y-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">📄 AI Document Analysis</h3>
+                <p className="text-slate-600">Advanced computer vision and NLP for automated document processing</p>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Computer Vision Document Analyzer */}
+                <div className="bg-white border rounded-lg p-6">
+                  <h4 className="font-semibold text-slate-900 mb-4">🔍 Document Intelligence</h4>
+                  <ComputerVisionDocumentAnalyzer 
+                    assessmentArea="area2" 
+                    onAnalysisComplete={(results) => console.log('Analysis complete:', results)}
+                  />
+                </div>
+                
+                {/* NLP Contract Analyzer */}
+                <div className="bg-white border rounded-lg p-6">
+                  <h4 className="font-semibold text-slate-900 mb-4">📋 Contract Analysis</h4>
+                  <NLPContractAnalyzer />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Government Opportunities Tab - Procurement Pipeline */}
+          {activeTab === 'opportunities' && (
+            <div className="space-y-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">🏛️ Government Contracting Opportunities</h3>
+                <p className="text-slate-600">AI-matched federal, state, and local government opportunities</p>
+              </div>
+              
+              <GovernmentOpportunityDashboard userRole="client" />
+            </div>
+          )}
+
+          {/* Advanced Analytics Tab - Business Intelligence */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">📈 Advanced Analytics & Business Intelligence</h3>
+                <p className="text-slate-600">Comprehensive analytics and predictive insights for strategic planning</p>
+              </div>
+              
+              <AdvancedAnalyticsDashboard userRole="client" />
+            </div>
+          )}
         </div>
       </div>
     </div>
