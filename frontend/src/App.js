@@ -10909,4 +10909,16 @@ function ServiceDetailsPage() {
   );
 }
 
-export default function App(){ return (<PolarisErrorBoundary><BrowserRouter><AppShell /></BrowserRouter></PolarisErrorBoundary>); }
+export default function App(){ 
+  return (
+    <SmartErrorBoundary>
+      <DarkModeProvider>
+        <PolarisErrorBoundary>
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </PolarisErrorBoundary>
+      </DarkModeProvider>
+    </SmartErrorBoundary>
+  ); 
+}
