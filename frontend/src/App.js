@@ -45,7 +45,7 @@ import MobileNavigation from './components/MobileNavigation';
 import { SmartErrorBoundary, NetworkStatusIndicator } from './components/EnhancedErrorHandling';
 import { PerformanceMonitoringWidget } from './components/PerformanceMonitoring';
 import { DarkModeProvider, DarkModeToggle } from './components/DarkModeSupport';
-import { VoiceNavigation } from './components/VoiceInputSupport';
+
 
 // Advanced AI Components
 import ComputerVisionDocumentAnalyzer from './components/ComputerVisionDocumentAnalyzer';
