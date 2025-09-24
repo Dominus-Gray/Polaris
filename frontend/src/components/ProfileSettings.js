@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { DarkModeToggle, useDarkMode } from './DarkModeSupport';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
