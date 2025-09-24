@@ -9350,9 +9350,7 @@ function AppShell(){
         <DarkModeToggle />
       </div>
       
-      {/* Floating AI Coach */}
-      <FloatingAICoach />
-      
+
       {/* International Compliance Quick Access */}
       <div className="fixed bottom-4 left-80 z-40">
         <button
