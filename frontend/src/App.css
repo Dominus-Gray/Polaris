@@ -476,14 +476,14 @@ body {
   color: var(--text-muted);
 }
 
-/* Hero Section with harmonious blue gradient */
+/* Hero Section with elite harmony */
 .hero {
-  background: linear-gradient(135deg, var(--polaris-blue-600) 0%, var(--polaris-blue-700) 100%);
+  background: var(--color-primary);
   @apply text-white;
 }
 
 .hero-bg {
-  background: linear-gradient(135deg, var(--polaris-blue-600) 0%, var(--polaris-blue-700) 100%);
+  background: var(--color-primary);
 }
 
 .hero-inner {
@@ -503,26 +503,53 @@ body {
   @apply py-16;
 }
 
-/* Text color overrides for consistency */
+/* Statistics Cards with elite harmony */
+.stat-card {
+  @apply rounded-lg border p-6 transition-all duration-200 hover:shadow-md;
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.stat-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 6px rgba(66, 133, 244, 0.1);
+}
+
+.stat-number {
+  @apply text-3xl font-bold mb-1;
+  color: var(--color-primary);
+}
+
+.stat-label {
+  @apply text-sm font-medium uppercase tracking-wide;
+  color: var(--text-secondary);
+}
+
+.stat-desc {
+  @apply text-xs mt-1;
+  color: var(--text-muted);
+}
+
+/* Text color overrides for elite consistency */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 p {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
-/* Tailwind utility overrides for harmony */
+/* Tailwind utility overrides for zero-clash harmony */
 .text-slate-900 {
-  color: var(--text-primary) !important;
+  color: var(--text) !important;
 }
 
 .text-slate-800 {
-  color: var(--text-primary) !important;
+  color: var(--text) !important;
 }
 
 .text-slate-700 {
-  color: var(--text-primary) !important;
+  color: var(--text) !important;
 }
 
 .text-slate-600 {
@@ -530,27 +557,27 @@ p {
 }
 
 .text-slate-500 {
-  color: var(--text-secondary) !important;
+  color: var(--text-muted) !important;
 }
 
 .bg-slate-50 {
-  background: var(--bg-primary) !important;
+  background: var(--surface) !important;
 }
 
 .bg-slate-100 {
-  background: var(--bg-secondary) !important;
+  background: var(--surface) !important;
 }
 
 .bg-slate-200 {
-  background: var(--polaris-blue-100) !important;
+  background: var(--color-secondary) !important;
 }
 
 .border-slate-200 {
-  border-color: var(--border-color) !important;
+  border-color: var(--border) !important;
 }
 
 .border-slate-300 {
-  border-color: var(--polaris-blue-200) !important;
+  border-color: var(--border) !important;
 }
 
 /* Enhanced Card Styles */
