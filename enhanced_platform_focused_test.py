@@ -16,7 +16,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
+BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
 
 # Test Credentials (QA accounts)
 TEST_CREDENTIALS = {

@@ -251,7 +251,7 @@ async def enhanced_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
-        "connect-src 'self' https://smallbiz-assist.preview.emergentagent.com"
+        "connect-src 'self' https://polar-docs-ai.preview.emergentagent.com"
     )
     response.headers["Content-Security-Policy"] = csp_policy
     

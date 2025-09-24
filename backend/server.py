@@ -1056,7 +1056,7 @@ app.add_middleware(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://smallbiz-assist.preview.emergentagent.com", "http://localhost:3000"],
+    allow_origins=["https://polar-docs-ai.preview.emergentagent.com", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],

@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / "frontend" / ".env")
 
 # Get base URL from frontend .env
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://smallbiz-assist.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://polar-docs-ai.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 print(f"🔐 COMPREHENSIVE AUTHENTICATION TESTING")
@@ -586,7 +586,7 @@ def test_cors_and_headers():
         response = requests.options(
             f"{API_BASE}/auth/login",
             headers={
-                "Origin": "https://smallbiz-assist.preview.emergentagent.com",
+                "Origin": "https://polar-docs-ai.preview.emergentagent.com",
                 "Access-Control-Request-Method": "POST",
                 "Access-Control-Request-Headers": "Content-Type,Authorization"
             }

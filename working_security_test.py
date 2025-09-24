@@ -26,7 +26,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Configuration
-BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
+BASE_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"
 QA_CLIENT_PASSWORD = "Polaris#2025!"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"

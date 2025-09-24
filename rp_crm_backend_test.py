@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Use production URL from frontend/.env
-BASE_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
+BASE_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
 
 # QA Credentials
 AGENCY_CREDENTIALS = {

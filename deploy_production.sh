@@ -183,7 +183,7 @@ sleep 5
 # Verify backend health
 echo "🔍 Verifying backend health..."
 for i in {1..5}; do
-    if curl -f -s https://smallbiz-assist.preview.emergentagent.com/api/system/health > /dev/null; then
+    if curl -f -s https://polar-docs-ai.preview.emergentagent.com/api/system/health > /dev/null; then
         echo "✅ Backend health check passed"
         break
     else
@@ -233,7 +233,7 @@ ENDPOINTS=(
 )
 
 for endpoint in "${ENDPOINTS[@]}"; do
-    if curl -f -s "https://smallbiz-assist.preview.emergentagent.com$endpoint" > /dev/null; then
+    if curl -f -s "https://polar-docs-ai.preview.emergentagent.com$endpoint" > /dev/null; then
         echo "✅ $endpoint - OK"
     else
         echo "❌ $endpoint - FAILED"
@@ -263,7 +263,7 @@ done
 echo ""
 echo "🎉 DEPLOYMENT COMPLETED!"
 echo "======================="
-echo "✅ Backend: https://smallbiz-assist.preview.emergentagent.com/api"
+echo "✅ Backend: https://polar-docs-ai.preview.emergentagent.com/api"
 echo "✅ Frontend: http://localhost:3000"
 echo "✅ Monitoring: /api/metrics"
 echo "✅ Health Check: /api/system/health/detailed"

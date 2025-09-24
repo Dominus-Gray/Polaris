@@ -22,7 +22,7 @@ import sys
 import uuid
 
 # Configuration
-BACKEND_URL = "https://smallbiz-assist.preview.emergentagent.com/api"
+BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"}
@@ -180,7 +180,7 @@ class FocusedIntegrationTester:
             connection_data = {
                 "auth_code": f"mock_auth_code_{int(time.time())}",
                 "realm_id": "123456789012345",
-                "redirect_uri": "https://smallbiz-assist.preview.emergentagent.com/quickbooks/callback"
+                "redirect_uri": "https://polar-docs-ai.preview.emergentagent.com/quickbooks/callback"
             }
             
             response = self.session.post(
@@ -426,7 +426,7 @@ class FocusedIntegrationTester:
         try:
             connection_data = {
                 "auth_code": f"mock_m365_auth_code_{int(time.time())}",
-                "redirect_uri": "https://smallbiz-assist.preview.emergentagent.com/auth/callback",
+                "redirect_uri": "https://polar-docs-ai.preview.emergentagent.com/auth/callback",
                 "tenant_id": "demo_tenant_id"
             }
             
@@ -490,7 +490,7 @@ class FocusedIntegrationTester:
                     "business_name": "Integration Test Business LLC",
                     "pending_areas": ["Business Formation", "Financial Operations", "Technology & Security"],
                     "completion_percentage": 67,
-                    "assessment_url": "https://smallbiz-assist.preview.emergentagent.com/assessment",
+                    "assessment_url": "https://polar-docs-ai.preview.emergentagent.com/assessment",
                     "financial_health_score": self.integration_data.get("financial_health", {}).get("overall_score", 0)
                 }
             }
