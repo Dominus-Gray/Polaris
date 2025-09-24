@@ -265,7 +265,13 @@ class QASetupManager:
                     data = json.loads(response_text)
                     licenses = data.get("licenses", [])
                     if licenses:
-                        self.license_code = licenses[0]
+                        # Extract just the license code string
+                        license_obj = licenses[0]
+                        if isinstance(license_obj, dict) and "license_code" in license_obj:
+                            self.license_code = license_obj["license_code"]
+                        else:
+                            self.license_code = str(license_obj)
+                        
                         self.log_result(
                             "License Generation",
                             True,
