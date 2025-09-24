@@ -5,51 +5,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== POLARIS HARMONIOUS BLUE COLOR SYSTEM 2025 ===== */
-/* Research-based monochromatic blue palette with gentle gradations */
+/* ===== POLARIS ELITE ZERO-CLASH COLOR SYSTEM ===== */
+/* Designed by Elite UI/UX Color System Designer - Production Ready */
 :root { 
-  /* Core Blue Family - Harmonious Gradations */
-  --polaris-blue-50: #F0F6FF;     /* Softest blue tint - backgrounds */
-  --polaris-blue-100: #E0EDFF;    /* Very light blue - cards, sections */
-  --polaris-blue-200: #C7DDFF;    /* Light blue - hover states */
-  --polaris-blue-300: #A4C7FF;    /* Medium light blue - borders */
-  --polaris-blue-400: #7BA7FF;    /* Medium blue - secondary elements */
-  --polaris-blue-500: #4F88FF;    /* Primary blue - main actions */
-  --polaris-blue-600: #3366CC;    /* Medium dark blue - hover states */
-  --polaris-blue-700: #2952A3;    /* Dark blue - text, headers */
-  --polaris-blue-800: #1E3D7A;    /* Darker blue - emphasis */
-  --polaris-blue-900: #152952;    /* Darkest blue - navigation */
+  /* Core Base Colors (Only Approved Set) */
+  --color-primary: #4285F4;           /* Blue - trustworthy, professional */
+  --color-primary-variant: #1565C0;   /* Dark Blue - emphasis, hover states */
+  --color-secondary: #81C4FF;         /* Light Blue - secondary actions */
+  --bg: #FFFFFF;                      /* White - main background (required) */
+  --surface: #F8F9FA;                 /* Silver - card/panel surfaces */
   
-  /* Complementary Neutral Grays (blue undertones) */
-  --polaris-gray-50: #F8F9FB;     /* Page background - subtle blue tint */
-  --polaris-gray-100: #F1F3F7;    /* Card backgrounds */
-  --polaris-gray-200: #E4E8EF;    /* Subtle borders */
-  --polaris-gray-300: #D1D7E0;    /* Input borders */
-  --polaris-gray-400: #9BA5B8;    /* Placeholder text */
-  --polaris-gray-500: #6B7894;    /* Supporting text */
-  --polaris-gray-600: #4A5568;    /* Body text */
-  --polaris-gray-700: #2D3748;    /* Headings */
-  --polaris-gray-800: #1A202C;    /* Strong emphasis */
-  --polaris-gray-900: #171923;    /* Strongest text */
+  /* Text Colors (Blue-Family Derived) */
+  --text: #1A237E;                    /* Very dark blue - primary text */
+  --text-secondary: #3F51B5;          /* Medium blue - secondary text */
+  --text-muted: #757575;              /* Blue-tinted gray - captions */
   
-  /* Minimal Accent Colors (used sparingly) */
-  --polaris-accent-success: #10B981;   /* Muted green for success */
-  --polaris-accent-success-light: #D1FAE5;
-  --polaris-accent-warning: #F59E0B;   /* Muted amber for warnings */
-  --polaris-accent-warning-light: #FEF3C7;
-  --polaris-accent-danger: #EF4444;    /* Muted red for errors */
-  --polaris-accent-danger-light: #FEE2E2;
+  /* Interaction States */
+  --color-primary-hover: #1976D2;     /* Primary hover */
+  --color-primary-active: #0D47A1;    /* Primary active/pressed */
+  --color-primary-disabled: #BBDEFB;  /* Disabled primary elements */
+  
+  /* Structure Colors */
+  --border: #E3F2FD;                  /* Light blue tint borders */
+  --divider: #E1F5FE;                 /* Subtle dividers */
+  
+  /* Status Colors (Muted & Harmonized - Limited Usage) */
+  --status-success: #4CAF50;          /* Muted green for success only */
+  --status-warning: #FF9800;          /* Muted amber for warnings only */
+  --status-error: #F44336;            /* Muted red for errors only */
+  --status-success-light: #E8F5E8;
+  --status-warning-light: #FFF3E0;
+  --status-error-light: #FFEBEE;
   
   /* Semantic Assignments */
-  --brand: var(--polaris-blue-500);
-  --brand-hover: var(--polaris-blue-600);
-  --brand-light: var(--polaris-blue-100);
-  --text-primary: var(--polaris-gray-700);
-  --text-secondary: var(--polaris-gray-500);
-  --text-muted: var(--polaris-gray-400);
-  --bg-primary: var(--polaris-gray-50);
-  --bg-secondary: var(--polaris-gray-100);
-  --border-color: var(--polaris-gray-200);
+  --color-on-primary: #FFFFFF;
+  --color-on-surface: var(--text);
+  --color-on-background: var(--text);
+  
+  /* Legacy Support (Mapped to New System) */
+  --brand: var(--color-primary);
+  --brand-2: var(--color-secondary);
+  --ink: var(--text);
+  --muted: var(--text-muted);
 }
 
 /* Base body styling with harmonious colors */
