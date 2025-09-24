@@ -9069,47 +9069,53 @@ function Landing(){
         </section>
       )}
 
-      {/* Role Selection Section */}
+      {/* Premium Role Selection Section */}
       {step === 'role-selection' && (
-        <section className="container section" id="role-selection">
-          <div className="bg-white rounded-lg p-8 shadow-lg border max-w-6xl mx-auto">
-            <h3 className="font-semibold text-slate-900 mb-2 text-center text-2xl">Choose Your User Type</h3>
-            <p className="text-slate-600 text-center mb-8">Select the option that best describes your role</p>
+        <section className="premium-section" id="role-selection">
+          <div className="premium-section-container">
+            <div className="premium-section-header">
+              <h2 className="premium-section-title">Choose Your User Type</h2>
+              <p className="premium-section-subtitle">Select the option that best describes your role in the procurement ecosystem</p>
+            </div>
             
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            <div className="role-cards-grid">
               {roleOptions.map((role) => (
                 <div 
                   key={role.id}
-                  className="border rounded-lg p-6 hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition-all flex-1"
+                  className="role-card"
                   onClick={() => selectRole(role.id)}
                 >
-                  <div className="text-center">
-                    <div className="text-3xl mb-3">{role.icon}</div>
-                    <h4 className="font-semibold text-slate-900 mb-2">{role.title}</h4>
-                    <p className="text-sm text-slate-600 mb-3">{role.description}</p>
-                    <div className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded mb-4">
-                      {role.requirements}
-                    </div>
-                    <ul className="text-xs text-slate-500 space-y-1">
-                      {role.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center justify-center gap-2">
-                          <span className="text-green-500">•</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="role-card-icon">{role.icon}</div>
+                  <h3 className="role-card-title">{role.title}</h3>
+                  <p className="role-card-description">{role.description}</p>
+                  
+                  <div className="role-card-requirements">
+                    <span className="requirements-label">Requirements:</span>
+                    <span className="requirements-text">{role.requirements}</span>
+                  </div>
+                  
+                  <ul className="role-card-features">
+                    {role.features.map((feature, idx) => (
+                      <li key={idx}>{feature}</li>
+                    ))}
+                  </ul>
+                  
+                  <div className="role-card-cta">
+                    <span className="cta-text">Get Started</span>
+                    <span className="cta-arrow">→</span>
                   </div>
                 </div>
               ))}
             </div>
             
-            <div className="text-center">
+            <div className="premium-signin-link">
               <a 
-                className="text-blue-600 hover:text-blue-700 text-sm"
+                className="signin-link"
                 href="#auth"
                 onClick={() => setStep('login')}
               >
-                Already have an account? Sign in here
+                <span className="signin-icon">👤</span>
+                <span>Already have an account? Sign in here</span>
               </a>
             </div>
           </div>
