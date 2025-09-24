@@ -2088,7 +2088,7 @@ function KnowledgeBasePage(){
   return (
     <div className="container mt-6 max-w-7xl">
       {/* Knowledge Base Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-8 mb-8">
+      <div className="bg-polaris-blue-600 text-white rounded-lg p-8 mb-8">
         <div className="flex items-center gap-4 mb-4">
           <div className="p-3 bg-white/20 rounded-lg">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
