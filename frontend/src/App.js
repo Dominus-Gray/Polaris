@@ -9075,33 +9075,33 @@ function Landing(){
       {/* Features section removed per request */}
 
 
-      {/* Statistics and Impact */}
+      {/* Stats Section with Compelling Polaris Metrics */}
       <section className="container section">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Driving Procurement Readiness</h2>
-          <p className="text-slate-600">Establishing local level service to support small business pathway towards opportunity</p>
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Proven Impact on Business Readiness</h2>
+          <p className="text-slate-600">Real results from businesses using Polaris to unlock procurement opportunities</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="stat-card">
-            <div className="stat-number">8</div>
-            <div className="stat-label">Assessment Areas</div>
-            <div className="stat-desc">Comprehensive business evaluation</div>
+            <div className="stat-number">92%</div>
+            <div className="stat-label">Success Rate</div>
+            <div className="stat-desc">Businesses improve readiness within 90 days</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">75%</div>
-            <div className="stat-label">Readiness Threshold</div>
-            <div className="stat-desc">For certificate eligibility</div>
+            <div className="stat-number">$2.4M</div>
+            <div className="stat-label">Contract Pipeline</div>
+            <div className="stat-desc">Average agency opportunity value</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">4</div>
-            <div className="stat-label">User Types</div>
-            <div className="stat-desc">Tailored experiences</div>
+            <div className="stat-number">87%</div>
+            <div className="stat-label">Readiness Score</div>
+            <div className="stat-desc">Top-tier certified businesses achieve</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">24/7</div>
-            <div className="stat-label">Platform Access</div>
-            <div className="stat-desc">Always available</div>
+            <div className="stat-number">3-Tier</div>
+            <div className="stat-label">Assessment System</div>
+            <div className="stat-desc">Self → Evidence → Verification</div>
           </div>
         </div>
       </section>
