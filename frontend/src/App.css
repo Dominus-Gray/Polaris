@@ -342,61 +342,207 @@ body {
 
 .btn-sm {
   @apply px-3 py-1.5 text-xs;
-  color: inherit !important; /* Ensure text color inheritance */
 }
 
-/* Specific fixes for button text visibility */
-.btn.bg-blue-600, .btn.bg-indigo-600 {
-  color: white !important;
-  background-color: rgb(37 99 235) !important; /* Ensure blue background */
+/* Form Elements */
+.input, .form-input {
+  @apply w-full px-3 py-2 border rounded-lg text-sm transition-colors duration-200;
+  border-color: var(--polaris-neutral-300);
+  color: var(--polaris-neutral-800);
+  background: white;
 }
 
-.btn.bg-blue-600 span, .btn.bg-indigo-600 span {
-  color: white !important;
+.input:focus, .form-input:focus {
+  @apply outline-none ring-2;
+  border-color: var(--polaris-primary);
+  ring-color: rgba(37, 99, 235, 0.1);
 }
 
-.btn.bg-gray-400 {
-  color: white !important;
-  background-color: rgb(156 163 175) !important;
+.form-label {
+  @apply block text-sm font-medium mb-2;
+  color: var(--polaris-neutral-700);
 }
 
-.btn.bg-gray-400 span {
-  color: white !important;
+.form-error {
+  @apply text-sm mt-1;
+  color: var(--polaris-accent);
 }
 
-/* Improve button contrast and styling */
-.btn.bg-green-600 {
-  color: white !important;
-  background-color: rgb(22 163 74) !important;
+/* State classes */
+.state-success {
+  @apply p-4 rounded-lg border;
+  background: var(--polaris-secondary-light);
+  border-color: var(--polaris-secondary);
+  color: var(--polaris-neutral-800);
 }
 
-.btn.bg-green-700 {
-  background-color: rgb(21 128 61) !important;
+.state-error {
+  @apply p-4 rounded-lg border;
+  background: var(--polaris-accent-light);
+  border-color: var(--polaris-accent);
+  color: var(--polaris-neutral-800);
 }
 
-/* Fix download button colors - use better contrast */
-.btn-download-template {
-  background: linear-gradient(135deg, #0F172A, #1B365D) !important;
-  color: white !important;
-  border: none !important;
+.state-warning {
+  @apply p-4 rounded-lg border;
+  background: var(--polaris-warning-light);
+  border-color: var(--polaris-warning);
+  color: var(--polaris-neutral-800);
 }
 
-.btn-download-template:hover {
-  background: linear-gradient(135deg, #152c50, #273449) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(27, 54, 93, 0.4);
+.state-info {
+  @apply p-4 rounded-lg border;
+  background: var(--polaris-primary-light);
+  border-color: var(--polaris-primary);
+  color: var(--polaris-neutral-800);
 }
 
-/* Center View All Resources button */
-.btn-view-all-resources {
-  display: block !important;
-  margin: 0 auto !important;
-  text-align: center !important;
-}
-
+/* Badge System */
 .badge { 
   @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium;
-  background: linear-gradient(135deg, rgb(241, 245, 249) 0%, rgb(226, 232, 240) 100%);
+  background: var(--polaris-neutral-100);
+  color: var(--polaris-neutral-700);
+}
+
+.badge-success {
+  background: var(--polaris-secondary-light);
+  color: var(--polaris-secondary);
+}
+
+.badge-error {
+  background: var(--polaris-accent-light);
+  color: var(--polaris-accent);
+}
+
+.badge-warning {
+  background: var(--polaris-warning-light);
+  color: var(--polaris-warning);
+}
+
+.badge-primary {
+  background: var(--polaris-primary-light);
+  color: var(--polaris-primary);
+}
+
+/* Card System */
+.card {
+  @apply p-6 bg-white rounded-lg border shadow-sm;
+  border-color: var(--polaris-neutral-200);
+}
+
+.card-header {
+  @apply border-b pb-4 mb-4;
+  border-color: var(--polaris-neutral-200);
+}
+
+.card-title {
+  @apply text-lg font-semibold;
+  color: var(--polaris-neutral-800);
+}
+
+.card-subtitle {
+  @apply text-sm mt-1;
+  color: var(--polaris-neutral-600);
+}
+
+/* Statistics Cards */
+.stat-card {
+  @apply bg-white rounded-lg border p-6 transition-all duration-200 hover:shadow-md;
+  border-color: var(--polaris-neutral-200);
+}
+
+.stat-number {
+  @apply text-3xl font-bold mb-1;
+  color: var(--polaris-primary);
+}
+
+.stat-label {
+  @apply text-sm font-medium uppercase tracking-wide;
+  color: var(--polaris-neutral-600);
+}
+
+.stat-desc {
+  @apply text-xs mt-1;
+  color: var(--polaris-neutral-500);
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, var(--polaris-primary) 0%, var(--polaris-primary-hover) 100%);
+  @apply text-white;
+}
+
+.hero-bg {
+  background: linear-gradient(135deg, var(--polaris-primary) 0%, var(--polaris-primary-hover) 100%);
+}
+
+.hero-inner {
+  @apply container mx-auto px-4 py-16 flex flex-col;
+}
+
+.hero-sub {
+  @apply text-lg mt-4 text-white/90;
+}
+
+.hero-ctas {
+  @apply flex flex-wrap gap-4 mt-8;
+}
+
+/* Navigation improvements */
+.section {
+  @apply py-16;
+}
+
+/* Text color overrides for better visibility */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--polaris-neutral-800);
+}
+
+p {
+  color: var(--polaris-neutral-700);
+}
+
+/* Ensure text is visible in all contexts */
+.text-slate-900 {
+  color: var(--polaris-neutral-800) !important;
+}
+
+.text-slate-800 {
+  color: var(--polaris-neutral-800) !important;
+}
+
+.text-slate-700 {
+  color: var(--polaris-neutral-700) !important;
+}
+
+.text-slate-600 {
+  color: var(--polaris-neutral-600) !important;
+}
+
+.text-slate-500 {
+  color: var(--polaris-neutral-500) !important;
+}
+
+/* Background color overrides */
+.bg-slate-50 {
+  background: var(--polaris-neutral-50) !important;
+}
+
+.bg-slate-100 {
+  background: var(--polaris-neutral-100) !important;
+}
+
+.bg-slate-200 {
+  background: var(--polaris-neutral-200) !important;
+}
+
+/* Border improvements */
+.border-slate-200 {
+  border-color: var(--polaris-neutral-200) !important;
+}
+
+.border-slate-300 {
+  border-color: var(--polaris-neutral-300) !important;
 }
 
 /* Enhanced Card Styles */
