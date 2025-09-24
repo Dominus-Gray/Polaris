@@ -134,62 +134,77 @@ body {
   background: linear-gradient(180deg, var(--background-page) 0%, var(--background-section) 100%);
 }
 
-/* ===== POLARIS UNIFIED COHESIVE COLOR FAMILY ===== */
-/* STRICT CONTRAST RULES: NO dark-on-dark OR light-on-light overlaps */
+/* ===== POLARIS HARMONIOUS ANALOGOUS COLOR SYSTEM ===== */
+/* Research-based harmonious palette - No clashing, smooth blending */
 :root { 
-  /* Single Unified Blue Family - Contrast-Safe Spectrum */
-  --polaris-10: #FDFDFF;        /* Lightest - only for backgrounds under dark text */
-  --polaris-50: #F0F4FF;        /* Very light - card backgrounds under dark text */
-  --polaris-100: #E0EDFF;       /* Light - section backgrounds under dark text */
-  --polaris-200: #C7DDFF;       /* Light medium - borders, disabled states */
-  --polaris-300: #94C3FF;       /* Medium light - secondary interactive (on white only) */
-  --polaris-400: #5BA7FF;       /* Medium - hover states (on white/light only) */
-  --polaris-500: #2B7FFF;       /* Primary - main actions (sufficient contrast) */
-  --polaris-600: #1E5FCC;       /* Primary strong - emphasis (white text safe) */
-  --polaris-700: #1A4499;       /* Strong - text on light backgrounds only */
-  --polaris-800: #162E66;       /* Very strong - headings on white/light only */
-  --polaris-900: #0F1B33;       /* Strongest - primary text on white/light only */
+  /* === PRIMARY COLORS (Blue Family) === */
+  --primary-blue: #3d5a80;        /* Bedazzled Blue - main brand */
+  --primary-light: #5a7ba8;       /* Lighter variant for hover */
+  --primary-dark: #2a4058;        /* Darker variant for emphasis */
   
-  /* CONTRAST-SAFE ASSIGNMENTS */
-  /* RULE 1: Light colors (10-400) ONLY on dark text (700-900) */
-  /* RULE 2: Dark colors (700-900) ONLY on light backgrounds (10-400) */
-  /* RULE 3: Medium colors (500-600) can be on white or very light (10-100) */
+  /* === ANALOGOUS HARMONIES (Adjacent Hues) === */
+  --analogous-teal: #3d8080;      /* Blue-green harmony */
+  --analogous-teal-light: #5aa8a8; /* Light teal for secondary actions */
+  --analogous-indigo: #5a3d80;    /* Blue-purple harmony */
+  --analogous-indigo-light: #7a5aa8; /* Light indigo for accents */
   
-  --background-page: #FFFFFF;                    /* Pure white - primary background */
-  --background-card: var(--polaris-50);          /* Very light blue - card backgrounds */
-  --background-section: var(--polaris-10);       /* Lightest blue - section backgrounds */
-  --background-interactive: var(--polaris-100);  /* Light blue - hover/active states */
+  /* === NEUTRAL FOUNDATIONS (Blue Undertones) === */
+  --neutral-50: #f8fafb;          /* Lightest - page background */
+  --neutral-100: #e8eef3;         /* Light - card backgrounds */
+  --neutral-200: #d1dae6;         /* Medium light - borders */
+  --neutral-300: #b4c4d6;         /* Medium - disabled states */
+  --neutral-400: #8d99ae;         /* Medium dark - placeholders */
+  --neutral-500: #6b7896;         /* Dark - supporting text */
+  --neutral-600: #4a5568;         /* Darker - body text */
+  --neutral-700: #2d3748;         /* Very dark - headings */
+  --neutral-800: #1a202c;         /* Darkest - emphasis */
   
-  --text-heading: var(--polaris-900);            /* Strongest - only on light backgrounds */
-  --text-body: var(--polaris-800);               /* Very strong - only on light backgrounds */
-  --text-caption: var(--polaris-700);            /* Strong - only on light backgrounds */
-  --text-muted: var(--polaris-600);              /* Medium strong - on white/light only */
-  --text-on-primary: #FFFFFF;                    /* White text - only on primary/dark colors */
+  /* === ACCENT COLORS (Minimal, Harmonized) === */
+  --accent-success: #2d7d52;      /* Muted green with blue undertone */
+  --accent-success-bg: rgba(45, 125, 82, 0.1);
+  --accent-warning: #b8860b;      /* Muted gold/amber */
+  --accent-warning-bg: rgba(184, 134, 11, 0.1);
+  --accent-danger: #a0522d;       /* Muted red-brown */
+  --accent-danger-bg: rgba(160, 82, 45, 0.1);
   
-  --border-subtle: var(--polaris-200);           /* Light border - on white backgrounds */
-  --border-standard: var(--polaris-300);         /* Medium border - on white backgrounds */
-  --border-emphasis: var(--polaris-400);         /* Strong border - on white backgrounds */
+  /* === SMOOTH GRADIENTS (135° for natural flow) === */
+  --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--analogous-teal) 100%);
+  --gradient-light: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
+  --gradient-overlay: linear-gradient(135deg, rgba(61, 90, 128, 0.9) 0%, rgba(61, 128, 128, 0.8) 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(232, 238, 243, 0.5) 100%);
   
-  --primary-main: var(--polaris-500);            /* Primary action - on white/light only */
-  --primary-hover: var(--polaris-600);           /* Primary hover - on white/light only */
-  --primary-active: var(--polaris-700);          /* Primary active - on white/light only */
-  --primary-disabled: var(--polaris-200);        /* Disabled - on white only */
+  /* === SEMANTIC ASSIGNMENTS === */
+  --bg-app: var(--neutral-50);
+  --bg-card: white;
+  --bg-surface: var(--neutral-100);
+  --bg-interactive: var(--neutral-200);
   
-  --secondary-main: var(--polaris-300);          /* Secondary - on white only */
-  --secondary-hover: var(--polaris-400);         /* Secondary hover - on white only */
+  --text-heading: var(--neutral-700);
+  --text-body: var(--neutral-600);
+  --text-muted: var(--neutral-500);
+  --text-on-primary: white;
   
-  /* Status Colors (Cool Temperature - Same Family) */
-  --success: #059669;           /* Cool green with blue undertone */
-  --success-bg: #F0FDF4;        /* Light green background */
-  --warning: #DC6803;           /* Warm orange (controlled temperature) */
-  --warning-bg: #FFFBEB;        /* Light orange background */
-  --error: #DC2626;             /* Controlled red */
-  --error-bg: #FEF2F2;          /* Light red background */
+  --border-subtle: var(--neutral-200);
+  --border-standard: var(--neutral-300);
+  --border-emphasis: var(--primary-light);
   
-  /* FORBIDDEN COMBINATIONS PREVENTION */
-  /* Dark text (700-900) must NEVER be on dark backgrounds (600+) */
-  /* Light backgrounds (10-400) must NEVER have light text (10-500) */
-  /* Medium colors (500-600) require careful pairing validation */
+  /* === COMPONENT STATES === */
+  --btn-primary-bg: var(--primary-blue);
+  --btn-primary-hover: var(--primary-dark);
+  --btn-primary-text: white;
+  
+  --btn-secondary-bg: var(--analogous-teal-light);
+  --btn-secondary-hover: var(--analogous-teal);
+  --btn-secondary-text: var(--neutral-700);
+  
+  --btn-tertiary-bg: var(--analogous-indigo-light);
+  --btn-tertiary-hover: var(--analogous-indigo);
+  --btn-tertiary-text: white;
+  
+  /* === PROFESSIONAL SHADOWS === */
+  --shadow-harmonious: 0 4px 6px rgba(61, 90, 128, 0.07), 0 2px 4px rgba(61, 90, 128, 0.06);
+  --shadow-elevated: 0 10px 15px rgba(61, 90, 128, 0.1), 0 4px 6px rgba(61, 90, 128, 0.05);
+  --shadow-dramatic: 0 20px 25px rgba(61, 90, 128, 0.15), 0 10px 10px rgba(61, 90, 128, 0.04);
 }
 
 /* Base body styling with strict contrast rules */
