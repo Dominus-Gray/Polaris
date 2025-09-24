@@ -904,6 +904,85 @@ body {
   line-height: 1.4;
 }
 
+/* Premium Role Selection Cards */
+.role-card {
+  background: white;
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.role-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary-main);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.role-card:hover {
+  border-color: var(--primary-main);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-6px);
+}
+
+.role-card:hover::before {
+  transform: scaleX(1);
+}
+
+.role-card-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  display: block;
+  text-align: center;
+}
+
+.role-card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-heading);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.role-card-description {
+  font-size: var(--text-base);
+  color: var(--text-body);
+  line-height: 1.6;
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.role-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.role-card-features li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-caption);
+  margin-bottom: var(--space-2);
+}
+
+.role-card-features li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: var(--font-bold);
+}
+
 /* Text color overrides for elite consistency */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text);
