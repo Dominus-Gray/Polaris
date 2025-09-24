@@ -46,8 +46,7 @@ import { SmartErrorBoundary, NetworkStatusIndicator } from './components/Enhance
 import { PerformanceMonitoringWidget } from './components/PerformanceMonitoring';
 import { DarkModeProvider, DarkModeToggle } from './components/DarkModeSupport';
 
-
-// Advanced AI Components
+import AICoachingInterface from './components/AICoachingInterface';
 import ComputerVisionDocumentAnalyzer from './components/ComputerVisionDocumentAnalyzer';
 import NLPContractAnalyzer from './components/NLPContractAnalyzer';
 import { BehavioralLearningProvider, AdaptiveDashboard } from './components/BehavioralLearningSystem';
