@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = process.env.REACT_APP_BACKEND_URL || 'https://polar-docs-ai.preview.emergentagent.com/api';
+
 export default function Login(){
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,13 +15,15 @@ export default function Login(){
     e.preventDefault();
     setLoading(true); setError('');
     try{
-      const { data } = await axios.post('/auth/login', { email, password });
+      const { data } = await axios.post(`${API_BASE}/auth/login`, { email, password });
       const token = data?.access_token || data?.token;
       if (!token) throw new Error('No token returned');
       localStorage.setItem('polaris_token', token);
       // load profile
       try{
-        const meRes = await axios.get('/auth/me');
+        const meRes = await axios.get(`${API_BASE}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         localStorage.setItem('polaris_me', JSON.stringify(meRes.data));
       }catch(_){ /* ignore */ }
       navigate('/home');
