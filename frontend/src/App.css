@@ -411,7 +411,7 @@ body {
   color: var(--text-body);
 }
 
-/* Premium Button System */
+/* === HARMONIOUS BUTTON SYSTEM === */
 .btn { 
   display: inline-flex;
   align-items: center;
@@ -421,9 +421,9 @@ body {
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   border: 1px solid var(--border-standard);
-  background: white;
+  background: var(--bg-card);
   color: var(--text-body);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-harmonious);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   font-family: var(--font-body);
@@ -431,71 +431,92 @@ body {
 
 .btn:hover { 
   transform: translateY(-1px);
-  background: var(--background-interactive);
+  background: var(--bg-interactive);
   border-color: var(--border-emphasis);
   color: var(--text-heading);
-  box-shadow: var(--shadow-md);
-}
-
-.btn:active { 
-  transform: translateY(0);
-  background: var(--background-interactive);
+  box-shadow: var(--shadow-elevated);
 }
 
 .btn-primary { 
   border: none;
-  background: var(--primary-main);
-  color: white !important;
-  box-shadow: var(--shadow-lg);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow: var(--shadow-elevated);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
-  box-shadow: var(--shadow-xl);
+  background: var(--btn-primary-hover);
+  box-shadow: var(--shadow-dramatic);
   transform: translateY(-2px);
-}
-
-.btn-primary:active {
-  background: var(--primary-active);
-  transform: translateY(0);
-}
-
-.btn-primary:disabled {
-  background: var(--primary-disabled);
-  color: var(--text-muted) !important;
-  transform: none;
-  box-shadow: none;
 }
 
 .btn-secondary {
   border: none;
-  background: var(--secondary-main);
-  color: var(--text-heading) !important;
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
 }
 
 .btn-secondary:hover {
-  background: var(--secondary-hover);
-  color: var(--text-heading) !important;
+  background: var(--btn-secondary-hover);
 }
 
-.btn-success {
+.btn-tertiary {
   border: none;
-  background: var(--success);
-  color: white !important;
+  background: var(--btn-tertiary-bg);
+  color: var(--btn-tertiary-text);
 }
 
-.btn-danger {
-  border: none;
-  background: var(--error);
-  color: white !important;
+.btn-tertiary:hover {
+  background: var(--btn-tertiary-hover);
 }
 
-.btn-sm {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
+/* === HARMONIOUS CARDS === */
+.stat-card, .role-card, .card {
+  background: var(--gradient-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-harmonious);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Premium Form Elements */
+.stat-card:hover, .role-card:hover, .card:hover {
+  border-color: var(--border-emphasis);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-4px);
+}
+
+.stat-card::before, .role-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+.role-card::before {
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.role-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-extrabold);
+  color: var(--primary-blue);
+  margin-bottom: var(--space-2);
+  line-height: 1;
+}
+
+/* === HARMONIOUS FORMS === */
 .input, .form-input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
@@ -503,25 +524,120 @@ body {
   border-radius: var(--radius-lg);
   font-size: var(--text-base);
   color: var(--text-body);
-  background: white;
+  background: var(--bg-card);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-body);
 }
 
 .input:focus, .form-input:focus {
   outline: none;
-  border-color: var(--primary-main);
-  box-shadow: 0 0 0 3px rgba(43, 127, 255, 0.1);
-  background: var(--background-section);
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(61, 90, 128, 0.1);
+  background: white;
 }
 
-.form-label {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+/* === HARMONIOUS ALERTS === */
+.state-success {
+  background: var(--accent-success-bg);
+  border: 1px solid var(--accent-success);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  color: var(--accent-success);
+}
+
+.state-warning {
+  background: var(--accent-warning-bg);
+  border: 1px solid var(--accent-warning);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  color: var(--accent-warning);
+}
+
+.state-error {
+  background: var(--accent-danger-bg);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  color: var(--accent-danger);
+}
+
+/* === HARMONIOUS OVERRIDES === */
+/* Text Colors - Harmonious System */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+  font-family: var(--font-display);
+}
+
+p {
   color: var(--text-body);
-  margin-bottom: var(--space-2);
-  font-family: var(--font-body);
+}
+
+/* Tailwind Overrides - Force Harmony */
+.text-slate-900, .text-slate-800, .text-slate-700 {
+  color: var(--text-heading) !important;
+}
+
+.text-slate-600 {
+  color: var(--text-body) !important;
+}
+
+.text-slate-500, .text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+.bg-slate-50 {
+  background: var(--bg-app) !important;
+}
+
+.bg-slate-100 {
+  background: var(--bg-surface) !important;
+}
+
+.bg-slate-200 {
+  background: var(--bg-interactive) !important;
+}
+
+/* Dashboard specific harmonious colors */
+.bg-blue-600, .bg-indigo-600 {
+  background: var(--primary-blue) !important;
+}
+
+.bg-blue-500 {
+  background: var(--primary-light) !important;
+}
+
+.bg-blue-400 {
+  background: var(--analogous-teal-light) !important;
+}
+
+.bg-blue-300 {
+  background: var(--analogous-teal) !important;
+}
+
+.bg-purple-600, .bg-purple-500 {
+  background: var(--analogous-indigo) !important;
+}
+
+.bg-purple-400 {
+  background: var(--analogous-indigo-light) !important;
+}
+
+/* Remove all harsh gradients */
+.bg-gradient-to-r {
+  background: var(--gradient-primary) !important;
+}
+
+/* Success/Error colors - harmonized */
+.bg-green-600, .bg-green-500 {
+  background: var(--accent-success) !important;
+}
+
+.bg-red-600, .bg-red-500 {
+  background: var(--accent-danger) !important;
+}
+
+.bg-yellow-600, .bg-amber-600 {
+  background: var(--accent-warning) !important;
 }
 
 .form-error {
