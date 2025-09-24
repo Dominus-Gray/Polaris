@@ -9319,8 +9319,7 @@ function AppShell(){
           <Route path="/ai/analytics" element={<AdvancedAnalyticsDashboard userRole="client" />} />
           
           {/* Global Platform Routes */}
-          <Route path="/compliance/international" element={<InternationalComplianceModule selectedRegion="US" userRole="client" />} />
-          <Route path="/industry/verticals" element={<IndustryVerticalSolutions industry="defense" userRole="client" />} />
+
           <Route path="/government/opportunities" element={<GovernmentOpportunityDashboard userRole="client" />} />
           <Route path="/blockchain/certificates" element={<BlockchainCertificationSystem />} />
           
