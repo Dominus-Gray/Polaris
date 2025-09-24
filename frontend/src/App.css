@@ -6,60 +6,61 @@
 @tailwind utilities;
 
 /* ===== POLARIS UNIFIED COHESIVE COLOR FAMILY ===== */
-/* One color family - Zero dark overlaps - Complete cohesion */
+/* STRICT CONTRAST RULES: NO dark-on-dark OR light-on-light overlaps */
 :root { 
-  /* Single Unified Blue Family - Complete Spectrum */
-  --polaris-blue-10: #F7F9FF;        /* Lightest - page backgrounds */
-  --polaris-blue-25: #EDF4FF;        /* Very light - card backgrounds */
-  --polaris-blue-50: #E3F2FF;        /* Light - hover states, borders */
-  --polaris-blue-100: #C7E4FF;       /* Light medium - secondary backgrounds */
-  --polaris-blue-200: #9ACFFF;       /* Medium light - disabled states */
-  --polaris-blue-300: #6BB8FF;       /* Medium - secondary actions */
-  --polaris-blue-400: #4A9EFF;       /* Medium strong - interactive elements */
-  --polaris-blue-500: #2B7FFF;       /* Primary - main actions, brand */
-  --polaris-blue-600: #1A6EFF;       /* Primary strong - hover states */
-  --polaris-blue-700: #0D5FFF;       /* Strong - emphasis, headers */
-  --polaris-blue-800: #0047CC;       /* Very strong - text on light backgrounds */
-  --polaris-blue-900: #003399;       /* Strongest - primary text, headings */
+  /* Single Unified Blue Family - Contrast-Safe Spectrum */
+  --polaris-10: #FDFDFF;        /* Lightest - only for backgrounds under dark text */
+  --polaris-50: #F0F4FF;        /* Very light - card backgrounds under dark text */
+  --polaris-100: #E0EDFF;       /* Light - section backgrounds under dark text */
+  --polaris-200: #C7DDFF;       /* Light medium - borders, disabled states */
+  --polaris-300: #94C3FF;       /* Medium light - secondary interactive (on white only) */
+  --polaris-400: #5BA7FF;       /* Medium - hover states (on white/light only) */
+  --polaris-500: #2B7FFF;       /* Primary - main actions (sufficient contrast) */
+  --polaris-600: #1E5FCC;       /* Primary strong - emphasis (white text safe) */
+  --polaris-700: #1A4499;       /* Strong - text on light backgrounds only */
+  --polaris-800: #162E66;       /* Very strong - headings on white/light only */
+  --polaris-900: #0F1B33;       /* Strongest - primary text on white/light only */
   
-  /* Unified System Variables */
-  --primary: var(--polaris-blue-500);
-  --primary-hover: var(--polaris-blue-600);
-  --primary-active: var(--polaris-blue-700);
-  --primary-disabled: var(--polaris-blue-200);
+  /* CONTRAST-SAFE ASSIGNMENTS */
+  /* RULE 1: Light colors (10-400) ONLY on dark text (700-900) */
+  /* RULE 2: Dark colors (700-900) ONLY on light backgrounds (10-400) */
+  /* RULE 3: Medium colors (500-600) can be on white or very light (10-100) */
   
-  --secondary: var(--polaris-blue-300);
-  --secondary-hover: var(--polaris-blue-400);
+  --background-page: #FFFFFF;                    /* Pure white - primary background */
+  --background-card: var(--polaris-50);          /* Very light blue - card backgrounds */
+  --background-section: var(--polaris-10);       /* Lightest blue - section backgrounds */
+  --background-interactive: var(--polaris-100);  /* Light blue - hover/active states */
   
-  --background-primary: #FFFFFF;      /* Pure white - main background */
-  --background-secondary: var(--polaris-blue-10);  /* Lightest blue - sections */
-  --background-tertiary: var(--polaris-blue-25);   /* Card backgrounds */
+  --text-heading: var(--polaris-900);            /* Strongest - only on light backgrounds */
+  --text-body: var(--polaris-800);               /* Very strong - only on light backgrounds */
+  --text-caption: var(--polaris-700);            /* Strong - only on light backgrounds */
+  --text-muted: var(--polaris-600);              /* Medium strong - on white/light only */
+  --text-on-primary: #FFFFFF;                    /* White text - only on primary/dark colors */
   
-  --text-primary: var(--polaris-blue-900);     /* Strongest blue - headlines */
-  --text-secondary: var(--polaris-blue-800);   /* Strong blue - body text */
-  --text-tertiary: var(--polaris-blue-700);    /* Medium blue - captions */
-  --text-muted: var(--polaris-blue-600);       /* Light blue - placeholders */
+  --border-subtle: var(--polaris-200);           /* Light border - on white backgrounds */
+  --border-standard: var(--polaris-300);         /* Medium border - on white backgrounds */
+  --border-emphasis: var(--polaris-400);         /* Strong border - on white backgrounds */
   
-  --border-light: var(--polaris-blue-50);      /* Light borders */
-  --border-medium: var(--polaris-blue-100);    /* Medium borders */
-  --border-strong: var(--polaris-blue-200);    /* Strong borders */
+  --primary-main: var(--polaris-500);            /* Primary action - on white/light only */
+  --primary-hover: var(--polaris-600);           /* Primary hover - on white/light only */
+  --primary-active: var(--polaris-700);          /* Primary active - on white/light only */
+  --primary-disabled: var(--polaris-200);        /* Disabled - on white only */
   
-  /* Interaction States (All Same Family) */
-  --hover-bg: var(--polaris-blue-50);
-  --active-bg: var(--polaris-blue-100);
-  --focus-ring: var(--polaris-blue-300);
+  --secondary-main: var(--polaris-300);          /* Secondary - on white only */
+  --secondary-hover: var(--polaris-400);         /* Secondary hover - on white only */
   
-  /* Status Colors (Minimal, Same Temperature) */
-  --success: #059669;           /* Cool green (blue undertone) */
-  --success-bg: #F0FDF4;        /* Success background */
-  --warning: #D97706;           /* Warm amber (controlled) */
-  --warning-bg: #FFFBEB;        /* Warning background */
+  /* Status Colors (Cool Temperature - Same Family) */
+  --success: #059669;           /* Cool green with blue undertone */
+  --success-bg: #F0FDF4;        /* Light green background */
+  --warning: #DC6803;           /* Warm orange (controlled temperature) */
+  --warning-bg: #FFFBEB;        /* Light orange background */
   --error: #DC2626;             /* Controlled red */
-  --error-bg: #FEF2F2;          /* Error background */
+  --error-bg: #FEF2F2;          /* Light red background */
   
-  /* RULE: NO DARK-ON-DARK COMBINATIONS ALLOWED */
-  /* All dark colors (700+) ONLY on light backgrounds (50 and below) */
-  /* All light backgrounds (50 and below) ONLY with dark text (700+) */
+  /* FORBIDDEN COMBINATIONS PREVENTION */
+  /* Dark text (700-900) must NEVER be on dark backgrounds (600+) */
+  /* Light backgrounds (10-400) must NEVER have light text (10-500) */
+  /* Medium colors (500-600) require careful pairing validation */
 }
 
 /* Base body styling with elite color harmony */
