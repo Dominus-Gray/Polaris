@@ -4643,7 +4643,7 @@ function ClientHome(){
           
           <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md">
+              <div className="p-3 bg-polaris-accent-success rounded-lg shadow-md">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
