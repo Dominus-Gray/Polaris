@@ -7043,7 +7043,7 @@ function AgencyHome(){
         {activeTab === 'dashboard' && (
           <div>
             {/* Executive Summary Dashboard */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-2xl p-8 text-white mb-8">
+            <div className="bg-polaris-blue-600 rounded-2xl p-8 text-white mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-3xl font-bold mb-2">Economic Impact Overview</h2>
