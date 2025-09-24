@@ -9352,16 +9352,7 @@ function AppShell(){
       
 
 
-      {/* Industry Verticals Quick Access */}
-      <div className="fixed bottom-4 left-96 z-40">
-        <button
-          onClick={() => window.location.href = '/industry/verticals'}
-          className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
-          title="Industry Verticals"
-        >
-        🏭
-        </button>
-      </div>
+
     </div>
   );
 }
