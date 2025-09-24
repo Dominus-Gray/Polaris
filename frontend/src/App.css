@@ -563,7 +563,7 @@ body {
 }
 
 /* === HARMONIOUS OVERRIDES === */
-/* Text Colors - Harmonious System */
+/* Text color overrides - Harmonious System */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-heading);
   font-family: var(--font-display);
@@ -639,6 +639,16 @@ p {
 
 .bg-yellow-600, .bg-amber-600 {
   background: var(--accent-warning) !important;
+}
+
+/* Ensure all borders are visible */
+.border, .border-slate-200, .border-slate-300 {
+  border-color: var(--border-subtle) !important;
+}
+
+/* Ensure all cards have proper background */
+.bg-white {
+  background: white !important;
 }
 
 .form-error {
