@@ -5,48 +5,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== POLARIS ELITE ZERO-CLASH COLOR SYSTEM ===== */
-/* Designed by Elite UI/UX Color System Designer - Production Ready */
+/* ===== POLARIS UNIFIED COHESIVE COLOR FAMILY ===== */
+/* One color family - Zero dark overlaps - Complete cohesion */
 :root { 
-  /* Core Base Colors (Only Approved Set) */
-  --color-primary: #4285F4;           /* Blue - trustworthy, professional */
-  --color-primary-variant: #1565C0;   /* Dark Blue - emphasis, hover states */
-  --color-secondary: #81C4FF;         /* Light Blue - secondary actions */
-  --bg: #FFFFFF;                      /* White - main background (required) */
-  --surface: #F8F9FA;                 /* Silver - card/panel surfaces */
+  /* Single Unified Blue Family - Complete Spectrum */
+  --polaris-blue-10: #F7F9FF;        /* Lightest - page backgrounds */
+  --polaris-blue-25: #EDF4FF;        /* Very light - card backgrounds */
+  --polaris-blue-50: #E3F2FF;        /* Light - hover states, borders */
+  --polaris-blue-100: #C7E4FF;       /* Light medium - secondary backgrounds */
+  --polaris-blue-200: #9ACFFF;       /* Medium light - disabled states */
+  --polaris-blue-300: #6BB8FF;       /* Medium - secondary actions */
+  --polaris-blue-400: #4A9EFF;       /* Medium strong - interactive elements */
+  --polaris-blue-500: #2B7FFF;       /* Primary - main actions, brand */
+  --polaris-blue-600: #1A6EFF;       /* Primary strong - hover states */
+  --polaris-blue-700: #0D5FFF;       /* Strong - emphasis, headers */
+  --polaris-blue-800: #0047CC;       /* Very strong - text on light backgrounds */
+  --polaris-blue-900: #003399;       /* Strongest - primary text, headings */
   
-  /* Text Colors (Blue-Family Derived) */
-  --text: #1A237E;                    /* Very dark blue - primary text */
-  --text-secondary: #3F51B5;          /* Medium blue - secondary text */
-  --text-muted: #757575;              /* Blue-tinted gray - captions */
+  /* Unified System Variables */
+  --primary: var(--polaris-blue-500);
+  --primary-hover: var(--polaris-blue-600);
+  --primary-active: var(--polaris-blue-700);
+  --primary-disabled: var(--polaris-blue-200);
   
-  /* Interaction States */
-  --color-primary-hover: #1976D2;     /* Primary hover */
-  --color-primary-active: #0D47A1;    /* Primary active/pressed */
-  --color-primary-disabled: #BBDEFB;  /* Disabled primary elements */
+  --secondary: var(--polaris-blue-300);
+  --secondary-hover: var(--polaris-blue-400);
   
-  /* Structure Colors */
-  --border: #E3F2FD;                  /* Light blue tint borders */
-  --divider: #E1F5FE;                 /* Subtle dividers */
+  --background-primary: #FFFFFF;      /* Pure white - main background */
+  --background-secondary: var(--polaris-blue-10);  /* Lightest blue - sections */
+  --background-tertiary: var(--polaris-blue-25);   /* Card backgrounds */
   
-  /* Status Colors (Muted & Harmonized - Limited Usage) */
-  --status-success: #4CAF50;          /* Muted green for success only */
-  --status-warning: #FF9800;          /* Muted amber for warnings only */
-  --status-error: #F44336;            /* Muted red for errors only */
-  --status-success-light: #E8F5E8;
-  --status-warning-light: #FFF3E0;
-  --status-error-light: #FFEBEE;
+  --text-primary: var(--polaris-blue-900);     /* Strongest blue - headlines */
+  --text-secondary: var(--polaris-blue-800);   /* Strong blue - body text */
+  --text-tertiary: var(--polaris-blue-700);    /* Medium blue - captions */
+  --text-muted: var(--polaris-blue-600);       /* Light blue - placeholders */
   
-  /* Semantic Assignments */
-  --color-on-primary: #FFFFFF;
-  --color-on-surface: var(--text);
-  --color-on-background: var(--text);
+  --border-light: var(--polaris-blue-50);      /* Light borders */
+  --border-medium: var(--polaris-blue-100);    /* Medium borders */
+  --border-strong: var(--polaris-blue-200);    /* Strong borders */
   
-  /* Legacy Support (Mapped to New System) */
-  --brand: var(--color-primary);
-  --brand-2: var(--color-secondary);
-  --ink: var(--text);
-  --muted: var(--text-muted);
+  /* Interaction States (All Same Family) */
+  --hover-bg: var(--polaris-blue-50);
+  --active-bg: var(--polaris-blue-100);
+  --focus-ring: var(--polaris-blue-300);
+  
+  /* Status Colors (Minimal, Same Temperature) */
+  --success: #059669;           /* Cool green (blue undertone) */
+  --success-bg: #F0FDF4;        /* Success background */
+  --warning: #D97706;           /* Warm amber (controlled) */
+  --warning-bg: #FFFBEB;        /* Warning background */
+  --error: #DC2626;             /* Controlled red */
+  --error-bg: #FEF2F2;          /* Error background */
+  
+  /* RULE: NO DARK-ON-DARK COMBINATIONS ALLOWED */
+  /* All dark colors (700+) ONLY on light backgrounds (50 and below) */
+  /* All light backgrounds (50 and below) ONLY with dark text (700+) */
 }
 
 /* Base body styling with elite color harmony */
