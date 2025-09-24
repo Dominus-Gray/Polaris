@@ -446,52 +446,64 @@ body {
   color: var(--text-body);
 }
 
-/* Unified Button System - NO Light-on-Light Overlaps */
+/* Premium Button System */
 .btn { 
-  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200;
-  background: var(--background-page);
-  border-color: var(--border-standard);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border: 1px solid var(--border-standard);
+  background: white;
   color: var(--text-body);
-  box-shadow: 0 1px 2px rgba(43, 127, 255, 0.05);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  font-family: var(--font-body);
 }
 
 .btn:hover { 
-  @apply transform -translate-y-0.5;
+  transform: translateY(-1px);
   background: var(--background-interactive);
   border-color: var(--border-emphasis);
   color: var(--text-heading);
-  box-shadow: 0 4px 6px rgba(43, 127, 255, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .btn:active { 
-  @apply transform translate-y-0;
-  background: var(--primary-active);
-  color: var(--text-on-primary);
+  transform: translateY(0);
+  background: var(--background-interactive);
 }
 
 .btn-primary { 
-  @apply border-transparent;
+  border: none;
   background: var(--primary-main);
-  color: var(--text-on-primary) !important;
-  box-shadow: 0 4px 14px 0 rgba(43, 127, 255, 0.3);
+  color: white !important;
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
-  box-shadow: 0 6px 20px 0 rgba(43, 127, 255, 0.4);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
 }
 
 .btn-primary:active {
   background: var(--primary-active);
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {
   background: var(--primary-disabled);
   color: var(--text-muted) !important;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-secondary {
-  @apply border-transparent;
+  border: none;
   background: var(--secondary-main);
   color: var(--text-heading) !important;
 }
@@ -502,19 +514,20 @@ body {
 }
 
 .btn-success {
-  @apply border-transparent;
+  border: none;
   background: var(--success);
   color: white !important;
 }
 
 .btn-danger {
-  @apply border-transparent;
+  border: none;
   background: var(--error);
   color: white !important;
 }
 
 .btn-sm {
-  @apply px-3 py-1.5 text-xs;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
 }
 
 /* Form Elements with blue harmony */
