@@ -49,19 +49,19 @@
   --muted: var(--text-muted);
 }
 
-/* Base body styling with harmonious colors */
+/* Base body styling with elite color harmony */
 body { 
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 .app-shell { @apply min-h-screen; }
 
-/* Professional Header with blue harmony */
+/* Professional Header with zero-clash colors */
 .header { 
   @apply sticky top-0 z-30 backdrop-blur border-b;
-  background: rgba(248, 249, 251, 0.95);
-  border-color: var(--border-color);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--border);
 }
 
 .header-inner { 
@@ -70,7 +70,7 @@ body {
 
 .brand { 
   @apply text-xl font-semibold tracking-tight;
-  color: var(--polaris-blue-700);
+  color: var(--text);
 }
 
 .professional-header {
