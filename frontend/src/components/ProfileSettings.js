@@ -682,9 +682,9 @@ function NotificationToggle({ label, description, checked, onChange }) {
 }
 
 function PreferencesTab({ profile, onSave, saving }) {
+  const { isDarkMode, userPreference, setTheme } = useDarkMode();
   const [preferences, setPreferences] = useState(
     profile?.preferences || {
-      theme: 'light',
       language: 'en',
       date_format: 'MM/dd/yyyy',
       currency: 'USD',
@@ -703,19 +703,27 @@ function PreferencesTab({ profile, onSave, saving }) {
         <p className="text-slate-600">Customize your Polaris experience.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Theme</label>
-          <select
-            className="input w-full"
-            value={preferences.theme}
-            onChange={(e) => setPreferences({ ...preferences, theme: e.target.value })}
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="auto">System Default</option>
-          </select>
+      {/* Theme Settings */}
+      <div className="mb-8 p-6 bg-slate-50 rounded-lg border">
+        <div className="mb-4">
+          <h3 className="text-lg font-medium text-slate-900 mb-2">Appearance</h3>
+          <p className="text-sm text-slate-600">Customize the look and feel of your Polaris dashboard.</p>
         </div>
+        
+        {/* Dark Mode Toggle Component */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-medium text-slate-900">Theme</div>
+            <div className="text-sm text-slate-600 mt-1">
+              Current: {isDarkMode ? 'Dark Mode' : 'Light Mode'} 
+              {userPreference === 'system' && ' (Following System)'}
+            </div>
+          </div>
+          <DarkModeToggle />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Language</label>
