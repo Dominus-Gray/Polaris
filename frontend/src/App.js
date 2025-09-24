@@ -7813,7 +7813,7 @@ function AgencyHome(){
                 <h4 className="text-lg font-semibold text-slate-900 mb-4">License Distribution</h4>
                 
                 {/* Enhanced Tier Banner with License Information */}
-                <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-xl p-6 text-white mb-8">
+                <div className="bg-polaris-blue-600 rounded-xl p-6 text-white mb-8">
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <h3 className="text-xl font-semibold">{tierInfo.tier} Plan - License Distribution</h3>
