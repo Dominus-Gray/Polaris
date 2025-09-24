@@ -197,6 +197,9 @@ function EnhancedPolarisBrand() {
 
 // Axios configuration and authentication setup
 const setupAxiosAuth = () => {
+  // Configure axios base URL
+  axios.defaults.baseURL = process.env.REACT_APP_BACKEND_URL || 'https://polar-docs-ai.preview.emergentagent.com/api';
+  
   // Clear any existing interceptors to prevent duplicates
   axios.interceptors.request.handlers = [];
   axios.interceptors.response.handlers = [];
