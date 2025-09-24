@@ -63,19 +63,19 @@
   /* Medium colors (500-600) require careful pairing validation */
 }
 
-/* Base body styling with elite color harmony */
+/* Base body styling with strict contrast rules */
 body { 
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: var(--background-page);
+  color: var(--text-body);
 }
 
 .app-shell { @apply min-h-screen; }
 
-/* Professional Header with zero-clash colors */
+/* Header with safe contrast combinations */
 .header { 
   @apply sticky top-0 z-30 backdrop-blur border-b;
   background: rgba(255, 255, 255, 0.95);
-  border-color: var(--border);
+  border-color: var(--border-subtle);
 }
 
 .header-inner { 
@@ -84,14 +84,14 @@ body {
 
 .brand { 
   @apply text-xl font-semibold tracking-tight;
-  color: var(--text);
+  color: var(--text-heading);
 }
 
 .professional-header {
   @apply bg-white border-b shadow-sm sticky top-0 z-50;
   backdrop-filter: blur(12px);
-  background: rgba(248, 249, 251, 0.98);
-  border-color: var(--border-color);
+  background: var(--background-page);
+  border-color: var(--border-subtle);
 }
 
 .header-container {
@@ -113,12 +113,12 @@ body {
 
 .logo-brand {
   @apply block text-lg font-bold tracking-wider;
-  color: var(--polaris-blue-700);
+  color: var(--text-heading);
 }
 
 .logo-tagline {
   @apply block text-xs font-medium;
-  color: var(--text-secondary);
+  color: var(--text-caption);
 }
 
 .main-navigation {
@@ -127,17 +127,17 @@ body {
 
 .nav-item {
   @apply flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200;
-  color: var(--text-secondary);
+  color: var(--text-caption);
 }
 
 .nav-item:hover {
-  background: var(--polaris-blue-50);
-  color: var(--polaris-blue-600);
+  background: var(--background-interactive);
+  color: var(--text-body);
 }
 
 .nav-item.active {
-  background: var(--polaris-blue-100);
-  color: var(--polaris-blue-700);
+  background: var(--primary-main);
+  color: var(--text-on-primary);
 }
 
 .nav-item.active::before {
@@ -148,7 +148,7 @@ body {
   transform: translateY(-50%);
   width: 3px;
   height: 24px;
-  background: var(--polaris-blue-500);
+  background: var(--primary-hover);
   border-radius: 2px;
 }
 
@@ -169,13 +169,14 @@ body {
 }
 
 .user-menu-trigger:hover {
-  background: var(--polaris-blue-50);
+  background: var(--background-interactive);
 }
 
 .user-avatar {
-  @apply w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold relative;
-  background: linear-gradient(135deg, var(--polaris-blue-500) 0%, var(--polaris-blue-600) 100%);
-  box-shadow: 0 2px 8px rgba(79, 136, 255, 0.25);
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold relative;
+  background: var(--primary-main);
+  color: var(--text-on-primary);
+  box-shadow: 0 2px 8px rgba(43, 127, 255, 0.25);
 }
 
 .user-info {
@@ -184,12 +185,12 @@ body {
 
 .user-email {
   @apply text-sm font-medium;
-  color: var(--text-primary);
+  color: var(--text-body);
 }
 
 .user-role {
   @apply text-xs capitalize;
-  color: var(--text-secondary);
+  color: var(--text-caption);
 }
 
 .chevron-icon {
@@ -199,18 +200,18 @@ body {
 
 .user-menu-dropdown {
   @apply absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 z-50;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .menu-item {
   @apply flex items-center space-x-3 px-4 py-3 text-sm transition-colors duration-150 w-full text-left;
-  color: var(--text-primary);
+  color: var(--text-body);
 }
 
 .menu-item:hover {
-  background: var(--polaris-blue-50);
-  color: var(--polaris-blue-700);
+  background: var(--background-interactive);
+  color: var(--text-heading);
 }
 
 .menu-icon {
@@ -220,89 +221,100 @@ body {
 
 .logout-button {
   @apply border-t mt-2 pt-2;
-  border-color: var(--border-color);
+  border-color: var(--border-subtle);
 }
 
 .logout-button:hover {
-  color: var(--polaris-accent-danger);
+  color: var(--error);
 }
 
 .logout-button:hover .menu-icon {
-  color: var(--polaris-accent-danger);
+  color: var(--error);
 }
 
-/* Progress bars with harmonious blue gradient */
+/* Progress bars with strict contrast rules */
 .progress-wrap { 
   @apply w-full h-2 rounded overflow-hidden;
-  background: var(--polaris-blue-100);
+  background: var(--background-interactive);
 }
 .progress-bar { 
   @apply h-full;
-  background: linear-gradient(90deg, var(--polaris-blue-400) 0%, var(--polaris-blue-500) 100%);
+  background: var(--primary-main);
 }
 
-/* Layout components with gentle styling */
+/* Layout components with safe contrast */
 .container { @apply max-w-6xl mx-auto px-4; }
 .grid-layout { @apply grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6; }
 .sidebar { 
-  @apply lg:col-span-3 p-4 rounded-lg border bg-white shadow-sm; 
-  border-color: var(--border-color);
+  @apply lg:col-span-3 p-4 rounded-lg border shadow-sm; 
+  background: var(--background-card);
+  border-color: var(--border-subtle);
+  color: var(--text-body);
 }
 .main { 
-  @apply lg:col-span-9 p-4 rounded-lg border bg-white shadow-sm;
-  border-color: var(--border-color);
+  @apply lg:col-span-9 p-4 rounded-lg border shadow-sm;
+  background: var(--background-card);
+  border-color: var(--border-subtle);
+  color: var(--text-body);
 }
 
-/* Area components */
+/* Area components - safe contrast only */
 .area-item { 
   @apply flex items-center gap-3 p-2 rounded cursor-pointer transition-colors;
+  color: var(--text-body);
 }
 .area-item:hover {
-  background: var(--polaris-blue-50);
+  background: var(--background-interactive);
+  color: var(--text-heading);
 }
 .area-active { 
   @apply border-l-4;
-  background: var(--polaris-blue-100);
-  color: var(--polaris-blue-700);
-  border-left-color: var(--polaris-blue-500);
+  background: var(--background-interactive);
+  color: var(--text-heading);
+  border-left-color: var(--primary-main);
 }
 
-/* Question cards */
+/* Question cards with strict contrast rules */
 .q-card { 
-  @apply p-4 border rounded-lg mb-4 bg-white shadow-sm transition hover:shadow-md;
-  border-color: var(--border-color);
+  @apply p-4 border rounded-lg mb-4 shadow-sm transition hover:shadow-md;
+  background: var(--background-card);
+  border-color: var(--border-subtle);
+  color: var(--text-body);
 }
 .q-label { 
   @apply font-medium;
-  color: var(--text-primary);
+  color: var(--text-heading);
 }
 .q-actions { @apply mt-3 flex items-center gap-2 flex-wrap; }
 
-/* Toggle components with blue harmony */
+/* Toggle components with safe contrast */
 .toggle { 
   @apply inline-flex rounded-full overflow-hidden border;
-  border-color: var(--polaris-blue-300);
+  border-color: var(--border-standard);
 }
 .toggle button { 
   @apply px-3 py-1 text-sm transition;
-  color: var(--text-secondary);
+  color: var(--text-caption);
+  background: var(--background-page);
 }
 .toggle button:hover {
-  background: var(--polaris-blue-50);
+  background: var(--background-interactive);
+  color: var(--text-body);
 }
 .toggle .on { 
-  background: var(--polaris-blue-500);
-  @apply text-white;
+  background: var(--primary-main);
+  color: var(--text-on-primary);
 }
 .toggle .off { 
-  background: var(--polaris-blue-300);
-  @apply text-white;
+  background: var(--secondary-main);
+  color: var(--text-heading);
 }
 
 .upload-box { 
   @apply mt-3 p-3 rounded border;
-  background: var(--polaris-blue-50);
-  border-color: var(--polaris-blue-200);
+  background: var(--background-section);
+  border-color: var(--border-subtle);
+  color: var(--text-body);
 }
 
 /* Harmonious Button System */
