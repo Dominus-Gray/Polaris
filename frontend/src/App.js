@@ -52,7 +52,7 @@ import ComputerVisionDocumentAnalyzer from './components/ComputerVisionDocumentA
 import NLPContractAnalyzer from './components/NLPContractAnalyzer';
 import { BehavioralLearningProvider, AdaptiveDashboard } from './components/BehavioralLearningSystem';
 import PredictiveMarketModeling from './components/PredictiveMarketModeling';
-import AICoachingInterface, { FloatingAICoach } from './components/AICoachingInterface';
+
 
 // Global Platform Components
 import InternationalComplianceModule from './components/InternationalComplianceModule';
