@@ -3484,7 +3484,7 @@ function ExternalResourcesPage() {
               Back to Assessment
             </button>
             
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 text-white mb-8 shadow-xl">
+            <div className="bg-polaris-blue-600 rounded-2xl p-8 text-white mb-8 shadow-xl">
               <div className="flex items-start gap-6">
                 <div className="p-4 bg-white/20 backdrop-blur rounded-xl border border-white/30">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
