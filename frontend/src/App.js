@@ -54,8 +54,7 @@ import PredictiveMarketModeling from './components/PredictiveMarketModeling';
 
 
 // Global Platform Components
-import InternationalComplianceModule from './components/InternationalComplianceModule';
-import IndustryVerticalSolutions from './components/IndustryVerticalSolutions';
+
 import WhiteLabelDeploymentSystem from './components/WhiteLabelDeploymentSystem';
 import EnterpriseOnboardingSystem from './components/EnterpriseOnboardingSystem';
 import BlockchainCertificationSystem from './components/BlockchainCertificationSystem';
