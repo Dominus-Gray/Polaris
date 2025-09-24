@@ -530,23 +530,33 @@ body {
   font-size: var(--text-xs);
 }
 
-/* Form Elements with blue harmony */
+/* Premium Form Elements */
 .input, .form-input {
-  @apply w-full px-3 py-2 border rounded-lg text-sm transition-colors duration-200;
-  border-color: var(--polaris-blue-200);
-  color: var(--text-primary);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--border-standard);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  color: var(--text-body);
   background: white;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-body);
 }
 
 .input:focus, .form-input:focus {
-  @apply outline-none ring-2;
-  border-color: var(--polaris-blue-400);
-  ring-color: rgba(79, 136, 255, 0.1);
+  outline: none;
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px rgba(43, 127, 255, 0.1);
+  background: var(--background-section);
 }
 
 .form-label {
-  @apply block text-sm font-medium mb-2;
-  color: var(--text-primary);
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-body);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-body);
 }
 
 .form-error {
