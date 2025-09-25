@@ -115,7 +115,6 @@ body {
 .section { @apply py-16; }
 
 /* Ensure all basic classes work */
-.bg-white { @apply bg-white; }
 .text-gray-900 { @apply text-gray-900; }
 .text-gray-800 { @apply text-gray-800; }
 .text-gray-700 { @apply text-gray-700; }
