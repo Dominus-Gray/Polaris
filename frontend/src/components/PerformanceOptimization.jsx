@@ -237,7 +237,7 @@ export function BundleSizeMonitor() {
   }
 
   return (
-    <div className="fixed bottom-32 right-4 bg-slate-800 text-white text-xs p-2 rounded opacity-75 z-20">
+    <div className="fixed bottom-32 right-4 bg-gray-100 text-gray-700 text-xs p-2 rounded opacity-75 z-20">
       <div>Bundle: {bundleInfo.mainBundle}</div>
       <div>Chunks: {bundleInfo.chunkCount}</div>
     </div>
