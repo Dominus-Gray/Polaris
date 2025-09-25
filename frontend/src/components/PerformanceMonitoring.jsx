@@ -260,7 +260,7 @@ export function ResourceUsageMonitor() {
   if (process.env.NODE_ENV !== 'development') return null;
 
   return (
-    <div className="fixed bottom-20 right-4 bg-slate-900 text-white text-xs p-2 rounded opacity-75 z-20">
+    <div className="fixed bottom-20 right-4 bg-gray-100 text-gray-700 text-xs p-2 rounded opacity-75 z-20">
       <div>Mem: {usage.memory.toFixed(1)}MB</div>
       {usage.timing.lastUpdate && (
         <div>Uptime: {(usage.timing.lastUpdate / 1000 / 60).toFixed(1)}m</div>
