@@ -17,7 +17,10 @@ function TierBasedAssessmentPage() {
 
   const loadAssessmentData = async () => {
     try {
-      const { data } = await axios.get(`${API}/assessment/schema/tier-based`);
+      const token = localStorage.getItem('polaris_token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const { data } = await axios.get(`${API}/assessment/schema/tier-based`, { headers });
       setAvailableAreas(data.areas || []);
     } catch (error) {
       console.error('Error loading assessment data:', error);
