@@ -39,7 +39,7 @@ export default function ClientRemediationFilters(){
         </div>
         <div>
           <div className="text-xs text-slate-600 mb-1">Location</div>
-          <select className="input w-full" value={location} onChange={e=>setLocation(e.target.value)}>
+          <select className="input w-full bg-white text-gray-700" value={location} onChange={e=>setLocation(e.target.value)}>
             <option value="local">Local</option>
             <option value="state">State</option>
             <option value="national">National</option>
