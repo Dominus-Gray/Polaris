@@ -832,18 +832,35 @@ body {
   }
 }
 
-.sidebar {
-  padding: var(--spacing-4);
-  border-radius: 0.75rem;
-  border: 1px solid var(--gray-200);
-  background: white;
-  box-shadow: var(--shadow-sm);
+/* === ENSURE ALL DROPDOWNS AND CHECKBOXES USE LIGHT THEME === */
+select, select option {
+  background: white !important;
+  color: var(--gray-700) !important;
 }
 
-.main {
-  padding: var(--spacing-4);
-  border-radius: 0.75rem;
-  border: 1px solid var(--gray-200);
-  background: white;
+input[type="checkbox"] {
+  background: white !important;
+}
+
+/* === BACK TO HOME NAVIGATION === */
+.back-to-home {
+  position: fixed;
+  top: 5rem;
+  left: 1rem;
+  background: var(--primary);
+  color: white;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
   box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  z-index: 40;
+}
+
+.back-to-home:hover {
+  background: var(--primary-600);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
