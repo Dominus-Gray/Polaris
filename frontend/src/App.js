@@ -294,11 +294,11 @@ function AuthWidget({ selectedRole = null, onBackToRoleSelection = null }){
     },
     {
       id: 'navigator',
-      title: 'Digital Navigator',
-      description: 'Platform administrators - review, approve, and guide businesses',
-      requirements: 'Polaris team members only',
-      features: ['Evidence review', 'Provider approval', 'Quality assurance', 'Platform management'],
-      icon: '👥'
+      title: 'Resource Partner',
+      description: 'Provide professional services and support to help businesses achieve readiness',
+      requirements: 'Subject to verification and approval',
+      features: ['Business consulting', 'Service provision', 'Expert guidance', 'Network access'],
+      icon: '🤝'
     }
   ];
   
