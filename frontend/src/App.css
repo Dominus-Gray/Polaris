@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Basic Polaris Styling - Functional and Clean */
+/* Basic Polaris Styling - Clean and Functional */
 :root { 
   --brand: #2563EB; 
   --brand-hover: #1D4ED8;
