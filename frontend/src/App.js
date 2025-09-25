@@ -4649,9 +4649,9 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{data?.active_services || 0}</div>
-                <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Active Services</div>
-                <div className="text-xs !text-slate-500 mt-1" style={{color: '#64748b !important'}}>In Progress</div>
+                <div className="text-3xl font-bold text-gray-700">{data?.active_services || 0}</div>
+                <div className="text-sm font-medium text-gray-600">Active Services</div>
+                <div className="text-xs text-gray-500 mt-1">In Progress</div>
               </div>
             </div>
           </div>
