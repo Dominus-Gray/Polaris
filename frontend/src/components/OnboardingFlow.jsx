@@ -288,7 +288,7 @@ export default function OnboardingFlow({ userRole, onComplete }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-primary bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full transform transition-all duration-300">
         {/* Progress Bar */}
         <div className="p-6 border-b">
