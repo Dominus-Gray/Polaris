@@ -178,7 +178,7 @@ export function DarkModeToggle() {
 export function DarkModeCard({ children, className = '', ...props }) {
   return (
     <div 
-      className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 ${className}`}
+      className={`bg-white border border-gray-200 text-gray-900 ${className}`}
       {...props}
     >
       {children}
