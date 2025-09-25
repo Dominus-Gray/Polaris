@@ -7018,8 +7018,8 @@ function AgencyHome(){
               >
                 Account Settings
               </button>
-              {/* RP CRM-lite Navigation - Feature flagged */}
-              {process.env.REACT_APP_SHOW_RP_CRM === 'true' && (
+              {/* RP CRM-lite Navigation - Navigator Only */}
+              {process.env.REACT_APP_SHOW_RP_CRM === 'true' && me.role === 'navigator' && (
                 <>
                   <button
                     onClick={() => window.location.href = '/rp'}
