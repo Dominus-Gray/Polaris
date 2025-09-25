@@ -7464,6 +7464,96 @@ function AgencyHome(){
             </div>
           )}
 
+        {activeTab === 'businesses' && (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Business Intelligence</h2>
+            <p className="text-slate-600 mb-8">Assessment data and status for sponsored companies</p>
+            
+            {/* Print Small Business Inventory Button */}
+            <div className="mb-6">
+              <button 
+                onClick={() => window.print()}
+                className="btn btn-primary"
+              >
+                🖨️ Print Small Business Inventory
+              </button>
+            </div>
+            
+            {/* Sample Business Intelligence Data */}
+            <div className="bg-white rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-4">Sponsored Companies Assessment Status</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Company Name</th>
+                      <th className="text-left py-3 px-4">Assessment Progress</th>
+                      <th className="text-left py-3 px-4">Readiness Score</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="py-3 px-4 font-medium">TechSolutions Inc.</td>
+                      <td className="py-3 px-4">8/10 Areas Complete</td>
+                      <td className="py-3 px-4 font-bold text-blue-600">85%</td>
+                      <td className="py-3 px-4"><span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Ready</span></td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-3 px-4 font-medium">Local Manufacturing Co.</td>
+                      <td className="py-3 px-4">6/10 Areas Complete</td>
+                      <td className="py-3 px-4 font-bold text-yellow-600">72%</td>
+                      <td className="py-3 px-4"><span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">In Progress</span></td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-4 font-medium">City Services LLC</td>
+                      <td className="py-3 px-4">4/10 Areas Complete</td>
+                      <td className="py-3 px-4 font-bold text-red-600">58%</td>
+                      <td className="py-3 px-4"><span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Needs Support</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'inventory' && (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Small Business Inventory</h2>
+            <div className="bg-white rounded-lg border p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Business Directory</h3>
+                <button 
+                  onClick={() => window.print()}
+                  className="btn btn-primary"
+                >
+                  🖨️ Print Inventory Report
+                </button>
+              </div>
+              <p className="text-slate-600 mb-4">Complete inventory of sponsored small businesses with capability summaries</p>
+              <div className="text-center py-8 text-slate-500">
+                <p>Business inventory data will be displayed here</p>
+                <p className="text-sm mt-2">Connect with sponsored businesses to populate this section</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'forecasts' && (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Procurement Forecasts</h2>
+            <div className="bg-white rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-4">Upcoming Opportunities</h3>
+              <p className="text-slate-600 mb-4">Forecasted procurement opportunities for your sponsored businesses</p>
+              <div className="text-center py-8 text-slate-500">
+                <p>Procurement forecast data will be displayed here</p>
+                <p className="text-sm mt-2">Analysis based on business readiness and market opportunities</p>
+              </div>
+            </div>
+          </div>
+        )}
+
 
 
           {activeTab === 'business_intelligence' && (
