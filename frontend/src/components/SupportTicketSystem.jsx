@@ -367,7 +367,7 @@ export default function SupportTicketSystem() {
 
       {/* Ticket Detail Modal */}
       {selectedTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-primary bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden">
             <div className="p-6 border-b">
               <div className="flex items-center justify-between">
