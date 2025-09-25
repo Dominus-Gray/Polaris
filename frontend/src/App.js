@@ -4572,7 +4572,7 @@ function ClientHome(){
       
       <div className="container mt-6">
       {/* Enhanced Dashboard Header with Personalized Greeting */}
-      <div className="bg-polaris-blue-500 text-white rounded-lg p-6 mb-6">
+      <div className="bg-primary text-white rounded-lg p-6 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">Welcome back, {me?.name || 'Valued Client'}! 👋</h1>
