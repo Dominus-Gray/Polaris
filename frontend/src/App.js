@@ -10327,7 +10327,7 @@ function WhiteLabelLanding({ agencyId }) {
       </div>
 
       {/* Footer with Agency Branding */}
-      <footer className="bg-slate-900 text-white py-8">
+      <footer className="bg-primary text-white py-8">
         <div className="container mx-auto px-6 text-center">
           <div className="mb-4">
             <h3 className="text-lg font-semibold">{config.branding_name}</h3>
