@@ -603,6 +603,12 @@ body {
   background: var(--error) !important;
 }
 
+.signin-icon {
+  font-size: 1.1em;
+}
+
+/* === REFINED LAYOUT === */
+
 /* === REFINED LAYOUT === */
 .container {
   max-width: 1200px;
