@@ -224,7 +224,7 @@ export function VoiceSearch({ onSearch, placeholder = "Search or speak your quer
       )}
       
       {searchResults.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg max-h-64 overflow-y-auto">
+        <div className="bg-white border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
           {searchResults.map((result, index) => (
             <div 
               key={index}
