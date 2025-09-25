@@ -531,6 +531,17 @@ body {
 .signin-icon {
   font-size: 1.1em;
 }
+
+/* === REFINED LAYOUT === */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+}
+
+.section {
+  padding: var(--spacing-16) 0;
+}
 .container {
   max-width: 1200px;
   margin: 0 auto;
