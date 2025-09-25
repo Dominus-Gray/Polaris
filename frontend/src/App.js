@@ -27,6 +27,171 @@ import AssessmentTierSelector from './components/AssessmentTierSelector';
 import TierBasedAssessmentPage from './components/TierBasedAssessmentPage';
 import AssessmentResults from './components/AssessmentResults';
 
+// Assessment Area Component for individual area questions
+function AssessmentAreaPage() {
+  const { areaId } = useParams();
+  const navigate = useNavigate();
+  const [questions, setQuestions] = useState([]);
+  const [responses, setResponses] = useState({});
+  
+  // Assessment areas matching what we defined
+  const allAreas = [
+    { id: 'area1', title: 'Business Formation & Registration', questions: [
+      { id: 'q1_1', text: 'Do you have a valid business license in your jurisdiction?' },
+      { id: 'q1_2', text: 'Is your business registered with the appropriate state and local authorities?' },
+      { id: 'q1_3', text: 'Do you have proper business insurance coverage?' }
+    ]},
+    { id: 'area2', title: 'Financial Operations & Management', questions: [
+      { id: 'q2_1', text: 'Do you have a professional accounting system in place?' },
+      { id: 'q2_2', text: 'Are your financial records current and audit-ready?' },
+      { id: 'q2_3', text: 'Do you have established credit and banking relationships?' }
+    ]},
+    { id: 'area3', title: 'Legal & Contracting Compliance', questions: [
+      { id: 'q3_1', text: 'Do you have standard service agreements and contracts?' },
+      { id: 'q3_2', text: 'Are you compliant with relevant industry regulations?' },
+      { id: 'q3_3', text: 'Do you have proper intellectual property protections?' }
+    ]},
+    { id: 'area4', title: 'Quality Management & Standards', questions: [
+      { id: 'q4_1', text: 'Do you have documented quality control processes?' },
+      { id: 'q4_2', text: 'Are your services certified or accredited where applicable?' },
+      { id: 'q4_3', text: 'Do you have customer feedback and improvement systems?' }
+    ]},
+    { id: 'area5', title: 'Technology & Security Infrastructure', questions: [
+      { id: 'q5_1', text: 'Do you have adequate cybersecurity measures in place?' },
+      { id: 'q5_2', text: 'Are your technology systems scalable for larger contracts?' },
+      { id: 'q5_3', text: 'Do you have data backup and recovery procedures?' }
+    ]},
+    { id: 'area6', title: 'Human Resources & Capacity', questions: [
+      { id: 'q6_1', text: 'Do you have sufficient staffing for project delivery?' },
+      { id: 'q6_2', text: 'Are your team members properly trained and certified?' },
+      { id: 'q6_3', text: 'Do you have employee onboarding and development programs?' }
+    ]},
+    { id: 'area7', title: 'Performance Tracking & Reporting', questions: [
+      { id: 'q7_1', text: 'Do you have KPI tracking and reporting systems?' },
+      { id: 'q7_2', text: 'Can you provide regular progress reports to clients?' },
+      { id: 'q7_3', text: 'Do you maintain project documentation and deliverables?' }
+    ]},
+    { id: 'area8', title: 'Risk Management & Business Continuity', questions: [
+      { id: 'q8_1', text: 'Do you have a business continuity plan?' },
+      { id: 'q8_2', text: 'Are you prepared for emergency situations and disruptions?' },
+      { id: 'q8_3', text: 'Do you have appropriate liability and professional insurance?' }
+    ]},
+    { id: 'area9', title: 'Supply Chain Management & Vendor Relations', questions: [
+      { id: 'q9_1', text: 'Do you have documented vendor qualification and selection processes?' },
+      { id: 'q9_2', text: 'Can you demonstrate supply chain resilience and risk mitigation strategies?' },
+      { id: 'q9_3', text: 'Do you maintain proper vendor contracts and performance monitoring?' }
+    ]},
+    { id: 'area10', title: 'Competitive Advantage & Market Position', questions: [
+      { id: 'q10_1', text: 'Do you have documented competitive advantages and unique value propositions?' },
+      { id: 'q10_2', text: 'Can you demonstrate market capture processes and business development capabilities?' },
+      { id: 'q10_3', text: 'Do you have strategic partnerships and network relationships that enhance your competitive position?' }
+    ]}
+  ];
+  
+  const currentArea = allAreas.find(area => area.id === areaId);
+  
+  const handleResponse = (questionId, answer) => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+  
+  if (!currentArea) {
+    return (
+      <div className="container mt-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-gray-700 mb-4">Assessment Area Not Found</h2>
+          <button 
+            className="btn btn-primary"
+            onClick={() => navigate('/assessment')}
+          >
+            ← Back to Assessment Areas
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container mt-6 max-w-4xl">
+      {/* Back Navigation */}
+      <div className="mb-6">
+        <button 
+          className="btn"
+          onClick={() => navigate('/assessment')}
+        >
+          ← Back to Assessment Areas
+        </button>
+      </div>
+      
+      {/* Area Header */}
+      <div className="bg-white rounded-lg border p-6 mb-6">
+        <h1 className="text-2xl font-bold text-gray-700 mb-2">{currentArea.title}</h1>
+        <p className="text-gray-600">{currentArea.description}</p>
+        <div className="mt-4 flex items-center gap-4">
+          <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+            Tier 1 - Self Assessment
+          </div>
+          <div className="text-sm text-gray-500">
+            {currentArea.questions.length} Questions
+          </div>
+        </div>
+      </div>
+      
+      {/* Assessment Questions */}
+      <div className="space-y-6">
+        {currentArea.questions.map((question, index) => (
+          <div key={question.id} className="bg-white rounded-lg border p-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Question {index + 1}: {question.text}
+            </h3>
+            
+            <div className="space-y-3">
+              {['Compliant', 'Nearing Completion', 'Incomplete'].map((option) => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={question.id}
+                    value={option}
+                    checked={responses[question.id] === option}
+                    onChange={() => handleResponse(question.id, option)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span className="text-gray-700">{option}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+        
+        {/* Submit Button */}
+        <div className="bg-white rounded-lg border p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-gray-700">Ready to Submit?</h3>
+              <p className="text-sm text-gray-600">
+                {Object.keys(responses).length} of {currentArea.questions.length} questions answered
+              </p>
+            </div>
+            <button 
+              className="btn btn-primary"
+              onClick={() => {
+                // Here you would submit to backend
+                console.log('Submitting responses:', responses);
+                navigate('/assessment');
+              }}
+              disabled={Object.keys(responses).length !== currentArea.questions.length}
+            >
+              Submit Assessment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 import AgencyContractMatching from './pages/AgencyContractMatching';
 
 // RP CRM-lite Components
