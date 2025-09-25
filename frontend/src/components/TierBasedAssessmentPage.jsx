@@ -21,13 +21,18 @@ function TierBasedAssessmentPage() {
       setAvailableAreas(data.areas || []);
     } catch (error) {
       console.error('Error loading assessment data:', error);
-      // Fallback data
+      // Fallback data - Complete 10 areas
       setAvailableAreas([
-        { id: 'area1', name: 'Legal & Compliance', description: 'Business formation, licenses, and legal requirements' },
-        { id: 'area2', name: 'Financial Management', description: 'Accounting, cash flow, and financial controls' },
-        { id: 'area3', name: 'Technology & Security', description: 'IT infrastructure and cybersecurity' },
-        { id: 'area4', name: 'Operations Management', description: 'Quality systems and operational efficiency' },
-        { id: 'area5', name: 'Human Resources', description: 'Staff management and HR policies' }
+        { id: 'area1', name: 'Business Formation & Registration', description: 'Business formation, licenses, and legal requirements' },
+        { id: 'area2', name: 'Financial Operations & Management', description: 'Accounting, cash flow, and financial controls' },
+        { id: 'area3', name: 'Legal & Contracting Compliance', description: 'Contract management and legal compliance' },
+        { id: 'area4', name: 'Quality Management & Standards', description: 'Quality systems and operational standards' },
+        { id: 'area5', name: 'Technology & Security Infrastructure', description: 'IT infrastructure and cybersecurity' },
+        { id: 'area6', name: 'Human Resources & Capacity', description: 'Staff management and HR policies' },
+        { id: 'area7', name: 'Performance Tracking & Reporting', description: 'KPI tracking and client reporting' },
+        { id: 'area8', name: 'Risk Management & Business Continuity', description: 'Risk mitigation and emergency planning' },
+        { id: 'area9', name: 'Supply Chain Management & Vendor Relations', description: 'Vendor management and supply chain resilience' },
+        { id: 'area10', name: 'Competitive Advantage & Market Position', description: 'Market differentiation and competitive strategy' }
       ]);
     } finally {
       setLoading(false);
