@@ -8998,63 +8998,19 @@ function Landing(){
 
   return (
     <div>
-      {/* Premium Hero Section with Professional Imagery */}
-      <section className="hero-premium">
-        <div className="hero-background-premium">
-          <img 
-            src="https://images.unsplash.com/photo-1573496130103-a442a3754d0e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDN8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHByb2Zlc3Npb25hbHxlbnwwfHx8Ymx1ZXwxNzU4NzQ5Nzk3fDA&ixlib=rb-4.1.0&q=85"
-            alt="Professional business presentation"
-            className="hero-image-premium"
-          />
-          <div className="hero-overlay-premium"></div>
-        </div>
-        
-        <div className="hero-content-premium">
-          <div className="hero-badge-premium">
-            <span className="hero-badge-icon">⭐</span>
-            <span className="hero-badge-text">Trusted by 500+ Agencies</span>
-          </div>
-          
-          <div className="hero-branding-premium">
-            <img src="/polaris_mark_corporate_white.svg" alt="Polaris mark" className="hero-logo-premium"/>
-            <div className="hero-brand-name">POLARIS</div>
-          </div>
+      {/* Clean Polaris Hero Section */}
+      <section className="hero">
+        <div className="hero-inner">
+          <div className="text-white text-center max-w-3xl mx-auto">
+            <div className="mt-2 flex flex-col items-center justify-center gap-2">
+              <img src="/polaris_mark_corporate_white.svg" alt="Polaris mark" className="h-10 md:h-12 w-auto"/>
+              <div className="text-white font-extrabold text-3xl lg:text-5xl" style={{ letterSpacing: '0.35em' }}>POLARIS</div>
+            </div>
 
-          <h1 className="hero-title-premium">
-            Your North Star for Small Business 
-            <span className="hero-title-accent">Procurement Readiness</span>
-          </h1>
-          
-          <p className="hero-subtitle-premium">
-            Professional assessment platform trusted by government agencies and business leaders. 
-            Prove readiness, unlock opportunities, achieve certification.
-          </p>
-          
-          <div className="hero-cta-premium">
-            <button className="btn-hero-primary" onClick={() => setStep('role-selection')}>
-              <span className="btn-hero-icon">🚀</span>
-              <span>Start Your Journey</span>
-              <span className="btn-hero-arrow">→</span>
-            </button>
-            
-            <button className="btn-hero-secondary">
-              <span className="btn-hero-icon">📊</span>
-              <span>View Success Stories</span>
-            </button>
-          </div>
-          
-          <div className="hero-trust-indicators">
-            <div className="trust-item">
-              <span className="trust-icon">🏛️</span>
-              <span className="trust-text">Government Approved</span>
-            </div>
-            <div className="trust-item">
-              <span className="trust-icon">🔒</span>
-              <span className="trust-text">FISMA Compliant</span>
-            </div>
-            <div className="trust-item">
-              <span className="trust-icon">✅</span>
-              <span className="trust-text">NIST Framework</span>
+            <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Small Business Procurement Readiness</h1>
+            <p className="hero-sub">Prove Readiness. Unlock Opportunity.</p>
+            <div className="hero-ctas">
+              <button className="btn btn-primary" onClick={() => setStep('role-selection')}>Start Your Journey</button>
             </div>
           </div>
         </div>
