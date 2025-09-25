@@ -114,14 +114,6 @@ body {
 /* Working section styles */
 .section { @apply py-16; }
 
-/* Ensure all basic classes work */
-.text-gray-900 { @apply text-gray-900; }
-.text-gray-800 { @apply text-gray-800; }
-.text-gray-700 { @apply text-gray-700; }
-.text-gray-600 { @apply text-gray-600; }
-.text-gray-500 { @apply text-gray-500; }
-.border-gray-200 { @apply border-gray-200; }
-.border-gray-300 { @apply border-gray-300; }
 
 /* ===== POLARIS HARMONIOUS ANALOGOUS COLOR SYSTEM ===== */
 /* Research-based harmonious palette - Clean vibrant blues, no muddy colors */
