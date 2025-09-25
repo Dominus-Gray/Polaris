@@ -130,7 +130,7 @@ export function VoiceInputField({
         onChange={handleInputChange}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full px-3 py-2 pr-10 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${className}`}
+        className={`w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${className}`}
       />
       
       {isSupported && (
