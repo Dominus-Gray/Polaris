@@ -1,138 +1,128 @@
-/* ===== POLARIS PREMIUM VISUAL SYSTEM ===== */
-/* Professional typography system */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Typography Scale - Professional Hierarchy */
-:root {
-  /* Font System */
-  --font-display: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
-  --font-body: 'Inter', 'SF Pro Text', system-ui, -apple-system, sans-serif;
-  
-  /* Typography Scale */
-  --text-xs: 0.75rem;     /* 12px - captions */
-  --text-sm: 0.875rem;    /* 14px - labels */
-  --text-base: 1rem;      /* 16px - body */
-  --text-lg: 1.125rem;    /* 18px - subheadings */
-  --text-xl: 1.25rem;     /* 20px - card titles */
-  --text-2xl: 1.5rem;     /* 24px - section headers */
-  --text-3xl: 1.875rem;   /* 30px - page titles */
-  --text-4xl: 2.25rem;    /* 36px - hero titles */
-  --text-5xl: 3rem;       /* 48px - display */
-  
-  /* Font Weights */
-  --font-light: 300;
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-  --font-extrabold: 800;
-  
-  /* Professional Spacing Scale */
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
-  --space-24: 6rem;     /* 96px */
-  
-  /* Border Radius Scale */
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.5rem;    /* 8px */
-  --radius-lg: 0.75rem;   /* 12px */
-  --radius-xl: 1rem;      /* 16px */
-  --radius-2xl: 1.5rem;   /* 24px */
-  --radius-3xl: 2rem;     /* 32px */
-  
-  /* Professional Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
-  
-  /* Glass-morphism */
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-blur: blur(20px);
-  
-  /* Unified Color System */
-  --polaris-10: #FDFDFF;
-  --polaris-50: #F0F4FF;
-  --polaris-100: #E0EDFF;
-  --polaris-200: #C7DDFF;
-  --polaris-300: #94C3FF;
-  --polaris-400: #5BA7FF;
-  --polaris-500: #2B7FFF;
-  --polaris-600: #1E5FCC;
-  --polaris-700: #1A4499;
-  --polaris-800: #162E66;
-  --polaris-900: #0F1B33;
-  
-  --background-page: #FFFFFF;
-  --background-card: var(--polaris-50);
-  --background-section: var(--polaris-10);
-  --background-interactive: var(--polaris-100);
-  
-  --text-heading: var(--polaris-900);
-  --text-body: var(--polaris-800);
-  --text-caption: var(--polaris-700);
-  --text-muted: var(--polaris-600);
-  --text-on-primary: #FFFFFF;
-  
-  --border-subtle: var(--polaris-200);
-  --border-standard: var(--polaris-300);
-  --border-emphasis: var(--polaris-400);
-  
-  --primary-main: var(--polaris-500);
-  --primary-hover: var(--polaris-600);
-  --primary-active: var(--polaris-700);
-  --primary-disabled: var(--polaris-200);
-  
-  --secondary-main: var(--polaris-300);
-  --secondary-hover: var(--polaris-400);
-  
-  --success: #059669;
-  --success-bg: #F0FDF4;
-  --warning: #DC6803;
-  --warning-bg: #FFFBEB;
-  --error: #DC2626;
-  --error-bg: #FEF2F2;
+/* Basic Polaris Styling - Functional and Clean */
+:root { 
+  --brand: #2563EB; 
+  --brand-hover: #1D4ED8;
+  --brand-light: #DBEAFE; 
+  --ink: #1F2937; 
+  --muted: #6B7280; 
 }
 
-/* Global font application */
-* {
-  font-family: var(--font-body);
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: var(--font-semibold);
-  color: var(--text-heading);
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-}
-
-/* Base body with premium styling */
 body { 
-  background-color: var(--background-page);
-  color: var(--text-body);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-50 text-gray-900; 
+  font-family: Inter, system-ui, -apple-system, sans-serif;
 }
 
-.app-shell { 
-  @apply min-h-screen;
-  background: linear-gradient(180deg, var(--background-page) 0%, var(--background-section) 100%);
+.app-shell { @apply min-h-screen; }
+
+.header { @apply sticky top-0 z-30 backdrop-blur bg-white/80 border-b border-gray-200; }
+.header-inner { @apply max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4; }
+.brand { @apply text-xl font-semibold tracking-tight text-gray-900; }
+
+.progress-wrap { @apply w-full bg-gray-200 h-2 rounded overflow-hidden; }
+.progress-bar { @apply h-full bg-blue-600; }
+
+.container { @apply max-w-6xl mx-auto px-4; }
+.grid-layout { @apply grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6; }
+.sidebar { @apply lg:col-span-3 p-4 rounded-lg border bg-white shadow-sm; }
+.main { @apply lg:col-span-9 p-4 rounded-lg border bg-white shadow-sm; }
+
+.area-item { @apply flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors; }
+.area-active { @apply bg-blue-50 text-blue-900 border-l-4 border-blue-600; }
+
+.q-card { @apply p-4 border rounded-lg mb-4 bg-white shadow-sm transition hover:shadow-md; }
+.q-label { @apply font-medium text-gray-900; }
+.q-actions { @apply mt-3 flex items-center gap-2 flex-wrap; }
+.toggle { @apply inline-flex rounded-full overflow-hidden border border-gray-300; }
+.toggle button { @apply px-3 py-1 text-sm hover:bg-gray-100 transition text-gray-700; }
+.toggle .on { @apply bg-blue-600 text-white; }
+.toggle .off { @apply bg-gray-500 text-white; }
+
+.upload-box { @apply mt-3 p-3 rounded border bg-gray-50; }
+
+/* Working Button System */
+.btn { 
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200;
+  @apply bg-white border-gray-300 text-gray-700 shadow-sm;
 }
+
+.btn:hover { 
+  @apply bg-gray-50 border-gray-400 shadow-md;
+}
+
+.btn-primary { 
+  @apply bg-blue-600 text-white border-blue-600 shadow-lg;
+}
+
+.btn-primary:hover {
+  @apply bg-blue-700 border-blue-700 shadow-xl;
+}
+
+.btn-sm { @apply px-3 py-1.5 text-xs; }
+
+/* Working Form Elements */
+.input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white; }
+.input:focus { @apply outline-none ring-2 ring-blue-500 border-blue-500; }
+.form-label { @apply block text-sm font-medium text-gray-700 mb-2; }
+
+/* Working Badge System */
+.badge { @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800; }
+
+/* Working Card System */
+.card { @apply p-6 bg-white rounded-lg border border-gray-200 shadow-sm; }
+
+/* Working Statistics Cards */
+.stat-card { @apply bg-white rounded-lg border border-gray-200 p-6 transition hover:shadow-md; }
+.stat-number { @apply text-3xl font-bold text-blue-600 mb-1; }
+.stat-label { @apply text-sm font-medium text-gray-600 uppercase tracking-wide; }
+.stat-desc { @apply text-xs text-gray-500 mt-1; }
+
+/* Working Hero Section */
+.hero { @apply relative; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); }
+.hero-inner { @apply container mx-auto px-4 py-16 flex flex-col items-center text-center; }
+.hero-sub { @apply text-lg mt-4 text-white/90; }
+.hero-ctas { @apply flex flex-wrap gap-4 mt-8 justify-center; }
+
+/* Essential Dashboard Classes - MUST WORK */
+.tile { 
+  @apply relative p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300; 
+}
+
+.tile:hover { 
+  @apply transform scale-[1.02] cursor-pointer border-blue-300;
+}
+
+.tile-title { 
+  @apply text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2;
+}
+
+.tile-num { 
+  @apply text-2xl font-bold mb-1 leading-none text-blue-600;
+}
+
+.tile-sub { 
+  @apply text-xs text-gray-600 font-medium;
+}
+
+.dashboard-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+/* Working section styles */
+.section { @apply py-16; }
+
+/* Ensure all basic classes work */
+.bg-white { @apply bg-white; }
+.text-gray-900 { @apply text-gray-900; }
+.text-gray-800 { @apply text-gray-800; }
+.text-gray-700 { @apply text-gray-700; }
+.text-gray-600 { @apply text-gray-600; }
+.text-gray-500 { @apply text-gray-500; }
+.border-gray-200 { @apply border-gray-200; }
+.border-gray-300 { @apply border-gray-300; }
 
 /* ===== POLARIS HARMONIOUS ANALOGOUS COLOR SYSTEM ===== */
 /* Research-based harmonious palette - Clean vibrant blues, no muddy colors */
