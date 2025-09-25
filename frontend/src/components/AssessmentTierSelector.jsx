@@ -70,7 +70,7 @@ export default function AssessmentTierSelector(){
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-600">Assessment Tier</span>
           <div className="inline-flex rounded-full overflow-hidden border">
-            <button className={`px-3 py-1 text-sm ${tier==='tier1'?'bg-slate-800 text-white':'bg-slate-100'}`} onClick={()=>setTier('tier1')}>Tier 1</button>
+            <button className={`px-3 py-1 text-sm ${tier==='tier1'?'bg-primary text-white':'bg-gray-100'}`} onClick={()=>setTier('tier1')}>Tier 1</button>
             <button className="px-3 py-1 text-sm bg-slate-50 text-slate-400 cursor-not-allowed" disabled>Tier 2</button>
             <button className="px-3 py-1 text-sm bg-slate-50 text-slate-400 cursor-not-allowed" disabled>Tier 3</button>
           </div>
