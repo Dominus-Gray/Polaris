@@ -269,7 +269,7 @@ export default function InteractiveTutorialSystem({ userRole, currentPage }) {
   const addTutorialOverlay = () => {
     const overlay = document.createElement('div');
     overlay.id = 'tutorial-overlay';
-    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-40 pointer-events-none';
+    overlay.className = 'fixed inset-0 bg-primary bg-opacity-50 z-40 pointer-events-none';
     document.body.appendChild(overlay);
   };
 
