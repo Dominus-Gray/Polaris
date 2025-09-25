@@ -9051,33 +9051,33 @@ function Landing(){
       {/* Features section removed per request */}
 
 
-      {/* Stats Section with Compelling Polaris Metrics */}
+      {/* Stats Section - Updated Content */}
       <section className="container section">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Proven Impact on Business Readiness</h2>
-          <p className="text-slate-600">Real results from businesses using Polaris to unlock procurement opportunities</p>
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">3-Tier Business Maturity Assessment Model</h2>
+          <p className="text-slate-600">Self Attestation - Evidence Sufficient - Evidence Verification</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="stat-card">
-            <div className="stat-number">92%</div>
-            <div className="stat-label">Success Rate</div>
-            <div className="stat-desc">Businesses improve readiness within 90 days</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">$2.4M</div>
-            <div className="stat-label">Contract Pipeline</div>
-            <div className="stat-desc">Average agency opportunity value</div>
-          </div>
-          <div className="stat-card">
             <div className="stat-number">87%</div>
-            <div className="stat-label">Readiness Score</div>
-            <div className="stat-desc">Top-tier certified businesses achieve</div>
+            <div className="stat-label">Average Readiness Score</div>
+            <div className="stat-desc">Threshold to streamline access to in network local procurement opportunities</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">3-Tier</div>
-            <div className="stat-label">Assessment System</div>
+            <div className="stat-label">Assessment Model</div>
             <div className="stat-desc">Self → Evidence → Verification</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">Local</div>
+            <div className="stat-label">Procurement Network</div>
+            <div className="stat-desc">In-network opportunity access</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">Resource</div>
+            <div className="stat-label">Partner Network</div>
+            <div className="stat-desc">Professional business support</div>
           </div>
         </div>
       </section>
