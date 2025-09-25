@@ -306,7 +306,7 @@ export function VoiceNavigation() {
 
       {/* Voice commands help */}
       {commands.length > 0 && (
-        <div className="absolute bottom-14 left-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg p-3">
+        <div className="absolute bottom-14 left-0 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
           <div className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-2">
             Try these voice commands:
           </div>
