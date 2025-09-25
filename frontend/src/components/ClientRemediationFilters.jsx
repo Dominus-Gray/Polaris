@@ -47,7 +47,7 @@ export default function ClientRemediationFilters(){
         </div>
         <div>
           <div className="text-xs text-slate-600 mb-1">Budget</div>
-          <select className="input w-full" value={budget} onChange={e=>setBudget(e.target.value)}>
+          <select className="input w-full bg-white text-gray-700" value={budget} onChange={e=>setBudget(e.target.value)}>
             <option value="any">Any</option>
             <option value="<1000">Under $1,000</option>
             <option value="1000-2500">$1,000 - $2,500</option>
