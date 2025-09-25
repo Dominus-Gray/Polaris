@@ -1041,6 +1041,15 @@ function AssessmentPage(){
         { id: 'q9_2', text: 'Can you demonstrate supply chain resilience and risk mitigation strategies?', deliverable: 'Supply chain risk assessment and mitigation plan', alternatives: 'Supplier diversity plan, backup vendor relationships, contingency sourcing' },
         { id: 'q9_3', text: 'Do you maintain proper vendor contracts and performance monitoring?', deliverable: 'Vendor management system and performance metrics', alternatives: 'Contract templates, SLA monitoring, vendor scorecards' }
       ]
+    },
+    {
+      id: 'area10',
+      title: 'Competitive Advantage & Market Position',
+      questions: [
+        { id: 'q10_1', text: 'Do you have documented competitive advantages and unique value propositions?', deliverable: 'Competitive analysis and differentiation strategy', alternatives: 'Market positioning documents, value proposition statements, competitive assessments' },
+        { id: 'q10_2', text: 'Can you demonstrate market capture processes and business development capabilities?', deliverable: 'Business development plan and market capture strategy', alternatives: 'Sales processes, market analysis, growth strategies' },
+        { id: 'q10_3', text: 'Do you have strategic partnerships and network relationships that enhance your competitive position?', deliverable: 'Partnership agreements and strategic relationship documentation', alternatives: 'Alliance agreements, networking documentation, referral partnerships' }
+      ]
     }
   ];
 
