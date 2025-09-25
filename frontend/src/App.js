@@ -9074,7 +9074,7 @@ function Landing(){
               <div className="text-white font-extrabold text-3xl lg:text-5xl" style={{ letterSpacing: '0.35em' }}>POLARIS</div>
             </div>
 
-            <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Small Business Procurement Readiness</h1>
+            <h1 className="text-white text-3xl lg:text-5xl font-semibold leading-tight mt-4">Your North Star for Small Business Procurement Readiness - Updated</h1>
             <p className="hero-sub">Prove Readiness. Unlock Opportunity.</p>
             <div className="hero-ctas">
               <button className="btn btn-primary" onClick={() => setStep('role-selection')}>Start Your Journey</button>
