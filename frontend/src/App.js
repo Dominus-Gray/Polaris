@@ -4619,9 +4619,9 @@ function ClientHome(){
                 </svg>
               </div>
               <div>
-                <div className="text-3xl font-bold !text-slate-900" style={{color: '#0f172a !important'}}>{data?.completion_percentage || 0}%</div>
-                <div className="text-sm font-medium !text-slate-600" style={{color: '#475569 !important'}}>Assessment Complete</div>
-                <div className="text-xs !text-slate-500 mt-1" style={{color: '#64748b !important'}}>10 Business Areas</div>
+                <div className="text-3xl font-bold text-gray-700">{data?.completion_percentage || 0}%</div>
+                <div className="text-sm font-medium text-gray-600">Assessment Complete</div>
+                <div className="text-xs text-gray-500 mt-1">10 Business Areas</div>
               </div>
             </div>
           </div>
