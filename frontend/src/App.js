@@ -6970,60 +6970,6 @@ function AgencyHome(){
       )}
       
       <div className="min-h-screen bg-slate-50">
-      {/* Streamlined Navigation - No redundant tabs */}
-      <nav className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-slate-900">Contract Pipeline Management</h1>
-            </div>
-            <div className="flex items-center space-x-8">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`px-3 py-2 text-sm font-medium ${
-                  activeTab === 'dashboard'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Pipeline Dashboard
-              </button>
-              <button
-                onClick={() => setActiveTab('businesses')}
-                className={`px-3 py-2 text-sm font-medium ${
-                  activeTab === 'businesses'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Business Readiness
-              </button>
-              <button
-                onClick={() => setActiveTab('opportunities')}
-                className={`px-3 py-2 text-sm font-medium ${
-                  activeTab === 'opportunities'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Opportunity Matching
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`px-3 py-2 text-sm font-medium ${
-                  activeTab === 'settings'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Account Settings
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'dashboard' && (
           <div>
