@@ -33,7 +33,7 @@ export default function ClientRemediationFilters(){
           <div className="text-xs text-slate-600 mb-1">Set-aside</div>
           <div className="flex flex-wrap gap-2">
             {options.map(o => (
-              <button key={o} className={`px-2 py-1 rounded-full text-xs border ${setAsides.has(o)?'bg-slate-800 text-white':'bg-slate-50 text-slate-700'}`} onClick={()=>toggle(o)}>{o}</button>
+              <button key={o} className={`px-2 py-1 rounded-full text-xs border ${setAsides.has(o)?'bg-primary text-white':'bg-gray-50 text-gray-700'}`} onClick={()=>toggle(o)}>{o}</button>
             ))}
           </div>
         </div>
