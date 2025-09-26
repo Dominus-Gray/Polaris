@@ -9574,7 +9574,7 @@ function AppShell(){
           {/* Global Platform Routes */}
           <Route path="/government/opportunities" element={<GovernmentOpportunityDashboard userRole="client" />} />
           <Route path="/blockchain/certificates" element={<BlockchainCertificationSystem />} />
-          <Route path="/performance/monitoring" element={<PerformanceMonitoring />} />
+          <Route path="/performance/monitoring" element={<PerformanceMonitoringWidget />} />
           
           {/* Enhanced Communication Routes */}
           <Route path="/chat/:contextId?" element={<LiveChatSystem context="general" />} />
