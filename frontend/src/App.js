@@ -9555,16 +9555,26 @@ function AppShell(){
             </>
           )}
           
+          {/* Integration Routes */}
+          <Route path="/integrations" element={<IntegrationsPage />} />
+          <Route path="/integrations/quickbooks" element={<QuickBooksIntegration />} />
+          <Route path="/integrations/microsoft365" element={<Microsoft365Integration />} />
+          
           {/* Advanced AI Feature Routes */}
           <Route path="/ai/coaching" element={<AICoachingInterface />} />
           <Route path="/ai/documents" element={<ComputerVisionDocumentAnalyzer assessmentArea="area1" />} />
           <Route path="/ai/contracts" element={<NLPContractAnalyzer />} />
           <Route path="/ai/analytics" element={<AdvancedAnalyticsDashboard userRole="client" />} />
+          <Route path="/ai/predictive" element={<PredictiveMarketModeling />} />
           
           {/* Global Platform Routes */}
-
           <Route path="/government/opportunities" element={<GovernmentOpportunityDashboard userRole="client" />} />
           <Route path="/blockchain/certificates" element={<BlockchainCertificationSystem />} />
+          <Route path="/performance/monitoring" element={<PerformanceMonitoring />} />
+          
+          {/* Enhanced Communication Routes */}
+          <Route path="/chat/:contextId?" element={<LiveChatSystem context="general" />} />
+          <Route path="/notifications" element={<IntelligentNotifications />} />
           
           {/* Enterprise & Admin Routes */}
           <Route path="/enterprise/onboarding" element={<EnterpriseOnboardingSystem organizationType="agency" />} />
