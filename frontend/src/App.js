@@ -9109,6 +9109,7 @@ function Header(){
                 </svg>
                 <span>Service Requests</span>
               </Link>
+              </>
             )}
             
             {me.role === 'navigator' && (
