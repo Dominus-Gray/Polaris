@@ -9084,7 +9084,30 @@ function Header(){
               </Link>
             )}
             
-            {me.role === 'provider' && (
+            {me.role === 'navigator' && (
+              <>
+                <Link className="nav-item" to="/navigator">
+                  <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                  </svg>
+                  <span>Review Queue</span>
+                </Link>
+                <Link className="nav-item" to="/navigator/analytics">
+                  <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3a1 1 0 00-1 1v14a1 1 0 102 0V4a1 1 0 00-1-1zm-6 8a1 1 0 00-1 1v6a1 1 0 102 0v-6a1 1 0 00-1-1zm12-6a1 1 0 00-1 1v12a1 1 0 102 0V6a1 1 0 00-1-1z" />
+                  </svg>
+                  <span>Analytics</span>
+                </Link>
+                {process.env.REACT_APP_SHOW_RP_CRM === 'true' && (
+                  <Link className="nav-item" to="/rp">
+                    <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 716 0zm6 3a2 2 0 11-4 0 2 2 0 714 0zM7 10a2 2 0 11-4 0 2 2 0 714 0z" />
+                    </svg>
+                    <span>RP Leads</span>
+                  </Link>
+                )}
+              </>
+            )}
               <Link className="nav-item" to="/provider/proposals">
                 <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
