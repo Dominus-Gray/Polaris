@@ -245,6 +245,7 @@ import AgencySponsorKPIs from './components/AgencySponsorKPIs';
 
 
 import EngagementDetails from './pages/EngagementDetails';
+import IntegrationsPage from './components/IntegrationsPage';
 
 class PolarisErrorBoundary extends React.Component {
   constructor(props) {
