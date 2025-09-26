@@ -4971,45 +4971,47 @@ function ClientHome(){
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="border-b border-slate-200 px-6 pt-4">
-          <nav className="flex gap-8">
-            {[
-              { id: 'overview', label: 'Overview', icon: '📊' },
-              { id: 'gaps', label: 'Gap Analysis', icon: '🎯' },
-              { id: 'services', label: 'Services', icon: '🔧' },
-              { id: 'marketplace', label: 'Find Providers', icon: '🏪' },
-              { id: 'assessment', label: 'Assessment', icon: '📝' },
-              { id: 'certificates', label: 'Certificates', icon: '🏆' },
-              { id: 'ai_features', label: 'AI Assistant', icon: '🤖' },
-              { id: 'documents', label: 'Document Analysis', icon: '📄' },
-              { id: 'opportunities', label: 'Gov Opportunities', icon: '🏛️' },
-              { id: 'analytics', label: 'Advanced Analytics', icon: '📈' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id 
-                    ? 'border-blue-500 text-blue-600' 
-                    : 'border-transparent text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-                {tab.id === 'gaps' && gaps.length > 0 && (
-                  <span className="ml-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">{gaps.length}</span>
-                )}
-                {tab.id === 'services' && serviceRequests.filter(r => r.status === 'active').length > 0 && (
-                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                    {serviceRequests.filter(r => r.status === 'active').length}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
+          {/* Enhanced Tab Navigation - Connected to Routes */}
+          <div className="bg-white rounded-lg shadow-sm border mb-6">
+            <div className="border-b border-slate-200 px-6 pt-4">
+              <nav className="flex gap-8 overflow-x-auto">
+                {[
+                  { id: 'overview', label: 'Overview', icon: '📊', action: () => setActiveTab('overview') },
+                  { id: 'assessment', label: 'Assessment', icon: '📝', action: () => navigate('/assessment') },
+                  { id: 'knowledge_base', label: 'Knowledge Base', icon: '📚', action: () => navigate('/knowledge-base') },
+                  { id: 'ai_features', label: 'AI Assistant', icon: '🤖', action: () => navigate('/ai/coaching') },
+                  { id: 'services', label: 'Services', icon: '🔧', action: () => setActiveTab('services') },
+                  { id: 'marketplace', label: 'Find Providers', icon: '🏪', action: () => setActiveTab('marketplace') },
+                  { id: 'certificates', label: 'Certificates', icon: '🏆', action: () => navigate('/blockchain/certificates') },
+                  { id: 'documents', label: 'Document Analysis', icon: '📄', action: () => navigate('/ai/documents') },
+                  { id: 'opportunities', label: 'Gov Opportunities', icon: '🏛️', action: () => navigate('/government/opportunities') },
+                  { id: 'analytics', label: 'Advanced Analytics', icon: '📈', action: () => navigate('/ai/analytics') },
+                  { id: 'support', label: 'Support', icon: '💬', action: () => navigate('/support') },
+                  { id: 'community', label: 'Community', icon: '👥', action: () => navigate('/community') }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={tab.action}
+                    className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeTab === tab.id 
+                        ? 'border-blue-500 text-blue-600' 
+                        : 'border-transparent text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <span className="mr-2">{tab.icon}</span>
+                    {tab.label}
+                    {tab.id === 'gaps' && gaps.length > 0 && (
+                      <span className="ml-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">{gaps.length}</span>
+                    )}
+                    {tab.id === 'services' && serviceRequests.filter(r => r.status === 'active').length > 0 && (
+                      <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        {serviceRequests.filter(r => r.status === 'active').length}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
         
         <div className="p-6">
           {activeTab === 'overview' && (
