@@ -21,7 +21,16 @@ function TierBasedAssessmentPage() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
       const { data } = await axios.get(`${API}/assessment/schema/tier-based`, { headers });
-      setAvailableAreas(data.areas || []);
+      
+      // Map backend structure to frontend format
+      const areas = (data.areas || []).map(area => ({
+        id: area.area_id,
+        name: area.area_name || area.name,
+        description: area.description || 'Assessment area for procurement readiness',
+        tiers: area.tiers || {}
+      }));
+      
+      setAvailableAreas(areas);
     } catch (error) {
       console.error('Error loading assessment data:', error);
       // Fallback data - Complete 10 areas
