@@ -33,18 +33,18 @@ function TierBasedAssessmentPage() {
       setAvailableAreas(areas);
     } catch (error) {
       console.error('Error loading assessment data:', error);
-      // Fallback data - Complete 10 areas
+      // Fallback data - Complete 10 areas matching backend schema
       setAvailableAreas([
-        { id: 'area1', name: 'Business Formation & Registration', description: 'Business formation, licenses, and legal requirements' },
-        { id: 'area2', name: 'Financial Operations & Management', description: 'Accounting, cash flow, and financial controls' },
-        { id: 'area3', name: 'Legal & Contracting Compliance', description: 'Contract management and legal compliance' },
-        { id: 'area4', name: 'Quality Management & Standards', description: 'Quality systems and operational standards' },
-        { id: 'area5', name: 'Technology & Security Infrastructure', description: 'IT infrastructure and cybersecurity' },
-        { id: 'area6', name: 'Human Resources & Capacity', description: 'Staff management and HR policies' },
-        { id: 'area7', name: 'Performance Tracking & Reporting', description: 'KPI tracking and client reporting' },
-        { id: 'area8', name: 'Risk Management & Business Continuity', description: 'Risk mitigation and emergency planning' },
-        { id: 'area9', name: 'Supply Chain Management & Vendor Relations', description: 'Vendor management and supply chain resilience' },
-        { id: 'area10', name: 'Competitive Advantage & Market Position', description: 'Market differentiation and competitive strategy' }
+        { id: 'area1', name: 'Business Formation & Registration', description: 'Business formation, licenses, legal requirements, insurance coverage' },
+        { id: 'area2', name: 'Financial Operations & Management', description: 'Accounting systems, financial records, credit and banking relationships' },
+        { id: 'area3', name: 'Legal & Contracting Compliance', description: 'Service agreements, regulatory compliance, intellectual property protections' },
+        { id: 'area4', name: 'Quality Management & Standards', description: 'Quality control processes, certifications, customer feedback systems' },
+        { id: 'area5', name: 'Technology & Security Infrastructure', description: 'Cybersecurity measures, scalable technology, data backup and recovery' },
+        { id: 'area6', name: 'Human Resources & Capacity', description: 'Staffing capacity, training and certifications, employee development programs' },
+        { id: 'area7', name: 'Performance Tracking & Reporting', description: 'KPI tracking systems, client reporting, project documentation' },
+        { id: 'area8', name: 'Risk Management & Business Continuity', description: 'Business continuity planning, emergency preparedness, professional insurance' },
+        { id: 'area9', name: 'Supply Chain Management & Vendor Relations', description: 'Vendor qualification processes, supply chain resilience, vendor performance monitoring' },
+        { id: 'area10', name: 'Competitive Advantage & Market Position', description: 'Competitive advantages, market capture processes, strategic partnerships' }
       ]);
     } finally {
       setLoading(false);
