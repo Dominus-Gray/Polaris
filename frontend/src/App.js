@@ -9587,6 +9587,9 @@ function AppShell(){
             </>
           )}
           
+          {/* Integration Routes */}
+          <Route path="/integrations" element={<IntegrationsPage />} />
+          
           {/* Advanced AI Feature Routes */}
           <Route path="/ai/coaching" element={<AICoachingInterface />} />
           <Route path="/ai/documents" element={<ComputerVisionDocumentAnalyzer assessmentArea="area1" />} />
