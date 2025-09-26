@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = process.env.REACT_APP_BACKEND_URL || 'https://polar-docs-ai.preview.emergentagent.com/api';
+const API_BASE = process.env.REACT_APP_BACKEND_URL || '/api';
 
 export default function Login(){
   const [email, setEmail] = useState('');
