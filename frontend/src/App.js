@@ -9564,11 +9564,6 @@ function AppShell(){
             </>
           )}
           
-          {/* Integration Routes */}
-          <Route path="/integrations" element={<IntegrationsPage />} />
-          <Route path="/integrations/quickbooks" element={<QuickBooksIntegration />} />
-          <Route path="/integrations/microsoft365" element={<Microsoft365Integration />} />
-          
           {/* Advanced AI Feature Routes */}
           <Route path="/ai/coaching" element={<AICoachingInterface />} />
           <Route path="/ai/documents" element={<ComputerVisionDocumentAnalyzer assessmentArea="area1" />} />
