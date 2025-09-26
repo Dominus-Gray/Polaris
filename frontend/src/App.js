@@ -307,7 +307,7 @@ import ProfileSettings from "./components/ProfileSettings";
 import AdminDashboard from "./components/AdminDashboard";
 import 'uplot/dist/uPlot.min.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://polar-docs-ai.preview.emergentagent.com/api';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '/api';
 const API = BACKEND_URL;
 
 function PolarisLogo({ size = 22, variant = 'default' }) {
