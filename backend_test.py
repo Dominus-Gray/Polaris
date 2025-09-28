@@ -66,12 +66,14 @@ class PolarisBackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if 'token' in data:
-                    self.tokens[role] = data['token']
+                # Handle both 'token' and 'access_token' response formats
+                token = data.get('token') or data.get('access_token')
+                if token:
+                    self.tokens[role] = token
                     self.log_test(
                         f"{role.title()} Authentication",
                         True,
-                        f"Token length: {len(data['token'])} chars",
+                        f"Token length: {len(token)} chars",
                         response_time
                     )
                     return True
@@ -83,6 +85,15 @@ class PolarisBackendTester:
                         response_time
                     )
                     return False
+            elif response.status_code == 403 and role == 'agency':
+                # Handle agency pending approval case
+                self.log_test(
+                    f"{role.title()} Authentication",
+                    False,
+                    f"Agency pending approval - expected for QA setup",
+                    response_time
+                )
+                return False
             else:
                 self.log_test(
                     f"{role.title()} Authentication",
