@@ -1341,7 +1341,9 @@ async def create_user(email: str, password: str, role: str) -> dict:
 
 async def verify_user(email: str, password: str) -> Optional[dict]:
     user = await get_user_by_email(email)
-    if user and pbkdf2_sha256.verify(password, user.get("hashed_password", "")):
+    # Handle both 'password' and 'hashed_password' field names for backward compatibility
+    password_field = user.get("hashed_password") or user.get("password", "")
+    if user and pbkdf2_sha256.verify(password, password_field):
         return user
     return None
 
