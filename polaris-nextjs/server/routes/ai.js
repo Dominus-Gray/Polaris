@@ -1,28 +1,62 @@
-const express = require('express');
-const axios = require('axios');
-const { v4: uuidv4 } = require('uuid');
-const { AIGeneratedContent } = require('../models/KnowledgeBase');
-const { AssessmentSession, TierAssessmentSession } = require('../models/Assessment');
-const { ServiceRequest } = require('../models/ServiceRequest');
-const User = require('../models/User');
-const { authenticateToken } = require('../middleware/auth');
-const { validate, schemas } = require('../utils/validation');
-const { 
-  formatResponse, 
-  formatErrorResponse,
-  getBusinessAreas
-} = require('../utils/helpers');
-const logger = require('../utils/logger').logger;
+const express = require('express')
+const { v4: uuidv4 } = require('uuid')
+const { authenticateToken } = require('../middleware/auth')
+const { formatResponse, formatErrorResponse, getBusinessAreas } = require('../utils/helpers')
+const logger = require('../utils/logger').logger
 
-const router = express.Router();
+// Import emergent LLM integration
+let LlmChat, UserMessage
 
-const BUSINESS_AREAS = getBusinessAreas();
+try {
+  const llmModule = require('emergentintegrations/llm/chat')
+  LlmChat = llmModule.LlmChat
+  UserMessage = llmModule.UserMessage
+  console.log('✅ LLM emergent integration loaded successfully')
+} catch (error) {
+  console.error('❌ Error importing LLM emergent integration:', error)
+}
 
-// Mock AI service for development (replace with actual Emergent LLM integration)
-class AIService {
-  static async generateResponse(prompt, context = {}) {
-    // In production, this would call the Emergent LLM API
-    // For now, return contextual mock responses
+// Models
+const { AIGeneratedContent } = require('../models/KnowledgeBase')
+const { AssessmentSession, TierAssessmentSession } = require('../models/Assessment')
+const { ServiceRequest } = require('../models/ServiceRequest')
+const User = require('../models/User')
+
+const router = express.Router()
+const BUSINESS_AREAS = getBusinessAreas()
+
+// AI Chat instances for different contexts
+const chatInstances = new Map()
+
+/**
+ * Get or create AI chat instance for a session
+ */
+function getAIChatInstance(sessionId, systemMessage, model = 'gpt-4o') {
+  const key = `${sessionId}-${model}`
+  
+  if (!chatInstances.has(key)) {
+    const apiKey = process.env.EMERGENT_LLM_KEY
+    
+    if (!apiKey) {
+      throw new Error('EMERGENT_LLM_KEY not configured')
+    }
+    
+    const chat = new LlmChat(apiKey, sessionId, systemMessage)
+    
+    // Configure model based on request
+    if (model.startsWith('claude')) {
+      chat.with_model('anthropic', model)
+    } else if (model.startsWith('gemini')) {
+      chat.with_model('gemini', model) 
+    } else {
+      chat.with_model('openai', model)
+    }
+    
+    chatInstances.set(key, chat)
+  }
+  
+  return chatInstances.get(key)
+}
     
     const responses = {
       coaching: {
