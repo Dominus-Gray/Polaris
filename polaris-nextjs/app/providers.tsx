@@ -154,38 +154,33 @@ class ApiClient {
   }
 
   async login(email: string, password: string) {
-    return this.request('/auth/login', {
+    return this.makeRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
   }
 
   async register(userData: RegisterData) {
-    return this.request('/auth/register', {
+    return this.makeRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     })
   }
 
   async getMe() {
-    return this.request('/auth/me')
+    return this.makeRequest('/auth/me')
   }
 
   async refreshToken() {
-    return this.request('/auth/refresh', {
+    return this.makeRequest('/auth/refresh', {
       method: 'POST',
     })
   }
 
   async logout() {
-    return this.request('/auth/logout', {
+    return this.makeRequest('/auth/logout', {
       method: 'POST',
     })
-  }
-
-  // Generic request method for other components
-  async request(endpoint: string, options: RequestInit = {}) {
-    return this.request(endpoint, options)
   }
 }
 
