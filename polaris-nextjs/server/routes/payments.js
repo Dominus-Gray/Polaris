@@ -108,7 +108,7 @@ router.post('/checkout/session', authenticateToken, async (req, res, next) => {
     
     // Create payment transaction record (MANDATORY per playbook)
     const paymentTransaction = new PaymentTransaction({
-      session_id: session.session_id,
+      session_id: session.id,
       user_id: req.user.id,
       user_email: req.user.email,
       package_id,
@@ -117,17 +117,17 @@ router.post('/checkout/session', authenticateToken, async (req, res, next) => {
       currency: packageInfo.currency,
       payment_status: 'initiated',
       status: 'pending',
-      metadata: checkoutRequest.metadata
+      metadata: session.metadata
     })
     
     await paymentTransaction.save()
     
-    logger.info(`Payment session created: ${session.session_id} for package ${package_id} by user ${req.user.email}`)
+    logger.info(`Payment session created: ${session.id} for package ${package_id} by user ${req.user.email}`)
     
     res.json({
       success: true,
       data: {
-        checkout_session_id: session.session_id,
+        checkout_session_id: session.id,
         checkout_url: session.url,
         package: {
           id: package_id,
