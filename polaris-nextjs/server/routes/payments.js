@@ -268,29 +268,34 @@ async function processSuccessfulPayment(transaction) {
 }
 
 /**
- * Stripe Webhook Handler (Emergent Integration)
+ * Stripe Webhook Handler (Standard Stripe)
  * POST /api/payments/webhook/stripe
  */
 router.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
-    const stripe = getStripeCheckout('http://localhost:3000')
-    if (!stripe) {
-      return res.status(500).json({ error: 'Payment service unavailable' })
+    const sig = req.headers['stripe-signature']
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
+    
+    let event
+    
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret)
+    } catch (err) {
+      logger.error('Webhook signature verification failed:', err.message)
+      return res.status(400).send(`Webhook Error: ${err.message}`)
     }
     
-    const sig = req.headers['stripe-signature']
-    
-    // Handle webhook using emergent integration
-    const webhookResponse = await stripe.handle_webhook(req.body, sig)
-    
-    if (webhookResponse.session_id && webhookResponse.payment_status === 'paid') {
+    // Handle the checkout.session.completed event
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object
+      
       // Find and update transaction
       const transaction = await PaymentTransaction.findOne({ 
-        session_id: webhookResponse.session_id 
+        session_id: session.id 
       })
       
       if (transaction && !transaction.processed) {
-        transaction.payment_status = webhookResponse.payment_status
+        transaction.payment_status = session.payment_status
         transaction.status = 'complete'
         transaction.processed = true
         
