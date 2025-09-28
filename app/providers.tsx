@@ -259,18 +259,25 @@ function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: 'LOGIN_START' })
       
+      console.log('Attempting login with:', email)
       const response = await apiClient.login(email, password)
+      console.log('Login response:', response)
       
       // Handle FastAPI response structure (access_token + separate user data)
       const token = response.access_token || response.data?.access_token
       
       if (!token) {
+        console.error('No access token in response:', response)
         throw new Error('No access token received')
       }
+      
+      console.log('Token received:', token.substring(0, 50) + '...')
       
       // Get user data with the token
       apiClient.setToken(token)
       const userResponse = await apiClient.getMe()
+      console.log('User response:', userResponse)
+      
       const user = userResponse.data || userResponse
       
       // Store in localStorage (client-side only)
@@ -287,6 +294,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('Welcome back!')
       return true
     } catch (error) {
+      console.error('Login error details:', error)
       dispatch({ type: 'LOGIN_FAILURE' })
       toast.error(error instanceof Error ? error.message : 'Login failed')
       return false
