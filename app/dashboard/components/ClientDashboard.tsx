@@ -68,7 +68,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
 
         // Fetch assessment progress using correct endpoint
         const progressResponse = await apiClient.request('/client/assessment-progress')
-        setAssessmentProgress(progressResponse.data.area_progress || [])
+        setAssessmentProgress(progressResponse.data?.area_progress || progressResponse.area_progress || [])
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
         // Provide fallback data to prevent crashes
