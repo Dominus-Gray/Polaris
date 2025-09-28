@@ -56,8 +56,8 @@ const NavigatorDashboard: React.FC<NavigatorDashboardProps> = ({ user }) => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch navigator dashboard data
-        const response = await apiClient.request('/navigator/dashboard')
+        // Fetch navigator dashboard data using correct endpoint
+        const response = await apiClient.request('/home/navigator')
         setDashboardData(response.data)
 
         // Fetch system health
