@@ -37,6 +37,13 @@ class PolarisBackendTester:
 
     def log_test(self, test_name, success, details="", response_time=0):
         """Log test results"""
+        # Ensure response_time is a number
+        if isinstance(response_time, str):
+            try:
+                response_time = float(response_time.replace('s', ''))
+            except:
+                response_time = 0
+        
         result = {
             "test": test_name,
             "success": success,
