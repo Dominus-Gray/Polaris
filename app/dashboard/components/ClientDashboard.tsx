@@ -215,7 +215,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
           </div>
 
           <div className="space-y-4">
-            {Array.isArray(assessmentProgress) && assessmentProgress.slice(0, 5).map((area) => (
+            {Array.isArray(assessmentProgress) && assessmentProgress.length > 0 ? assessmentProgress.slice(0, 5).map((area) => (
               <div key={area.area_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -241,7 +241,25 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              // Show default areas when no progress data
+              ['Business Formation', 'Financial Operations', 'Legal Compliance', 'Quality Management', 'Technology Security'].map((areaName, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-medium text-gray-900">{areaName}</h3>
+                      <span className="polaris-badge polaris-badge-warning">Not Started</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2 mr-3">
+                        <div className="bg-polaris-blue h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
+                      <span className="text-sm text-gray-500">0%</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
