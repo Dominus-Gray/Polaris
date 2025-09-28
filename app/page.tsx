@@ -1,254 +1,318 @@
-import React from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle, Star, Users, TrendingUp, Shield } from 'lucide-react'
+import { 
+  ArrowRight, 
+  CheckCircle, 
+  Target, 
+  Users, 
+  Award,
+  Building,
+  TrendingUp,
+  Shield,
+  Network,
+  Map,
+  Handshake,
+  FileCheck
+} from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Polaris - Procurement Readiness & Business Maturity Platform',
+  description: 'Streamlining access to procurement opportunities through standardized small business maturity assurance and local ecosystem building.',
+}
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+      {/* ===== ENHANCED HEADER ===== */}
+      <nav className="bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="h-8 w-8 polaris-gradient rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">P</span>
-                </div>
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mr-3">
+                <span className="text-white font-bold text-lg">P</span>
               </div>
-              <div className="ml-3">
+              <div>
                 <h1 className="text-xl font-bold text-gray-900">Polaris</h1>
-                <p className="text-xs text-gray-500">Business Assessment Platform</p>
+                <p className="text-xs text-gray-600">Procurement Readiness Platform</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <Link
                 href="/auth/login"
-                className="text-gray-600 hover:text-gray-900 font-medium"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/auth/register"
-                className="polaris-button-primary inline-flex items-center"
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
               >
                 Get Started
-                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative px-4 pt-16 pb-24 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Unlock Your Business
-              <span className="block text-transparent bg-clip-text polaris-gradient">
-                Procurement Readiness
+      {/* ===== ENHANCED HERO SECTION ===== */}
+      <section className="relative py-20 lg:py-32 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-blue-800/5"></div>
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="mb-8">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full text-sm font-medium text-blue-800 mb-6">
+              <Building className="w-4 h-4 mr-2" />
+              Trusted by Local Agencies & Small Businesses Nationwide
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+              <span className="block">Streamline Access to</span>
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent block">
+                Procurement Opportunities
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Complete tier-based assessments, access professional services, and get AI-powered guidance 
-              to ensure your business meets compliance standards and competitive requirements.
+            
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+              Standardizing small business maturity assurance through comprehensive assessments, 
+              professional services, and local ecosystem building to unlock competitive advantages.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Link 
                 href="/auth/register"
-                className="polaris-button-primary inline-flex items-center px-8 py-4 text-lg font-semibold"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
               >
-                Start Free Assessment
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Begin Assessment Journey
+                <ArrowRight className="ml-3 h-6 w-6" />
               </Link>
-              <Link
-                href="#features"
-                className="polaris-button-secondary inline-flex items-center px-8 py-4 text-lg font-semibold"
+              
+              <Link 
+                href="/auth/login"
+                className="inline-flex items-center px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-blue-200 text-blue-700 font-semibold text-lg rounded-xl hover:bg-blue-50 transition-all duration-300"
               >
-                Learn More
+                Agency Portal Access
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-24 bg-white">
+      {/* ===== PROCUREMENT READINESS FEATURES ===== */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Everything You Need for Business Readiness
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Comprehensive{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Procurement Readiness
+              </span>{' '}
+              Platform
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our comprehensive platform provides all the tools and resources you need to assess, 
-              improve, and maintain your business compliance standards.
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Building stronger local business ecosystems through standardized maturity assessments, 
+              professional service connections, and strategic readiness optimization.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="polaris-card-hover text-center">
-              <div className="w-12 h-12 polaris-gradient rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-white" />
+            {/* Enhanced Feature Cards with Icons */}
+            <div className="bg-gradient-to-br from-white to-blue-50/50 rounded-2xl border border-blue-100 shadow-lg hover:shadow-xl transition-all duration-300 p-8 group">
+              <div className="h-16 w-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Target className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Tier-Based Assessments
-              </h3>
-              <p className="text-gray-600">
-                Complete comprehensive assessments across 10 business areas with progressive 
-                tier levels to match your business complexity and requirements.
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Standardized Maturity Assessment</h3>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Comprehensive 10-area business evaluation framework designed to measure and improve 
+                procurement readiness across all critical business dimensions.
               </p>
+              <div className="flex items-center text-blue-600 font-semibold">
+                <FileCheck className="h-4 w-4 mr-2" />
+                <span>View Assessment Framework</span>
+              </div>
             </div>
 
-            {/* Feature 2 */}
-            <div className="polaris-card-hover text-center">
-              <div className="w-12 h-12 polaris-gradient rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Users className="h-6 w-6 text-white" />
+            <div className="bg-gradient-to-br from-white to-green-50/50 rounded-2xl border border-green-100 shadow-lg hover:shadow-xl transition-all duration-300 p-8 group">
+              <div className="h-16 w-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Network className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Professional Services
-              </h3>
-              <p className="text-gray-600">
-                Connect with qualified service providers for assessment help, compliance support, 
-                and professional consulting services tailored to your needs.
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Local Ecosystem Building</h3>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Connect with verified local agencies, service providers, and business support organizations 
+                to build a stronger procurement-ready business community.
               </p>
+              <div className="flex items-center text-green-600 font-semibold">
+                <Map className="h-4 w-4 mr-2" />
+                <span>Find Local Partners</span>
+              </div>
             </div>
 
-            {/* Feature 3 */}
-            <div className="polaris-card-hover text-center">
-              <div className="w-12 h-12 polaris-gradient rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Star className="h-6 w-6 text-white" />
+            <div className="bg-gradient-to-br from-white to-purple-50/50 rounded-2xl border border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300 p-8 group">
+              <div className="h-16 w-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Award className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                AI-Powered Guidance
-              </h3>
-              <p className="text-gray-600">
-                Get personalized recommendations, generate custom templates, and receive 
-                intelligent coaching to accelerate your business readiness journey.
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Competitive Advantage Development</h3>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Identify market positioning opportunities and develop strategic advantages 
+                that differentiate your business in procurement competitions.
               </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="polaris-card-hover text-center">
-              <div className="w-12 h-12 polaris-gradient rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-white" />
+              <div className="flex items-center text-purple-600 font-semibold">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                <span>Build Competitive Edge</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Progress Tracking
-              </h3>
-              <p className="text-gray-600">
-                Monitor your assessment progress, track compliance scores, and visualize 
-                improvements across all business areas with detailed analytics.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="polaris-card-hover text-center">
-              <div className="w-12 h-12 polaris-gradient rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Knowledge Base
-              </h3>
-              <p className="text-gray-600">
-                Access comprehensive resources, templates, guides, and best practices 
-                for each business area to support your compliance efforts.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="polaris-card-hover text-center">
-              <div className="w-12 h-12 polaris-gradient rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Multi-Role Platform
-              </h3>
-              <p className="text-gray-600">
-                Support for clients, service providers, agencies, and navigators with 
-                role-specific dashboards and functionality tailored to each user type.
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Business Areas Section */}
-      <section className="py-24 bg-gray-50">
+      {/* ===== LOCAL ECOSYSTEM STATS ===== */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-3xl font-bold mb-12">Strengthening Local Business Ecosystems</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="group">
+              <div className="text-4xl font-bold mb-2">850+</div>
+              <div className="text-blue-200">Local Agencies</div>
+              <div className="text-sm text-blue-300 mt-1">Nationwide Network</div>
+            </div>
+            <div className="group">
+              <div className="text-4xl font-bold mb-2">15,000+</div>
+              <div className="text-blue-200">Businesses Assessed</div>
+              <div className="text-sm text-blue-300 mt-1">Procurement Ready</div>
+            </div>
+            <div className="group">
+              <div className="text-4xl font-bold mb-2">2,400+</div>
+              <div className="text-blue-200">Service Providers</div>
+              <div className="text-sm text-blue-300 mt-1">Verified Experts</div>
+            </div>
+            <div className="group">
+              <div className="text-4xl font-bold mb-2">$2.8M+</div>
+              <div className="text-blue-200">Contracts Secured</div>
+              <div className="text-sm text-blue-300 mt-1">Business Growth</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== HOW IT WORKS - PROCUREMENT READINESS ===== */}
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              10 Comprehensive Business Areas
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              Your Path to Procurement Readiness
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our assessments cover all critical aspects of business operations to ensure 
-              complete readiness and compliance.
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our proven methodology transforms small businesses into competitive, procurement-ready organizations 
+              through systematic maturity assessment and targeted capability building.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              'Business Formation & Registration',
-              'Financial Operations & Management',
-              'Legal & Contracting Compliance',
-              'Quality Management & Standards',
-              'Technology & Security Infrastructure',
-              'Human Resources & Capacity',
-              'Performance Tracking & Reporting',
-              'Risk Management & Business Continuity',
-              'Supply Chain Management & Vendor Relations',
-              'Competitive Advantage & Market Position'
-            ].map((area, index) => (
-              <div key={index} className="flex items-center p-4 bg-white rounded-lg shadow-sm">
-                <div className="w-8 h-8 polaris-gradient rounded-full flex items-center justify-center text-white font-semibold text-sm mr-4">
-                  {index + 1}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="h-20 w-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  1
                 </div>
-                <span className="font-medium text-gray-900">{area}</span>
               </div>
-            ))}
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Maturity Assessment</h3>
+              <p className="text-gray-600">
+                Complete comprehensive evaluation across 10 critical business areas to establish 
+                your current procurement readiness baseline.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="h-12 w-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  2
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gap Identification & Services</h3>
+              <p className="text-gray-600">
+                Identify improvement areas and connect with verified local service providers 
+                who specialize in procurement readiness enhancement.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="h-20 w-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="h-12 w-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  3
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Ecosystem Integration</h3>
+              <p className="text-gray-600">
+                Join your local business ecosystem with verified maturity credentials 
+                and access to procurement opportunities and strategic partnerships.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 polaris-gradient">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Transform Your Business?
+      {/* ===== ENHANCED CTA SECTION ===== */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 border border-white/20 rounded-full"></div>
+          <div className="absolute top-32 right-16 w-48 h-48 border border-white/20 rounded-full"></div>
+          <div className="absolute bottom-16 left-32 w-32 h-32 border border-white/20 rounded-full"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            Ready to Join the Procurement-Ready Business Network?
           </h2>
-          <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
-            Join thousands of businesses that have improved their procurement readiness 
-            and competitive advantage with Polaris.
+          <p className="text-xl text-blue-200 mb-12 max-w-3xl mx-auto">
+            Connect with your local agency partner to begin your standardized maturity assessment 
+            and unlock access to procurement opportunities in your ecosystem.
           </p>
-          <Link
-            href="/auth/register"
-            className="inline-flex items-center px-8 py-4 bg-white text-polaris-blue font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200"
-          >
-            Start Your Assessment Today
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-        </div>
-      </section>
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Link 
+              href="/auth/register"
+              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+            >
+              <Handshake className="mr-3 h-6 w-6" />
+              Connect with Local Agency
+              <ArrowRight className="ml-3 h-6 w-6" />
+            </Link>
+            
+            <Link 
+              href="/about"
+              className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold text-lg rounded-xl hover:bg-white/20 transition-all duration-300"
+            >
+              <Shield className="mr-3 h-6 w-6" />
+              Learn About Our Platform
+            </Link>
+          </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="h-8 w-8 polaris-gradient rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-sm">P</span>
+          {/* Trust Indicators */}
+          <div className="mt-16 pt-16 border-t border-white/20">
+            <p className="text-blue-200 mb-8">Trusted by leading procurement agencies and business development organizations</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+              <div className="flex items-center space-x-2">
+                <Building className="h-6 w-6" />
+                <span className="font-medium">SBA Partners</span>
               </div>
-              <div>
-                <h3 className="font-bold">Polaris</h3>
-                <p className="text-sm text-gray-400">Business Assessment Platform</p>
+              <div className="flex items-center space-x-2">
+                <Award className="h-6 w-6" />
+                <span className="font-medium">APEX Accelerators</span>
               </div>
-            </div>
-            <div className="text-sm text-gray-400">
-              © 2025 Polaris Platform. All rights reserved.
+              <div className="flex items-center space-x-2">
+                <Users className="h-6 w-6" />
+                <span className="font-medium">Local EDCs</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Network className="h-6 w-6" />
+                <span className="font-medium">Business Networks</span>
+              </div>
             </div>
           </div>
         </div>
-      </footer>
+      </section>
     </div>
   )
 }
