@@ -524,17 +524,16 @@ function generateTemplateContent(areaId, templateType, areaName) {
 }
 
 /**
- * Generate AI response using Emergent LLM integration
+ * Generate AI response using OpenAI API with Emergent LLM key
  */
 async function generateAIResponse(question, context = {}) {
   try {
-    if (!LlmChat || !UserMessage) {
-      // Fallback response if integration not available
-      return "I'm an AI assistant here to help with your business compliance questions. Please describe what specific area you need assistance with."
+    const apiKey = process.env.EMERGENT_LLM_KEY
+    
+    if (!apiKey) {
+      throw new Error('EMERGENT_LLM_KEY not configured')
     }
 
-    const sessionId = `kb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
     // Create context-aware system message
     const systemMessage = `You are a professional business compliance and assessment AI assistant for the Polaris platform. 
 
@@ -560,20 +559,28 @@ RESPONSE STYLE:
 - Maintain a professional, supportive tone
 
 ADDITIONAL CONTEXT: ${context.area_id ? `User is asking about ${BUSINESS_AREAS[context.area_id]}` : 'General business question'}`
+
+    const messages = [
+      { role: 'system', content: systemMessage },
+      { role: 'user', content: question }
+    ]
+
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o-mini',
+      messages: messages,
+      max_tokens: 300,
+      temperature: 0.7
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    })
     
-    // Get AI chat instance
-    const chat = getAIChatInstance(sessionId, systemMessage, 'gpt-4o')
-    
-    // Create user message
-    const userMessage = new UserMessage(question)
-    
-    // Send message and get response
-    const response = await chat.send_message(userMessage)
-    
-    return response || "I apologize, but I'm unable to provide a response at the moment. Please try again or contact support."
+    return response.data.choices[0].message.content || "I apologize, but I'm unable to provide a response at the moment. Please try again or contact support."
     
   } catch (error) {
-    logger.error('AI response generation error:', error)
+    logger.error('AI response generation error:', error.response?.data || error.message)
     // Return fallback response
     return "I'm experiencing technical difficulties. Please try rephrasing your question or contact our support team for assistance."
   }
