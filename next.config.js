@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     domains: [
       'localhost',
-      'nextjs-mongo-polaris.preview.emergentagent.com',
+      'polaris-migrate.preview.emergentagent.com',
       'images.unsplash.com',
       'via.placeholder.com'
     ],
@@ -17,20 +16,20 @@ const nextConfig = {
     ],
   },
   env: {
-    API_URL: process.env.API_URL || 'http://localhost:8000',
+    API_URL: process.env.API_URL || 'http://localhost:8001',
     APP_URL: process.env.APP_URL || 'http://localhost:3000',
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.API_URL || 'http://localhost:8000'}/api/:path*`,
+        destination: `${process.env.API_URL || 'http://localhost:8001'}/api/:path*`,
       },
     ];
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'nextjs-mongo-polaris.preview.emergentagent.com']
+      allowedOrigins: ['localhost:3000', 'polaris-migrate.preview.emergentagent.com']
     }
   }
 };
