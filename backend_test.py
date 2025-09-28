@@ -198,7 +198,7 @@ class PolarisAPITester:
             
             if session_response.status_code in [200, 201]:
                 session_result = session_response.json()
-                session_id = session_result.get("session_id") or session_result.get("data", {}).get("session_id")
+                session_id = (session_result.get("session_id") or \n                            session_result.get("data", {}).get("session_id") or\n                            session_result.get("data", {}).get("session", {}).get("_id"))
                 if session_id:
                     self.log_test("Assessment Session Creation", True, f"Created session: {session_id}")
                     assessment_results.append(True)
