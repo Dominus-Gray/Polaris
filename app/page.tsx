@@ -419,11 +419,11 @@ export default function HomePage() {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Ready to Join the Procurement-Ready Business Network?
+            Ready to Unlock Procurement Opportunities?
           </h2>
           <p className="text-xl text-blue-200 mb-12 max-w-3xl mx-auto">
-            Connect with your local agency partner to begin your standardized maturity assessment 
-            and unlock access to procurement opportunities in your ecosystem.
+            Partner with your local agency to access the standardized assessment framework 
+            and begin your journey toward procurement readiness and competitive advantage.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -432,7 +432,7 @@ export default function HomePage() {
               className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
             >
               <Handshake className="mr-3 h-6 w-6" />
-              Connect with Local Agency
+              Find Your Local Agency Partner
               <ArrowRight className="ml-3 h-6 w-6" />
             </Link>
             
