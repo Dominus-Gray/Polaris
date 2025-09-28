@@ -9,8 +9,8 @@ import json
 from datetime import datetime
 
 # Production URLs
-FRONTEND_URL = "https://polar-docs-ai.preview.emergentagent.com"
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+FRONTEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 def test_frontend_endpoints():
     """Test if frontend is making correct API calls"""

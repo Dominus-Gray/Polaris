@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 # QA Credentials
 AGENCY_CREDENTIALS = {

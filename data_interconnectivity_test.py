@@ -18,7 +18,7 @@ import time
 from datetime import datetime, timezone
 
 # Configuration
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},

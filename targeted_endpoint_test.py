@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "navigator": {"email": "navigator.qa@polaris.example.com", "password": "Polaris#2025!"},
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},

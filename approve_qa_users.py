@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 def approve_qa_users():
     """Approve existing QA users"""

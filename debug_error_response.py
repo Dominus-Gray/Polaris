@@ -6,7 +6,7 @@ Debug script to examine the actual error response format
 import requests
 import json
 
-BASE_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 # Test invalid credentials
 invalid_payload = {

@@ -27,7 +27,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Backend URL configuration
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 # QA Test Credentials from review request
 QA_CREDENTIALS = {

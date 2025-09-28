@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://polar-docs-ai.preview.emergentagent.com';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://nextjs-mongo-polaris.preview.emergentagent.com';
 
 function AgencyBusinessIntelligenceDashboard() {
   const [dashboardData, setDashboardData] = useState(null);

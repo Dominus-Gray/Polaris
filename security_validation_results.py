@@ -69,7 +69,7 @@ class SecurityValidationResults:
         print("🔐 Production Security System Validation for Polaris Platform")
         print("=" * 80)
         
-        base_url = "https://polar-docs-ai.preview.emergentagent.com/api"
+        base_url = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
         
         # Test 1: JWT Configuration Fixes - Password Requirements Endpoint
         print("🔐 Testing JWT Configuration & Password Requirements...")

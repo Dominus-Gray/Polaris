@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 # Test configuration
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 # Test credentials
 PROVIDER_CREDENTIALS = {

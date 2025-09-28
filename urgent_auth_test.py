@@ -2,7 +2,7 @@
 """
 URGENT AUTHENTICATION TESTING
 Testing QA credentials against production API as requested in review
-Production URL: https://polar-docs-ai.preview.emergentagent.com/api
+Production URL: https://nextjs-mongo-polaris.preview.emergentagent.com/api
 """
 
 import requests
@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Production API URL
-BASE_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 # QA Credentials from review request
 QA_CREDENTIALS = [

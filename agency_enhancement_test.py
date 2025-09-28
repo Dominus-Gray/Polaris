@@ -34,7 +34,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"
 QA_AGENCY_PASSWORD = "Polaris#2025!"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"

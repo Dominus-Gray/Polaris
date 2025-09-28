@@ -35,7 +35,7 @@ echo "EMERGENT_LLM_KEY: [REDACTED]"
 sudo supervisorctl status
 
 # Validate health endpoints
-curl -s https://polar-docs-ai.preview.emergentagent.com/api/health/system | jq .
+curl -s https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/system | jq .
 ```
 
 #### 2. Database Migration
@@ -52,7 +52,7 @@ sudo supervisorctl restart frontend
 sudo supervisorctl restart all
 
 # Verify deployment
-curl -s https://polar-docs-ai.preview.emergentagent.com/api/health/system
+curl -s https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/system
 ```
 
 #### 4. Post-Deployment Validation
@@ -61,7 +61,7 @@ curl -s https://polar-docs-ai.preview.emergentagent.com/api/health/system
 python3 /app/production_validation.py
 
 # Monitor health endpoints
-watch -n 30 'curl -s https://polar-docs-ai.preview.emergentagent.com/api/health/system | jq .status'
+watch -n 30 'curl -s https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/system | jq .status'
 ```
 
 ---
@@ -117,7 +117,7 @@ git checkout [previous-stable-commit]
 sudo supervisorctl restart all
 
 # Verify rollback success
-curl -s https://polar-docs-ai.preview.emergentagent.com/api/health/system
+curl -s https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/system
 ```
 
 ---
@@ -151,7 +151,7 @@ curl -s https://polar-docs-ai.preview.emergentagent.com/api/health/system
 #### Payment Processing Failures
 ```bash
 # Check Stripe integration
-curl -s "https://polar-docs-ai.preview.emergentagent.com/api/health/external" | jq .services.stripe
+curl -s "https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/external" | jq .services.stripe
 
 # Verify payment models
 grep -n "PaymentTransactionIn\|ServiceRequestPaymentIn" /app/backend/server.py
@@ -160,7 +160,7 @@ grep -n "PaymentTransactionIn\|ServiceRequestPaymentIn" /app/backend/server.py
 #### Authentication Issues
 ```bash
 # Test QA credentials
-curl -X POST https://polar-docs-ai.preview.emergentagent.com/api/auth/login \
+curl -X POST https://nextjs-mongo-polaris.preview.emergentagent.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"client.qa@polaris.example.com","password":"Polaris#2025!"}'
 ```
@@ -168,7 +168,7 @@ curl -X POST https://polar-docs-ai.preview.emergentagent.com/api/auth/login \
 #### Database Performance Issues
 ```bash
 # Check database health
-curl -s "https://polar-docs-ai.preview.emergentagent.com/api/health/database" | jq .
+curl -s "https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/database" | jq .
 
 # Monitor database connections
 sudo supervisorctl tail -f backend stderr
@@ -177,7 +177,7 @@ sudo supervisorctl tail -f backend stderr
 #### AI Service Failures
 ```bash
 # Check Emergent LLM status
-curl -s "https://polar-docs-ai.preview.emergentagent.com/api/health/external" | jq .services.emergent_llm
+curl -s "https://nextjs-mongo-polaris.preview.emergentagent.com/api/health/external" | jq .services.emergent_llm
 
 # Verify environment variable
 echo "EMERGENT_LLM_KEY configured: $([ -n "$EMERGENT_LLM_KEY" ] && echo 'YES' || echo 'NO')"

@@ -6,7 +6,7 @@ Debug test to check actual responses from Knowledge Base endpoints for providers
 import requests
 import json
 
-BACKEND_URL = "https://polar-docs-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
 
 PROVIDER_CREDENTIALS = {
     "email": "provider.qa@polaris.example.com",
