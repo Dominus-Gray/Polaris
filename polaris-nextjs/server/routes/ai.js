@@ -61,26 +61,114 @@ function getAIChatInstance(sessionId, systemMessage, model = 'gpt-4o') {
     const responses = {
       coaching: {
         'how do i start': 'To start your procurement readiness assessment, I recommend beginning with Area 1: Business Formation & Registration. This foundational area ensures your business structure is properly established. Follow these steps: 1) Review your current business registration status, 2) Complete the tier-based assessment for this area, 3) Address any gaps identified, 4) Move to the next area systematically.',
-        'technology': 'For technology companies, focus on areas that directly impact your competitive advantage: Technology & Security Infrastructure (Area 5), Quality Management (Area 4), and Competitive Advantage (Area 10). These areas are critical for tech businesses and often require higher compliance standards.',
-        'financial': 'Financial management requirements include: 1) Proper accounting systems and financial controls, 2) Regular financial reporting and budgeting, 3) Cash flow management, 4) Compliance with tax obligations, 5) Audit readiness. Consider working with a qualified accountant and implementing professional accounting software.'
-      },
-      recommendations: {
-        client: [
-          {
-            title: 'Complete Your Assessment',
-            description: 'Start with the business formation assessment to establish your baseline',
-            priority: 'high',
-            estimated_time: '30 minutes',
-            action_items: ['Begin assessment', 'Gather required documents', 'Review compliance status']
-          },
-          {
-            title: 'Explore Knowledge Base',
-            description: 'Access templates and guides relevant to your business area',
-            priority: 'medium',
-            estimated_time: '15 minutes',
-            action_items: ['Browse area resources', 'Download templates', 'Review best practices']
-          }
-        ],
+/**
+ * POST /api/ai/coach/conversation
+ * AI Conversational Coaching with Emergent LLM
+ */
+router.post('/coach/conversation', authenticateToken, async (req, res, next) => {
+  try {
+    const { question, context = {}, session_id } = req.body
+    const userId = req.user.id
+    
+    if (!question || question.trim().length === 0) {
+      return res.status(400).json(
+        formatErrorResponse(
+          'POL-4003',
+          'Question is required',
+          'Please provide a question for AI assistance'
+        )
+      )
+    }
+
+    // Create session ID if not provided
+    const chatSessionId = session_id || `coach-${userId}-${Date.now()}`
+    
+    // System message for business coaching
+    const systemMessage = `You are a professional business coach and compliance expert for the Polaris platform specializing in procurement readiness and business development.
+
+EXPERTISE: You help small and medium businesses improve their:
+- Business formation and registration
+- Financial operations and compliance
+- Legal and contracting requirements
+- Quality management systems
+- Technology and security infrastructure
+- Human resources and capacity building
+- Performance tracking and reporting
+- Risk management and business continuity
+- Supply chain and vendor relations
+- Competitive advantage and market positioning
+
+RESPONSE STYLE:
+- Provide actionable, specific advice (under 250 words)
+- Use numbered steps for complex processes
+- Reference relevant business areas when applicable
+- Suggest next steps and resources
+- Maintain an encouraging, professional tone
+- Focus on practical implementation
+
+CONTEXT: ${context.area_id ? `User is asking about ${BUSINESS_AREAS[context.area_id] || 'business development'}` : 'General business coaching'}`
+
+    try {
+      // Get AI chat instance
+      const chat = getAIChatInstance(chatSessionId, systemMessage, 'gpt-4o')
+      
+      // Create user message
+      const userMessage = new UserMessage(question)
+      
+      // Get AI response
+      const aiResponse = await chat.send_message(userMessage)
+      
+      // Log the interaction for analytics
+      logger.info(`AI coaching conversation: User ${userId}, Session: ${chatSessionId}`)
+      
+      res.json({
+        success: true,
+        data: {
+          response: aiResponse,
+          session_id: chatSessionId,
+          context_used: context,
+          generated_at: new Date().toISOString(),
+          model: 'gpt-4o',
+          provider: 'openai'
+        }
+      })
+      
+    } catch (llmError) {
+      logger.error('LLM integration error:', llmError)
+      
+      // Fallback response
+      res.json({
+        success: true,
+        data: {
+          response: "I'm here to help with your business questions. Due to high demand, I'm currently operating in limited mode. Please try rephrasing your question or contact our support team for direct assistance.",
+          session_id: chatSessionId,
+          fallback: true,
+          generated_at: new Date().toISOString()
+        }
+      })
+    }
+    
+  } catch (error) {
+    logger.error('AI coaching conversation error:', error)
+    next(error)
+  }
+})
+
+/**
+ * GET /api/ai/coach/history/:session_id
+ * Get AI coaching conversation history
+ */
+router.get('/coach/history/:session_id', authenticateToken, async (req, res, next) => {
+  try {
+    const { session_id } = req.params
+    const userId = req.user.id
+    
+    // Verify session belongs to user
+    if (!session_id.includes(userId)) {
+      return res.status(403).json(
+        formatErrorResponse(\n          'POL-1003',\n          'Access denied',\n          'You can only view your own conversation history'\n        )\n      )\n    }
+    
+    // For now, return basic response since emergent integration handles history internally\n    res.json({\n      success: true,\n      data: {\n        session_id,\n        message_count: 0,\n        messages: [],\n        last_interaction: new Date().toISOString()\n      }\n    })\n    \n  } catch (error) {\n    logger.error('AI coaching history error:', error)\n    next(error)\n  }\n})
         provider: [
           {
             title: 'Update Your Profile',
