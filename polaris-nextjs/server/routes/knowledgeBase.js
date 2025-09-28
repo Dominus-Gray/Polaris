@@ -523,21 +523,59 @@ function generateTemplateContent(areaId, templateType, areaName) {
   return areaTemplates[templateType] || areaTemplates.template;
 }
 
-function generateAIResponse(question, context) {
-  // Simplified AI response generation
-  const responses = {
-    'licensing': 'To get started with business licensing, you\'ll need to: 1) Determine your business structure, 2) Choose and register your business name, 3) Obtain necessary federal, state, and local licenses, 4) Get an EIN from the IRS. Each step has specific requirements based on your business type and location.',
-    'financial': 'For financial compliance, ensure you have: 1) Proper business banking setup, 2) Accurate bookkeeping system, 3) Tax registration and quarterly filings, 4) Required financial statements. Consider using accounting software and consulting with a CPA for complex matters.',
-    'default': 'Based on your question, I recommend starting with our Knowledge Base resources for detailed guidance. You can also download relevant templates and consider connecting with professional service providers for personalized assistance.'
-  };
-  
-  const lowerQuestion = question.toLowerCase();
-  if (lowerQuestion.includes('licens') || lowerQuestion.includes('register')) {
-    return responses.licensing;
-  } else if (lowerQuestion.includes('financial') || lowerQuestion.includes('accounting')) {
-    return responses.financial;
-  } else {
-    return responses.default;
+/**
+ * Generate AI response using Emergent LLM integration
+ */
+async function generateAIResponse(question, context = {}) {
+  try {
+    if (!LlmChat || !UserMessage) {
+      // Fallback response if integration not available
+      return "I'm an AI assistant here to help with your business compliance questions. Please describe what specific area you need assistance with."
+    }
+
+    const sessionId = `kb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    
+    // Create context-aware system message
+    const systemMessage = `You are a professional business compliance and assessment AI assistant for the Polaris platform. 
+
+CONTEXT: You're helping business owners with procurement readiness, compliance requirements, and business improvement strategies.
+
+KNOWLEDGE AREAS: You have expertise in all 10 business areas:
+1. Business Formation & Registration
+2. Financial Operations & Management  
+3. Legal & Contracting Compliance
+4. Quality Management & Standards
+5. Technology & Security Infrastructure
+6. Human Resources & Capacity
+7. Performance Tracking & Reporting
+8. Risk Management & Business Continuity
+9. Supply Chain Management & Vendor Relations
+10. Competitive Advantage & Market Position
+
+RESPONSE STYLE: 
+- Provide concise, actionable advice (under 200 words)
+- Use numbered steps when appropriate
+- Focus on practical, implementable solutions
+- Reference specific business areas when relevant
+- Maintain a professional, supportive tone
+
+ADDITIONAL CONTEXT: ${context.area_id ? `User is asking about ${BUSINESS_AREAS[context.area_id]}` : 'General business question'}`
+    
+    // Get AI chat instance
+    const chat = getAIChatInstance(sessionId, systemMessage, 'gpt-4o')
+    
+    // Create user message
+    const userMessage = new UserMessage(question)
+    
+    // Send message and get response
+    const response = await chat.send_message(userMessage)
+    
+    return response || "I apologize, but I'm unable to provide a response at the moment. Please try again or contact support."
+    
+  } catch (error) {
+    logger.error('AI response generation error:', error)
+    // Return fallback response
+    return "I'm experiencing technical difficulties. Please try rephrasing your question or contact our support team for assistance."
   }
 }
 
