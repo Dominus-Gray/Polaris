@@ -215,7 +215,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
           </div>
 
           <div className="space-y-4">
-            {assessmentProgress.slice(0, 5).map((area) => (
+            {Array.isArray(assessmentProgress) && assessmentProgress.slice(0, 5).map((area) => (
               <div key={area.area_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
