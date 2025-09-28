@@ -259,41 +259,19 @@ function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: 'LOGIN_START' })
       
-      console.log('Attempting login with:', email)
       const response = await apiClient.login(email, password)
-      console.log('Login response:', response)
       
-      // Handle FastAPI response structure (access_token + separate user data)
-      const token = response.access_token || response.data?.access_token
+      // Handle FastAPI response structure (access_token)
+      const token = response.access_token
       
       if (!token) {
-        console.error('No access token in response:', response)
         throw new Error('No access token received')
       }
       
-      console.log('Token received:', token.substring(0, 50) + '...')
-      
-      // Create user object from email for demo (bypass /auth/me issue temporarily)
-      const user = {
-        id: `user-${Date.now()}`,
-        email: email,
-        name: email.includes('client') ? 'QA Client User' : 
-              email.includes('provider') ? 'QA Provider User' :
-              email.includes('agency') ? 'QA Agency User' : 
-              'QA Navigator User',
-        role: email.includes('client') ? 'client' : 
-              email.includes('provider') ? 'provider' :
-              email.includes('agency') ? 'agency' : 
-              'navigator',
-        status: 'approved',
-        company_name: email.includes('client') ? 'Demo Client Company' : 
-                     email.includes('provider') ? 'Demo Provider Company' : 
-                     'Demo Company',
-        created_at: new Date().toISOString()
-      }
-      
-      // Set token for future API calls
+      // Get user data with the token
       apiClient.setToken(token)
+      const userResponse = await apiClient.getMe()
+      const user = userResponse
       
       // Store in localStorage (client-side only)
       if (typeof window !== 'undefined') {
@@ -309,7 +287,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('Welcome back!')
       return true
     } catch (error) {
-      console.error('Login error details:', error)
       dispatch({ type: 'LOGIN_FAILURE' })
       toast.error(error instanceof Error ? error.message : 'Login failed')
       return false
