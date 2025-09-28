@@ -500,7 +500,7 @@ class PolarisAPITester:
         # Run all tests
         tests = [
             ("Basic API Health Check", self.test_basic_health_check),
-            ("User Registration", self.test_user_registration),
+            ("QA Account Setup", self.create_qa_accounts_workflow),
             ("User Authentication", self.test_user_authentication),
             ("Assessment Endpoints", self.test_assessment_endpoints),
             ("Service Request Endpoints", self.test_service_request_endpoints),
