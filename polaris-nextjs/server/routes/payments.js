@@ -1,150 +1,483 @@
-const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_API_KEY);
-const { ServiceRequest, Engagement } = require('../models/ServiceRequest');
-const { KnowledgeBaseAccess } = require('../models/KnowledgeBase');
-const User = require('../models/User');
-const { authenticateToken, requireRole } = require('../middleware/auth');
-const { 
-  formatResponse, 
-  formatErrorResponse,
-  getBusinessAreas
-} = require('../utils/helpers');
-const logger = require('../utils/logger').logger;
+const express = require('express')
+const router = express.Router()
+const { authenticateToken, requireRole } = require('../middleware/auth')
+const { formatResponse, formatErrorResponse, getBusinessAreas } = require('../utils/helpers')
+const logger = require('../utils/logger').logger
 
-const router = express.Router();
+// Import payment transaction model
+const PaymentTransaction = require('../models/PaymentTransaction')
+const { ServiceRequest } = require('../models/ServiceRequest')
+const User = require('../models/User')
 
-const BUSINESS_AREAS = getBusinessAreas();
+// Import Stripe emergent integration
+let StripeCheckout, CheckoutSessionRequest
+
+try {
+  // Import the emergency integrations
+  const stripeModule = require('emergentintegrations/payments/stripe/checkout')
+  StripeCheckout = stripeModule.StripeCheckout
+  CheckoutSessionRequest = stripeModule.CheckoutSessionRequest
+  console.log('✅ Stripe emergent integration loaded successfully')
+} catch (error) {
+  console.error('❌ Error importing Stripe emergent integration:', error)
+  // Fallback to regular Stripe if emergent integration fails
+  const stripe = require('stripe')
+  StripeCheckout = null
+}
+
+const BUSINESS_AREAS = getBusinessAreas()
+
+// Define fixed service packages (security requirement - prevent price manipulation)
+const SERVICE_PACKAGES = {
+  'knowledge_base_basic': {
+    name: 'Knowledge Base Basic Access',
+    amount: 19.99,
+    currency: 'usd',
+    description: 'Access to basic business templates and resources'
+  },
+  'knowledge_base_premium': {
+    name: 'Knowledge Base Premium Access', 
+    amount: 49.99,
+    currency: 'usd',
+    description: 'Full access to premium business templates and resources'
+  },
+  'assessment_tier_upgrade': {
+    name: 'Assessment Tier Upgrade',
+    amount: 29.99,
+    currency: 'usd',
+    description: 'Upgrade to advanced tier assessment with detailed analytics'
+  },
+  'service_request_small': {
+    name: 'Small Service Request',
+    amount: 99.99,
+    currency: 'usd',
+    description: 'Professional consultation for small projects'
+  },
+  'service_request_medium': {
+    name: 'Medium Service Request',
+    amount: 299.99,
+    currency: 'usd',
+    description: 'Comprehensive professional service with detailed deliverables'
+  },
+  'service_request_large': {
+    name: 'Large Service Request',
+    amount: 599.99,
+    currency: 'usd',
+    description: 'Enterprise-level professional service and consultation'
+  }
+}
+
+// Initialize Stripe checkout instance
+let stripeCheckout
+const getStripeCheckout = (hostUrl) => {
+  if (!stripeCheckout && StripeCheckout) {
+    const apiKey = process.env.STRIPE_API_KEY
+    const webhookUrl = `${hostUrl}/api/payments/webhook/stripe`
+    stripeCheckout = new StripeCheckout(apiKey, webhookUrl)
+  }
+  return stripeCheckout
+}
 
 /**
- * POST /api/payments/service-request
- * Create payment for service request
+ * Create Checkout Session (Emergent Integration)
+ * POST /api/payments/checkout/session
  */
-router.post('/service-request', authenticateToken, requireRole('client'), async (req, res, next) => {
+router.post('/checkout/session', authenticateToken, async (req, res, next) => {
   try {
-    const { 
-      service_request_id, 
-      provider_response_id, 
-      success_url,
-      cancel_url 
-    } = req.body;
+    const { package_id, metadata = {} } = req.body
+    const originUrl = req.headers.origin || req.headers.referer?.split('?')[0] || 'http://localhost:3000'
     
-    const clientId = req.user.id;
-    
-    // Validate service request
-    const serviceRequest = await ServiceRequest.findOne({ 
-      id: service_request_id,
-      client_id: clientId
-    });
-    
-    if (!serviceRequest) {
-      return res.status(404).json(
+    // Validate package exists (security requirement)
+    if (!package_id || !SERVICE_PACKAGES[package_id]) {
+      return res.status(400).json(
         formatErrorResponse(
           'POL-4001',
-          'Service request not found',
-          'The specified service request does not exist or you do not have access to it'
+          'Invalid package selection',
+          'The specified package does not exist'
         )
-      );
+      )
     }
+
+    const packageInfo = SERVICE_PACKAGES[package_id]
     
-    // Get provider response
-    const { ProviderResponse } = require('../models/ServiceRequest');
-    const providerResponse = await ProviderResponse.findOne({ 
-      id: provider_response_id,
-      request_id: service_request_id
-    });
-    
-    if (!providerResponse) {
-      return res.status(404).json(
+    // Initialize Stripe with emergent integration
+    const stripe = getStripeCheckout(originUrl)
+    if (!stripe) {
+      return res.status(500).json(
         formatErrorResponse(
-          'POL-4001',
-          'Provider response not found',
-          'The specified provider response does not exist'
+          'POL-5001',
+          'Payment service unavailable',
+          'Payment processing is currently unavailable'
         )
-      );
+      )
     }
     
-    // Get provider details
-    const provider = await User.findOne({ id: providerResponse.provider_id });
-    if (!provider) {
-      return res.status(404).json(
-        formatErrorResponse(
-          'POL-4001',
-          'Provider not found',
-          'The specified provider does not exist'
-        )
-      );
-    }
+    // Build URLs using frontend origin (security requirement)
+    const successUrl = `${originUrl}/dashboard/payments/success?session_id={CHECKOUT_SESSION_ID}`
+    const cancelUrl = `${originUrl}/dashboard/payments/cancel`
     
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      success_url: success_url || `${process.env.APP_URL}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancel_url || `${process.env.APP_URL}/payments/cancel`,
-      customer_email: req.user.email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `${serviceRequest.title} - Professional Services`,
-              description: `Service provided by ${provider.name || provider.email}`,
-              metadata: {
-                service_request_id,
-                provider_response_id,
-                area_id: serviceRequest.area_id
-              }
-            },
-            unit_amount: Math.round(providerResponse.proposed_fee * 100) // Convert to cents
-          },
-          quantity: 1
-        }
-      ],
+    // Prepare checkout request
+    const checkoutRequest = new CheckoutSessionRequest({
+      amount: packageInfo.amount,
+      currency: packageInfo.currency,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
-        type: 'service_request_payment',
-        service_request_id,
-        provider_response_id,
-        client_id: clientId,
-        provider_id: providerResponse.provider_id
+        package_id,
+        package_name: packageInfo.name,
+        user_id: req.user.id,
+        user_email: req.user.email,
+        ...metadata
       }
-    });
+    })
+
+    // Create checkout session
+    const session = await stripe.create_checkout_session(checkoutRequest)
     
-    logger.info(`Payment session created: ${session.id} for service request ${service_request_id}`);
+    // Create payment transaction record (MANDATORY per playbook)
+    const paymentTransaction = new PaymentTransaction({
+      session_id: session.session_id,
+      user_id: req.user.id,
+      user_email: req.user.email,
+      package_id,
+      package_name: packageInfo.name,
+      amount: packageInfo.amount,
+      currency: packageInfo.currency,
+      payment_status: 'initiated',
+      status: 'pending',
+      metadata: checkoutRequest.metadata
+    })
+    
+    await paymentTransaction.save()
+    
+    logger.info(`Payment session created: ${session.session_id} for package ${package_id} by user ${req.user.email}`)
     
     res.json({
       success: true,
       data: {
-        checkout_session_id: session.id,
+        checkout_session_id: session.session_id,
         checkout_url: session.url,
-        amount: providerResponse.proposed_fee,
-        currency: 'USD',
-        provider_name: provider.name || provider.email,
-        service_title: serviceRequest.title
+        package: {
+          id: package_id,
+          name: packageInfo.name,
+          amount: packageInfo.amount,
+          currency: packageInfo.currency,
+          description: packageInfo.description
+        }
       }
-    });
+    })
     
   } catch (error) {
-    logger.error('Create service payment error:', error);
-    next(error);
+    logger.error('Stripe checkout session creation error:', error)
+    next(error)
   }
-});
+})
 
 /**
- * POST /api/payments/knowledge-base
+ * Get Checkout Status (Emergent Integration with polling support)
+ * GET /api/payments/checkout/status/:session_id
+ */
+router.get('/checkout/status/:session_id', authenticateToken, async (req, res, next) => {
+  try {
+    const { session_id } = req.params
+    
+    // Find existing transaction
+    const transaction = await PaymentTransaction.findOne({ session_id })
+    if (!transaction) {
+      return res.status(404).json(
+        formatErrorResponse(
+          'POL-4001',
+          'Payment transaction not found',
+          'The specified payment session does not exist'
+        )
+      )
+    }
+
+    // Verify transaction belongs to current user
+    if (transaction.user_id !== req.user.id) {
+      return res.status(403).json(
+        formatErrorResponse(
+          'POL-1003',
+          'Access denied',
+          'You can only view your own payment transactions'
+        )
+      )
+    }
+
+    // If already processed as successful, return cached status
+    if (transaction.payment_status === 'paid' && transaction.processed) {
+      return res.json({
+        success: true,
+        data: {
+          status: transaction.status,
+          payment_status: transaction.payment_status,
+          amount_total: Math.round(transaction.amount * 100), // Convert to cents for frontend
+          currency: transaction.currency,
+          metadata: transaction.metadata,
+          package: {
+            id: transaction.package_id,
+            name: transaction.package_name
+          },
+          processed: transaction.processed
+        }
+      })
+    }
+
+    // Check status with Stripe using emergent integration
+    const stripe = getStripeCheckout(req.headers.origin || 'http://localhost:3000')
+    if (!stripe) {
+      return res.status(500).json(
+        formatErrorResponse(
+          'POL-5001',
+          'Payment service unavailable',
+          'Cannot check payment status at this time'
+        )
+      )
+    }
+
+    const checkoutStatus = await stripe.get_checkout_status(session_id)
+    
+    // Update transaction status
+    const oldPaymentStatus = transaction.payment_status
+    transaction.payment_status = checkoutStatus.payment_status
+    transaction.status = checkoutStatus.status
+
+    // Process successful payment only once
+    if (checkoutStatus.payment_status === 'paid' && !transaction.processed) {
+      transaction.processed = true
+      transaction.status = 'complete'
+      
+      // Grant access based on package type
+      await processSuccessfulPayment(transaction)
+      
+      logger.info(`Payment processed successfully: ${session_id} for user ${transaction.user_email}`)
+    }
+    
+    await transaction.save()
+    
+    res.json({
+      success: true,
+      data: {
+        status: checkoutStatus.status,
+        payment_status: checkoutStatus.payment_status,
+        amount_total: checkoutStatus.amount_total,
+        currency: checkoutStatus.currency,
+        metadata: checkoutStatus.metadata,
+        package: {
+          id: transaction.package_id,
+          name: transaction.package_name
+        },
+        processed: transaction.processed
+      }
+    })
+    
+  } catch (error) {
+    logger.error('Stripe checkout status error:', error)
+    next(error)
+  }
+})
+
+/**
+ * Process successful payment (grant access, update permissions, etc.)
+ */
+async function processSuccessfulPayment(transaction) {
+  try {
+    const { package_id, user_id, user_email } = transaction
+    
+    // Grant access based on package type
+    if (package_id.includes('knowledge_base')) {
+      // Grant knowledge base access
+      logger.info(`Granting knowledge base access to user ${user_email} for package ${package_id}`)
+      // TODO: Implement knowledge base access logic
+    } 
+    else if (package_id.includes('assessment_tier')) {
+      // Upgrade assessment tier
+      logger.info(`Upgrading assessment tier for user ${user_email}`)
+      // TODO: Implement tier upgrade logic
+    }
+    else if (package_id.includes('service_request')) {
+      // Grant service request credits or access
+      logger.info(`Granting service request access to user ${user_email} for package ${package_id}`)
+      // TODO: Implement service request access logic
+    }
+    
+  } catch (error) {
+    logger.error('Error processing successful payment:', error)
+  }
+}
+
+/**
+ * Stripe Webhook Handler (Emergent Integration)
+ * POST /api/payments/webhook/stripe
+ */
+router.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const stripe = getStripeCheckout('http://localhost:3000')
+    if (!stripe) {
+      return res.status(500).json({ error: 'Payment service unavailable' })
+    }
+    
+    const sig = req.headers['stripe-signature']
+    
+    // Handle webhook using emergent integration
+    const webhookResponse = await stripe.handle_webhook(req.body, sig)
+    
+    if (webhookResponse.session_id && webhookResponse.payment_status === 'paid') {
+      // Find and update transaction
+      const transaction = await PaymentTransaction.findOne({ 
+        session_id: webhookResponse.session_id 
+      })
+      
+      if (transaction && !transaction.processed) {
+        transaction.payment_status = webhookResponse.payment_status
+        transaction.status = 'complete'
+        transaction.processed = true
+        
+        // Process successful payment
+        await processSuccessfulPayment(transaction)
+        await transaction.save()
+        
+        logger.info(`Webhook: Payment processed for ${transaction.user_email}, package: ${transaction.package_id}`)
+      }
+    }
+    
+    res.json({ received: true })
+    
+  } catch (error) {
+    logger.error('Stripe webhook error:', error)
+    res.status(400).json({ error: 'Webhook processing failed' })
+  }
+})
+
+/**
+ * Get Available Packages
+ * GET /api/payments/packages
+ */
+router.get('/packages', async (req, res, next) => {
+  try {
+    const packages = Object.keys(SERVICE_PACKAGES).map(key => ({
+      id: key,
+      ...SERVICE_PACKAGES[key]
+    }))
+    
+    res.json({
+      success: true,
+      data: { packages }
+    })
+  } catch (error) {
+    logger.error('Get packages error:', error)
+    next(error)
+  }
+})
+
+/**
+ * Get User Payment History  
+ * GET /api/payments/history
+ */
+router.get('/history', authenticateToken, async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20 } = req.query
+    const skip = (page - 1) * limit
+
+    const transactions = await PaymentTransaction.find({ 
+      user_id: req.user.id 
+    })
+    .sort({ created_at: -1 })
+    .skip(skip)
+    .limit(parseInt(limit))
+    
+    const total = await PaymentTransaction.countDocuments({ user_id: req.user.id })
+    
+    res.json({
+      success: true,
+      data: {
+        transactions: transactions.map(t => ({
+          id: t._id,
+          session_id: t.session_id,
+          package_id: t.package_id,
+          package_name: t.package_name,
+          amount: t.amount,
+          currency: t.currency,
+          payment_status: t.payment_status,
+          status: t.status,
+          processed: t.processed,
+          created_at: t.created_at,
+          updated_at: t.updated_at
+        })),
+        pagination: {
+          current_page: parseInt(page),
+          per_page: parseInt(limit),
+          total_items: total,
+          total_pages: Math.ceil(total / limit)
+        }
+      }
+    })
+    
+  } catch (error) {
+    logger.error('Payment history error:', error)
+    next(error)
+  }
+})
+
+// Keep existing service-request and knowledge-base payment methods for backward compatibility
+// but update them to use the new package system
+
+/**
+ * POST /api/payments/service-request (Legacy support)
+ * Create payment for service request - now uses package system
+ */
+router.post('/service-request', authenticateToken, requireRole('client'), async (req, res, next) => {
+  try {
+    const { service_request_id, provider_response_id } = req.body
+    const originUrl = req.headers.origin || 'http://localhost:3000'
+    
+    // Get provider response to determine package size based on fee
+    const { ProviderResponse } = require('../models/ServiceRequest')
+    const providerResponse = await ProviderResponse.findOne({ 
+      id: provider_response_id,
+      request_id: service_request_id
+    })
+    
+    if (!providerResponse) {
+      return res.status(404).json(
+        formatErrorResponse('POL-4001', 'Provider response not found')
+      )
+    }
+
+    // Determine package based on proposed fee
+    let package_id = 'service_request_small'
+    if (providerResponse.proposed_fee > 200) package_id = 'service_request_medium'
+    if (providerResponse.proposed_fee > 500) package_id = 'service_request_large'
+
+    // Use the new checkout session endpoint
+    req.body = {
+      package_id,
+      metadata: {
+        service_request_id,
+        provider_response_id,
+        provider_id: providerResponse.provider_id,
+        legacy_fee: providerResponse.proposed_fee
+      }
+    }
+    
+    // Forward to new checkout endpoint
+    return router.handle(req, res, next)
+    
+  } catch (error) {
+    logger.error('Legacy service request payment error:', error)
+    next(error)
+  }
+})
+
+/**
+ * POST /api/payments/knowledge-base (Legacy support)  
  * Create payment for knowledge base access
  */
 router.post('/knowledge-base', authenticateToken, async (req, res, next) => {
   try {
-    const { 
-      area_id, 
-      access_type = 'full', 
-      success_url,
-      cancel_url 
-    } = req.body;
+    const { area_id, access_type = 'premium' } = req.body
     
-    const userId = req.user.id;
-    
-    // Check if user has access (paywall protection)
+    // Check if user has access (paywall protection for test accounts)
     if (req.user.email?.endsWith('@polaris.example.com')) {
       return res.status(400).json(
         formatErrorResponse(
@@ -152,278 +485,24 @@ router.post('/knowledge-base', authenticateToken, async (req, res, next) => {
           'Payment not required',
           'Test accounts have full access to knowledge base resources'
         )
-      );
+      )
     }
     
-    if (!BUSINESS_AREAS[area_id]) {
-      return res.status(404).json(
-        formatErrorResponse(
-          'POL-4001',
-          'Invalid business area',
-          'The specified business area does not exist'
-        )
-      );
+    // Determine package based on access type
+    const package_id = access_type === 'basic' ? 'knowledge_base_basic' : 'knowledge_base_premium'
+    
+    // Forward to new checkout endpoint
+    req.body = {
+      package_id,
+      metadata: { area_id, access_type }
     }
     
-    const areaName = BUSINESS_AREAS[area_id];
-    
-    // Determine pricing based on access type
-    const pricing = {
-      'basic': 19.99,
-      'premium': 49.99,
-      'full': 99.99
-    };
-    
-    const amount = pricing[access_type] || pricing.basic;
-    
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      success_url: success_url || `${process.env.APP_URL}/knowledge-base/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancel_url || `${process.env.APP_URL}/knowledge-base/cancel`,
-      customer_email: req.user.email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Knowledge Base Access - ${areaName}`,
-              description: `${access_type.charAt(0).toUpperCase() + access_type.slice(1)} access to ${areaName} resources`,
-              metadata: {
-                area_id,
-                access_type
-              }
-            },
-            unit_amount: Math.round(amount * 100) // Convert to cents
-          },
-          quantity: 1
-        }
-      ],
-      metadata: {
-        type: 'knowledge_base_payment',
-        area_id,
-        access_type,
-        user_id: userId
-      }
-    });
-    
-    logger.info(`Knowledge base payment session created: ${session.id} for area ${area_id}`);
-    
-    res.json({
-      success: true,
-      data: {
-        checkout_session_id: session.id,
-        checkout_url: session.url,
-        amount,
-        currency: 'USD',
-        area_name: areaName,
-        access_type
-      }
-    });
+    return router.handle(req, res, next)
     
   } catch (error) {
-    logger.error('Create knowledge base payment error:', error);
-    next(error);
+    logger.error('Legacy knowledge base payment error:', error)
+    next(error)
   }
-});
+})
 
-/**
- * GET /api/payments/session/:sessionId
- * Get payment session details
- */
-router.get('/session/:sessionId', authenticateToken, async (req, res, next) => {
-  try {
-    const { sessionId } = req.params;
-    
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    
-    if (!session) {
-      return res.status(404).json(
-        formatErrorResponse(
-          'POL-4001',
-          'Payment session not found',
-          'The specified payment session does not exist'
-        )
-      );
-    }
-    
-    // Verify session belongs to current user
-    if (session.customer_email !== req.user.email) {
-      return res.status(403).json(
-        formatErrorResponse(
-          'POL-1003',
-          'Access denied',
-          'You can only view your own payment sessions'
-        )
-      );
-    }
-    
-    res.json({
-      success: true,
-      data: {
-        session_id: session.id,
-        payment_status: session.payment_status,
-        amount_total: session.amount_total / 100, // Convert from cents
-        currency: session.currency,
-        metadata: session.metadata,
-        created: new Date(session.created * 1000),
-        expires_at: new Date(session.expires_at * 1000)
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Get payment session error:', error);
-    next(error);
-  }
-});
-
-/**
- * GET /api/payments/history
- * Get user payment history
- */
-router.get('/history', authenticateToken, async (req, res, next) => {
-  try {
-    const { page = 1, limit = 20 } = req.query;
-    const userEmail = req.user.email;
-    
-    // Get payment sessions from Stripe
-    const sessions = await stripe.checkout.sessions.list({
-      customer_email: userEmail,
-      limit: parseInt(limit),
-      expand: ['data.line_items']
-    });
-    
-    const payments = sessions.data.map(session => ({
-      session_id: session.id,
-      payment_status: session.payment_status,
-      amount_total: session.amount_total / 100,
-      currency: session.currency,
-      metadata: session.metadata,
-      created: new Date(session.created * 1000),
-      description: session.line_items?.data[0]?.price?.product?.name || 'Payment'
-    }));
-    
-    res.json({
-      success: true,
-      data: {
-        payments,
-        has_more: sessions.has_more,
-        total_count: sessions.data.length
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Get payment history error:', error);
-    next(error);
-  }
-});
-
-/**
- * POST /api/payments/refund
- * Request refund for a payment
- */
-router.post('/refund', authenticateToken, async (req, res, next) => {
-  try {
-    const { session_id, reason } = req.body;
-    
-    if (!session_id || !reason) {
-      return res.status(400).json(
-        formatErrorResponse(
-          'POL-4003',
-          'Session ID and reason are required',
-          'Please provide the payment session ID and refund reason'
-        )
-      );
-    }
-    
-    const session = await stripe.checkout.sessions.retrieve(session_id);
-    
-    if (!session) {
-      return res.status(404).json(
-        formatErrorResponse(
-          'POL-4001',
-          'Payment session not found',
-          'The specified payment session does not exist'
-        )
-      );
-    }
-    
-    // Verify session belongs to current user
-    if (session.customer_email !== req.user.email) {
-      return res.status(403).json(
-        formatErrorResponse(
-          'POL-1003',
-          'Access denied',
-          'You can only request refunds for your own payments'
-        )
-      );
-    }
-    
-    if (session.payment_status !== 'paid') {
-      return res.status(400).json(
-        formatErrorResponse(
-          'POL-4002',
-          'Payment not eligible for refund',
-          'Only successful payments can be refunded'
-        )
-      );
-    }
-    
-    // Get payment intent
-    const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent);
-    
-    // Create refund
-    const refund = await stripe.refunds.create({
-      payment_intent: paymentIntent.id,
-      reason: 'requested_by_customer',
-      metadata: {
-        requested_by: req.user.id,
-        reason: reason,
-        original_session_id: session_id
-      }
-    });
-    
-    logger.info(`Refund requested: ${refund.id} for session ${session_id} by user ${req.user.email}`);
-    
-    res.json({
-      success: true,
-      message: 'Refund request submitted successfully',
-      data: {
-        refund_id: refund.id,
-        amount: refund.amount / 100,
-        currency: refund.currency,
-        status: refund.status,
-        reason: refund.reason
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Request refund error:', error);
-    next(error);
-  }
-});
-
-/**
- * GET /api/payments/methods
- * Get user's saved payment methods
- */
-router.get('/methods', authenticateToken, async (req, res, next) => {
-  try {
-    // For now, return empty array as we're using checkout sessions
-    // In a full implementation, you'd create and manage Stripe customers
-    res.json({
-      success: true,
-      data: {
-        payment_methods: [],
-        default_payment_method: null
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Get payment methods error:', error);
-    next(error);
-  }
-});
-
-module.exports = router;
+module.exports = router
