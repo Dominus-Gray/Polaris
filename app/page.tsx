@@ -213,10 +213,10 @@ export default function HomePage() {
                   1
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Maturity Assessment</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Connect with Local Agency</h3>
               <p className="text-gray-600">
-                Complete comprehensive evaluation across 10 critical business areas to establish 
-                your current procurement readiness baseline.
+                Register and select your local procurement agency sponsor to gain access 
+                to the standardized business maturity assessment framework.
               </p>
             </div>
 
@@ -226,10 +226,10 @@ export default function HomePage() {
                   2
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Gap Identification & Services</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Complete Guided Assessment</h3>
               <p className="text-gray-600">
-                Identify improvement areas and connect with verified local service providers 
-                who specialize in procurement readiness enhancement.
+                Work through tier-based evaluations with expert support to identify 
+                improvement opportunities and competitive advantage development areas.
               </p>
             </div>
 
@@ -239,10 +239,10 @@ export default function HomePage() {
                   3
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Ecosystem Integration</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Achieve Procurement Readiness</h3>
               <p className="text-gray-600">
-                Join your local business ecosystem with verified maturity credentials 
-                and access to procurement opportunities and strategic partnerships.
+                Access strategic partnerships, verified capabilities, and ongoing support 
+                to compete successfully in procurement opportunities.
               </p>
             </div>
           </div>
