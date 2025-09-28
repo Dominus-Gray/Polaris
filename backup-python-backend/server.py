@@ -1180,6 +1180,7 @@ class UserLogin(BaseModel):
 class UserOut(BaseModel):
     id: str
     email: str
+    name: str = ""
     role: str
     approval_status: str = "approved"  # pending, approved, rejected
     is_active: bool = True
