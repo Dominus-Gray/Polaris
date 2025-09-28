@@ -1390,7 +1390,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Optio
         if uid is None:
             return None
             
-        user = await db.users.find_one({"_id": uid})
+        user = await db.users.find_one({"id": uid})
         if not user:
             return None
             
