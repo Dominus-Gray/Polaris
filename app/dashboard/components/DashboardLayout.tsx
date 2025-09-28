@@ -112,8 +112,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, user }) => 
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <div className="flex items-center">
-            <div className="h-8 w-8 polaris-gradient rounded-lg flex items-center justify-center mr-3">
-              <span className="text-white font-bold text-sm">P</span>
+            <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+              {/* North Star Logo */}
+              <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+              </svg>
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">Polaris</h1>
