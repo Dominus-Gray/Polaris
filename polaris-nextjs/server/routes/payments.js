@@ -76,39 +76,35 @@ router.post('/checkout/session', authenticateToken, async (req, res, next) => {
 
     const packageInfo = SERVICE_PACKAGES[package_id]
     
-    // Initialize Stripe with emergent integration
-    const stripe = getStripeCheckout(originUrl)
-    if (!stripe) {
-      return res.status(500).json(
-        formatErrorResponse(
-          'POL-5001',
-          'Payment service unavailable',
-          'Payment processing is currently unavailable'
-        )
-      )
-    }
-    
     // Build URLs using frontend origin (security requirement)
     const successUrl = `${originUrl}/dashboard/payments/success?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = `${originUrl}/dashboard/payments/cancel`
     
-    // Prepare checkout request
-    const checkoutRequest = new CheckoutSessionRequest({
-      amount: packageInfo.amount,
-      currency: packageInfo.currency,
+    // Create checkout session with standard Stripe
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: packageInfo.currency,
+          product_data: {
+            name: packageInfo.name,
+            description: packageInfo.description,
+          },
+          unit_amount: Math.round(packageInfo.amount * 100), // Convert to cents
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
         package_id,
         package_name: packageInfo.name,
-        user_id: req.user.id,
+        user_id: req.user.id.toString(),
         user_email: req.user.email,
         ...metadata
       }
     })
-
-    // Create checkout session
-    const session = await stripe.create_checkout_session(checkoutRequest)
     
     // Create payment transaction record (MANDATORY per playbook)
     const paymentTransaction = new PaymentTransaction({
