@@ -51,8 +51,8 @@ const AgencyDashboard: React.FC<AgencyDashboardProps> = ({ user }) => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch agency dashboard data
-        const response = await apiClient.request('/agency/dashboard')
+        // Fetch agency dashboard data using correct endpoint
+        const response = await apiClient.request('/home/agency')
         setDashboardData(response.data)
       } catch (error) {
         console.error('Error fetching agency dashboard:', error)
