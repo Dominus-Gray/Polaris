@@ -66,21 +66,16 @@ export default function HomePage() {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full text-sm font-medium text-blue-800 mb-6">
-              <Building className="w-4 h-4 mr-2" />
-              Trusted by Local Agencies & Small Businesses Nationwide
-            </div>
-            
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-              <span className="block">Streamline Access to</span>
+              <span className="block">Accelerate Your Path to</span>
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent block">
-                Procurement Opportunities
+                Procurement Success
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Standardizing small business maturity assurance through comprehensive assessments, 
-              professional services, and local ecosystem building to unlock competitive advantages.
+              Transform your business into a competitive, procurement-ready organization through 
+              expert-guided maturity development and strategic local partnerships.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -88,7 +83,7 @@ export default function HomePage() {
                 href="/auth/register"
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
               >
-                Begin Assessment Journey
+                Find Your Local Agency
                 <ArrowRight className="ml-3 h-6 w-6" />
               </Link>
               
@@ -96,7 +91,7 @@ export default function HomePage() {
                 href="/auth/login"
                 className="inline-flex items-center px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-blue-200 text-blue-700 font-semibold text-lg rounded-xl hover:bg-blue-50 transition-all duration-300"
               >
-                Agency Portal Access
+                Agency Partner Login
               </Link>
             </div>
           </div>
