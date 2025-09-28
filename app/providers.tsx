@@ -123,6 +123,7 @@ class ApiClient {
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`
+    console.log('API Request URL:', url)
     const headers = {
       'Content-Type': 'application/json',
       ...(this.token && { Authorization: `Bearer ${this.token}` }),
@@ -135,6 +136,7 @@ class ApiClient {
         headers,
       })
 
+      console.log('API Response status:', response.status)
       const data = await response.json()
 
       if (!response.ok) {
