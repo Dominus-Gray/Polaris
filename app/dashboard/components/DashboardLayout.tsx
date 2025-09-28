@@ -159,7 +159,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, user }) => 
           <div className="flex items-center">
             <div className="h-8 w-8 bg-polaris-blue rounded-full flex items-center justify-center">
               <span className="text-white font-medium text-sm">
-                {user.name.charAt(0).toUpperCase()}
+                {(user.name || user.email || 'U').charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="ml-3 flex-1 min-w-0">
