@@ -335,4 +335,18 @@ const PaymentSuccessContent = () => {
   )
 }
 
+const PaymentSuccessPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="polaris-container py-16">
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
+  )
+}
+
 export default PaymentSuccessPage
