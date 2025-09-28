@@ -412,8 +412,8 @@ router.post('/ai-assistance', authenticateToken, checkKnowledgeBaseAccess, valid
       });
     }
     
-    // Generate AI response (simplified for now)
-    const aiResponse = generateAIResponse(question, context);
+    // Generate AI response using emergent LLM integration
+    const aiResponse = await generateAIResponse(question, context);
     
     // Log access
     await KnowledgeBaseAccess.logAccess({
