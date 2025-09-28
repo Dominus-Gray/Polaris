@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   CheckCircle, 
@@ -31,7 +31,7 @@ interface PaymentDetails {
   metadata: any
 }
 
-const PaymentSuccessPage = () => {
+const PaymentSuccessContent = () => {
   const { state } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
