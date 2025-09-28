@@ -62,15 +62,27 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch dashboard data
-        const dashboardResponse = await apiClient.request('/users/dashboard')
+        // Fetch dashboard data using correct endpoint
+        const dashboardResponse = await apiClient.request('/client/unified-dashboard')
         setDashboardData(dashboardResponse.data)
 
-        // Fetch assessment progress
-        const progressResponse = await apiClient.request('/assessment/client/assessment-progress')
+        // Fetch assessment progress using correct endpoint
+        const progressResponse = await apiClient.request('/client/assessment-progress')
         setAssessmentProgress(progressResponse.data.area_progress || [])
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
+        // Provide fallback data to prevent crashes
+        setDashboardData({
+          procurement_readiness: {
+            overall_score: 0,
+            areas_completed: 0,
+            total_areas: 10,
+            next_steps: ['Connect with your local agency partner', 'Complete business maturity assessment', 'Access professional service providers']
+          },
+          recent_activity: [],
+          quick_actions: []
+        })
+        setAssessmentProgress([])
       } finally {
         setIsLoading(false)
       }
