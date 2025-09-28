@@ -184,7 +184,7 @@ class PolarisAPITester:
                                                    headers=headers)
                 if license_response.status_code in [200, 201]:
                     license_result = license_response.json()
-                    licenses = license_result.get("licenses", [])
+                    licenses = license_result.get("data", {}).get("licenses", [])
                     if licenses:
                         license_code = licenses[0].get("license_code")
                         print(f"✅ Generated license code: {license_code}")
