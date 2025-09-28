@@ -235,88 +235,151 @@ const AssessmentsPage = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Assessment Areas</h2>
-          <div className="text-sm text-gray-600">
-            Tier Access Level: <span className="font-medium text-polaris-blue">Tier {assessmentData?.client_tier_access || 1}</span>
+          <div className="flex items-center space-x-3">
+            <div className="text-sm text-gray-600">
+              Tier Access Level: <span className="font-medium text-polaris-blue">Tier {assessmentData?.client_tier_access || 1}</span>
+            </div>
+            <div className="h-4 w-px bg-gray-300"></div>
+            <div className="text-sm text-gray-600">
+              {areas.length} Areas Available
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {areas.map((area, index) => (
-            <div key={area.area_id} className="polaris-card hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <div className="h-8 w-8 bg-polaris-blue text-white rounded-full flex items-center justify-center mr-3 text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">{area.area_name}</h3>
-                  </div>
-                  <p className="text-gray-600 text-sm mb-3">{area.description}</p>
-                  
-                  {/* Progress Bar */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-gray-500">Progress</span>
-                      <span className="text-gray-700 font-medium">{area.latest_score}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-polaris-blue h-2 rounded-full transition-all" 
-                        style={{ width: `${area.latest_score}%` }}
-                      ></div>
-                    </div>
-                  </div>
+            <div 
+              key={area.area_id} 
+              className="group polaris-card hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
+            >
+              {/* Progress indicator bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
+                <div 
+                  className="h-full bg-polaris-blue transition-all duration-500" 
+                  style={{ width: `${area.latest_score}%` }}
+                ></div>
+              </div>
 
-                  {/* Status & Tier Info */}
-                  <div className="flex items-center justify-between">
-                    <span className={`polaris-badge ${
-                      area.status === 'completed' ? 'polaris-badge-success' :
-                      area.status === 'active' ? 'polaris-badge-info' :
-                      'polaris-badge-warning'
-                    }`}>
-                      {area.status === 'completed' ? 'Complete' :
-                       area.status === 'active' ? 'In Progress' :
-                       'Not Started'}
-                    </span>
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-3">
+                      <div className="h-12 w-12 bg-gradient-to-br from-polaris-blue to-polaris-navy text-white rounded-xl flex items-center justify-center mr-4 text-lg font-bold shadow-md">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-polaris-blue transition-colors">
+                          {area.area_name}
+                        </h3>
+                        <p className="text-gray-600 text-sm leading-relaxed">{area.description}</p>
+                      </div>
+                    </div>
                     
-                    <div className="text-xs text-gray-500">
+                    {/* Enhanced Progress Section */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-gray-600 font-medium">Progress</span>
+                        <span className="text-gray-900 font-semibold">{area.latest_score}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                        <div 
+                          className="bg-gradient-to-r from-polaris-blue to-blue-500 h-3 rounded-full transition-all duration-700 shadow-sm" 
+                          style={{ width: `${area.latest_score}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Status & Meta Info */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          area.status === 'completed' ? 'bg-green-100 text-green-800 border border-green-200' :
+                          area.status === 'active' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                          'bg-gray-100 text-gray-800 border border-gray-200'
+                        }`}>
+                          {area.status === 'completed' ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Complete
+                            </>
+                          ) : area.status === 'active' ? (
+                            <>
+                              <Clock className="w-3 h-3 mr-1" />
+                              In Progress
+                            </>
+                          ) : (
+                            <>
+                              <Target className="w-3 h-3 mr-1" />
+                              Not Started
+                            </>
+                          )}
+                        </span>
+                        
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <span className="w-2 h-2 bg-polaris-blue rounded-full mr-1"></span>
+                          Tier {area.tier_available}
+                        </div>
+                      </div>
+                      
                       {area.sessions_completed > 0 && (
-                        <span>{area.sessions_completed} sessions completed</span>
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <span className="font-medium">{area.sessions_completed}</span>
+                          <span className="ml-1">sessions</span>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <div className="text-xs text-gray-500">
-                  Available: Tier {area.tier_available}
-                  {area.last_assessment && (
-                    <span className="ml-2">Last: {new Date(area.last_assessment).toLocaleDateString()}</span>
-                  )}
-                </div>
+                {/* Enhanced Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div className="text-xs text-gray-500">
+                    {area.last_assessment ? (
+                      <span className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Last: {new Date(area.last_assessment).toLocaleDateString()}
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <Target className="w-3 h-3 mr-1" />
+                        Ready to start
+                      </span>
+                    )}
+                  </div>
 
-                <div className="flex items-center space-x-2">
-                  {area.status === 'completed' && (
+                  <div className="flex items-center space-x-3">
+                    {area.status === 'completed' && (
+                      <Link
+                        href={`/dashboard/assessments/${area.area_id}/results`}
+                        className="text-polaris-blue hover:text-polaris-navy font-medium text-sm flex items-center transition-colors"
+                      >
+                        <TrendingUp className="h-4 w-4 mr-1" />
+                        Results
+                      </Link>
+                    )}
+                    
                     <Link
-                      href={`/dashboard/assessments/${area.area_id}/results`}
-                      className="text-polaris-blue hover:text-polaris-navy font-medium text-sm flex items-center"
+                      href={`/dashboard/assessments/${area.area_id}`}
+                      className="inline-flex items-center px-4 py-2 bg-polaris-blue text-white rounded-lg font-medium text-sm hover:bg-polaris-navy transition-colors shadow-sm hover:shadow-md group"
                     >
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      View Results
+                      {area.status === 'not_started' ? (
+                        <>
+                          <span>Start Assessment</span>
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                        </>
+                      ) : area.status === 'active' ? (
+                        <>
+                          <span>Continue</span>
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                        </>
+                      ) : (
+                        <>
+                          <span>Retake</span>
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                        </>
+                      )}
                     </Link>
-                  )}
-                  
-                  <Link
-                    href={`/dashboard/assessments/${area.area_id}`}
-                    className="polaris-button-primary text-sm inline-flex items-center"
-                  >
-                    {area.status === 'not_started' ? 'Start Assessment' :
-                     area.status === 'active' ? 'Continue' :
-                     'Retake'}
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
+                  </div>
                 </div>
               </div>
             </div>
