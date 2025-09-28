@@ -1,0 +1,600 @@
+/* POLARIS ENHANCED DESIGN SYSTEM - EXPERT UI/UX IMPROVEMENTS */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Advanced Design Tokens & Variables */
+@layer base {
+  :root {
+    /* Enhanced Color Palette */
+    --polaris-primary-50: #eff6ff;
+    --polaris-primary-100: #dbeafe;
+    --polaris-primary-200: #bfdbfe;
+    --polaris-primary-300: #93c5fd;
+    --polaris-primary-400: #60a5fa;
+    --polaris-primary-500: #3b82f6;
+    --polaris-primary-600: #2563eb;
+    --polaris-primary-700: #1d4ed8;
+    --polaris-primary-800: #1e40af;
+    --polaris-primary-900: #1e3a8a;
+    
+    /* Success/Error/Warning Colors */
+    --polaris-success-50: #f0fdf4;
+    --polaris-success-500: #22c55e;
+    --polaris-success-600: #16a34a;
+    --polaris-error-50: #fef2f2;
+    --polaris-error-500: #ef4444;
+    --polaris-error-600: #dc2626;
+    --polaris-warning-50: #fffbeb;
+    --polaris-warning-500: #f59e0b;
+    --polaris-warning-600: #d97706;
+    
+    /* Advanced Gradients */
+    --polaris-gradient-primary: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    --polaris-gradient-success: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);
+    --polaris-gradient-hero: linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #2563eb 50%, #3b82f6 75%, #60a5fa 100%);
+    --polaris-gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    
+    /* Advanced Shadows */
+    --polaris-shadow-xs: 0 1px 2px 0 rgba(30, 64, 175, 0.05);
+    --polaris-shadow-sm: 0 1px 3px 0 rgba(30, 64, 175, 0.1), 0 1px 2px 0 rgba(30, 64, 175, 0.06);
+    --polaris-shadow-md: 0 4px 6px -1px rgba(30, 64, 175, 0.1), 0 2px 4px -1px rgba(30, 64, 175, 0.06);
+    --polaris-shadow-lg: 0 10px 15px -3px rgba(30, 64, 175, 0.1), 0 4px 6px -2px rgba(30, 64, 175, 0.05);
+    --polaris-shadow-xl: 0 20px 25px -5px rgba(30, 64, 175, 0.1), 0 10px 10px -5px rgba(30, 64, 175, 0.04);
+    
+    /* Typography Scale */
+    --polaris-text-xs: 0.75rem;
+    --polaris-text-sm: 0.875rem;
+    --polaris-text-base: 1rem;
+    --polaris-text-lg: 1.125rem;
+    --polaris-text-xl: 1.25rem;
+    --polaris-text-2xl: 1.5rem;
+    --polaris-text-3xl: 1.875rem;
+    --polaris-text-4xl: 2.25rem;
+    
+    /* Advanced Spacing */
+    --polaris-space-xs: 0.25rem;
+    --polaris-space-sm: 0.5rem;
+    --polaris-space-md: 1rem;
+    --polaris-space-lg: 1.5rem;
+    --polaris-space-xl: 2rem;
+    --polaris-space-2xl: 3rem;
+    --polaris-space-3xl: 4rem;
+    
+    /* Animation Timing */
+    --polaris-timing-fast: 150ms;
+    --polaris-timing-normal: 250ms;
+    --polaris-timing-slow: 350ms;
+    --polaris-easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --polaris-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+/* ENHANCED COMPONENT LIBRARY */
+@layer components {
+  
+  /* ===== ENHANCED CARDS ===== */
+  .polaris-card-premium {
+    @apply bg-gradient-to-br from-white via-blue-50/30 to-white rounded-2xl border border-blue-100/50 shadow-lg hover:shadow-xl transition-all duration-300 p-8 relative overflow-hidden;
+  }
+  
+  .polaris-card-premium::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600;
+  }
+  
+  .polaris-card-elevated {
+    @apply bg-white rounded-2xl shadow-xl border-0 p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-1;
+  }
+  
+  .polaris-card-interactive {
+    @apply bg-gradient-to-br from-white to-gray-50/50 rounded-xl border border-gray-200/60 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 p-6 cursor-pointer group;
+  }
+  
+  /* ===== ENHANCED BUTTONS ===== */
+  .polaris-button-hero {
+    @apply inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 focus:ring-4 focus:ring-blue-500/50;
+  }
+  
+  .polaris-button-premium {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-purple-500/50;
+  }
+  
+  .polaris-button-glass {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-200 shadow-lg;
+  }
+  
+  .polaris-button-floating {
+    @apply fixed bottom-6 right-6 h-16 w-16 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center z-50;
+  }
+  
+  /* ===== ENHANCED INPUTS ===== */
+  .polaris-input-premium {
+    @apply block w-full px-4 py-4 text-gray-900 bg-white border-2 border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 hover:border-gray-300;
+  }
+  
+  .polaris-input-floating {
+    @apply block w-full px-4 pt-6 pb-2 text-gray-900 bg-gray-50 border-0 border-b-2 border-gray-200 focus:border-blue-500 focus:ring-0 focus:bg-white transition-all duration-200 placeholder-transparent;
+  }
+  
+  /* ===== ENHANCED NAVIGATION ===== */
+  .polaris-nav-premium {
+    @apply bg-white/95 backdrop-blur-md border-r border-gray-200/50 shadow-xl;
+  }
+  
+  .polaris-nav-item-enhanced {
+    @apply flex items-center px-4 py-3 mx-2 text-gray-700 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-700 transition-all duration-200 font-medium group;
+  }
+  
+  .polaris-nav-item-active-enhanced {
+    @apply bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 shadow-md border-l-4 border-blue-500;
+  }
+  
+  /* ===== ENHANCED BADGES ===== */
+  .polaris-badge-premium {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md;
+  }
+  
+  .polaris-badge-glow {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-lg;
+    animation: polaris-glow 2s ease-in-out infinite alternate;
+  }
+  
+  /* ===== ENHANCED PROGRESS BARS ===== */
+  .polaris-progress-premium {
+    @apply w-full bg-gray-200 rounded-full h-4 shadow-inner relative overflow-hidden;
+  }
+  
+  .polaris-progress-fill-animated {
+    @apply h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600 shadow-sm relative;
+    animation: polaris-progress-shimmer 2s infinite;
+  }
+  
+  /* ===== ENHANCED LAYOUT COMPONENTS ===== */
+  .polaris-hero-section {
+    @apply relative min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 overflow-hidden;
+  }
+  
+  .polaris-hero-section::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-blue-800/20;
+  }
+  
+  .polaris-hero-section::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent;
+  }
+  
+  .polaris-section-premium {
+    @apply py-20 px-6 bg-gradient-to-br from-gray-50 to-blue-50/30 relative;
+  }
+  
+  .polaris-container-premium {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative;
+  }
+  
+  /* ===== ENHANCED FORM COMPONENTS ===== */
+  .polaris-form-premium {
+    @apply bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6;
+  }
+  
+  .polaris-form-group-enhanced {
+    @apply space-y-2 relative;
+  }
+  
+  .polaris-form-label-enhanced {
+    @apply block text-sm font-semibold text-gray-700 mb-2 tracking-wide;
+  }
+  
+  .polaris-form-label-floating {
+    @apply absolute left-4 top-2 text-xs font-medium text-gray-500 transition-all duration-200 pointer-events-none;
+  }
+  
+  /* ===== ENHANCED DASHBOARD COMPONENTS ===== */
+  .polaris-stat-card-premium {
+    @apply bg-gradient-to-br from-white via-gray-50/50 to-white rounded-2xl p-6 shadow-lg hover:shadow-xl border border-gray-100/50 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden;
+  }
+  
+  .polaris-stat-card-premium::before {
+    content: '';
+    @apply absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full -translate-y-16 translate-x-16;
+  }
+  
+  .polaris-dashboard-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr;
+  }
+  
+  .polaris-dashboard-section {
+    @apply bg-white rounded-2xl shadow-lg border border-gray-100 p-8 space-y-6 hover:shadow-xl transition-all duration-300;
+  }
+  
+  /* ===== ENHANCED INTERACTIVE ELEMENTS ===== */
+  .polaris-hover-lift-premium {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02];
+  }
+  
+  .polaris-hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  
+  .polaris-hover-glow:hover {
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+  }
+  
+  .polaris-click-feedback {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+  
+  /* ===== ENHANCED ANIMATIONS ===== */
+  .polaris-fade-in-up {
+    animation: polaris-fade-in-up 0.6s ease-out forwards;
+  }
+  
+  .polaris-slide-in-right {
+    animation: polaris-slide-in-right 0.5s ease-out forwards;
+  }
+  
+  .polaris-scale-in {
+    animation: polaris-scale-in 0.4s ease-out forwards;
+  }
+  
+  .polaris-bounce-in-premium {
+    animation: polaris-bounce-in-premium 0.8s ease-out forwards;
+  }
+  
+  .polaris-pulse-premium {
+    animation: polaris-pulse-premium 2s ease-in-out infinite;
+  }
+  
+  .polaris-float {
+    animation: polaris-float 3s ease-in-out infinite;
+  }
+  
+  /* ===== ENHANCED LOADING STATES ===== */
+  .polaris-skeleton-premium {
+    @apply bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-lg;
+    background-size: 200% 100%;
+    animation: polaris-skeleton-shimmer 1.5s infinite;
+  }
+  
+  .polaris-loading-dots {
+    @apply inline-flex space-x-1;
+  }
+  
+  .polaris-loading-dots span {
+    @apply w-2 h-2 bg-blue-500 rounded-full;
+    animation: polaris-loading-bounce 1.4s ease-in-out infinite both;
+  }
+  
+  .polaris-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+  .polaris-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+  
+  /* ===== ENHANCED ACCESSIBILITY ===== */
+  .polaris-focus-ring {
+    @apply focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500;
+  }
+  
+  .polaris-sr-only {
+    @apply sr-only;
+  }
+  
+  /* ===== ENHANCED TOOLTIPS ===== */
+  .polaris-tooltip {
+    @apply absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-xl opacity-0 pointer-events-none transition-all duration-200;
+  }
+  
+  .polaris-tooltip-arrow {
+    @apply absolute w-2 h-2 bg-gray-900 transform rotate-45;
+  }
+  
+  /* ===== ENHANCED MODALS ===== */
+  .polaris-modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+    animation: polaris-fade-in 0.3s ease-out forwards;
+  }
+  
+  .polaris-modal-content {
+    @apply bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+    animation: polaris-scale-in 0.3s ease-out forwards;
+  }
+  
+  /* ===== ENHANCED DATA VISUALIZATION ===== */
+  .polaris-chart-container {
+    @apply bg-gradient-to-br from-white to-gray-50/50 rounded-2xl p-6 shadow-lg border border-gray-100;
+  }
+  
+  .polaris-progress-ring {
+    @apply relative inline-flex items-center justify-center;
+  }
+  
+  .polaris-progress-circle {
+    @apply transform -rotate-90;
+  }
+  
+  /* ===== ENHANCED NOTIFICATION SYSTEM ===== */
+  .polaris-notification {
+    @apply fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-4;
+    animation: polaris-slide-in-right 0.3s ease-out forwards;
+  }
+  
+  .polaris-notification-success {
+    @apply border-l-4 border-green-500 bg-green-50;
+  }
+  
+  .polaris-notification-error {
+    @apply border-l-4 border-red-500 bg-red-50;
+  }
+  
+  .polaris-notification-warning {
+    @apply border-l-4 border-yellow-500 bg-yellow-50;
+  }
+  
+  /* ===== ENHANCED TABLES ===== */
+  .polaris-table-premium {
+    @apply w-full bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100;
+  }
+  
+  .polaris-table-header {
+    @apply bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200;
+  }
+  
+  .polaris-table-row {
+    @apply border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-purple-50/30 transition-all duration-200;
+  }
+  
+  .polaris-table-cell {
+    @apply px-6 py-4 text-sm text-gray-900;
+  }
+  
+  /* ===== ENHANCED ASSESSMENT COMPONENTS ===== */
+  .polaris-assessment-card {
+    @apply bg-gradient-to-br from-white via-blue-50/20 to-white rounded-2xl border border-blue-100/50 shadow-lg hover:shadow-xl transition-all duration-300 p-6 relative overflow-hidden group;
+  }
+  
+  .polaris-assessment-card::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300;
+  }
+  
+  .polaris-tier-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md;
+  }
+  
+  .polaris-score-circle {
+    @apply relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg shadow-lg;
+  }
+  
+  /* ===== ENHANCED SERVICE MARKETPLACE ===== */
+  .polaris-service-card {
+    @apply bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden;
+  }
+  
+  .polaris-service-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300;
+  }
+  
+  .polaris-provider-avatar {
+    @apply w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg;
+  }
+  
+  .polaris-rating-stars {
+    @apply flex items-center space-x-1;
+  }
+  
+  /* ===== ENHANCED MESSAGING ===== */
+  .polaris-chat-container {
+    @apply bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden;
+  }
+  
+  .polaris-message-sent {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md px-4 py-3 shadow-md max-w-xs;
+  }
+  
+  .polaris-message-received {
+    @apply bg-gradient-to-br from-gray-100 to-gray-200 text-gray-900 rounded-2xl rounded-bl-md px-4 py-3 shadow-md max-w-xs;
+  }
+  
+  /* ===== ENHANCED ANALYTICS ===== */
+  .polaris-metric-card {
+    @apply bg-gradient-to-br from-white via-blue-50/30 to-white rounded-2xl p-6 shadow-lg border border-blue-100/50 relative overflow-hidden;
+  }
+  
+  .polaris-metric-card::before {
+    content: '';
+    @apply absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full -translate-y-12 translate-x-12;
+  }
+  
+  .polaris-trend-up {
+    @apply text-green-600 bg-green-100 rounded-full p-1;
+  }
+  
+  .polaris-trend-down {
+    @apply text-red-600 bg-red-100 rounded-full p-1;
+  }
+}
+
+/* ===== ENHANCED KEYFRAME ANIMATIONS ===== */
+@keyframes polaris-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes polaris-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes polaris-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes polaris-bounce-in-premium {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-100px);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05) translateY(-30px);
+  }
+  70% {
+    opacity: 0.95;
+    transform: scale(0.98) translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes polaris-pulse-premium {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes polaris-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes polaris-glow {
+  from {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.4);
+  }
+}
+
+@keyframes polaris-progress-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes polaris-skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes polaris-loading-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* ===== ENHANCED RESPONSIVE DESIGN ===== */
+@media (max-width: 640px) {
+  .polaris-card-premium,
+  .polaris-card-elevated {
+    @apply p-4 rounded-xl;
+  }
+  
+  .polaris-button-hero {
+    @apply px-6 py-3 text-base;
+  }
+  
+  .polaris-stat-card-premium {
+    @apply p-4;
+  }
+  
+  .polaris-form-premium {
+    @apply p-6 rounded-xl;
+  }
+}
+
+@media (max-width: 768px) {
+  .polaris-dashboard-grid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  .polaris-container-premium {
+    @apply px-4;
+  }
+}
+
+/* ===== ENHANCED DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --polaris-bg-primary: #0f172a;
+    --polaris-bg-secondary: #1e293b;
+    --polaris-text-primary: #f1f5f9;
+    --polaris-text-secondary: #cbd5e1;
+  }
+  
+  .polaris-card-premium {
+    @apply bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700;
+  }
+  
+  .polaris-input-premium {
+    @apply bg-slate-800 border-slate-700 text-white placeholder-slate-400;
+  }
+}
+
+/* ===== ENHANCED ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .polaris-fade-in-up,
+  .polaris-slide-in-right,
+  .polaris-scale-in,
+  .polaris-bounce-in-premium,
+  .polaris-float,
+  .polaris-hover-lift-premium {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ===== ENHANCED PRINT STYLES ===== */
+@media print {
+  .polaris-card-premium,
+  .polaris-card-elevated {
+    @apply shadow-none border border-gray-300;
+  }
+  
+  .polaris-button-hero,
+  .polaris-button-premium {
+    @apply bg-gray-300 text-black;
+  }
+}
