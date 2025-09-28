@@ -48,8 +48,8 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ user }) => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch provider dashboard data
-        const response = await apiClient.request('/provider/dashboard')
+        // Fetch provider dashboard data using correct endpoint
+        const response = await apiClient.request('/home/provider')
         setDashboardData(response.data)
       } catch (error) {
         console.error('Error fetching provider dashboard:', error)
