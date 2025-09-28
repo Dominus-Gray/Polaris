@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import { useAuth } from '../../providers'
 import { toast } from 'sonner'
-import LoadingSpinner from '../components/LoadingSpinner'
+import LoadingSpinner from '../dashboard/components/LoadingSpinner'
 
 const LoginContent = () => {
   const [formData, setFormData] = useState({
