@@ -260,15 +260,24 @@ function AuthProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'LOGIN_START' })
       
       const response = await apiClient.login(email, password)
-      const { user, token } = response.data
+      
+      // Handle FastAPI response structure (access_token + separate user data)
+      const token = response.access_token || response.data?.access_token
+      
+      if (!token) {
+        throw new Error('No access token received')
+      }
+      
+      // Get user data with the token
+      apiClient.setToken(token)
+      const userResponse = await apiClient.getMe()
+      const user = userResponse.data || userResponse
       
       // Store in localStorage (client-side only)
       if (typeof window !== 'undefined') {
         localStorage.setItem('polaris_token', token)
         localStorage.setItem('polaris_user', JSON.stringify(user))
       }
-      
-      apiClient.setToken(token)
       
       dispatch({
         type: 'LOGIN_SUCCESS',
