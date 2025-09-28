@@ -198,10 +198,16 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from localStorage (client-side only)
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Ensure we're on the client side
+        if (typeof window === 'undefined') {
+          dispatch({ type: 'SET_LOADING', payload: false })
+          return
+        }
+
         const token = localStorage.getItem('polaris_token')
         const user = localStorage.getItem('polaris_user')
 
@@ -234,7 +240,9 @@ function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    initAuth()
+    // Delay initialization to ensure client-side hydration is complete
+    const timer = setTimeout(initAuth, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   // Redirect unauthenticated users from protected routes
