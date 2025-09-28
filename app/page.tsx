@@ -298,13 +298,13 @@ export default function HomePage() {
               
               <div className="border-t border-gray-100 pt-6">
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>Demo Account:</strong> client.qa@polaris.example.com
+                  Perfect for small businesses seeking procurement opportunities
                 </p>
                 <Link 
-                  href="/auth/login"
+                  href="/auth/register"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Start Business Assessment
+                  Get Agency Sponsorship
                 </Link>
               </div>
             </div>
@@ -342,13 +342,13 @@ export default function HomePage() {
               
               <div className="border-t border-gray-100 pt-6">
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>Demo Account:</strong> provider.qa@polaris.example.com
+                  Ideal for consultants and business development experts
                 </p>
                 <Link 
-                  href="/auth/login"
+                  href="/auth/register"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  Join Provider Network
+                  Apply to Provider Network
                 </Link>
               </div>
             </div>
@@ -368,41 +368,33 @@ export default function HomePage() {
               <div className="space-y-4 mb-8">
                 <div className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Manage local small business procurement readiness programs</span>
+                  <span className="text-gray-700">Sponsor local small businesses through assessment programs</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Generate and distribute assessment access codes to local businesses</span>
+                  <span className="text-gray-700">Generate and distribute assessment access codes to clients</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Configure tier access levels and track client progress</span>
+                  <span className="text-gray-700">Configure tier access levels and monitor client progress</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Monitor local ecosystem health and business development metrics</span>
+                  <span className="text-gray-700">Build stronger local business ecosystems and partnerships</span>
                 </div>
               </div>
               
               <div className="border-t border-gray-100 pt-6">
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>Demo Account:</strong> agency.qa@polaris.example.com
+                  For economic development organizations and business incubators
                 </p>
                 <Link 
-                  href="/auth/login"
+                  href="/auth/register"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
                 >
-                  Access Agency Portal
+                  Become Agency Partner
                 </Link>
               </div>
-            </div>
-          </div>
-
-          {/* QA Testing Note */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center px-6 py-3 bg-blue-100 rounded-xl text-blue-800">
-              <Shield className="h-5 w-5 mr-2" />
-              <span className="font-medium">All demo accounts use password: <code className="bg-blue-200 px-2 py-1 rounded text-sm">Polaris#2025!</code></span>
             </div>
           </div>
         </div>
