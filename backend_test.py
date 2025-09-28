@@ -565,10 +565,9 @@ class PolarisBackendTester:
                 auth_success += 1
         
         if auth_success == 0:
-            print("❌ CRITICAL: No QA users could authenticate. Stopping tests.")
-            return
-        
-        print(f"✅ {auth_success}/4 QA users authenticated successfully")
+            print("❌ CRITICAL: No QA users could authenticate. Continuing with limited tests.")
+        else:
+            print(f"✅ {auth_success}/4 QA users authenticated successfully")
         
         # Run comprehensive feature tests
         self.test_assessment_system()
