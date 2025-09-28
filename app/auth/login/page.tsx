@@ -181,16 +181,4 @@ const LoginPage = () => {
   )
 }
 
-const LoginPage = () => {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
-  )
-}
-
 export default LoginPage
