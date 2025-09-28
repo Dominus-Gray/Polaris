@@ -1,13 +1,14 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import { useAuth } from '../../providers'
 import { toast } from 'sonner'
+import LoadingSpinner from '../components/LoadingSpinner'
 
-const LoginPage = () => {
+const LoginContent = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
