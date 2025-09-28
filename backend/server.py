@@ -1791,7 +1791,20 @@ async def login_user(request: Request, user: UserLogin):
     # Verify password with enhanced security logging
     # Handle both 'password' and 'hashed_password' field names for backward compatibility
     password_field = db_user.get("hashed_password") or db_user.get("password", "")
-    if not pbkdf2_sha256.verify(user.password, password_field):
+    
+    password_valid = False
+    try:
+        if password_field.startswith("$2a$") or password_field.startswith("$2b$"):
+            # bcrypt hash
+            password_valid = bcrypt.checkpw(user.password.encode('utf-8'), password_field.encode('utf-8'))
+        else:
+            # pbkdf2_sha256 hash
+            password_valid = pbkdf2_sha256.verify(user.password, password_field)
+    except Exception as e:
+        logger.error(f"Password verification error: {e}")
+        password_valid = False
+    
+    if not password_valid:
         # Increment failed attempts
         failed_attempts = db_user.get("failed_login_attempts", 0) + 1
         update_data = {
