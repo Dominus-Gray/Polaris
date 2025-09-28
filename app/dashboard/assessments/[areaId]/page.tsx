@@ -203,7 +203,6 @@ const BUSINESS_MATURITY_STATEMENTS = {
       { id: 'area10_t3_3', statement: 'Your business has developed and executed comprehensive market capture and expansion strategies', category: 'Market Expansion' }
     ]
   }
-  // Add remaining areas 3-9 with similar structure...
 }
 
 const AssessmentAreaPage = () => {
