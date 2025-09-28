@@ -59,6 +59,132 @@ const BUSINESS_MATURITY_STATEMENTS = {
       { id: 'area2_t3_3', statement: 'Your business maintains detailed financial forecasting and scenario planning capabilities', category: 'Strategic Finance' }
     ]
   },
+  area3: {
+    area_name: 'Legal & Contracting Compliance',
+    tier1: [
+      { id: 'area3_t1_1', statement: 'Your business has basic contract templates for standard transactions', category: 'Contract Management' },
+      { id: 'area3_t1_2', statement: 'Your business maintains general liability insurance coverage', category: 'Insurance' },
+      { id: 'area3_t1_3', statement: 'Your business complies with basic employment law requirements', category: 'Employment Compliance' }
+    ],
+    tier2: [
+      { id: 'area3_t2_1', statement: 'Your business has documented contract review and approval processes', category: 'Contract Processes' },
+      { id: 'area3_t2_2', statement: 'Your business maintains comprehensive insurance coverage including professional liability', category: 'Risk Management' },
+      { id: 'area3_t2_3', statement: 'Your business has established intellectual property protection strategies', category: 'IP Protection' }
+    ],
+    tier3: [
+      { id: 'area3_t3_1', statement: 'Your business has legal counsel on retainer for complex contracting matters', category: 'Legal Support' },
+      { id: 'area3_t3_2', statement: 'Your business maintains comprehensive compliance monitoring for industry-specific regulations', category: 'Regulatory Compliance' },
+      { id: 'area3_t3_3', statement: 'Your business has implemented advanced contract management systems with automated tracking', category: 'Advanced Systems' }
+    ]
+  },
+  area4: {
+    area_name: 'Quality Management & Standards',
+    tier1: [
+      { id: 'area4_t1_1', statement: 'Your business has basic quality control procedures for products or services', category: 'Quality Control' },
+      { id: 'area4_t1_2', statement: 'Your business documents standard operating procedures for key processes', category: 'Process Documentation' },
+      { id: 'area4_t1_3', statement: 'Your business addresses customer complaints and feedback systematically', category: 'Customer Feedback' }
+    ],
+    tier2: [
+      { id: 'area4_t2_1', statement: 'Your business has implemented formal quality management systems (ISO 9001 or similar)', category: 'QMS Implementation' },
+      { id: 'area4_t2_2', statement: 'Your business conducts regular internal audits and quality reviews', category: 'Quality Auditing' },
+      { id: 'area4_t2_3', statement: 'Your business maintains detailed quality metrics and improvement tracking', category: 'Quality Metrics' }
+    ],
+    tier3: [
+      { id: 'area4_t3_1', statement: 'Your business has achieved third-party quality certifications relevant to your industry', category: 'Certifications' },
+      { id: 'area4_t3_2', statement: 'Your business has established continuous improvement programs with employee involvement', category: 'Continuous Improvement' },
+      { id: 'area4_t3_3', statement: 'Your business maintains advanced quality management software with real-time monitoring', category: 'Advanced QM Systems' }
+    ]
+  },
+  area5: {
+    area_name: 'Technology & Security Infrastructure',
+    tier1: [
+      { id: 'area5_t1_1', statement: 'Your business has basic cybersecurity measures (antivirus, firewalls, secure passwords)', category: 'Basic Security' },
+      { id: 'area5_t1_2', statement: 'Your business regularly backs up critical data and systems', category: 'Data Backup' },
+      { id: 'area5_t1_3', statement: 'Your business has updated hardware and software systems', category: 'Technology Infrastructure' }
+    ],
+    tier2: [
+      { id: 'area5_t2_1', statement: 'Your business has implemented comprehensive cybersecurity policies and training', category: 'Security Policies' },
+      { id: 'area5_t2_2', statement: 'Your business maintains secure data management and access control systems', category: 'Data Security' },
+      { id: 'area5_t2_3', statement: 'Your business has established IT disaster recovery and business continuity plans', category: 'Disaster Recovery' }
+    ],
+    tier3: [
+      { id: 'area5_t3_1', statement: 'Your business has achieved cybersecurity certifications (SOC 2, ISO 27001, or similar)', category: 'Security Certifications' },
+      { id: 'area5_t3_2', statement: 'Your business conducts regular penetration testing and security assessments', category: 'Security Testing' },
+      { id: 'area5_t3_3', statement: 'Your business has implemented advanced threat monitoring and incident response capabilities', category: 'Advanced Security' }
+    ]
+  },
+  area6: {
+    area_name: 'Human Resources & Capacity',
+    tier1: [
+      { id: 'area6_t1_1', statement: 'Your business has basic employee handbook and policies', category: 'HR Policies' },
+      { id: 'area6_t1_2', statement: 'Your business maintains required employment records and documentation', category: 'Documentation' },
+      { id: 'area6_t1_3', statement: 'Your business provides basic safety training and workplace safety measures', category: 'Workplace Safety' }
+    ],
+    tier2: [
+      { id: 'area6_t2_1', statement: 'Your business has implemented formal performance management and review processes', category: 'Performance Management' },
+      { id: 'area6_t2_2', statement: 'Your business provides comprehensive employee training and development programs', category: 'Training Programs' },
+      { id: 'area6_t2_3', statement: 'Your business has established workforce planning and capacity management systems', category: 'Capacity Planning' }
+    ],
+    tier3: [
+      { id: 'area6_t3_1', statement: 'Your business has implemented advanced HR management systems with automated workflows', category: 'HR Technology' },
+      { id: 'area6_t3_2', statement: 'Your business maintains comprehensive succession planning and knowledge transfer programs', category: 'Succession Planning' },
+      { id: 'area6_t3_3', statement: 'Your business has established strategic workforce development partnerships and apprenticeship programs', category: 'Strategic Development' }
+    ]
+  },
+  area7: {
+    area_name: 'Performance Tracking & Reporting',
+    tier1: [
+      { id: 'area7_t1_1', statement: 'Your business tracks basic performance metrics (revenue, expenses, customer satisfaction)', category: 'Basic Metrics' },
+      { id: 'area7_t1_2', statement: 'Your business generates regular financial and operational reports', category: 'Reporting' },
+      { id: 'area7_t1_3', statement: 'Your business reviews performance data to make business decisions', category: 'Data-Driven Decisions' }
+    ],
+    tier2: [
+      { id: 'area7_t2_1', statement: 'Your business has implemented comprehensive key performance indicator (KPI) systems', category: 'KPI Systems' },
+      { id: 'area7_t2_2', statement: 'Your business uses business intelligence tools for advanced reporting and analytics', category: 'Business Intelligence' },
+      { id: 'area7_t2_3', statement: 'Your business conducts regular performance benchmarking against industry standards', category: 'Benchmarking' }
+    ],
+    tier3: [
+      { id: 'area7_t3_1', statement: 'Your business has implemented real-time performance monitoring and dashboard systems', category: 'Real-time Monitoring' },
+      { id: 'area7_t3_2', statement: 'Your business maintains predictive analytics and forecasting capabilities', category: 'Predictive Analytics' },
+      { id: 'area7_t3_3', statement: 'Your business has established automated performance reporting and alert systems', category: 'Automated Systems' }
+    ]
+  },
+  area8: {
+    area_name: 'Risk Management & Business Continuity',
+    tier1: [
+      { id: 'area8_t1_1', statement: 'Your business has identified major business risks and potential disruptions', category: 'Risk Identification' },
+      { id: 'area8_t1_2', statement: 'Your business maintains basic emergency procedures and contacts', category: 'Emergency Procedures' },
+      { id: 'area8_t1_3', statement: 'Your business has adequate insurance coverage for identified risks', category: 'Risk Insurance' }
+    ],
+    tier2: [
+      { id: 'area8_t2_1', statement: 'Your business has documented comprehensive risk assessment and mitigation strategies', category: 'Risk Assessment' },
+      { id: 'area8_t2_2', statement: 'Your business maintains detailed business continuity and disaster recovery plans', category: 'Continuity Planning' },
+      { id: 'area8_t2_3', statement: 'Your business conducts regular risk management reviews and plan updates', category: 'Risk Reviews' }
+    ],
+    tier3: [
+      { id: 'area8_t3_1', statement: 'Your business has implemented enterprise risk management frameworks and systems', category: 'Enterprise Risk Management' },
+      { id: 'area8_t3_2', statement: 'Your business conducts regular business continuity testing and scenario planning', category: 'Continuity Testing' },
+      { id: 'area8_t3_3', statement: 'Your business maintains advanced crisis management and communication systems', category: 'Crisis Management' }
+    ]
+  },
+  area9: {
+    area_name: 'Supply Chain Management & Vendor Relations',
+    tier1: [
+      { id: 'area9_t1_1', statement: 'Your business has established relationships with reliable suppliers and vendors', category: 'Vendor Relations' },
+      { id: 'area9_t1_2', statement: 'Your business maintains basic procurement procedures and purchase controls', category: 'Procurement' },
+      { id: 'area9_t1_3', statement: 'Your business tracks supplier performance and delivery metrics', category: 'Supplier Performance' }
+    ],
+    tier2: [
+      { id: 'area9_t2_1', statement: 'Your business has implemented formal vendor qualification and evaluation processes', category: 'Vendor Qualification' },
+      { id: 'area9_t2_2', statement: 'Your business maintains comprehensive supply chain mapping and risk assessment', category: 'Supply Chain Management' },
+      { id: 'area9_t2_3', statement: 'Your business has established strategic partnerships and long-term supplier agreements', category: 'Strategic Partnerships' }
+    ],
+    tier3: [
+      { id: 'area9_t3_1', statement: 'Your business has implemented advanced supply chain management systems with real-time tracking', category: 'Advanced SCM' },
+      { id: 'area9_t3_2', statement: 'Your business maintains comprehensive supplier diversity and sustainability programs', category: 'Supplier Diversity' },
+      { id: 'area9_t3_3', statement: 'Your business has established supply chain innovation and continuous improvement initiatives', category: 'Supply Chain Innovation' }
+    ]
+  },
   area10: {
     area_name: 'Competitive Advantage & Market Position',
     tier1: [
