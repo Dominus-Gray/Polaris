@@ -1,14 +1,13 @@
 'use client'
 
-import React, { useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import { useAuth } from '../../providers'
 import { toast } from 'sonner'
-import LoadingSpinner from '../components/LoadingSpinner'
 
-const LoginContent = () => {
+const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,8 +17,6 @@ const LoginContent = () => {
   
   const { login } = useAuth()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/dashboard'
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
