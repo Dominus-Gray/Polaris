@@ -10,7 +10,8 @@ import {
   CreditCard,
   Calendar,
   Receipt,
-  Download
+  Download,
+  ArrowRight
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../../../providers'
