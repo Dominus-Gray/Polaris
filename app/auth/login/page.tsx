@@ -167,13 +167,13 @@ const LoginPage = () => {
 
         {/* Demo Accounts */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Accounts:</h3>
+          <h3 className="text-sm font-medium text-blue-900 mb-2">QA Test Accounts:</h3>
           <div className="text-xs text-blue-800 space-y-1">
-            <div>Client: client@polaris.example.com</div>
-            <div>Provider: provider@polaris.example.com</div>
-            <div>Agency: agency@polaris.example.com</div>
-            <div>Navigator: navigator@polaris.example.com</div>
-            <div className="text-blue-600 font-medium mt-2">Password: Demo123!@#</div>
+            <div>Client: client.qa@polaris.example.com</div>
+            <div>Provider: provider.qa@polaris.example.com</div>
+            <div>Agency: agency.qa@polaris.example.com</div>
+            <div>Navigator: navigator.qa@polaris.example.com</div>
+            <div className="text-blue-600 font-medium mt-2">Password: Polaris#2025!</div>
           </div>
         </div>
       </div>
