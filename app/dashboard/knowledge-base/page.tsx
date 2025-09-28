@@ -72,25 +72,27 @@ const KnowledgeBasePage = () => {
 
   const fetchKnowledgeBaseData = async () => {
     try {
-      // Fetch knowledge base areas
+      // Fetch all knowledge base areas
       const areasResponse = await apiClient.request('/knowledge-base/areas')
-      setAreas(areasResponse.data || [])
+      console.log('Knowledge base areas response:', areasResponse)
+      setAreas(areasResponse.data || areasResponse || [])
 
-      // Fetch recent resources
-      const resourcesResponse = await apiClient.request('/knowledge-base/resources/recent')
-      setResources(resourcesResponse.data || [])
+      // Fetch available articles  
+      const articlesResponse = await apiClient.request('/knowledge-base/articles')
+      console.log('Knowledge base articles response:', articlesResponse)
+      setResources(articlesResponse.data || articlesResponse || [])
 
-      // Fetch recent AI assistance (if available)
+      // Fetch recent AI assistance if available
       try {
         const aiResponse = await apiClient.request('/ai/coach/history/recent')
         setRecentAI(aiResponse.data || [])
       } catch (error) {
-        // AI history not available - not critical
+        console.log('AI history not available - using fallback')
         setRecentAI([])
       }
     } catch (error) {
       console.error('Error fetching knowledge base data:', error)
-      // Mock data for development
+      // Provide comprehensive fallback data for all 10 areas
       setAreas([
         {
           area_id: 'area1',
@@ -99,7 +101,7 @@ const KnowledgeBasePage = () => {
           is_locked: false,
           resource_count: 12,
           templates_available: 3,
-          last_accessed: '2024-01-15T10:00:00Z'
+          last_accessed: null
         },
         {
           area_id: 'area2',
@@ -111,6 +113,24 @@ const KnowledgeBasePage = () => {
           last_accessed: null
         },
         {
+          area_id: 'area3',
+          area_name: 'Legal & Contracting Compliance',
+          description: 'Legal requirements, contracts, and compliance standards',
+          is_locked: false,
+          resource_count: 15,
+          templates_available: 4,
+          last_accessed: null
+        },
+        {
+          area_id: 'area4',
+          area_name: 'Quality Management & Standards',
+          description: 'Quality systems, certifications, and process standards',
+          is_locked: false,
+          resource_count: 10,
+          templates_available: 3,
+          last_accessed: null
+        },
+        {
           area_id: 'area5',
           area_name: 'Technology & Security Infrastructure',
           description: 'IT systems, cybersecurity, and data management',
@@ -118,9 +138,55 @@ const KnowledgeBasePage = () => {
           resource_count: 15,
           templates_available: 4,
           last_accessed: null
+        },
+        {
+          area_id: 'area6',
+          area_name: 'Human Resources & Capacity',
+          description: 'Staffing, training, and organizational capacity',
+          is_locked: false,
+          resource_count: 8,
+          templates_available: 2,
+          last_accessed: null
+        },
+        {
+          area_id: 'area7',
+          area_name: 'Performance Tracking & Reporting',
+          description: 'Metrics, reporting systems, and performance management',
+          is_locked: false,
+          resource_count: 12,
+          templates_available: 3,
+          last_accessed: null
+        },
+        {
+          area_id: 'area8',
+          area_name: 'Risk Management & Business Continuity',
+          description: 'Risk assessment, mitigation, and business continuity planning',
+          is_locked: false,
+          resource_count: 9,
+          templates_available: 2,
+          last_accessed: null
+        },
+        {
+          area_id: 'area9',
+          area_name: 'Supply Chain Management & Vendor Relations',
+          description: 'Supplier relationships, procurement, and supply chain optimization',
+          is_locked: false,
+          resource_count: 11,
+          templates_available: 3,
+          last_accessed: null
+        },
+        {
+          area_id: 'area10',
+          area_name: 'Competitive Advantage & Market Position',
+          description: 'Competitive advantages, market capture processes, strategic partnerships',
+          is_locked: false,
+          resource_count: 7,
+          templates_available: 2,
+          last_accessed: null
         }
       ])
       
+      // Provide sample resources for each area
       setResources([
         {
           id: '1',
@@ -147,6 +213,19 @@ const KnowledgeBasePage = () => {
           is_premium: false,
           created_at: '2024-01-08T14:30:00Z',
           updated_at: '2024-01-12T14:30:00Z'
+        },
+        {
+          id: '3',
+          title: 'Technology Security Assessment Template',
+          description: 'Comprehensive cybersecurity evaluation and improvement framework',
+          type: 'template',
+          area_id: 'area5',
+          difficulty_level: 'advanced',
+          estimated_read_time: 45,
+          tags: ['cybersecurity', 'technology', 'assessment'],
+          is_premium: false,
+          created_at: '2024-01-05T16:00:00Z',
+          updated_at: '2024-01-10T16:00:00Z'
         }
       ])
     } finally {
