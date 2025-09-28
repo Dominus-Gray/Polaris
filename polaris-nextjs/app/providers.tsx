@@ -121,7 +121,7 @@ class ApiClient {
     this.token = token
   }
 
-  private async request(endpoint: string, options: RequestInit = {}) {
+  private async makeRequest(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`
     const headers = {
       'Content-Type': 'application/json',
@@ -146,6 +146,11 @@ class ApiClient {
       console.error(`API request failed: ${endpoint}`, error)
       throw error
     }
+  }
+
+  // Public request method for other components
+  async request(endpoint: string, options: RequestInit = {}) {
+    return this.makeRequest(endpoint, options)
   }
 
   async login(email: string, password: string) {
