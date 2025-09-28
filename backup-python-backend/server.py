@@ -2002,7 +2002,16 @@ async def get_password_requirements_endpoint():
 
 @api.get("/auth/me", response_model=UserOut)
 async def get_current_user_info(current=Depends(require_user)):
-    return UserOut(id=current["id"], email=current["email"], role=current["role"], created_at=current["created_at"])
+    return UserOut(
+        id=current["id"], 
+        email=current["email"], 
+        name=current.get("name", ""),
+        role=current["role"], 
+        approval_status=current.get("approval_status", "approved"),
+        is_active=current.get("is_active", True),
+        created_at=current["created_at"],
+        profile_complete=current.get("profile_complete", False)
+    )
 
 class OAuthCallbackIn(BaseModel):
     session_id: str
