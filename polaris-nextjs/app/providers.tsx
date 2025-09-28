@@ -262,9 +262,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.login(email, password)
       const { user, token } = response.data
       
-      // Store in localStorage
-      localStorage.setItem('polaris_token', token)
-      localStorage.setItem('polaris_user', JSON.stringify(user))
+      // Store in localStorage (client-side only)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('polaris_token', token)
+        localStorage.setItem('polaris_user', JSON.stringify(user))
+      }
       
       apiClient.setToken(token)
       
@@ -289,9 +291,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.register(userData)
       const { user, token } = response.data
       
-      // Store in localStorage
-      localStorage.setItem('polaris_token', token)
-      localStorage.setItem('polaris_user', JSON.stringify(user))
+      // Store in localStorage (client-side only)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('polaris_token', token)
+        localStorage.setItem('polaris_user', JSON.stringify(user))
+      }
       
       apiClient.setToken(token)
       
@@ -317,9 +321,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
-      // Clear storage and state regardless of API call success
-      localStorage.removeItem('polaris_token')
-      localStorage.removeItem('polaris_user')
+      // Clear storage and state regardless of API call success (client-side only)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('polaris_token')
+        localStorage.removeItem('polaris_user')
+      }
       apiClient.setToken(null)
       dispatch({ type: 'LOGOUT' })
       toast.success('Logged out successfully')
@@ -328,7 +334,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const updateUser = (userData: Partial<User>) => {
-    if (state.user) {
+    if (state.user && typeof window !== 'undefined') {
       const updatedUser = { ...state.user, ...userData }
       localStorage.setItem('polaris_user', JSON.stringify(updatedUser))
       dispatch({ type: 'UPDATE_USER', payload: updatedUser })
@@ -340,7 +346,9 @@ function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.refreshToken()
       const { token } = response.data
       
-      localStorage.setItem('polaris_token', token)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('polaris_token', token)
+      }
       apiClient.setToken(token)
       
       return true
