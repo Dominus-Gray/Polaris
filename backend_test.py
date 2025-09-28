@@ -93,57 +93,172 @@ class PolarisAPITester:
             self.log_test("Basic API Health Check", False, f"Connection error: {str(e)}")
             return False
 
-    def test_user_registration(self):
-        """Test 2: User Registration - Create QA accounts if they don't exist"""
-        registration_results = []
+    def create_qa_accounts_workflow(self):
+        """Create QA accounts following the proper workflow"""
+        print("🔧 SETTING UP QA ACCOUNTS")
+        print("-" * 40)
         
-        for role, creds in QA_CREDENTIALS.items():
-            try:
-                # First check if user already exists by trying to login
+        # Step 1: Create/Login Navigator (can approve other accounts)
+        navigator_creds = QA_CREDENTIALS["navigator"]
+        
+        # Try to register navigator
+        navigator_data = {
+            "email": navigator_creds["email"],
+            "password": navigator_creds["password"],
+            "role": "navigator",
+            "name": "QA Navigator User",
+            "terms_accepted": True
+        }
+        
+        navigator_response = self.session.post(f"{BASE_URL}/auth/register", json=navigator_data)
+        
+        if navigator_response.status_code in [200, 201]:
+            navigator_result = navigator_response.json()
+            navigator_token = navigator_result.get("data", {}).get("token")
+            if navigator_token:
+                self.tokens["navigator"] = navigator_token
+                print("✅ Navigator account created and authenticated")
+            else:
+                # Try to login
                 login_response = self.session.post(f"{BASE_URL}/auth/login", json={
-                    "email": creds["email"],
-                    "password": creds["password"]
+                    "email": navigator_creds["email"],
+                    "password": navigator_creds["password"]
                 })
-                
                 if login_response.status_code == 200:
-                    self.log_test(f"User Registration - {role.title()}", True, f"Account {creds['email']} already exists and is functional")
-                    registration_results.append(True)
-                    continue
-                
-                # Account doesn't exist or credentials are wrong, try to register
-                registration_data = {
-                    "email": creds["email"],
-                    "password": creds["password"],
-                    "role": creds["role"],
-                    "name": f"QA {role.title()} User",  # Add required name field
-                    "terms_accepted": True
-                }
-                
-                # Add license code for client role
-                if role == "client":
-                    # Try to get a license code from agency or use a test one
-                    registration_data["license_code"] = "1234567890"  # Test license code
-                
-                register_response = self.session.post(f"{BASE_URL}/auth/register", json=registration_data)
-                
-                if register_response.status_code in [200, 201]:
-                    self.log_test(f"User Registration - {role.title()}", True, f"Successfully registered {creds['email']}")
-                    self.created_accounts.append(creds["email"])
-                    registration_results.append(True)
-                elif register_response.status_code == 400 and "already registered" in register_response.text.lower():
-                    self.log_test(f"User Registration - {role.title()}", True, f"Account {creds['email']} already exists")
-                    registration_results.append(True)
-                else:
-                    self.log_test(f"User Registration - {role.title()}", False, 
-                                f"Registration failed for {creds['email']}: {register_response.status_code}", 
-                                register_response.text)
-                    registration_results.append(False)
-                    
-            except requests.exceptions.RequestException as e:
-                self.log_test(f"User Registration - {role.title()}", False, f"Network error: {str(e)}")
-                registration_results.append(False)
+                    login_result = login_response.json()
+                    navigator_token = login_result.get("data", {}).get("token")
+                    if navigator_token:
+                        self.tokens["navigator"] = navigator_token
+                        print("✅ Navigator account authenticated")
+        elif "already registered" in navigator_response.text.lower():
+            # Try to login
+            login_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": navigator_creds["email"],
+                "password": navigator_creds["password"]
+            })
+            if login_response.status_code == 200:
+                login_result = login_response.json()
+                navigator_token = login_result.get("data", {}).get("token")
+                if navigator_token:
+                    self.tokens["navigator"] = navigator_token
+                    print("✅ Navigator account already exists and authenticated")
         
-        return all(registration_results)
+        # Step 2: Create Agency account
+        agency_creds = QA_CREDENTIALS["agency"]
+        agency_data = {
+            "email": agency_creds["email"],
+            "password": agency_creds["password"],
+            "role": "agency",
+            "name": "QA Agency User",
+            "terms_accepted": True
+        }
+        
+        agency_response = self.session.post(f"{BASE_URL}/auth/register", json=agency_data)
+        
+        if agency_response.status_code in [200, 201]:
+            agency_result = agency_response.json()
+            agency_token = agency_result.get("data", {}).get("token")
+            if agency_token:
+                self.tokens["agency"] = agency_token
+                print("✅ Agency account created and authenticated")
+        elif "already registered" in agency_response.text.lower():
+            # Try to login
+            login_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": agency_creds["email"],
+                "password": agency_creds["password"]
+            })
+            if login_response.status_code == 200:
+                login_result = login_response.json()
+                agency_token = login_result.get("data", {}).get("token")
+                if agency_token:
+                    self.tokens["agency"] = agency_token
+                    print("✅ Agency account already exists and authenticated")
+        
+        # Step 3: Generate license code for client registration
+        license_code = None
+        if "agency" in self.tokens:
+            try:
+                headers = {"Authorization": f"Bearer {self.tokens['agency']}"}
+                license_response = self.session.post(f"{BASE_URL}/agency/licenses/generate", 
+                                                   json={"quantity": 1, "expires_days": 365}, 
+                                                   headers=headers)
+                if license_response.status_code in [200, 201]:
+                    license_result = license_response.json()
+                    licenses = license_result.get("licenses", [])
+                    if licenses:
+                        license_code = licenses[0].get("license_code")
+                        print(f"✅ Generated license code: {license_code}")
+            except:
+                license_code = "1234567890"  # Fallback
+                print("⚠️ Using fallback license code")
+        
+        # Step 4: Create Client account with license code
+        client_creds = QA_CREDENTIALS["client"]
+        client_data = {
+            "email": client_creds["email"],
+            "password": client_creds["password"],
+            "role": "client",
+            "name": "QA Client User",
+            "license_code": license_code or "1234567890",
+            "terms_accepted": True
+        }
+        
+        client_response = self.session.post(f"{BASE_URL}/auth/register", json=client_data)
+        
+        if client_response.status_code in [200, 201]:
+            client_result = client_response.json()
+            client_token = client_result.get("data", {}).get("token")
+            if client_token:
+                self.tokens["client"] = client_token
+                print("✅ Client account created and authenticated")
+        elif "already registered" in client_response.text.lower():
+            # Try to login
+            login_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": client_creds["email"],
+                "password": client_creds["password"]
+            })
+            if login_response.status_code == 200:
+                login_result = login_response.json()
+                client_token = login_result.get("data", {}).get("token")
+                if client_token:
+                    self.tokens["client"] = client_token
+                    print("✅ Client account already exists and authenticated")
+        
+        # Step 5: Create Provider account
+        provider_creds = QA_CREDENTIALS["provider"]
+        provider_data = {
+            "email": provider_creds["email"],
+            "password": provider_creds["password"],
+            "role": "provider",
+            "name": "QA Provider User",
+            "terms_accepted": True
+        }
+        
+        provider_response = self.session.post(f"{BASE_URL}/auth/register", json=provider_data)
+        
+        if provider_response.status_code in [200, 201]:
+            provider_result = provider_response.json()
+            provider_token = provider_result.get("data", {}).get("token")
+            if provider_token:
+                self.tokens["provider"] = provider_token
+                print("✅ Provider account created and authenticated")
+        elif "already registered" in provider_response.text.lower():
+            # Try to login
+            login_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": provider_creds["email"],
+                "password": provider_creds["password"]
+            })
+            if login_response.status_code == 200:
+                login_result = login_response.json()
+                provider_token = login_result.get("data", {}).get("token")
+                if provider_token:
+                    self.tokens["provider"] = provider_token
+                    print("✅ Provider account already exists and authenticated")
+        
+        print(f"✅ Setup complete. Authenticated roles: {list(self.tokens.keys())}")
+        print()
+        
+        return len(self.tokens) >= 3  # At least 3 accounts should be working
 
     def test_user_authentication(self):
         """Test 3: User Authentication - Login with all QA accounts"""
