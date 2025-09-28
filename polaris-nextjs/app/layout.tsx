@@ -4,7 +4,11 @@ import './globals.css'
 import { Providers } from './providers'
 import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Polaris - Business Assessment & Professional Services Platform',
@@ -33,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <Providers>
           {children}
           <Toaster position="top-right" richColors />
