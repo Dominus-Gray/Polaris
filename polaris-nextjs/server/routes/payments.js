@@ -9,21 +9,8 @@ const PaymentTransaction = require('../models/PaymentTransaction')
 const { ServiceRequest } = require('../models/ServiceRequest')
 const User = require('../models/User')
 
-// Import Stripe emergent integration
-let StripeCheckout, CheckoutSessionRequest
-
-try {
-  // Import the emergency integrations
-  const stripeModule = require('emergentintegrations/payments/stripe/checkout')
-  StripeCheckout = stripeModule.StripeCheckout
-  CheckoutSessionRequest = stripeModule.CheckoutSessionRequest
-  console.log('✅ Stripe emergent integration loaded successfully')
-} catch (error) {
-  console.error('❌ Error importing Stripe emergent integration:', error)
-  // Fallback to regular Stripe if emergent integration fails
-  const stripe = require('stripe')
-  StripeCheckout = null
-}
+// Initialize Stripe with emergent key
+const stripe = require('stripe')(process.env.STRIPE_API_KEY)
 
 const BUSINESS_AREAS = getBusinessAreas()
 
@@ -65,17 +52,6 @@ const SERVICE_PACKAGES = {
     currency: 'usd',
     description: 'Enterprise-level professional service and consultation'
   }
-}
-
-// Initialize Stripe checkout instance
-let stripeCheckout
-const getStripeCheckout = (hostUrl) => {
-  if (!stripeCheckout && StripeCheckout) {
-    const apiKey = process.env.STRIPE_API_KEY
-    const webhookUrl = `${hostUrl}/api/payments/webhook/stripe`
-    stripeCheckout = new StripeCheckout(apiKey, webhookUrl)
-  }
-  return stripeCheckout
 }
 
 /**
