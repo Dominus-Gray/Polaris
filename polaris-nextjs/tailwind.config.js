@@ -54,6 +54,16 @@ module.exports = {
         },
         // Polaris Brand Colors
         polaris: {
+          50: '#eff6ff',
+          100: '#dbeafe', 
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
           blue: '#1E40AF',
           navy: '#1E3A8A',
           gold: '#F59E0B',
@@ -65,9 +75,15 @@ module.exports = {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        xl: '1rem',
+        '2xl': '1.5rem',
       },
       fontFamily: {
         sans: ['var(--font-sans)', ...fontFamily.sans],
+      },
+      boxShadow: {
+        'polaris': '0 4px 6px -1px rgba(30, 64, 175, 0.1), 0 2px 4px -1px rgba(30, 64, 175, 0.06)',
+        'polaris-lg': '0 10px 15px -3px rgba(30, 64, 175, 0.1), 0 4px 6px -2px rgba(30, 64, 175, 0.05)',
       },
       keyframes: {
         'accordion-down': {
