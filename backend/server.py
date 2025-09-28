@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, EmailStr, HttpUrl, validator
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta, timezone
 from passlib.hash import pbkdf2_sha256
+import bcrypt
 from jose import jwt, JWTError
 import os
 import logging
