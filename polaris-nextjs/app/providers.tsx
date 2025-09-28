@@ -122,7 +122,7 @@ class ApiClient {
   }
 
   private async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseURL}/api${endpoint}`
+    const url = `${this.baseURL}${endpoint}`
     const headers = {
       'Content-Type': 'application/json',
       ...(this.token && { Authorization: `Bearer ${this.token}` }),
