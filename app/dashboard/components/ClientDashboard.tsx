@@ -138,7 +138,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
         
         <StatCard
           title="Active Assessments"
-          value={assessmentProgress.filter(p => p.status === 'active').length}
+          value={Array.isArray(assessmentProgress) ? assessmentProgress.filter(p => p.status === 'active').length : 0}
           icon={ClipboardList}
           color="purple"
         />
