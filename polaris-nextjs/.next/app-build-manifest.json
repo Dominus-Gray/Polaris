@@ -35,6 +35,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/analytics/page.js"
+    ],
+    "/dashboard/knowledge-base/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/knowledge-base/page.js"
     ]
   }
 }

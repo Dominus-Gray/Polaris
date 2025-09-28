@@ -3,5 +3,7 @@
   "/dashboard/assessments/page": "app/dashboard/assessments/page.js",
   "/page": "app/page.js",
   "/auth/register/page": "app/auth/register/page.js",
-  "/dashboard/analytics/page": "app/dashboard/analytics/page.js"
+  "/dashboard/analytics/page": "app/dashboard/analytics/page.js",
+  "/dashboard/knowledge-base/page": "app/dashboard/knowledge-base/page.js",
+  "/auth/login/page": "app/auth/login/page.js"
 }
