@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Production Authentication Testing for QA Credentials
-Testing against: https://nextjs-mongo-polaris.preview.emergentagent.com/api
+Testing against: https://polaris-migrate.preview.emergentagent.com/api
 
 This script tests the 4 QA credentials against the production environment
 to identify and resolve authentication issues.
@@ -13,7 +13,7 @@ import sys
 from datetime import datetime
 
 # Production URL as specified in the review request
-PRODUCTION_BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+PRODUCTION_BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 
 # QA Credentials to test
 QA_CREDENTIALS = [

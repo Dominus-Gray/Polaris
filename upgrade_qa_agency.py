@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 AGENCY_CREDENTIALS = {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"}
 
 def authenticate_agency():

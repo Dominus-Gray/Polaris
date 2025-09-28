@@ -6,7 +6,7 @@ Simple Agency Endpoint Test - Check which endpoints are working
 import requests
 import json
 
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"
 QA_AGENCY_PASSWORD = "Polaris#2025!"
 

@@ -15,7 +15,7 @@ import random
 import statistics
 
 # Configuration
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"},
     "provider": {"email": "provider.qa@polaris.example.com", "password": "Polaris#2025!"},

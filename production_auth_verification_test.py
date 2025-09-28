@@ -3,7 +3,7 @@
 Production Authentication Verification Test
 Testing Agent: testing
 Test Date: January 25, 2025
-Production URL: https://nextjs-mongo-polaris.preview.emergentagent.com/api
+Production URL: https://polaris-migrate.preview.emergentagent.com/api
 Test Scope: Complete verification of all 4 QA credentials as requested in review
 
 This test provides hard evidence that authentication is working correctly
@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 
 # Production API Configuration
-PRODUCTION_BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+PRODUCTION_BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 LOGIN_ENDPOINT = f"{PRODUCTION_BASE_URL}/auth/login"
 ME_ENDPOINT = f"{PRODUCTION_BASE_URL}/auth/me"
 
@@ -272,7 +272,7 @@ def main():
     print_separator("HARD EVIDENCE DOCUMENTATION")
     print("📋 STEP-BY-STEP LOGIN INSTRUCTIONS FOR USER:")
     print()
-    print("1. Navigate to: https://nextjs-mongo-polaris.preview.emergentagent.com/")
+    print("1. Navigate to: https://polaris-migrate.preview.emergentagent.com/")
     print("2. Click 'Start Your Journey' or login button")
     print("3. Use any of the following QA credentials:")
     print()

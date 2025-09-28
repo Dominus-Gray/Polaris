@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Use production URL from frontend/.env
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 
 # QA Credentials
 AGENCY_CREDENTIALS = {

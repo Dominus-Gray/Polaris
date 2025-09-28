@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://nextjs-mongo-polaris.preview.emergentagent.com/api';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://polaris-migrate.preview.emergentagent.com/api';
 
 function CapabilityStatementBuilder() {
   const navigate = useNavigate();

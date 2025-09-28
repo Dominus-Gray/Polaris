@@ -225,7 +225,7 @@ import aiohttp
 import json
 
 async def test_critical_apis():
-    base_url = 'https://nextjs-mongo-polaris.preview.emergentagent.com/api'
+    base_url = 'https://polaris-migrate.preview.emergentagent.com/api'
     
     critical_endpoints = [
         '/system/health/detailed',
@@ -320,7 +320,7 @@ sleep 10
 # Verify backend health with retry logic
 echo -e "${CYAN}Verifying backend health...${NC}"
 for i in {1..10}; do
-    if curl -f -s https://nextjs-mongo-polaris.preview.emergentagent.com/api/system/health >/dev/null 2>&1; then
+    if curl -f -s https://polaris-migrate.preview.emergentagent.com/api/system/health >/dev/null 2>&1; then
         echo -e "${GREEN}✅ Backend health check passed (attempt $i)${NC}"
         break
     else
@@ -344,7 +344,7 @@ AI_ENDPOINTS=(
 )
 
 for endpoint in "${AI_ENDPOINTS[@]}"; do
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://nextjs-mongo-polaris.preview.emergentagent.com/api$endpoint" || echo "000")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://polaris-migrate.preview.emergentagent.com/api$endpoint" || echo "000")
     if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 401 ] || [ "$HTTP_CODE" -eq 422 ]; then
         echo -e "${GREEN}✅ AI Endpoint $endpoint - Ready${NC}"
     else
@@ -406,7 +406,7 @@ echo -e "${YELLOW}⚡ PERFORMANCE VERIFICATION${NC}"
 echo -e "${YELLOW}==========================${NC}"
 
 echo -e "${CYAN}Testing API response times...${NC}"
-RESPONSE_TIME=$(curl -s -w "%{time_total}" -o /dev/null "https://nextjs-mongo-polaris.preview.emergentagent.com/api/system/health")
+RESPONSE_TIME=$(curl -s -w "%{time_total}" -o /dev/null "https://polaris-migrate.preview.emergentagent.com/api/system/health")
 RESPONSE_MS=$(echo "$RESPONSE_TIME * 1000" | bc)
 
 if (( $(echo "$RESPONSE_TIME < 0.5" | bc -l) )); then
@@ -439,7 +439,7 @@ SECURITY_HEADERS=(
 )
 
 for header in "${SECURITY_HEADERS[@]}"; do
-    if curl -s -I "https://nextjs-mongo-polaris.preview.emergentagent.com/api/system/health" | grep -i "$header" >/dev/null; then
+    if curl -s -I "https://polaris-migrate.preview.emergentagent.com/api/system/health" | grep -i "$header" >/dev/null; then
         echo -e "${GREEN}✅ Security header $header present${NC}"
     else
         echo -e "${YELLOW}⚠️ Security header $header missing${NC}"
@@ -475,7 +475,7 @@ for test in "${FEATURE_TESTS[@]}"; do
     PHASE=$(echo "$test" | cut -d'|' -f1)
     ENDPOINT=$(echo "$test" | cut -d'|' -f2)
     
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://nextjs-mongo-polaris.preview.emergentagent.com$ENDPOINT" 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://polaris-migrate.preview.emergentagent.com$ENDPOINT" 2>/dev/null || echo "000")
     
     if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 401 ]; then
         echo -e "${GREEN}✅ $PHASE - Operational${NC}"
@@ -493,7 +493,7 @@ echo -e "${GREEN}=============================================${NC}"
 echo ""
 echo -e "${PURPLE}📊 DEPLOYMENT SUMMARY${NC}"
 echo -e "${PURPLE}===================${NC}"
-echo -e "${GREEN}✅ Backend: https://nextjs-mongo-polaris.preview.emergentagent.com/api${NC}"
+echo -e "${GREEN}✅ Backend: https://polaris-migrate.preview.emergentagent.com/api${NC}"
 echo -e "${GREEN}✅ Frontend: http://localhost:3000${NC}"
 echo -e "${GREEN}✅ Health Check: /api/system/health/detailed${NC}"
 echo -e "${GREEN}✅ Monitoring: /api/metrics${NC}"

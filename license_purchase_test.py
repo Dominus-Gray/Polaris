@@ -26,7 +26,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 QA_CREDENTIALS = {
     "agency": {"email": "agency.qa@polaris.example.com", "password": "Polaris#2025!"},
     "client": {"email": "client.qa@polaris.example.com", "password": "Polaris#2025!"}
@@ -128,7 +128,7 @@ class LicensePurchaseIntegrationTester:
             try:
                 payload = {
                     "package_id": package_id,
-                    "origin_url": "https://nextjs-mongo-polaris.preview.emergentagent.com",
+                    "origin_url": "https://polaris-migrate.preview.emergentagent.com",
                     "metadata": {
                         "test_run": "license_purchase_integration",
                         "timestamp": datetime.now().isoformat()
@@ -238,7 +238,7 @@ class LicensePurchaseIntegrationTester:
             try:
                 payload = {
                     "package_id": invalid_package,
-                    "origin_url": "https://nextjs-mongo-polaris.preview.emergentagent.com",
+                    "origin_url": "https://polaris-migrate.preview.emergentagent.com",
                     "metadata": {"test": "validation"}
                 }
                 
@@ -279,7 +279,7 @@ class LicensePurchaseIntegrationTester:
         try:
             payload = {
                 "package_id": "tier_1_single",
-                "origin_url": "https://nextjs-mongo-polaris.preview.emergentagent.com",
+                "origin_url": "https://polaris-migrate.preview.emergentagent.com",
                 "metadata": {"test": "authorization"}
             }
             
@@ -304,7 +304,7 @@ class LicensePurchaseIntegrationTester:
         try:
             payload = {
                 "package_id": "tier_1_single",
-                "origin_url": "https://nextjs-mongo-polaris.preview.emergentagent.com",
+                "origin_url": "https://polaris-migrate.preview.emergentagent.com",
                 "metadata": {"test": "authorization"}
             }
             

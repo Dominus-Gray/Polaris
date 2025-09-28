@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BACKEND_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 
 def test_paywall_debug():
     # Create a regular user

@@ -25,7 +25,7 @@ import secrets
 import base64
 
 # Configuration
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 QA_CLIENT_EMAIL = "client.qa@polaris.example.com"
 QA_CLIENT_PASSWORD = "Polaris#2025!"
 QA_AGENCY_EMAIL = "agency.qa@polaris.example.com"

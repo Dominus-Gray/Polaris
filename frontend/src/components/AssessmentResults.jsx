@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || 'https://nextjs-mongo-polaris.preview.emergentagent.com';
+const API = process.env.REACT_APP_BACKEND_URL || 'https://polaris-migrate.preview.emergentagent.com';
 
 function AssessmentResults() {
   const { sessionId } = useParams();

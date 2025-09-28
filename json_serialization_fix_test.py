@@ -20,7 +20,7 @@ import sys
 import uuid
 
 # Configuration
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 TEST_EMAIL = "test.user@example.com"
 TEST_PASSWORD = "TestPassword123!"  # Meets 12+ char requirements
 

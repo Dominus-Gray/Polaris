@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Extended Production Functionality Testing for QA Credentials
-Testing comprehensive functionality against: https://nextjs-mongo-polaris.preview.emergentagent.com/api
+Testing comprehensive functionality against: https://polaris-migrate.preview.emergentagent.com/api
 
 This script performs extended testing to verify QA accounts have proper access
 to key platform features in the production environment.
@@ -13,7 +13,7 @@ import sys
 from datetime import datetime
 
 # Production URL as specified in the review request
-PRODUCTION_BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+PRODUCTION_BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 
 # QA Credentials (we know these work from previous test)
 QA_CREDENTIALS = [

@@ -20,7 +20,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://nextjs-mongo-polaris.preview.emergentagent.com/api"
+BASE_URL = "https://polaris-migrate.preview.emergentagent.com/api"
 
 class FocusedSecurityTester:
     def __init__(self):
