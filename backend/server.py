@@ -1770,7 +1770,9 @@ async def login_user(request: Request, user: UserLogin):
         raise create_polaris_error("POL-1002", "Account temporarily locked due to failed login attempts", 423)
     
     # Verify password with enhanced security logging
-    if not pbkdf2_sha256.verify(user.password, db_user["hashed_password"]):
+    # Handle both 'password' and 'hashed_password' field names for backward compatibility
+    password_field = db_user.get("hashed_password") or db_user.get("password", "")
+    if not pbkdf2_sha256.verify(user.password, password_field):
         # Increment failed attempts
         failed_attempts = db_user.get("failed_login_attempts", 0) + 1
         update_data = {
