@@ -98,6 +98,157 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ===== USER ACCOUNT TYPES SECTION ===== */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              Choose Your{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Business Journey
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Different pathways to procurement readiness based on your role in the business ecosystem.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Client Account */}
+            <div className="bg-white rounded-2xl border-2 border-blue-100 shadow-lg hover:shadow-xl transition-all duration-300 p-8 group hover:border-blue-200">
+              <div className="text-center mb-6">
+                <div className="h-16 w-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Building className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Small Business Client</h3>
+                <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  Most Popular
+                </div>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Complete tier-based maturity assessments across 10 critical business areas</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Access local service providers for gap remediation and capability building</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Track progress toward procurement readiness certification</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">AI-powered guidance and competitive advantage development</span>
+                </div>
+              </div>
+              
+              <div className="border-t border-gray-100 pt-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  Perfect for small businesses seeking procurement opportunities
+                </p>
+                <Link 
+                  href="/auth/register"
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Get Agency Sponsorship
+                </Link>
+              </div>
+            </div>
+
+            {/* Provider Account */}
+            <div className="bg-white rounded-2xl border-2 border-green-100 shadow-lg hover:shadow-xl transition-all duration-300 p-8 group hover:border-green-200">
+              <div className="text-center mb-6">
+                <div className="h-16 w-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Service Provider</h3>
+                <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                  Expert Network
+                </div>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Join verified network of procurement readiness specialists</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Receive matched client opportunities based on assessment gaps</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Manage client engagements and track service delivery</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Build reputation through verified client success stories</span>
+                </div>
+              </div>
+              
+              <div className="border-t border-gray-100 pt-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  Ideal for consultants and business development experts
+                </p>
+                <Link 
+                  href="/auth/register"
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Apply to Provider Network
+                </Link>
+              </div>
+            </div>
+
+            {/* Agency Account */}
+            <div className="bg-white rounded-2xl border-2 border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300 p-8 group hover:border-purple-200">
+              <div className="text-center mb-6">
+                <div className="h-16 w-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Network className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Local Agency</h3>
+                <div className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                  Ecosystem Leader
+                </div>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Sponsor local small businesses through assessment programs</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Generate and distribute assessment access codes to clients</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Configure tier access levels and monitor client progress</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Build stronger local business ecosystems and partnerships</span>
+                </div>
+              </div>
+              
+              <div className="border-t border-gray-100 pt-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  For economic development organizations and business incubators
+                </p>
+                <Link 
+                  href="/auth/register"
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Become Agency Partner
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ===== PROCUREMENT READINESS FEATURES ===== */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
