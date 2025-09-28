@@ -127,26 +127,30 @@ class ApiClient {
     console.log('API Request URL:', url)
     const headers = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       ...(this.token && { Authorization: `Bearer ${this.token}` }),
       ...options.headers,
     }
 
     try {
       const response = await fetch(url, {
+        mode: 'cors',
         ...options,
         headers,
       })
 
       console.log('API Response status:', response.status)
-      const data = await response.json()
-
+      
       if (!response.ok) {
-        throw new Error(data.message?.message || data.message || 'Request failed')
+        const errorText = await response.text()
+        console.error('API Error Response:', errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
       }
-
+      
+      const data = await response.json()
       return data
     } catch (error) {
-      console.error(`API request failed: ${endpoint}`, error)
+      console.error(`API request failed: ${url}`, error)
       throw error
     }
   }
