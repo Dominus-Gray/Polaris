@@ -177,6 +177,11 @@ class ApiClient {
       method: 'POST',
     })
   }
+
+  // Generic request method for other components
+  async request(endpoint: string, options: RequestInit = {}) {
+    return this.request(endpoint, options)
+  }
 }
 
 const apiClient = new ApiClient(API_BASE_URL)
