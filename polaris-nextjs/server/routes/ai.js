@@ -1,20 +1,9 @@
 const express = require('express')
 const { v4: uuidv4 } = require('uuid')
+const axios = require('axios')
 const { authenticateToken } = require('../middleware/auth')
 const { formatResponse, formatErrorResponse, getBusinessAreas } = require('../utils/helpers')
 const logger = require('../utils/logger').logger
-
-// Import emergent LLM integration
-let LlmChat, UserMessage
-
-try {
-  const llmModule = require('emergentintegrations/llm/chat')
-  LlmChat = llmModule.LlmChat
-  UserMessage = llmModule.UserMessage
-  console.log('✅ LLM emergent integration loaded successfully')
-} catch (error) {
-  console.error('❌ Error importing LLM emergent integration:', error)
-}
 
 // Models
 const { AIGeneratedContent } = require('../models/KnowledgeBase')
@@ -25,37 +14,28 @@ const User = require('../models/User')
 const router = express.Router()
 const BUSINESS_AREAS = getBusinessAreas()
 
-// AI Chat instances for different contexts
-const chatInstances = new Map()
-
 /**
- * Get or create AI chat instance for a session
+ * Call OpenAI API directly with emergent key
  */
-function getAIChatInstance(sessionId, systemMessage, model = 'gpt-4o') {
-  const key = `${sessionId}-${model}`
-  
-  if (!chatInstances.has(key)) {
-    const apiKey = process.env.EMERGENT_LLM_KEY
+async function callOpenAI(messages, model = 'gpt-4o-mini') {
+  try {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: model,
+      messages: messages,
+      max_tokens: 500,
+      temperature: 0.7
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.EMERGENT_LLM_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    })
     
-    if (!apiKey) {
-      throw new Error('EMERGENT_LLM_KEY not configured')
-    }
-    
-    const chat = new LlmChat(apiKey, sessionId, systemMessage)
-    
-    // Configure model based on request
-    if (model.startsWith('claude')) {
-      chat.with_model('anthropic', model)
-    } else if (model.startsWith('gemini')) {
-      chat.with_model('gemini', model) 
-    } else {
-      chat.with_model('openai', model)
-    }
-    
-    chatInstances.set(key, chat)
+    return response.data.choices[0].message.content
+  } catch (error) {
+    logger.error('OpenAI API error:', error.response?.data || error.message)
+    throw error
   }
-  
-  return chatInstances.get(key)
 }
     
     const responses = {
