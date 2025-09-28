@@ -1342,10 +1342,28 @@ async def create_user(email: str, password: str, role: str) -> dict:
 
 async def verify_user(email: str, password: str) -> Optional[dict]:
     user = await get_user_by_email(email)
+    if not user:
+        return None
+    
     # Handle both 'password' and 'hashed_password' field names for backward compatibility
     password_field = user.get("hashed_password") or user.get("password", "")
-    if user and pbkdf2_sha256.verify(password, password_field):
-        return user
+    if not password_field:
+        return None
+    
+    # Try bcrypt first (for newer users), then pbkdf2_sha256 (for legacy users)
+    try:
+        if password_field.startswith("$2a$") or password_field.startswith("$2b$"):
+            # bcrypt hash
+            if bcrypt.checkpw(password.encode('utf-8'), password_field.encode('utf-8')):
+                return user
+        else:
+            # pbkdf2_sha256 hash
+            if pbkdf2_sha256.verify(password, password_field):
+                return user
+    except Exception as e:
+        logger.error(f"Password verification error: {e}")
+        return None
+    
     return None
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
