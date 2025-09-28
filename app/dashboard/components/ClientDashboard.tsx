@@ -63,7 +63,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
     const fetchDashboardData = async () => {
       try {
         // Fetch dashboard data using correct endpoint
-        const dashboardResponse = await apiClient.request('/client/unified-dashboard')
+        const dashboardResponse = await apiClient.request('/home/client')
         setDashboardData(dashboardResponse.data)
 
         // Fetch assessment progress using correct endpoint
