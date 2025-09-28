@@ -195,27 +195,16 @@ router.get('/checkout/status/:session_id', authenticateToken, async (req, res, n
       })
     }
 
-    // Check status with Stripe using emergent integration
-    const stripe = getStripeCheckout(req.headers.origin || 'http://localhost:3000')
-    if (!stripe) {
-      return res.status(500).json(
-        formatErrorResponse(
-          'POL-5001',
-          'Payment service unavailable',
-          'Cannot check payment status at this time'
-        )
-      )
-    }
-
-    const checkoutStatus = await stripe.get_checkout_status(session_id)
+    // Check status with Stripe using standard API
+    const session = await stripe.checkout.sessions.retrieve(session_id)
     
     // Update transaction status
     const oldPaymentStatus = transaction.payment_status
-    transaction.payment_status = checkoutStatus.payment_status
-    transaction.status = checkoutStatus.status
+    transaction.payment_status = session.payment_status
+    transaction.status = session.status
 
     // Process successful payment only once
-    if (checkoutStatus.payment_status === 'paid' && !transaction.processed) {
+    if (session.payment_status === 'paid' && !transaction.processed) {
       transaction.processed = true
       transaction.status = 'complete'
       
@@ -230,11 +219,11 @@ router.get('/checkout/status/:session_id', authenticateToken, async (req, res, n
     res.json({
       success: true,
       data: {
-        status: checkoutStatus.status,
-        payment_status: checkoutStatus.payment_status,
-        amount_total: checkoutStatus.amount_total,
-        currency: checkoutStatus.currency,
-        metadata: checkoutStatus.metadata,
+        status: session.status,
+        payment_status: session.payment_status,
+        amount_total: session.amount_total,
+        currency: session.currency,
+        metadata: session.metadata,
         package: {
           id: transaction.package_id,
           name: transaction.package_name
