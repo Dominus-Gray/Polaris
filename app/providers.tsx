@@ -50,8 +50,8 @@ interface RegisterData {
   license_code?: string
 }
 
-// API configuration - Fixed for connectivity
-const API_BASE_URL = 'http://localhost:8001/api'
+// API configuration - Use Next.js proxy to avoid CORS issues
+const API_BASE_URL = '/api'
 console.log('API_BASE_URL configured as:', API_BASE_URL)
 
 // Auth reducer
