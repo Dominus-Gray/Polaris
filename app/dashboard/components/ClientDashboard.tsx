@@ -100,7 +100,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
   }
 
   const overallScore = dashboardData?.procurement_readiness?.overall_score || 0
-  const areasCompleted = dashboardData?.procurement_readiness?.areas_completed || assessmentProgress.filter(p => p.status === 'completed').length
+  const areasCompleted = dashboardData?.procurement_readiness?.areas_completed || (Array.isArray(assessmentProgress) ? assessmentProgress.filter(p => p.status === 'completed').length : 0)
   const totalAreas = dashboardData?.procurement_readiness?.total_areas || 10
   const completionPercentage = Math.round((areasCompleted / totalAreas) * 100)
 
