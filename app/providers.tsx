@@ -52,6 +52,7 @@ interface RegisterData {
 
 // API configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api'
+console.log('API_BASE_URL configured as:', API_BASE_URL)
 
 // Auth reducer
 function authReducer(state: AuthState, action: AuthAction): AuthState {
