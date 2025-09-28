@@ -115,6 +115,7 @@ class PolarisAPITester:
                     "email": creds["email"],
                     "password": creds["password"],
                     "role": creds["role"],
+                    "name": f"QA {role.title()} User",  # Add required name field
                     "terms_accepted": True
                 }
                 
