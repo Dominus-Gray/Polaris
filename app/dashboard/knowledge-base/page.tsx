@@ -81,6 +81,7 @@ const KnowledgeBasePage = () => {
   } finally {
     setIsLoading(false)
   }
+}
 
   const handleAIQuestion = async () => {
     if (!aiQuestion.trim()) return
