@@ -199,15 +199,15 @@ class PolarisBackendTester:
         """Test tier-based assessment system"""
         print("\n🔍 Testing Assessment System...")
         
-        # Test assessment schema
+        # Test assessment schema - tier-based
         response, response_time = self.make_authenticated_request(
             'GET', '/assessment/schema/tier-based', 'client'
         )
         
         if response and response.status_code == 200:
             data = response.json()
-            areas_count = len(data.get('areas', []))
-            has_area10 = any(area.get('id') == 'area10' for area in data.get('areas', []))
+            areas_count = len(data.get('data', {}).get('areas', []))
+            has_area10 = any(area.get('area_id') == 'area10' for area in data.get('data', {}).get('areas', []))
             
             self.log_test(
                 "Assessment Schema - Tier-based",
@@ -224,11 +224,10 @@ class PolarisBackendTester:
                 response_time or 0
             )
 
-        # Test assessment session creation
+        # Test tier session creation
         session_data = {
             "area_id": "area1",
-            "tier": 1,
-            "client_id": str(uuid.uuid4())
+            "tier_level": 1
         }
         
         response, response_time = self.make_authenticated_request(
@@ -237,9 +236,9 @@ class PolarisBackendTester:
         
         if response and response.status_code in [200, 201]:
             data = response.json()
-            session_id = data.get('session_id') or data.get('id')
+            session_id = data.get('data', {}).get('session', {}).get('_id') or data.get('data', {}).get('session', {}).get('id')
             self.log_test(
-                "Assessment Session Creation",
+                "Assessment Tier Session Creation",
                 True,
                 f"Session ID: {session_id}",
                 response_time
@@ -248,7 +247,10 @@ class PolarisBackendTester:
             # Test session response submission if session created
             if session_id:
                 response_data = {
-                    "responses": [{"question_id": "q1", "response": "compliant"}]
+                    "question_id": "area1_tier1_q1",
+                    "response": "compliant",
+                    "evidence_provided": "false",
+                    "notes": "Test response"
                 }
                 
                 response, response_time = self.make_authenticated_request(
@@ -266,7 +268,7 @@ class PolarisBackendTester:
         else:
             error_msg = response.text if response else "No response"
             self.log_test(
-                "Assessment Session Creation",
+                "Assessment Tier Session Creation",
                 False,
                 f"Status {response.status_code if response else 'N/A'}: {error_msg}",
                 response_time or 0
