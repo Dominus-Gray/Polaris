@@ -15,9 +15,9 @@ import {
   XCircle,
   AlertTriangle
 } from 'lucide-react'
-import { useAuth } from '../../providers'
-import { apiClient } from '../../providers'
-import LoadingSpinner from '../components/LoadingSpinner'
+import { useAuth } from '../../../providers'
+import { apiClient } from '../../../providers'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 interface PaymentTransaction {
   id: string
