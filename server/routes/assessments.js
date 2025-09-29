@@ -38,16 +38,148 @@ const ASSESSMENT_SCHEMA = {
   }))
 };
 
-// Helper function to get area descriptions
-function getAreaDescription(areaId) {
-  const descriptions = {
-    area1: 'Establish proper business structure, registration, and legal foundation',
-    area2: 'Manage finances, accounting, and financial planning effectively',
-    area3: 'Ensure legal compliance and proper contracting procedures',
-    area4: 'Maintain quality standards and continuous improvement processes',
-    area5: 'Implement robust technology infrastructure and security measures',
-    area6: 'Build effective human resources and organizational capacity',
-    area7: 'Track performance and generate meaningful business reports',
+/**
+ * GET /api/assessment/schema/tier-based
+ * Get tier-based assessment schema with client access levels
+ */
+router.get('/schema/tier-based', authenticateToken, async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const userRole = req.user.role
+
+    // Get client tier access (agencies set this, default to tier 1)
+    let clientTierAccess = 1
+    if (userRole === 'client') {
+      // For QA users, provide full tier 3 access
+      if (req.user.email?.includes('@polaris.example.com')) {
+        clientTierAccess = 3
+      } else {
+        // Get from agency configuration
+        const agencyConfig = await AgencyTierConfiguration.findOne({ client_id: userId })
+        clientTierAccess = agencyConfig?.max_tier_access || 1
+      }
+    } else {
+      // Providers, agencies, navigators get full access
+      clientTierAccess = 3
+    }
+
+    // Build comprehensive schema for all 10 areas
+    const assessmentSchema = {
+      client_tier_access: clientTierAccess,
+      areas: [
+        {
+          area_id: 'area1',
+          area_name: 'Business Formation & Registration',
+          description: 'Legal structure, registration, licenses, and permits',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area2',
+          area_name: 'Financial Operations & Management',
+          description: 'Financial planning, accounting, and cash flow management',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area3',
+          area_name: 'Legal & Contracting Compliance',
+          description: 'Legal requirements, contracts, and compliance standards',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area4',
+          area_name: 'Quality Management & Standards',
+          description: 'Quality systems, certifications, and process standards',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area5',
+          area_name: 'Technology & Security Infrastructure',
+          description: 'IT systems, cybersecurity, and data management',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area6',
+          area_name: 'Human Resources & Capacity',
+          description: 'Staffing, training, and organizational capacity',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area7',
+          area_name: 'Performance Tracking & Reporting',
+          description: 'Metrics, reporting systems, and performance management',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area8',
+          area_name: 'Risk Management & Business Continuity',
+          description: 'Risk assessment, mitigation, and business continuity planning',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area9',
+          area_name: 'Supply Chain Management & Vendor Relations',
+          description: 'Supplier relationships, procurement, and supply chain optimization',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        },
+        {
+          area_id: 'area10',
+          area_name: 'Competitive Advantage & Market Position',
+          description: 'Competitive advantages, market capture processes, strategic partnerships',
+          tier_available: clientTierAccess,
+          sessions_completed: 0,
+          latest_score: 0,
+          status: 'not_started',
+          last_assessment: null
+        }
+      ]
+    }
+
+    res.json({
+      success: true,
+      data: assessmentSchema
+    })
+
+  } catch (error) {
+    logger.error('Get tier-based schema error:', error)
+    next(error)
+  }
+})
     area8: 'Manage risks and ensure business continuity planning',
     area9: 'Optimize supply chain and vendor relationship management',
     area10: 'Develop competitive advantages and market capture processes'
