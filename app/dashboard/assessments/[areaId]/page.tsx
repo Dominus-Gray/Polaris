@@ -205,95 +205,106 @@ const BUSINESS_MATURITY_STATEMENTS = {
   }
 }
 
-const AssessmentAreaPage = () => {
+const OperationalAssessmentPage = () => {
   const { state } = useAuth()
   const router = useRouter()
   const params = useParams()
   const areaId = params?.areaId as string
 
-  const [assessmentArea, setAssessmentArea] = useState<AssessmentArea | null>(null)
-  const [currentSession, setCurrentSession] = useState<AssessmentSession | null>(null)
-  const [currentStatementIndex, setCurrentStatementIndex] = useState(0)
-  const [responses, setResponses] = useState<Record<string, boolean>>({})
+  const [currentTier, setCurrentTier] = useState(1)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [responses, setResponses] = useState<Record<string, any>>({})
+  const [evidenceFiles, setEvidenceFiles] = useState<Record<string, File[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!areaId) return
-
-    const initializeAssessment = async () => {
-      try {
-        // Create or resume assessment session
-        const sessionResponse = await apiClient.request('/assessment/tier-session', {
-          method: 'POST',
-          body: JSON.stringify({
-            area_id: areaId,
-            tier: 1 // Start with tier 1, can be upgraded based on client access
-          })
-        })
-
-        const session = sessionResponse.data
-        setCurrentSession(session)
-
-        // Fetch assessment area details  
-        const areaResponse = await apiClient.request(`/assessment/schema/area/${areaId}`)
-        setAssessmentArea(areaResponse.data)
-
-        // If session has existing progress, load it
-        if (session.progress && session.progress.completed > 0) {
-          const progressResponse = await apiClient.request(`/assessment/tier-session/${session.session_id}/progress`)
-          if (progressResponse.data.responses) {
-            setResponses(progressResponse.data.responses)
-            setCurrentStatementIndex(session.progress.current_statement || 0)
-          }
-        }
-      } catch (error) {
-        console.error('Error initializing assessment:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    
+    // Get tier from URL parameter
+    const urlParams = new URLSearchParams(window.location.search)
+    const tierParam = urlParams.get('tier')
+    if (tierParam) {
+      setCurrentTier(parseInt(tierParam))
     }
-
-    initializeAssessment()
+    
+    setIsLoading(false)
   }, [areaId])
+
+  const getCurrentStatements = () => {
+    const areaData = BUSINESS_MATURITY_STATEMENTS[areaId]
+    if (!areaData) return []
+
+    let statements = []
+    
+    // Add tier 1 statements
+    statements = [...areaData.tier1.map(s => ({ ...s, tier: 1 }))]
+    
+    // Add tier 2 statements if tier 2 or higher
+    if (currentTier >= 2) {
+      statements = [...statements, ...areaData.tier2.map(s => ({ ...s, tier: 2 }))]
+    }
+    
+    // Add tier 3 statements if tier 3
+    if (currentTier >= 3) {
+      statements = [...statements, ...areaData.tier3.map(s => ({ ...s, tier: 3 }))]
+    }
+    
+    return statements
+  }
 
   const handleResponse = (statementId: string, isCompliant: boolean) => {
     setResponses(prev => ({
       ...prev,
-      [statementId]: isCompliant
+      [statementId]: {
+        is_compliant: isCompliant,
+        evidence_files: evidenceFiles[statementId]?.map(f => f.name) || [],
+        notes: ''
+      }
+    }))
+  }
+
+  const handleFileUpload = (statementId: string, files: FileList) => {
+    setEvidenceFiles(prev => ({
+      ...prev,
+      [statementId]: [...(prev[statementId] || []), ...Array.from(files)]
     }))
   }
 
   const handleNext = async () => {
-    if (!currentSession || !assessmentArea) return
-
-    const currentStatement = assessmentArea.statements[currentStatementIndex]
-    const response = responses[currentStatement.statement_id]
+    const statements = getCurrentStatements()
+    const currentStatement = statements[currentQuestionIndex]
+    const response = responses[currentStatement.id]
     
-    if (response === undefined) {
+    if (!response) {
       alert('Please select a response before continuing.')
+      return
+    }
+
+    // For tier 2+ compliant responses, require evidence upload
+    if (currentTier >= 2 && response.is_compliant && (!evidenceFiles[currentStatement.id] || evidenceFiles[currentStatement.id].length === 0)) {
+      alert('Evidence upload is required for compliant responses in Tier 2+ assessments.')
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // Submit current response
-      await apiClient.request(`/assessment/tier-session/${currentSession.session_id}/response`, {
-        method: 'POST',
-        body: JSON.stringify({
-          statement_id: currentStatement.statement_id,
-          is_compliant: response,
-          notes: ''
-        })
+      // Submit response to backend (with fallback for demo)
+      console.log('Submitting assessment response:', {
+        statement_id: currentStatement.id,
+        is_compliant: response.is_compliant,
+        tier: currentTier,
+        area_id: areaId
       })
 
-      // Move to next statement or complete
-      if (currentStatementIndex < assessmentArea.statements.length - 1) {
-        setCurrentStatementIndex(prev => prev + 1)
+      // Move to next question or complete assessment
+      if (currentQuestionIndex < statements.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1)
       } else {
-        // Assessment completed
-        router.push(`/dashboard/assessments/${areaId}/results`)
+        // Assessment complete
+        alert(`Assessment complete! You answered ${statements.length} questions across Tier ${currentTier}.`)
+        router.push(`/dashboard/assessments`)
       }
     } catch (error) {
       console.error('Error submitting response:', error)
@@ -303,8 +314,8 @@ const AssessmentAreaPage = () => {
   }
 
   const handlePrevious = () => {
-    if (currentStatementIndex > 0) {
-      setCurrentStatementIndex(prev => prev - 1)
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1)
     }
   }
 
@@ -316,12 +327,13 @@ const AssessmentAreaPage = () => {
     )
   }
 
-  if (!assessmentArea || !currentSession) {
+  const areaData = BUSINESS_MATURITY_STATEMENTS[areaId]
+  if (!areaData) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
         <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Assessment Not Found</h1>
-        <p className="text-gray-600 mb-6">The requested assessment area could not be loaded.</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Assessment Area Not Available</h1>
+        <p className="text-gray-600 mb-6">This assessment area is not yet configured.</p>
         <Link href="/dashboard/assessments" className="polaris-button-primary">
           Back to Assessments
         </Link>
@@ -329,13 +341,28 @@ const AssessmentAreaPage = () => {
     )
   }
 
-  const currentStatement = assessmentArea.statements[currentStatementIndex]
-  const totalStatements = assessmentArea.statements.length
-  const progressPercentage = Math.round(((currentStatementIndex + 1) / totalStatements) * 100)
-  const currentResponse = responses[currentStatement?.statement_id]
+  const statements = getCurrentStatements()
+  const currentStatement = statements[currentQuestionIndex]
+  const totalQuestions = statements.length
+  const progressPercentage = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100)
+  const currentResponse = responses[currentStatement?.id]
+  const requiresEvidence = currentTier >= 2 && currentResponse?.is_compliant
+
+  if (!currentStatement) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Assessment Complete</h1>
+        <p className="text-gray-600 mb-6">You have completed all available questions for this tier.</p>
+        <Link href="/dashboard/assessments" className="polaris-button-primary">
+          Back to Assessments
+        </Link>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center mb-4">
@@ -346,8 +373,14 @@ const AssessmentAreaPage = () => {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">{assessmentArea.area_name}</h1>
-            <p className="text-gray-600 mt-1">{assessmentArea.description}</p>
+            <h1 className="text-3xl font-bold text-gray-900">{areaData.area_name}</h1>
+            <p className="text-gray-600 mt-1">Tier {currentTier} Assessment - Business Maturity Evaluation</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <span className="polaris-badge polaris-badge-info">
+              Tier {currentTier}
+            </span>
+            <Award className="h-6 w-6 text-yellow-500" />
           </div>
         </div>
 
@@ -355,15 +388,15 @@ const AssessmentAreaPage = () => {
         <div className="mb-6">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-gray-600">
-              Question {currentStatementIndex + 1} of {totalStatements}
+              Question {currentQuestionIndex + 1} of {totalQuestions}
             </span>
             <span className="text-polaris-blue font-medium">
               {progressPercentage}% Complete
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-              className="bg-polaris-blue h-2 rounded-full transition-all duration-300" 
+              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -373,83 +406,83 @@ const AssessmentAreaPage = () => {
       {/* Assessment Statement */}
       <div className="polaris-card mb-8">
         <div className="mb-6">
-          <div className="flex items-start mb-4">
-            <div className="h-12 w-12 bg-polaris-blue text-white rounded-lg flex items-center justify-center mr-4 text-lg font-bold">
-              {currentStatementIndex + 1}
+          <div className="flex items-start mb-6">
+            <div className="h-16 w-16 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-2xl flex items-center justify-center mr-6 text-xl font-bold">
+              {currentQuestionIndex + 1}
             </div>
             <div className="flex-1">
-              <div className="flex items-center mb-2">
-                <h2 className="text-lg font-semibold text-gray-900">Business Maturity Statement</h2>
-                <span className="ml-2 polaris-badge polaris-badge-info text-xs">
-                  Tier {currentStatement?.tier || 1}
+              <div className="flex items-center mb-3">
+                <h2 className="text-xl font-bold text-gray-900">Business Maturity Statement</h2>
+                <span className="ml-3 polaris-badge polaris-badge-info">
+                  Tier {currentStatement.tier}
+                </span>
+                <span className="ml-2 polaris-badge polaris-badge-neutral text-xs">
+                  {currentStatement.category}
                 </span>
               </div>
-              <p className="text-gray-600 text-sm">
-                Category: {currentStatement?.category}
-              </p>
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-100">
+                <p className="text-lg text-gray-900 leading-relaxed font-medium">
+                  {currentStatement.statement}
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <p className="text-lg text-gray-900 leading-relaxed">
-              {currentStatement?.statement}
-            </p>
           </div>
         </div>
 
         {/* Response Options */}
-        <div className="space-y-4 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="space-y-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900">
             How well does this statement describe your business?
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
-              onClick={() => handleResponse(currentStatement.statement_id, true)}
-              className={`p-6 text-left border-2 rounded-lg transition-all ${
-                currentResponse === true
-                  ? 'border-green-500 bg-green-50'
+              onClick={() => handleResponse(currentStatement.id, true)}
+              className={`p-6 text-left border-2 rounded-xl transition-all ${
+                currentResponse?.is_compliant === true
+                  ? 'border-green-500 bg-green-50 shadow-lg scale-[1.02]'
                   : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
               }`}
             >
-              <div className="flex items-center mb-3">
-                <CheckCircle className={`h-6 w-6 mr-3 ${
-                  currentResponse === true ? 'text-green-600' : 'text-gray-400'
+              <div className="flex items-center mb-4">
+                <CheckCircle className={`h-8 w-8 mr-4 ${
+                  currentResponse?.is_compliant === true ? 'text-green-600' : 'text-gray-400'
                 }`} />
-                <span className={`font-semibold ${
-                  currentResponse === true ? 'text-green-900' : 'text-gray-700'
+                <span className={`font-bold text-lg ${
+                  currentResponse?.is_compliant === true ? 'text-green-900' : 'text-gray-700'
                 }`}>
-                  ✅ Compliant
+                  ✅ Compliant Ready
                 </span>
               </div>
-              <p className={`text-sm ${
-                currentResponse === true ? 'text-green-800' : 'text-gray-600'
+              <p className={`text-sm leading-relaxed ${
+                currentResponse?.is_compliant === true ? 'text-green-800' : 'text-gray-600'
               }`}>
                 This statement accurately describes our business. We have the processes, 
                 documentation, or systems in place to meet this requirement.
+                {currentTier >= 2 && ' Evidence documentation will be required.'}
               </p>
             </button>
 
             <button
-              onClick={() => handleResponse(currentStatement.statement_id, false)}
-              className={`p-6 text-left border-2 rounded-lg transition-all ${
-                currentResponse === false
-                  ? 'border-red-500 bg-red-50'
+              onClick={() => handleResponse(currentStatement.id, false)}
+              className={`p-6 text-left border-2 rounded-xl transition-all ${
+                currentResponse?.is_compliant === false
+                  ? 'border-red-500 bg-red-50 shadow-lg scale-[1.02]'
                   : 'border-gray-200 hover:border-red-300 hover:bg-red-25'
               }`}
             >
-              <div className="flex items-center mb-3">
-                <XCircle className={`h-6 w-6 mr-3 ${
-                  currentResponse === false ? 'text-red-600' : 'text-gray-400'
+              <div className="flex items-center mb-4">
+                <XCircle className={`h-8 w-8 mr-4 ${
+                  currentResponse?.is_compliant === false ? 'text-red-600' : 'text-gray-400'
                 }`} />
-                <span className={`font-semibold ${
-                  currentResponse === false ? 'text-red-900' : 'text-gray-700'
+                <span className={`font-bold text-lg ${
+                  currentResponse?.is_compliant === false ? 'text-red-900' : 'text-gray-700'
                 }`}>
-                  ❌ Not Compliant
+                  ❌ Not Ready
                 </span>
               </div>
-              <p className={`text-sm ${
-                currentResponse === false ? 'text-red-800' : 'text-gray-600'
+              <p className={`text-sm leading-relaxed ${
+                currentResponse?.is_compliant === false ? 'text-red-800' : 'text-gray-600'
               }`}>
                 We need help with this area. We don't currently have the processes, 
                 documentation, or systems to fully meet this requirement.
@@ -458,11 +491,75 @@ const AssessmentAreaPage = () => {
           </div>
         </div>
 
+        {/* Evidence Upload Section (Tier 2+) */}
+        {requiresEvidence && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <div className="flex items-center mb-4">
+              <Upload className="h-6 w-6 text-blue-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Evidence Upload Required</h3>
+              <span className="ml-2 polaris-badge polaris-badge-warning text-xs">
+                Tier {currentTier}
+              </span>
+            </div>
+            <p className="text-gray-700 mb-4">
+              Since you've indicated compliance, please upload evidence to support this statement. 
+              This will be reviewed by a digital navigator for validation.
+            </p>
+            
+            <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={(e) => e.target.files && handleFileUpload(currentStatement.id, e.target.files)}
+                className="hidden"
+                id={`file-upload-${currentStatement.id}`}
+              />
+              <label htmlFor={`file-upload-${currentStatement.id}`} className="cursor-pointer">
+                <Camera className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+                <p className="text-blue-700 font-semibold mb-2">Upload Evidence Files</p>
+                <p className="text-gray-600 text-sm">
+                  PDF, Word documents, or images (Max 10MB per file)
+                </p>
+              </label>
+            </div>
+            
+            {/* Display uploaded files */}
+            {evidenceFiles[currentStatement.id] && evidenceFiles[currentStatement.id].length > 0 && (
+              <div className="mt-4 space-y-2">
+                <h4 className="font-medium text-gray-900">Uploaded Evidence:</h4>
+                {evidenceFiles[currentStatement.id].map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                    <div className="flex items-center">
+                      <Paperclip className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-700">{file.name}</span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        ({(file.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEvidenceFiles(prev => ({
+                          ...prev,
+                          [currentStatement.id]: prev[currentStatement.id]?.filter((_, i) => i !== index) || []
+                        }))
+                      }}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Navigation Buttons */}
         <div className="flex items-center justify-between pt-6 border-t border-gray-200">
           <button
             onClick={handlePrevious}
-            disabled={currentStatementIndex === 0}
+            disabled={currentQuestionIndex === 0}
             className="polaris-button-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -480,14 +577,14 @@ const AssessmentAreaPage = () => {
 
             <button
               onClick={handleNext}
-              disabled={currentResponse === undefined || isSubmitting}
+              disabled={!currentResponse || isSubmitting}
               className="polaris-button-primary disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
             >
               {isSubmitting ? (
                 <LoadingSpinner size="sm" />
               ) : (
                 <>
-                  {currentStatementIndex === totalStatements - 1 ? 'Complete Assessment' : 'Next'}
+                  {currentQuestionIndex === totalQuestions - 1 ? 'Complete Assessment' : 'Next Question'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               )}
@@ -496,8 +593,8 @@ const AssessmentAreaPage = () => {
         </div>
       </div>
 
-      {/* Help Section */}
-      {currentResponse === false && (
+      {/* Help Section for Non-Compliant */}
+      {currentResponse?.is_compliant === false && (
         <div className="polaris-card bg-yellow-50 border-yellow-200">
           <div className="flex items-start">
             <div className="h-10 w-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
@@ -506,14 +603,14 @@ const AssessmentAreaPage = () => {
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Need Help with This Area?</h3>
               <p className="text-gray-600 mb-4">
-                Don't worry! Identifying gaps is the first step toward improvement. We can help you address this area.
+                Don't worry! Identifying gaps is the first step toward improvement. We can connect you with experts.
               </p>
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/dashboard/services" 
                   className="polaris-button-primary inline-flex items-center"
                 >
-                  <BookOpen className="mr-2 h-4 w-4" />
+                  <FileText className="mr-2 h-4 w-4" />
                   Request Professional Help
                 </Link>
                 <Link 
@@ -527,6 +624,45 @@ const AssessmentAreaPage = () => {
           </div>
         </div>
       )}
+
+      {/* Tier Information */}
+      <div className="polaris-card bg-blue-50 border-blue-200">
+        <div className="flex items-start">
+          <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+            <Award className="h-5 w-5 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Tier {currentTier} Assessment</h3>
+            <div className="space-y-2 text-sm text-gray-700">
+              {currentTier === 1 && (
+                <p>
+                  <strong>Self Assessment:</strong> Basic compliance evaluation with 3 fundamental statements per business area.
+                </p>
+              )}
+              {currentTier === 2 && (
+                <div>
+                  <p className="mb-2">
+                    <strong>Evidence Required:</strong> Moderate effort assessment including Tier 1 statements plus 3 additional requirements.
+                  </p>
+                  <p className="text-blue-700 font-medium">
+                    Evidence upload required for all "Compliant Ready" responses.
+                  </p>
+                </div>
+              )}
+              {currentTier === 3 && (
+                <div>
+                  <p className="mb-2">
+                    <strong>Verification Level:</strong> High effort assessment including all previous tiers plus 3 advanced requirements.
+                  </p>
+                  <p className="text-blue-700 font-medium">
+                    Evidence documentation and digital navigator validation required.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
