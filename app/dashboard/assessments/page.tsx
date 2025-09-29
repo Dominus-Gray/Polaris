@@ -182,243 +182,139 @@ const AssessmentsPage = () => {
   const overallProgress = areas.length > 0 ? Math.round((completedAreas / areas.length) * 100) : 0
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header Section */}
-      <div className="mb-8">
+    <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Clean Header */}
+      <div className="mb-12">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Maturity Assessment</h1>
-            <p className="text-lg text-gray-600">
-              Evaluate your business readiness across 10 key areas to identify improvement opportunities.
+            <h1 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">Business Maturity Assessment</h1>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl">
+              Evaluate your business readiness across 10 key areas for procurement opportunities.
             </p>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-polaris-blue">{overallProgress}%</div>
-              <div className="text-sm text-gray-600">Complete</div>
-            </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-blue-600 mb-1">{overallProgress}%</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Complete</div>
           </div>
         </div>
       </div>
 
-      {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="polaris-card">
-          <div className="flex items-center">
-            <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+      {/* Clean Progress Overview */}
+      <div className="mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white rounded-xl border border-gray-100 p-6 text-center hover:shadow-md transition-shadow">
+            <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{completedAreas}</div>
-              <div className="text-sm text-gray-600">Completed Areas</div>
-            </div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{completedAreas}</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Completed Areas</div>
           </div>
-        </div>
 
-        <div className="polaris-card">
-          <div className="flex items-center">
-            <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+          <div className="bg-white rounded-xl border border-gray-100 p-6 text-center hover:shadow-md transition-shadow">
+            <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <Clock className="h-6 w-6 text-yellow-600" />
             </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{activeAreas}</div>
-              <div className="text-sm text-gray-600">In Progress</div>
-            </div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{activeAreas}</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">In Progress</div>
           </div>
-        </div>
 
-        <div className="polaris-card">
-          <div className="flex items-center">
-            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+          <div className="bg-white rounded-xl border border-gray-100 p-6 text-center hover:shadow-md transition-shadow">
+            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <Target className="h-6 w-6 text-blue-600" />
             </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{areas.length - completedAreas - activeAreas}</div>
-              <div className="text-sm text-gray-600">Not Started</div>
-            </div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{areas.length - completedAreas - activeAreas}</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Not Started</div>
           </div>
         </div>
       </div>
 
-      {/* Assessment Areas Grid */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
+      {/* Clean Assessment Areas */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl font-semibold text-gray-900">Assessment Areas</h2>
-          <div className="flex items-center space-x-3">
-            <div className="text-sm text-gray-600">
-              Tier Access Level: <span className="font-medium text-polaris-blue">Tier {assessmentData?.client_tier_access || 1}</span>
-            </div>
-            <div className="h-4 w-px bg-gray-300"></div>
-            <div className="text-sm text-gray-600">
-              {areas.length} Areas Available
-            </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600">
+              Tier Access Level: <span className="font-semibold text-blue-600">Tier {assessmentData?.client_tier_access || 1}</span>
+            </span>
+            <span className="text-sm text-gray-500">{areas.length} Areas Available</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
           {areas.map((area, index) => (
-            <div 
-              key={area.area_id} 
-              className="group polaris-card hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
-            >
-              {/* Progress indicator bar */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
-                <div 
-                  className="h-full bg-polaris-blue transition-all duration-500" 
-                  style={{ width: `${area.latest_score}%` }}
-                ></div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
+            <div key={area.area_id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 p-6 group">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start flex-1">
+                  <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-xl flex items-center justify-center mr-6 text-lg font-bold">
+                    {index + 1}
+                  </div>
                   <div className="flex-1">
-                    <div className="flex items-center mb-3">
-                      <div className="h-12 w-12 bg-gradient-to-br from-polaris-blue to-polaris-navy text-white rounded-xl flex items-center justify-center mr-4 text-lg font-bold shadow-md">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-polaris-blue transition-colors">
-                          {area.area_name}
-                        </h3>
-                        <p className="text-gray-600 text-sm leading-relaxed">{area.description}</p>
-                      </div>
-                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                      {area.area_name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-6 leading-relaxed max-w-2xl">
+                      {area.description}
+                    </p>
                     
-                    {/* Enhanced Progress Section */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-gray-600 font-medium">Progress</span>
-                        <span className="text-gray-900 font-semibold">{area.latest_score}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
-                        <div 
-                          className="bg-gradient-to-r from-polaris-blue to-blue-500 h-3 rounded-full transition-all duration-700 shadow-sm" 
-                          style={{ width: `${area.latest_score}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    {/* Enhanced Status & Meta Info */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          area.status === 'completed' ? 'bg-green-100 text-green-800 border border-green-200' :
-                          area.status === 'active' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                          'bg-gray-100 text-gray-800 border border-gray-200'
-                        }`}>
-                          {area.status === 'completed' ? (
-                            <>
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Complete
-                            </>
-                          ) : area.status === 'active' ? (
-                            <>
-                              <Clock className="w-3 h-3 mr-1" />
-                              In Progress
-                            </>
-                          ) : (
-                            <>
-                              <Target className="w-3 h-3 mr-1" />
-                              Not Started
-                            </>
-                          )}
-                        </span>
-                        
-                        <div className="text-xs text-gray-500 flex items-center">
-                          <span className="w-2 h-2 bg-polaris-blue rounded-full mr-1"></span>
-                          Tier {area.tier_available}
-                        </div>
-                      </div>
+                    <div className="flex items-center space-x-6 mb-6">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        area.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        area.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {area.status === 'completed' ? 'Complete' :
+                         area.status === 'active' ? 'In Progress' :
+                         'Not Started'}
+                      </span>
+                      
+                      <span className="text-sm text-gray-500">
+                        Tier {area.tier_available} Available
+                      </span>
                       
                       {area.sessions_completed > 0 && (
-                        <div className="text-xs text-gray-500 flex items-center">
-                          <span className="font-medium">{area.sessions_completed}</span>
-                          <span className="ml-1">sessions</span>
-                        </div>
+                        <span className="text-sm text-gray-500">
+                          {area.sessions_completed} sessions completed
+                        </span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Enhanced Action Buttons */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="text-xs text-gray-500">
-                    {area.last_assessment ? (
-                      <span className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        Last: {new Date(area.last_assessment).toLocaleDateString()}
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <Target className="w-3 h-3 mr-1" />
-                        Ready to start
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    {area.status === 'completed' && (
-                      <Link
-                        href={`/dashboard/assessments/${area.area_id}/results`}
-                        className="text-polaris-blue hover:text-polaris-navy font-medium text-sm flex items-center transition-colors"
-                      >
-                        <TrendingUp className="h-4 w-4 mr-1" />
-                        Results
-                      </Link>
-                    )}
-                    
-                    <Link
-                      href={`/dashboard/assessments/${area.area_id}?tier=${area.tier_available}`}
-                      className="inline-flex items-center px-4 py-2 bg-polaris-blue text-white rounded-lg font-medium text-sm hover:bg-polaris-navy transition-colors shadow-sm hover:shadow-md group"
-                    >
-                      {area.status === 'not_started' ? (
-                        <>
-                          <span>Start Assessment</span>
-                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                        </>
-                      ) : area.status === 'active' ? (
-                        <>
-                          <span>Continue</span>
-                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                        </>
-                      ) : (
-                        <>
-                          <span>Retake</span>
-                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                        </>
-                      )}
-                    </Link>
-                  </div>
-                </div>
+                <Link
+                  href={`/dashboard/assessments/${area.area_id}?tier=${area.tier_available}`}
+                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md group"
+                >
+                  <span>{area.status === 'not_started' ? 'Start Assessment' : area.status === 'active' ? 'Continue' : 'Retake'}</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Help Section */}
-      <div className="polaris-card bg-blue-50 border-blue-200">
+      {/* Clean Help Section */}
+      <div className="bg-white rounded-xl border border-blue-100 shadow-sm p-6 bg-blue-50">
         <div className="flex items-start">
           <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
             <BookOpen className="h-5 w-5 text-blue-600" />
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Need Help Getting Started?</h3>
-            <p className="text-gray-600 mb-4">
-              Our assessment system is designed to help you identify gaps and opportunities in your business. 
-              Each area contains tailored questions based on your tier access level.
+            <p className="text-gray-700 mb-4 leading-relaxed">
+              Our assessment system helps identify opportunities in your business. Each area contains questions based on your tier access level.
             </p>
             <div className="flex items-center space-x-4">
               <Link 
                 href="/dashboard/knowledge-base" 
-                className="polaris-button-secondary inline-flex items-center"
+                className="inline-flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <BookOpen className="mr-2 h-4 w-4" />
+                <BookOpen className="h-4 w-4 mr-2" />
                 Access Knowledge Base
               </Link>
               <Link 
                 href="/dashboard/services" 
-                className="text-polaris-blue hover:text-polaris-navy font-medium"
+                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
                 Get Professional Help →
               </Link>
