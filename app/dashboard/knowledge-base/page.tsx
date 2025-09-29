@@ -550,6 +550,46 @@ Your framework is ready for implementation!`)
               ))}
             </div>
           </div>
+
+          {/* Upgrade Section */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upgrade Your Access</h3>
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Premium Knowledge Base Access</h4>
+                    <p className="text-sm text-gray-600">Unlock all templates and advanced resources</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      alert('🔄 Redirecting to Stripe Checkout...\n\n✅ Package: Premium Knowledge Base Access\n✅ Price: $49.99\n✅ Includes: All 10 areas, unlimited templates, AI assistant\n\nYou would be redirected to secure Stripe checkout to complete payment.')
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Upgrade - $49.99
+                  </button>
+                </div>
+              </div>
+
+              <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Assessment Tier Upgrade</h4>
+                    <p className="text-sm text-gray-600">Access Tier 3 assessments with navigator validation</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      alert('🔄 Redirecting to Stripe Checkout...\n\n✅ Package: Assessment Tier Upgrade\n✅ Price: $29.99\n✅ Includes: Tier 3 access, evidence validation, navigator review\n\nYou would be redirected to secure Stripe checkout to complete payment.')
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-purple-600 text-white font-medium text-sm rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Upgrade - $29.99
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* AI Assistant Sidebar - Clean */}
