@@ -268,10 +268,12 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/forgot-password']
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith('/auth/'))
     
-    if (!state.isLoading && !state.isAuthenticated && !isPublicRoute) {
+    // More lenient redirect logic - don't redirect if user data exists
+    if (!state.isLoading && !state.isAuthenticated && !isPublicRoute && !state.user) {
+      console.log('Redirecting to login - no user data')
       router.push('/auth/login')
     }
-  }, [state.isLoading, state.isAuthenticated, pathname, router])
+  }, [state.isLoading, state.isAuthenticated, state.user, pathname, router])
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
