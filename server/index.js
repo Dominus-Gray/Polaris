@@ -35,6 +35,9 @@ const navigatorWorkflowRoutes = require('./routes/navigatorRoutes');
 const agencyLicenseRoutes = require('./routes/agencyRoutes');
 const evidenceRoutes = require('./routes/evidence');
 const chatSystemRoutes = require('./routes/chatRoutes');
+const fileRoutes = require('./routes/files');
+const notificationRoutes = require('./routes/notifications');
+const knowledgeBaseComplete = require('./routes/knowledgeBaseComplete');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
