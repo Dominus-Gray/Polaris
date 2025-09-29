@@ -78,10 +78,8 @@ const KnowledgeBasePage = () => {
       { area_id: 'area10', area_name: 'Competitive Advantage & Market Position', description: 'Competitive advantages, market capture processes, strategic partnerships', is_locked: false, resource_count: 7, templates_available: 2 }
     ])
     console.log('✅ Comprehensive operational knowledge base loaded')
-  } finally {
     setIsLoading(false)
   }
-}
 
   const handleAIQuestion = async () => {
     if (!aiQuestion.trim()) return
