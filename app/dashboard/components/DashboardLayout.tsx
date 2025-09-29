@@ -203,11 +203,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, user }) => 
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Notifications */}
-              <button className="text-gray-400 hover:text-gray-600 relative">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400"></span>
-              </button>
+              <NotificationSystem />
 
               {/* Profile dropdown */}
               <div className="relative">
