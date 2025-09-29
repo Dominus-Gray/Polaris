@@ -29,6 +29,13 @@ const profileRoutes = require('./routes/profiles');
 const adminRoutes = require('./routes/admin');
 const webhookRoutes = require('./routes/webhooks');
 
+// New operational routes
+const serviceRequestRoutes = require('./routes/serviceRequests');
+const navigatorWorkflowRoutes = require('./routes/navigatorRoutes');
+const agencyLicenseRoutes = require('./routes/agencyRoutes');
+const evidenceRoutes = require('./routes/evidence');
+const chatSystemRoutes = require('./routes/chatRoutes');
+
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 const { authenticateToken } = require('./middleware/auth');
