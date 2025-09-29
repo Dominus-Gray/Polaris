@@ -16,8 +16,8 @@ import {
   Share2
 } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth } from '../../../providers'
-import { apiClient } from '../../../providers'
+import { useAuth } from '../../../../providers'
+import { apiClient } from '../../../../providers'
 import LoadingSpinner from '../../../components/LoadingSpinner'
 
 interface AssessmentResult {
