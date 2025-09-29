@@ -64,11 +64,19 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
       try {
         // Fetch dashboard data using correct endpoint
         const dashboardResponse = await apiClient.request('/home/client')
-        setDashboardData(dashboardResponse.data)
+        if (dashboardResponse && dashboardResponse.data) {
+          setDashboardData(dashboardResponse.data)
+        } else {
+          setDashboardData(dashboardResponse)
+        }
 
-        // Fetch assessment progress using correct endpoint
+        // Fetch assessment progress using correct endpoint  
         const progressResponse = await apiClient.request('/client/assessment-progress')
-        setAssessmentProgress(progressResponse.data?.area_progress || progressResponse.area_progress || [])
+        if (progressResponse && progressResponse.data) {
+          setAssessmentProgress(progressResponse.data.area_progress || progressResponse.data.areas || [])
+        } else {
+          setAssessmentProgress(progressResponse.area_progress || progressResponse.areas || [])
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
         // Provide fallback data to prevent crashes
