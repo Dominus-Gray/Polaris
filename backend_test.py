@@ -494,7 +494,7 @@ class PolarisBackendTester:
             # Knowledge base endpoints  
             ('GET', '/knowledge-base/areas', 'client', None, 'Knowledge Base Areas'),
             ('POST', '/knowledge-base/ai-assistance', 'client', 
-             {"question": "How do I start my procurement readiness assessment?", "context": "business_licensing"}, 
+             {"question": "How do I start my procurement readiness assessment?", "context": {"area_id": "area1"}}, 
              'Knowledge Base AI Assistance'),
             ('GET', '/knowledge-base/generate-template/area1/template', 'client', None, 'Knowledge Base Template Generation'),
             
