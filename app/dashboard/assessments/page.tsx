@@ -368,7 +368,7 @@ const AssessmentsPage = () => {
                     )}
                     
                     <Link
-                      href={`/dashboard/assessments/${area.area_id}`}
+                      href={`/dashboard/assessments/${area.area_id}?tier=${area.tier_available}`}
                       className="inline-flex items-center px-4 py-2 bg-polaris-blue text-white rounded-lg font-medium text-sm hover:bg-polaris-navy transition-colors shadow-sm hover:shadow-md group"
                     >
                       {area.status === 'not_started' ? (
