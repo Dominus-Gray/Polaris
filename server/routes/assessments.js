@@ -39,6 +39,147 @@ const ASSESSMENT_SCHEMA = {
 };
 
 /**
+ * POST /api/assessment/tier-session
+ * Create tier-based assessment session
+ */
+router.post('/tier-session', authenticateToken, async (req, res, next) => {
+  try {
+    const { area_id, tier = 1 } = req.body
+    const userId = req.user.id
+
+    if (!area_id || !BUSINESS_AREAS[area_id]) {
+      return res.status(400).json(
+        formatErrorResponse('POL-4001', 'Invalid area_id', 'Please provide a valid business area ID')
+      )
+    }
+
+    if (tier < 1 || tier > 3) {
+      return res.status(400).json(
+        formatErrorResponse('POL-4001', 'Invalid tier', 'Tier must be between 1 and 3')
+      )
+    }
+
+    // Create assessment session
+    const sessionData = {
+      session_id: uuidv4(),
+      user_id: userId,
+      area_id,
+      tier,
+      status: 'active',
+      current_question: 0,
+      total_questions: tier * 3, // Tier 1: 3, Tier 2: 6, Tier 3: 9
+      responses: {},
+      evidence_submitted: {},
+      created_at: new Date(),
+      updated_at: new Date()
+    }
+
+    // Save session (simplified for demo)
+    logger.info(`Assessment session created: ${sessionData.session_id} for area ${area_id}, tier ${tier}`)
+
+    res.json({
+      success: true,
+      data: sessionData
+    })
+
+  } catch (error) {
+    logger.error('Create tier session error:', error)
+    next(error)
+  }
+})
+
+/**
+ * POST /api/assessment/tier-session/:session_id/response
+ * Submit response to assessment question
+ */
+router.post('/tier-session/:session_id/response', authenticateToken, async (req, res, next) => {
+  try {
+    const { session_id } = req.params
+    const { 
+      statement_id, 
+      is_compliant, 
+      evidence_files = [],
+      notes = ''
+    } = req.body
+    const userId = req.user.id
+
+    if (!statement_id || is_compliant === undefined) {
+      return res.status(400).json(
+        formatErrorResponse('POL-4001', 'Missing required fields', 'statement_id and is_compliant are required')
+      )
+    }
+
+    // Create response record
+    const responseData = {
+      response_id: uuidv4(),
+      session_id,
+      user_id: userId,
+      statement_id,
+      is_compliant: Boolean(is_compliant),
+      evidence_files,
+      notes,
+      submitted_at: new Date()
+    }
+
+    logger.info(`Assessment response submitted: ${responseData.response_id} for session ${session_id}`)
+
+    // If evidence files provided and compliant, prepare for navigator review
+    if (is_compliant && evidence_files.length > 0) {
+      logger.info(`Evidence files submitted for navigator review: ${evidence_files.length} files`)
+    }
+
+    res.json({
+      success: true,
+      data: {
+        response_id: responseData.response_id,
+        statement_id,
+        is_compliant: responseData.is_compliant,
+        evidence_files_count: evidence_files.length,
+        submitted_at: responseData.submitted_at,
+        navigator_review_required: is_compliant && evidence_files.length > 0
+      }
+    })
+
+  } catch (error) {
+    logger.error('Submit assessment response error:', error)
+    next(error)
+  }
+})
+
+/**
+ * GET /api/assessment/tier-session/:session_id/progress
+ * Get assessment session progress
+ */
+router.get('/tier-session/:session_id/progress', authenticateToken, async (req, res, next) => {
+  try {
+    const { session_id } = req.params
+    const userId = req.user.id
+
+    // Mock progress data
+    const progressData = {
+      session_id,
+      user_id: userId,
+      current_question: 0,
+      total_questions: 3,
+      completed_questions: 0,
+      responses: {},
+      evidence_required: [],
+      completion_percentage: 0,
+      last_updated: new Date()
+    }
+
+    res.json({
+      success: true,
+      data: progressData
+    })
+
+  } catch (error) {
+    logger.error('Get session progress error:', error)
+    next(error)
+  }
+})
+
+/**
  * GET /api/assessment/schema/tier-based
  * Get tier-based assessment schema with client access levels
  */
