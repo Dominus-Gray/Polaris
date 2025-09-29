@@ -482,31 +482,173 @@ class PolarisBackendTester:
             response_time or 0
         )
 
+    def test_comprehensive_endpoints(self):
+        """Test all endpoints mentioned in review request"""
+        print("\n🎯 Testing Comprehensive Endpoints from Review Request...")
+        
+        # Test all assessment endpoints
+        endpoints_to_test = [
+            # Assessment endpoints
+            ('GET', '/assessment/schema/tier-based', 'client', None, 'Assessment Schema Tier-Based'),
+            
+            # Knowledge base endpoints  
+            ('GET', '/knowledge-base/areas', 'client', None, 'Knowledge Base Areas'),
+            ('POST', '/knowledge-base/ai-assistance', 'client', 
+             {"question": "How do I start my procurement readiness assessment?", "context": "business_licensing"}, 
+             'Knowledge Base AI Assistance'),
+            ('GET', '/knowledge-base/generate-template/area1/template', 'client', None, 'Knowledge Base Template Generation'),
+            
+            # Service request endpoints
+            ('POST', '/service-requests/professional-help', 'client',
+             {"area_id": "area5", "title": "Technology Assessment", "description": "Need help with tech infrastructure", 
+              "budget_range": "5000-15000", "timeline": "1-2 months", "location": "New York, NY"},
+             'Service Request Creation'),
+            ('GET', '/service-requests/opportunities', 'provider', None, 'Service Request Opportunities'),
+            
+            # Navigator endpoints
+            ('GET', '/navigator/evidence/pending', 'navigator', None, 'Navigator Evidence Pending'),
+            ('GET', '/navigator/analytics/resources', 'navigator', None, 'Navigator Analytics Resources'),
+            
+            # Agency endpoints
+            ('POST', '/agency/licenses/generate', 'agency', {"quantity": 3, "expires_days": 60}, 'Agency License Generation'),
+            ('GET', '/agency/licenses/stats', 'agency', None, 'Agency License Stats'),
+            ('GET', '/agency/licenses', 'agency', None, 'Agency Licenses List'),
+            ('POST', '/agency/tier-configuration', 'agency', 
+             {"client_id": "test-client-id", "tier_levels": {"area1": 3, "area2": 2}}, 
+             'Agency Tier Configuration'),
+        ]
+        
+        for method, endpoint, role, data, test_name in endpoints_to_test:
+            if role not in self.tokens:
+                self.log_test(test_name, False, f"No token for role {role}", 0)
+                continue
+                
+            response, response_time = self.make_authenticated_request(method, endpoint, role, data)
+            
+            if response:
+                success = response.status_code in [200, 201]
+                if success:
+                    try:
+                        response_data = response.json()
+                        details = f"Status {response.status_code}, Response: {len(str(response_data))} chars"
+                    except:
+                        details = f"Status {response.status_code}"
+                else:
+                    details = f"Status {response.status_code}: {response.text[:100]}..."
+            else:
+                success = False
+                details = "No response received"
+                response_time = response_time or 0
+            
+            self.log_test(test_name, success, details, response_time)
+
     def test_end_to_end_workflows(self):
         """Test end-to-end user workflows"""
         print("\n🔄 Testing End-to-End Workflows...")
         
-        # Test client journey components
-        workflows = [
-            ("Client Dashboard", 'GET', '/users/dashboard', 'client'),
-            ("Agency Dashboard", 'GET', '/agency/dashboard', 'agency'),
-            ("Navigator Analytics", 'GET', '/navigator/analytics/resources', 'navigator'),
-            ("System Health Check", 'GET', '/admin/system/health', 'navigator')
-        ]
+        # Test complete client journey
+        print("Testing Client Journey...")
         
-        for workflow_name, method, endpoint, role in workflows:
+        # 1. Client creates service request
+        service_request_data = {
+            "area_id": "area5",
+            "title": "Technology Infrastructure Assessment",
+            "description": "Need comprehensive technology assessment for procurement readiness",
+            "budget_range": "5000-15000",
+            "timeline": "1-2 months",
+            "location": "New York, NY"
+        }
+        
+        response, response_time = self.make_authenticated_request(
+            'POST', '/service-requests/professional-help', 'client', service_request_data
+        )
+        
+        request_id = None
+        if response and response.status_code in [200, 201]:
+            data = response.json()
+            request_id = data.get('data', {}).get('service_request_id')
+            self.log_test(
+                "Client Journey - Service Request Creation",
+                True,
+                f"Request ID: {request_id}",
+                response_time
+            )
+        else:
+            self.log_test(
+                "Client Journey - Service Request Creation",
+                False,
+                f"Status {response.status_code if response else 'N/A'}",
+                response_time or 0
+            )
+        
+        # 2. Provider responds to request
+        if request_id:
+            provider_response_data = {
+                "request_id": request_id,
+                "proposed_fee": 7500.00,
+                "estimated_timeline": "6 weeks",
+                "proposal_note": "Comprehensive technology assessment with detailed recommendations and implementation roadmap"
+            }
+            
             response, response_time = self.make_authenticated_request(
-                method, endpoint, role
+                'POST', '/provider/respond-to-request', 'provider', provider_response_data
             )
             
-            success = response and response.status_code == 200
+            success = response and response.status_code in [200, 201]
             details = f"Status {response.status_code}" if response else "No response"
             self.log_test(
-                workflow_name,
+                "Provider Journey - Response Submission",
                 success,
                 details,
                 response_time or 0
             )
+        
+        # Test navigator workflow
+        print("Testing Navigator Workflow...")
+        
+        # Navigator reviews evidence
+        response, response_time = self.make_authenticated_request(
+            'GET', '/navigator/evidence/pending', 'navigator'
+        )
+        
+        success = response and response.status_code == 200
+        if success:
+            data = response.json()
+            pending_count = len(data.get('data', {}).get('packages', []))
+            details = f"Found {pending_count} pending evidence packages"
+        else:
+            details = f"Status {response.status_code}" if response else "No response"
+            
+        self.log_test(
+            "Navigator Journey - Evidence Review",
+            success,
+            details,
+            response_time or 0
+        )
+        
+        # Test agency workflow
+        print("Testing Agency Workflow...")
+        
+        # Agency generates licenses
+        license_data = {"quantity": 5, "expires_days": 60}
+        response, response_time = self.make_authenticated_request(
+            'POST', '/agency/licenses/generate', 'agency', license_data
+        )
+        
+        success = response and response.status_code in [200, 201]
+        if success:
+            data = response.json()
+            licenses_generated = len(data.get('data', {}).get('licenses', []))
+            details = f"Generated {licenses_generated} license codes"
+        else:
+            details = f"Status {response.status_code}" if response else "No response"
+            
+        self.log_test(
+            "Agency Journey - License Generation",
+            success,
+            details,
+            response_time or 0
+        )
 
     def test_advanced_features(self):
         """Test advanced platform features"""
