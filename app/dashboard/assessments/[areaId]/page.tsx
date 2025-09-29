@@ -667,4 +667,4 @@ const OperationalAssessmentPage = () => {
   )
 }
 
-export default AssessmentAreaPage
+export default OperationalAssessmentPage
