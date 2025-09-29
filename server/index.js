@@ -145,18 +145,19 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/profiles', authenticateToken, profileRoutes);
 app.use('/api/assessment', assessmentRoutes);
-app.use('/api/service-requests', serviceRoutes);
+app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/knowledge-base', knowledgeBaseRoutes);
 app.use('/api/provider', providerRoutes);
-app.use('/api/agency', agencyRoutes);
-app.use('/api/navigator', navigatorRoutes);
+app.use('/api/agency', agencyLicenseRoutes);
+app.use('/api/navigator', navigatorWorkflowRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/chat', chatRoutes);
+app.use('/api/chat', chatSystemRoutes);
+app.use('/api/evidence', evidenceRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/webhook', webhookRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
