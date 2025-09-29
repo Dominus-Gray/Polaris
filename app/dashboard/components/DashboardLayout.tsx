@@ -23,6 +23,7 @@ import {
   Key
 } from 'lucide-react'
 import { useAuth } from '../../providers'
+import NotificationSystem from '../components/NotificationSystem'
 
 interface User {
   id: string
