@@ -13,8 +13,8 @@ import {
   Building,
   Award
 } from 'lucide-react'
-import { useAuth } from '../../../providers'
-import { apiClient } from '../../../providers'
+import { useAuth } from '../../providers'
+import { apiClient } from '../../providers'
 import LoadingSpinner from '../../components/LoadingSpinner'
 
 interface ServiceOpportunity {
