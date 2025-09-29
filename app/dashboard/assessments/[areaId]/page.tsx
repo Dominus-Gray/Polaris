@@ -537,13 +537,29 @@ const OperationalAssessmentPage = () => {
                 type="file"
                 multiple
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                onChange={(e) => {
+                onChange={async (e) => {
                   if (e.target.files) {
+                    const files = Array.from(e.target.files)
                     handleFileUpload(currentStatement.id, e.target.files)
-                    // Simulate successful upload
-                    setTimeout(() => {
-                      alert(`Successfully uploaded ${e.target.files.length} evidence file(s). Evidence package will be sent to digital navigator for review.`)
-                    }, 1000)
+                    
+                    // Simulate real file upload process
+                    const uploadButton = e.target.parentElement?.querySelector('p')
+                    if (uploadButton) {
+                      uploadButton.textContent = 'Uploading files...'
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 2000))
+                    
+                    if (uploadButton) {
+                      uploadButton.textContent = 'Upload Evidence Files'
+                    }
+                    
+                    alert(`✅ Successfully uploaded ${files.length} evidence file(s)!
+                    
+Files uploaded:
+${files.map((f, i) => `${i + 1}. ${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join('\n')}
+
+These files have been prepared for digital navigator review. You will be notified when the validation is complete.`)
                   }
                 }}
                 className="hidden"
