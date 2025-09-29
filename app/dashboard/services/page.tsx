@@ -137,7 +137,7 @@ const ServicesPage = () => {
 
   const handleCreateRequest = () => {
     // Navigate to create service request page
-    window.location.href = '/dashboard/services/create'
+    router.push('/dashboard/services/create')
   }
 
   const getStatusBadge = (status: string) => {
