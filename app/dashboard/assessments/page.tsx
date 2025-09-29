@@ -178,9 +178,10 @@ const AssessmentsPage = () => {
     } finally {
       setIsLoading(false)
     }
+  }
 
-    fetchAssessmentData()
-  }, [])
+  fetchAssessmentData()
+}, [])
 
   if (isLoading) {
     return (
