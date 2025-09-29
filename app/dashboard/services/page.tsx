@@ -62,6 +62,7 @@ interface ActiveEngagement {
 
 const ServicesPage = () => {
   const { state } = useAuth()
+  const router = useRouter()
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([])
   const [activeEngagements, setActiveEngagements] = useState<ActiveEngagement[]>([])
   const [isLoading, setIsLoading] = useState(true)
