@@ -14,7 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth } from '../../providers'
+import { useAuth } from '../../../providers'
 
 const PaymentSuccessPage = () => {
   const { state } = useAuth()
