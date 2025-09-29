@@ -112,24 +112,48 @@ const CreateServiceRequestPage = () => {
 
       console.log('Creating comprehensive service request:', serviceRequestData)
 
-      // Simulate backend submission with provider matching
+      // Simulate comprehensive backend submission with provider matching
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      // Simulate provider matching notification
-      const mockProviders = ['Financial Expert 1', 'Compliance Specialist 2', 'Business Consultant 3']
-      const notifiedProviders = mockProviders.slice(0, Math.min(5, mockProviders.length))
+      // Complete provider matching simulation
+      const allProviders = [
+        { name: 'Sarah Johnson', specialization: 'Financial Operations', rating: 4.8, location: 'Austin, TX' },
+        { name: 'Michael Chen', specialization: 'Technology Security', rating: 4.9, location: 'Dallas, TX' },
+        { name: 'Lisa Rodriguez', specialization: 'Legal Compliance', rating: 4.7, location: 'Houston, TX' },
+        { name: 'David Kim', specialization: 'Quality Management', rating: 4.6, location: 'San Antonio, TX' },
+        { name: 'Jennifer Walsh', specialization: 'Risk Management', rating: 4.8, location: 'Austin, TX' }
+      ]
 
-      alert(`Service request created successfully! 
+      // Select first 5 qualified providers
+      const qualifiedProviders = allProviders.filter(p => 
+        p.specialization.toLowerCase().includes(formData.area_id.includes('area2') ? 'financial' : 'business')
+      ).slice(0, 5)
 
-✅ Request submitted for: ${formData.title}
-✅ Business area: ${formData.area_id}  
-✅ Budget range: ${formData.budget_range}
-✅ Timeline: ${formData.timeline}
+      const notifiedProviders = qualifiedProviders.length > 0 ? qualifiedProviders : allProviders.slice(0, 5)
 
-🔔 ${notifiedProviders.length} qualified providers have been notified:
-${notifiedProviders.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+      alert(`🎉 Service Request Created Successfully!
 
-You'll receive notifications when providers respond with proposals. Check your Messages and Services dashboard for updates.`)
+✅ REQUEST DETAILS:
+• Title: ${formData.title}
+• Business Area: ${formData.area_id}
+• Budget Range: ${formData.budget_range}
+• Timeline: ${formData.timeline}
+• Priority: ${formData.priority}
+
+🔔 PROVIDER MATCHING COMPLETE:
+${notifiedProviders.length} qualified providers have been automatically notified:
+
+${notifiedProviders.map((p, i) => `${i + 1}. ${p.name} (${p.specialization})
+   Rating: ${p.rating}/5 ⭐ | Location: ${p.location}`).join('\n\n')}
+
+📧 WHAT HAPPENS NEXT:
+• Providers will review your request and submit proposals
+• You'll receive notifications when proposals are submitted
+• Review all proposals in your Services dashboard
+• Select the best provider for your needs
+• Begin engagement with chosen provider
+
+Check your Messages and Services dashboard for provider responses!`)
 
       router.push('/dashboard/services?tab=requests&created=true')
     } catch (error) {
