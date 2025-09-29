@@ -725,6 +725,7 @@ class PolarisBackendTester:
         self.test_knowledge_base_system()
         self.test_service_provider_system()
         self.test_digital_navigator_workflow()
+        self.test_comprehensive_endpoints()
         self.test_end_to_end_workflows()
         self.test_advanced_features()
         
