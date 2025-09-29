@@ -324,7 +324,7 @@ class PolarisBackendTester:
         # Test AI assistance
         ai_data = {
             "question": "How do I start my procurement readiness assessment?",
-            "context": "business_licensing"
+            "context": {"area_id": "area1"}
         }
         
         response, response_time = self.make_authenticated_request(
