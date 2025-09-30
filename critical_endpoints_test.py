@@ -111,15 +111,18 @@ class CriticalEndpointsTester:
             )
             return False
 
-    def make_authenticated_request(self, method, endpoint, role, data=None, params=None):
+    def make_authenticated_request(self, method, endpoint, role, data=None, params=None, use_form_data=False):
         """Make authenticated request"""
         if role not in self.tokens:
             return None, f"No token for role {role}"
         
         headers = {
-            'Authorization': f'Bearer {self.tokens[role]}',
-            'Content-Type': 'application/json'
+            'Authorization': f'Bearer {self.tokens[role]}'
         }
+        
+        # Don't set Content-Type for form data - let requests handle it
+        if not use_form_data:
+            headers['Content-Type'] = 'application/json'
         
         try:
             start_time = time.time()
@@ -137,14 +140,24 @@ class CriticalEndpointsTester:
                     print(f"   DEBUG: Making POST request to {BASE_URL}{endpoint}")
                     print(f"   DEBUG: Headers: {headers}")
                     print(f"   DEBUG: Data: {data}")
+                    print(f"   DEBUG: Use form data: {use_form_data}")
                 
-                response = self.session.post(
-                    f"{BASE_URL}{endpoint}",
-                    headers=headers,
-                    json=data,
-                    params=params,
-                    timeout=10
-                )
+                if use_form_data:
+                    response = self.session.post(
+                        f"{BASE_URL}{endpoint}",
+                        headers=headers,
+                        data=data,  # Use data instead of json for form data
+                        params=params,
+                        timeout=10
+                    )
+                else:
+                    response = self.session.post(
+                        f"{BASE_URL}{endpoint}",
+                        headers=headers,
+                        json=data,
+                        params=params,
+                        timeout=10
+                    )
             else:
                 return None, f"Unsupported method: {method}"
             
