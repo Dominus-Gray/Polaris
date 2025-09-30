@@ -6844,6 +6844,54 @@ async def navigator_resource_analytics(since_days: int = 30, current=Depends(req
         raise HTTPException(status_code=500, detail="Failed to load analytics")
 
 # ---------------- Service Provider Matching System ----------------
+@api.get("/service-requests/opportunities")
+async def get_service_opportunities(current=Depends(require_role("provider"))):
+    """Get service opportunities for providers"""
+    try:
+        # Get open service requests that providers can respond to
+        service_requests = await db.service_requests.find({
+            "status": "open"
+        }).sort("created_at", -1).to_list(20)
+        
+        # Enrich with client information
+        opportunities = []
+        for request in service_requests:
+            client = await db.users.find_one({"id": request.get("client_id")})
+            opportunities.append({
+                "id": request.get("id"),
+                "title": request.get("title"),
+                "description": request.get("description"),
+                "area_id": request.get("area_id"),
+                "area_name": request.get("area_id", "").replace("area", "Area "),
+                "budget_range": request.get("budget_range"),
+                "timeline": request.get("timeline"),
+                "status": request.get("status"),
+                "created_at": request.get("created_at"),
+                "client_info": {
+                    "name": client.get("name", "Business Client") if client else "Business Client",
+                    "company": client.get("company_name", "Business") if client else "Business"
+                },
+                "provider_responses_count": request.get("providers_notified", 0)
+            })
+        
+        return {"opportunities": opportunities}
+    except Exception as e:
+        logger.error(f"Error getting service opportunities: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get service opportunities")
+
+@api.get("/service-requests/my-requests")
+async def get_my_service_requests(current=Depends(require_role("client"))):
+    """Get client's service requests"""
+    try:
+        requests = await db.service_requests.find({
+            "client_id": current["id"]
+        }).sort("created_at", -1).to_list(20)
+        
+        return {"requests": requests}
+    except Exception as e:
+        logger.error(f"Error getting client service requests: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get service requests")
+
 @api.post("/service-requests/professional-help")
 async def request_professional_help(request_data: StandardizedEngagementRequest, current=Depends(require_user)):
     """Create standardized service request and notify matching providers"""
