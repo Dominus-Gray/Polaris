@@ -5860,7 +5860,8 @@ async def get_knowledge_base_areas(current=Depends(require_user)):
         "area6": "Staff management, training, and organizational capacity",
         "area7": "KPIs, metrics, reporting systems, and performance management",
         "area8": "Risk assessment, business continuity, and emergency planning",
-        "area9": "Vendor management, supply chain resilience, and procurement processes"
+        "area9": "Vendor management, supply chain resilience, and procurement processes",
+        "area10": "Competitive advantages, market capture processes, and strategic partnerships"
     }
     
     areas = []
