@@ -5847,7 +5847,8 @@ async def get_knowledge_base_areas(current=Depends(require_user)):
         "area6": "Human Resources & Capacity",
         "area7": "Performance Tracking & Reporting",
         "area8": "Risk Management & Business Continuity",
-        "area9": "Supply Chain Management & Vendor Relations"
+        "area9": "Supply Chain Management & Vendor Relations",
+        "area10": "Competitive Advantage & Market Position"
     }
     
     area_descriptions = {
