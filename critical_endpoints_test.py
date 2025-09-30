@@ -143,10 +143,15 @@ class CriticalEndpointsTester:
                     print(f"   DEBUG: Use form data: {use_form_data}")
                 
                 if use_form_data:
+                    # Remove Content-Type header to let requests set it for multipart/form-data
+                    headers_copy = headers.copy()
+                    if 'Content-Type' in headers_copy:
+                        del headers_copy['Content-Type']
+                    
                     response = self.session.post(
                         f"{BASE_URL}{endpoint}",
-                        headers=headers,
-                        data=data,  # Use data instead of json for form data
+                        headers=headers_copy,
+                        files=data,  # Use files parameter for multipart form data
                         params=params,
                         timeout=10
                     )
