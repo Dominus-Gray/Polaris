@@ -4475,7 +4475,7 @@ class LicenseOut(BaseModel):
 async def generate_licenses(request: LicenseGenerationIn, current=Depends(require_role("agency"))):
     """Generate license codes for business client registration"""
     # Check if agency is approved
-    user_record = await db.users.find_one({"_id": current["id"]})
+    user_record = await db.users.find_one({"id": current["id"]})
     if not user_record or user_record.get("approval_status") != "approved":
         raise HTTPException(status_code=403, detail="Agency must be approved to generate license codes")
     
