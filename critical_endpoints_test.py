@@ -148,10 +148,15 @@ class CriticalEndpointsTester:
                     if 'Content-Type' in headers_copy:
                         del headers_copy['Content-Type']
                     
+                    # Convert data to multipart form format
+                    form_data = {}
+                    for key, value in data.items():
+                        form_data[key] = (None, str(value))
+                    
                     response = self.session.post(
                         f"{BASE_URL}{endpoint}",
                         headers=headers_copy,
-                        files=data,  # Use files parameter for multipart form data
+                        files=form_data,  # Use files parameter for multipart form data
                         params=params,
                         timeout=10
                     )
