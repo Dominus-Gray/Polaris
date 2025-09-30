@@ -116,7 +116,10 @@ class CriticalEndpointsTester:
         if role not in self.tokens:
             return None, f"No token for role {role}"
         
-        headers = {'Authorization': f'Bearer {self.tokens[role]}'}
+        headers = {
+            'Authorization': f'Bearer {self.tokens[role]}',
+            'Content-Type': 'application/json'
+        }
         
         try:
             start_time = time.time()
@@ -129,6 +132,12 @@ class CriticalEndpointsTester:
                     timeout=10
                 )
             elif method.upper() == 'POST':
+                # Debug: Print request details for assessment endpoint
+                if 'assessment/tier-session' in endpoint:
+                    print(f"   DEBUG: Making POST request to {BASE_URL}{endpoint}")
+                    print(f"   DEBUG: Headers: {headers}")
+                    print(f"   DEBUG: Data: {data}")
+                
                 response = self.session.post(
                     f"{BASE_URL}{endpoint}",
                     headers=headers,
