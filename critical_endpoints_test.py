@@ -191,7 +191,7 @@ class CriticalEndpointsTester:
                 'method': 'POST',
                 'endpoint': '/agency/licenses/generate',
                 'role': 'agency',
-                'data': {'quantity': 3, 'expires_days': 60},
+                'data': {'quantity': 1, 'expires_days': 60},
                 'expected_status': [200, 201],
                 'description': 'POST /agency/licenses/generate (was 403, should be 200)'
             },
