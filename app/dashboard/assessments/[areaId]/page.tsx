@@ -230,16 +230,14 @@ const OperationalAssessmentPage = () => {
           setCurrentTier(parseInt(tierParam))
         }
 
-        // Create real backend assessment session
+        // Create real backend assessment session with correct format
+        const formData = new FormData()
+        formData.append('area_id', areaId)
+        formData.append('tier_level', (tierParam || '1').toString())
+
         const sessionResponse = await apiClient.request('/assessment/tier-session', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            area_id: areaId,
-            tier_level: (tierParam || '1').toString()
-          })
+          body: formData // Use FormData for multipart/form-data
         })
 
         if (sessionResponse && sessionResponse.session_id) {
