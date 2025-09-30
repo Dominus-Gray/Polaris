@@ -258,6 +258,14 @@ class CriticalEndpointsTester:
                 test['data']
             )
             
+            # Debug: Print request details for failing tests
+            if test['name'] == 'Assessment Tier Session Creation':
+                print(f"   DEBUG: Request data: {test['data']}")
+                print(f"   DEBUG: Endpoint: {BASE_URL}{test['endpoint']}")
+                if response:
+                    print(f"   DEBUG: Response status: {response.status_code}")
+                    print(f"   DEBUG: Response text: {response.text}")
+            
             if response is None:
                 self.log_test(
                     test['name'],
