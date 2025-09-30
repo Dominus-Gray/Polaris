@@ -125,11 +125,19 @@ class ApiClient {
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`
     console.log('API Request URL:', url)
+    
+    // Determine if body is FormData
+    const isFormData = options.body instanceof FormData
+    
     const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
       ...(this.token && { Authorization: `Bearer ${this.token}` }),
       ...options.headers,
+    }
+    
+    // Don't set Content-Type for FormData - let browser set it with boundary
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json'
+      headers['Accept'] = 'application/json'
     }
 
     try {
