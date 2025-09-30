@@ -272,12 +272,16 @@ class CriticalEndpointsTester:
                 )
                 continue
             
+            # Determine if we need to use form data
+            use_form_data = test['name'] == 'Assessment Tier Session Creation'
+            
             # Make the request
             response, response_time = self.make_authenticated_request(
                 test['method'],
                 test['endpoint'],
                 test['role'],
-                test['data']
+                test['data'],
+                use_form_data=use_form_data
             )
             
             # Debug: Print request details for failing tests
