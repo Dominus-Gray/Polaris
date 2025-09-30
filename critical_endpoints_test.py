@@ -155,7 +155,7 @@ class CriticalEndpointsTester:
                 'method': 'POST',
                 'endpoint': '/assessment/tier-session',
                 'role': 'client',
-                'data': {'area_id': 'area1', 'tier_level': 1},
+                'data': {'area_id': 'area1', 'tier': 1},
                 'expected_status': [200, 201],
                 'description': 'POST /assessment/tier-session (was 422, should be 200)'
             },
