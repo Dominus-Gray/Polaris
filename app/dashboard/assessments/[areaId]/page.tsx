@@ -729,7 +729,7 @@ Your evidence is now securely stored and queued for professional navigator revie
                             statement_id: currentStatement.id,
                             statement_text: currentStatement.statement,
                             files: files.map(f => ({ name: f.name, size: f.size, type: f.type })),
-                            notes: responseData.notes || '',
+                            notes: '',
                             submitted_at: new Date().toISOString(),
                             status: 'pending_review'
                           }
