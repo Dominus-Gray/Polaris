@@ -74,7 +74,7 @@ class PolarisBackendTester:
             if response.status_code == 200:
                 data = response.json()
                 # Handle both 'token' and 'access_token' response formats
-                token = data.get('token') or data.get('access_token')
+                token = data.get('access_token') or data.get('token')
                 if token:
                     self.tokens[role] = token
                     self.log_test(
