@@ -70,33 +70,85 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
           setDashboardData(dashboardResponse)
         }
 
-        // Fetch assessment progress using correct endpoint  
+        // Fetch assessment progress and sync with local storage
         const progressResponse = await apiClient.request('/client/assessment-progress')
+        let assessmentProgressData = []
+        
         if (progressResponse && progressResponse.data) {
-          setAssessmentProgress(progressResponse.data.area_progress || progressResponse.data.areas || [])
+          assessmentProgressData = progressResponse.data.area_progress || progressResponse.data.areas || []
         } else {
-          setAssessmentProgress(progressResponse.area_progress || progressResponse.areas || [])
+          assessmentProgressData = progressResponse.area_progress || progressResponse.areas || []
         }
+
+        // Merge with local storage progress for real-time updates
+        try {
+          const localProgress = JSON.parse(localStorage.getItem('polaris_assessment_progress') || '[]')
+          if (localProgress.length > 0) {
+            console.log('✅ Syncing local assessment progress with dashboard')
+            
+            // Update assessment progress with local data
+            const mergedProgress = [...assessmentProgressData]
+            localProgress.forEach(localItem => {
+              const existingIndex = mergedProgress.findIndex(item => item.area_id === localItem.area_id)
+              if (existingIndex >= 0) {
+                mergedProgress[existingIndex] = { ...mergedProgress[existingIndex], ...localItem }
+              } else {
+                mergedProgress.push(localItem)
+              }
+            })
+            assessmentProgressData = mergedProgress
+          }
+        } catch (error) {
+          console.log('Local storage sync not available:', error)
+        }
+
+        setAssessmentProgress(assessmentProgressData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
-        // Provide fallback data to prevent crashes
-        setDashboardData({
-          procurement_readiness: {
-            overall_score: 0,
-            areas_completed: 0,
-            total_areas: 10,
-            next_steps: ['Connect with your local agency partner', 'Complete business maturity assessment', 'Access professional service providers']
-          },
-          recent_activity: [],
-          quick_actions: []
-        })
-        setAssessmentProgress([])
+        
+        // Provide fallback data with local storage sync
+        try {
+          const localProgress = JSON.parse(localStorage.getItem('polaris_assessment_progress') || '[]')
+          const localReadiness = localStorage.getItem('polaris_overall_readiness')
+          
+          setDashboardData({
+            procurement_readiness: {
+              overall_score: localReadiness ? parseInt(localReadiness) : 0,
+              areas_completed: localProgress.filter(p => p.status === 'completed').length,
+              total_areas: 10,
+              next_steps: [
+                'Connect with your local agency partner',
+                'Complete business maturity assessments',
+                'Access professional service providers'
+              ]
+            },
+            recent_activity: [],
+            quick_actions: []
+          })
+          
+          setAssessmentProgress(localProgress)
+          console.log('✅ Dashboard synced with local assessment progress')
+        } catch (error) {
+          console.log('Local storage not available, using defaults')
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchDashboardData()
+    
+    // Listen for assessment completion events to refresh dashboard
+    const handleAssessmentComplete = (event) => {
+      console.log('✅ Assessment completion detected, refreshing dashboard')
+      fetchDashboardData()
+    }
+    
+    window.addEventListener('assessmentCompleted', handleAssessmentComplete)
+    
+    return () => {
+      window.removeEventListener('assessmentCompleted', handleAssessmentComplete)
+    }
   }, [])
 
   if (isLoading) {
