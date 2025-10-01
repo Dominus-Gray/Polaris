@@ -225,8 +225,8 @@ const NavigatorEvidenceReviewPage = () => {
         id: `notif_${Date.now()}`,
         title: decision === 'approved' ? '🎉 Evidence Package Approved' : '📝 Evidence Requires Remediation',
         message: decision === 'approved' ? 
-          `Your evidence for ${package?.area_name} has been approved by Digital Navigator. You can now advance to the next tier level.` :
-          `Your evidence for ${package?.area_name} requires remediation. Please review navigator feedback and resubmit improved documentation.`,
+          `Your evidence for ${package?.area_name || 'business area'} has been approved by Digital Navigator. You can now advance to the next tier level.` :
+          `Your evidence for ${package?.area_name || 'business area'} requires remediation. Please review navigator feedback and resubmit improved documentation.`,
         type: decision === 'approved' ? 'success' : 'warning',
         action_url: `/dashboard/assessments/${package?.area_id}`,
         priority: 'high',
