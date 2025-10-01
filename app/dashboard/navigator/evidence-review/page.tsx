@@ -55,109 +55,130 @@ const NavigatorEvidenceReviewPage = () => {
     fetchPendingEvidence()
   }, [])
 
+  useEffect(() => {
+    fetchPendingEvidence()
+    
+    // Listen for evidence submissions to update review queue
+    const handleEvidenceSubmitted = (event) => {
+      console.log('✅ New evidence package submitted, updating navigator queue')
+      const newPackage = event.detail
+      setPendingPackages(prev => [newPackage, ...prev])
+    }
+    
+    window.addEventListener('evidenceSubmitted', handleEvidenceSubmitted)
+    
+    return () => {
+      window.removeEventListener('evidenceSubmitted', handleEvidenceSubmitted)
+    }
+  }, [])
+
   const fetchPendingEvidence = async () => {
     try {
       const response = await apiClient.request('/navigator/evidence/pending')
       
       if (response.data && response.data.packages) {
         setPendingPackages(response.data.packages)
+        console.log('✅ Navigator evidence queue loaded from backend')
       } else {
         throw new Error('API response format invalid')
       }
     } catch (error) {
-      console.error('Navigator evidence API not available, using comprehensive operational data:', error)
+      console.error('Navigator evidence API not available, loading from local queue:', error)
       
-      // Complete operational evidence packages for navigator testing
-      setPendingPackages([
-        {
-          id: 'pkg_001',
-          session_id: 'session_001',
-          area_id: 'area1',
-          area_name: 'Business Formation & Registration',
-          client_info: {
-            id: 'client_001',
-            name: 'QA Client User',
-            email: 'client.qa@polaris.example.com',
-            company_name: 'Demo Client Company'
-          },
-          evidence_items: [
+      // Load from local storage evidence queue  
+      try {
+        const localQueue = JSON.parse(localStorage.getItem('navigator_review_queue') || '[]')
+        if (localQueue.length > 0) {
+          // Transform local storage format to component format
+          const transformedQueue = localQueue.map(item => ({
+            id: item.id,
+            session_id: item.session_id || 'local_session',
+            area_id: item.area_id,
+            area_name: item.area_name,
+            client_info: {
+              id: item.client_id,
+              name: item.client_name,
+              email: item.client_email,
+              company_name: item.company_name || 'Local Business'
+            },
+            evidence_items: [{
+              statement_id: item.statement_id,
+              statement_text: item.statement_text,
+              tier: item.tier,
+              category: item.category || 'Business Compliance',
+              files: item.files?.map(f => f.name) || [],
+              notes: item.notes || ''
+            }],
+            submitted_at: item.submitted_at,
+            status: item.status
+          }))
+          
+          setPendingPackages(transformedQueue)
+          console.log(`✅ Navigator queue loaded: ${transformedQueue.length} evidence packages from local sync`)
+        } else {
+          // Comprehensive operational evidence packages for navigator testing
+          setPendingPackages([
             {
-              statement_id: 'area1_t2_1',
-              statement_text: 'Your business maintains up-to-date registered agent and business address information',
-              tier: 2,
-              category: 'Compliance Management',
-              files: ['registered_agent_certificate.pdf', 'business_address_verification.pdf'],
-              notes: 'Our registered agent is ABC Legal Services and our business address is verified with the state. All documentation is current and compliant.'
+              id: 'pkg_001',
+              session_id: 'session_001',
+              area_id: 'area1',
+              area_name: 'Business Formation & Registration',
+              client_info: {
+                id: 'client_001',
+                name: 'QA Client User',
+                email: 'client.qa@polaris.example.com',
+                company_name: 'Demo Client Company'
+              },
+              evidence_items: [
+                {
+                  statement_id: 'area1_t2_1',
+                  statement_text: 'Your business maintains up-to-date registered agent and business address information',
+                  tier: 2,
+                  category: 'Compliance Management',
+                  files: ['registered_agent_certificate.pdf', 'business_address_verification.pdf'],
+                  notes: 'Our registered agent is ABC Legal Services and our business address is verified with the state. All documentation is current and compliant.'
+                },
+                {
+                  statement_id: 'area1_t2_2',
+                  statement_text: 'Your business has established proper corporate governance structures',
+                  tier: 2,
+                  category: 'Governance',
+                  files: ['bylaws_2024.pdf', 'operating_agreement.pdf', 'board_resolutions.pdf'],
+                  notes: 'Attached are our complete corporate bylaws, operating agreement, and recent board resolutions establishing governance structure and decision-making processes.'
+                }
+              ],
+              submitted_at: '2025-01-28T10:30:00Z',
+              status: 'pending'
             },
             {
-              statement_id: 'area1_t2_2',
-              statement_text: 'Your business has established proper corporate governance structures',
-              tier: 2,
-              category: 'Governance',
-              files: ['bylaws_2024.pdf', 'operating_agreement.pdf', 'board_resolutions.pdf'],
-              notes: 'Attached are our complete corporate bylaws, operating agreement, and recent board resolutions establishing governance structure and decision-making processes.'
+              id: 'pkg_002',
+              session_id: 'session_002',
+              area_id: 'area2',
+              area_name: 'Financial Operations & Management',
+              client_info: {
+                id: 'client_002',
+                name: 'Tech Solutions Inc',
+                email: 'finance@techsolutions.com',
+                company_name: 'Tech Solutions Inc'
+              },
+              evidence_items: [
+                {
+                  statement_id: 'area2_t3_1',
+                  statement_text: 'Your business undergoes regular financial audits by certified public accountants',
+                  tier: 3,
+                  category: 'Financial Oversight',
+                  files: ['cpa_audit_report_2024.pdf', 'management_letter.pdf', 'financial_statements_audited.pdf'],
+                  notes: 'Our annual CPA audit was completed by Johnson & Associates CPA. Attached is the complete audit report, management letter, and audited financial statements for 2024.'
+                }
+              ],
+              submitted_at: '2025-01-27T14:15:00Z',
+              status: 'pending'
             }
-          ],
-          submitted_at: '2025-01-28T10:30:00Z',
-          status: 'pending'
-        },
-        {
-          id: 'pkg_002',
-          session_id: 'session_002',
-          area_id: 'area2',
-          area_name: 'Financial Operations & Management',
-          client_info: {
-            id: 'client_002',
-            name: 'Tech Solutions Inc',
-            email: 'finance@techsolutions.com',
-            company_name: 'Tech Solutions Inc'
-          },
-          evidence_items: [
-            {
-              statement_id: 'area2_t3_1',
-              statement_text: 'Your business undergoes regular financial audits by certified public accountants',
-              tier: 3,
-              category: 'Financial Oversight',
-              files: ['cpa_audit_report_2024.pdf', 'management_letter.pdf', 'financial_statements_audited.pdf'],
-              notes: 'Our annual CPA audit was completed by Johnson & Associates CPA. Attached is the complete audit report, management letter, and audited financial statements for 2024.'
-            },
-            {
-              statement_id: 'area2_t3_2',
-              statement_text: 'Your business has implemented comprehensive financial controls and approval processes',
-              tier: 3,
-              category: 'Financial Controls',
-              files: ['financial_controls_manual.pdf', 'approval_matrix.pdf', 'segregation_duties.pdf'],
-              notes: 'We have implemented comprehensive financial controls including approval matrices, segregation of duties, and detailed financial procedures manual. All controls are documented and actively monitored.'
-            }
-          ],
-          submitted_at: '2025-01-27T14:15:00Z',
-          status: 'pending'
-        },
-        {
-          id: 'pkg_003',
-          session_id: 'session_003',
-          area_id: 'area5',
-          area_name: 'Technology & Security Infrastructure',
-          client_info: {
-            id: 'client_003',
-            name: 'Manufacturing Solutions',
-            email: 'it@mfgsolutions.com',
-            company_name: 'Manufacturing Solutions LLC'
-          },
-          evidence_items: [
-            {
-              statement_id: 'area5_t3_1',
-              statement_text: 'Your business has achieved cybersecurity certifications (SOC 2, ISO 27001, or similar)',
-              tier: 3,
-              category: 'Security Certifications',
-              files: ['soc2_type2_report.pdf', 'iso27001_certificate.pdf', 'penetration_test_results.pdf'],
-              notes: 'We have achieved SOC 2 Type II certification and ISO 27001 certification. Attached are our certification documents and latest penetration testing results showing our security posture.'
-            }
-          ],
-          submitted_at: '2025-01-26T09:45:00Z',
-          status: 'pending'
+          ])
         }
-      ])
+      } catch (error) {
+        console.log('Local storage not available, using default navigator data:', error)
+      }
     } finally {
       setIsLoading(false)
     }
