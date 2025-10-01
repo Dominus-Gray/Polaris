@@ -166,12 +166,20 @@ const ServicesPage = () => {
           ])
         }
       } else if (state.user?.role === 'provider') {
-        // Fetch available opportunities and provider's engagements
+        // Fetch provider opportunities and engagements using working endpoints
         const opportunitiesResponse = await apiClient.request('/service-requests/opportunities')
-        const engagementsResponse = await apiClient.request('/provider/my-services')
+        const dashboardResponse = await apiClient.request('/home/provider')
         
-        setServiceRequests(opportunitiesResponse.data || opportunitiesResponse || [])
-        setActiveEngagements(engagementsResponse.data || engagementsResponse || [])
+        if (opportunitiesResponse.data || opportunitiesResponse.opportunities) {
+          setServiceRequests(opportunitiesResponse.data || opportunitiesResponse.opportunities || [])
+        }
+        
+        if (dashboardResponse.data || dashboardResponse) {
+          const dashboardData = dashboardResponse.data || dashboardResponse
+          if (dashboardData.active_engagements) {
+            setActiveEngagements(dashboardData.active_engagements)
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching services data, using operational fallback:', error)
