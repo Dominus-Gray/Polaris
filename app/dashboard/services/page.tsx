@@ -77,15 +77,47 @@ const ServicesPage = () => {
   const fetchServicesData = async () => {
     try {
       if (state.user?.role === 'client') {
-        // Fetch client's service requests and engagements using working endpoints
-        const requestsResponse = await apiClient.request('/home/client')
-        const dashboardData = requestsResponse.data || requestsResponse || {}
+  useEffect(() => {
+    fetchServicesData()
+    
+    // Listen for service request creation events
+    const handleServiceRequestCreated = (event) => {
+      console.log('✅ New service request detected, refreshing services data')
+      const newRequest = event.detail
+      setServiceRequests(prev => [newRequest, ...prev])
+    }
+    
+    window.addEventListener('serviceRequestCreated', handleServiceRequestCreated)
+    
+    return () => {
+      window.removeEventListener('serviceRequestCreated', handleServiceRequestCreated)
+    }
+  }, [])
+
+  const fetchServicesData = async () => {
+    try {
+      if (state.user?.role === 'client') {
+        // Fetch client's service requests with local storage sync
+        try {
+          const localRequests = JSON.parse(localStorage.getItem('polaris_service_requests') || '[]')
+          if (localRequests.length > 0) {
+            setServiceRequests(localRequests)
+            console.log('✅ Service requests loaded from local sync')
+          }
+        } catch (error) {
+          console.log('Local storage not available for service sync:', error)
+        }
+
+        // Try backend request
+        const dashboardResponse = await apiClient.request('/home/client')
+        const dashboardData = dashboardResponse.data || dashboardResponse || {}
         
         // Extract service requests from dashboard data or use fallback
-        if (dashboardData.service_requests) {
+        if (dashboardData.service_requests && dashboardData.service_requests.length > 0) {
           setServiceRequests(dashboardData.service_requests)
-        } else {
-          // Use comprehensive operational fallback data
+          console.log('✅ Service requests loaded from backend')
+        } else if (!localStorage.getItem('polaris_service_requests')) {
+          // Use comprehensive operational fallback data only if no local data
           setServiceRequests([
             {
               id: '1',
@@ -126,7 +158,7 @@ const ServicesPage = () => {
           ])
         }
         
-        // Get engagement data
+        // Get engagement data with sync
         if (dashboardData.active_engagements) {
           setActiveEngagements(dashboardData.active_engagements)
         } else {
