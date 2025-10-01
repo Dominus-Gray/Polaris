@@ -240,7 +240,7 @@ const NavigatorEvidenceReviewPage = () => {
       
       // Trigger client notification system refresh
       window.dispatchEvent(new CustomEvent('navigatorReviewCompleted', { 
-        detail: { decision, packageId, clientId: package?.client_info?.id } 
+        detail: { decision, packageId, clientId: selectedPackage?.client_info?.id } 
       }))
       
       console.log('✅ Client notification generated for evidence review decision')
