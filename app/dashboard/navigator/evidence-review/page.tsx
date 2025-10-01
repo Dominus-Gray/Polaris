@@ -260,7 +260,7 @@ const NavigatorEvidenceReviewPage = () => {
 • Package ID: ${packageId}
 • Client: ${clientInfo?.name || 'Business Client'}
 • Company: ${clientInfo?.company_name || 'Business'}
-• Evidence Items: ${package?.evidence_items?.length || 0}
+• Evidence Items: ${selectedPackage?.evidence_items?.length || 0}
 • Navigator Notes: ${reviewNotes || 'No additional notes'}
 
 ${decision === 'approved' ? 
