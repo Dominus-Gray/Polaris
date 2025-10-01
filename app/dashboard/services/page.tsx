@@ -74,9 +74,6 @@ const ServicesPage = () => {
     fetchServicesData()
   }, [])
 
-  const fetchServicesData = async () => {
-    try {
-      if (state.user?.role === 'client') {
   useEffect(() => {
     fetchServicesData()
     
