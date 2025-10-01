@@ -252,7 +252,7 @@ const NavigatorEvidenceReviewPage = () => {
     setReviewNotes('')
     
     // Comprehensive review completion message with client feedback integration
-    const clientInfo = package?.client_info
+    const clientInfo = selectedPackage?.client_info
     
     alert(`✅ Evidence Review ${decision === 'approved' ? 'Approved' : 'Rejected'}!
 
