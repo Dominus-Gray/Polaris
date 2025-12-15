@@ -1,0 +1,302 @@
+name: Contract Diff Pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'contracts/**'
+      - 'scripts/**'
+  push:
+    branches: [main]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update contract snapshots'
+        type: boolean
+        default: false
+
+jobs:
+  contract-diff:
+    name: API Contract Diff Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Needed for comparing with base branch
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install fastapi uvicorn pydantic motor pymongo python-dotenv \
+                   passlib python-jose python-multipart aiofiles
+    
+    - name: Generate current OpenAPI specification
+      run: |
+        # Use mock generator for now - in production this would connect to actual server
+        python scripts/generate-openapi-mock.py --output-dir /tmp/current-contracts
+      env:
+        ENVIRONMENT: ci
+    
+    - name: Compare against existing contracts (PR)
+      if: github.event_name == 'pull_request'
+      run: |
+        # Compare current specification against committed baseline
+        python scripts/diff-contracts.py \
+          --old-spec contracts/openapi/public-v1.json \
+          --new-spec /tmp/current-contracts/public-v1.json \
+          --format text \
+          --output /tmp/contract-diff-report.txt
+        
+        # Also generate JSON report for further processing
+        python scripts/diff-contracts.py \
+          --old-spec contracts/openapi/public-v1.json \
+          --new-spec /tmp/current-contracts/public-v1.json \
+          --format json \
+          --output /tmp/contract-diff-report.json
+      continue-on-error: true
+    
+    - name: Check for breaking changes (PR)
+      if: github.event_name == 'pull_request'
+      run: |
+        # Run diff and check exit code for breaking changes
+        if ! python scripts/diff-contracts.py \
+          --old-spec contracts/openapi/public-v1.json \
+          --new-spec /tmp/current-contracts/public-v1.json \
+          --format text; then
+          echo "BREAKING_CHANGES=true" >> $GITHUB_ENV
+          echo "::warning::Breaking changes detected in API contract"
+        else
+          echo "BREAKING_CHANGES=false" >> $GITHUB_ENV
+        fi
+    
+    - name: Upload diff report
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: contract-diff-report
+        path: |
+          /tmp/contract-diff-report.txt
+          /tmp/contract-diff-report.json
+        retention-days: 30
+    
+    - name: Comment on PR with diff summary
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            // Read the diff report
+            const diffReport = fs.readFileSync('/tmp/contract-diff-report.txt', 'utf8');
+            
+            // Check if there's a JSON report for structured data
+            let jsonReport = {};
+            try {
+              jsonReport = JSON.parse(fs.readFileSync('/tmp/contract-diff-report.json', 'utf8'));
+            } catch (e) {
+              console.log('No JSON report found');
+            }
+            
+            // Create comment body
+            const hasBreaking = process.env.BREAKING_CHANGES === 'true';
+            const statusIcon = hasBreaking ? '❌' : '✅';
+            const statusText = hasBreaking ? 'Breaking Changes Detected' : 'Contract Changes Look Good';
+            
+            const commentBody = `## ${statusIcon} API Contract Diff Report
+            
+            **Status:** ${statusText}
+            
+            ### Summary
+            ${jsonReport.summary ? 
+              Object.entries(jsonReport.summary)
+                .map(([key, value]) => `- **${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:** ${value}`)
+                .join('\n') 
+              : 'See full report below'}
+            
+            ${hasBreaking ? `
+            ### ⚠️ Action Required
+            This PR introduces breaking changes to the API contract. Please:
+            1. Review the breaking changes carefully
+            2. Update API documentation and client SDKs
+            3. Plan a coordinated deployment strategy
+            4. Consider API versioning if needed
+            ` : ''}
+            
+            <details>
+            <summary>📋 Full Diff Report</summary>
+            
+            \`\`\`
+            ${diffReport}
+            \`\`\`
+            </details>
+            
+            <details>
+            <summary>🔍 How to Review</summary>
+            
+            1. **Breaking Changes**: Must be reviewed and approved by API stakeholders
+            2. **Additive Changes**: Generally safe but review for API consistency  
+            3. **Informational Changes**: Version bumps, descriptions, etc.
+            
+            **Bypass Override**: Add \`[skip contract-diff]\` to commit message to bypass enforcement (use carefully!)
+            </details>
+            `;
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
+            
+          } catch (error) {
+            console.error('Error posting comment:', error);
+            // Don't fail the job if comment posting fails
+          }
+    
+    - name: Enforce contract policy (PR)
+      if: github.event_name == 'pull_request'
+      run: |
+        # Check for bypass override in commit messages
+        if git log --format=%B ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -q "\[skip contract-diff\]"; then
+          echo "::notice::Contract diff enforcement bypassed via commit message override"
+          exit 0
+        fi
+        
+        # Fail if breaking changes detected (can be overridden by repo settings)
+        if [ "$BREAKING_CHANGES" = "true" ]; then
+          echo "::error::Breaking changes detected. Review required before merging."
+          echo "::error::Add '[skip contract-diff]' to commit message to override (use carefully!)"
+          exit 1
+        fi
+    
+    - name: Update contract snapshots (nightly/manual)
+      if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.force_update)
+      run: |
+        # Generate fresh snapshots
+        python scripts/generate-openapi-mock.py
+        
+        # Check if there are any changes
+        if git diff --quiet contracts/; then
+          echo "No contract changes detected"
+        else
+          echo "Contract changes detected, creating PR..."
+          
+          # Configure git
+          git config user.name "contract-diff-bot"
+          git config user.email "action@github.com"
+          
+          # Create branch and commit
+          BRANCH_NAME="contract-update-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+          git add contracts/
+          git commit -m "chore: update API contract snapshots
+
+          Automated contract snapshot update from nightly pipeline.
+          
+          [skip contract-diff]"
+          
+          # Push and create PR (requires PAT with appropriate permissions)
+          git push origin "$BRANCH_NAME"
+          
+          gh pr create \
+            --title "🤖 Automated Contract Snapshot Update" \
+            --body "Automated update of API contract snapshots from nightly pipeline.
+
+          **Changes:**
+          - Updated OpenAPI specifications to match current API implementation
+          - Generated by contract diff pipeline on $(date)
+
+          This PR is automatically created to keep contract snapshots in sync with the codebase." \
+            --head "$BRANCH_NAME" \
+            --base main
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Generate contract diff report (nightly)
+      if: github.event_name == 'schedule'
+      run: |
+        # Compare current implementation against committed contracts
+        python scripts/diff-contracts.py \
+          --old-spec contracts/openapi/public-v1.json \
+          --new-spec /tmp/current-contracts/public-v1.json \
+          --format json \
+          --output /tmp/nightly-diff-report.json
+        
+        # Store as artifact for monitoring/alerting
+        echo "Contract drift report generated for $(date)" > /tmp/nightly-summary.txt
+        cat /tmp/nightly-diff-report.json >> /tmp/nightly-summary.txt
+    
+    - name: Upload nightly report
+      if: github.event_name == 'schedule'
+      uses: actions/upload-artifact@v3
+      with:
+        name: nightly-contract-report-${{ github.run_id }}
+        path: |
+          /tmp/nightly-diff-report.json
+          /tmp/nightly-summary.txt
+        retention-days: 90
+
+  validate-scripts:
+    name: Validate Contract Diff Scripts
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install fastapi uvicorn pydantic motor pymongo python-dotenv \
+                   passlib python-jose python-multipart aiofiles
+    
+    - name: Test OpenAPI generation
+      run: |
+        python scripts/generate-openapi-mock.py --public-only --output-dir /tmp/test-output
+        
+        # Verify output files exist and are valid JSON
+        test -f /tmp/test-output/public-v1.json
+        python -m json.tool /tmp/test-output/public-v1.json > /dev/null
+    
+    - name: Test contract diff engine
+      run: |
+        # Create test specs
+        python scripts/generate-openapi-mock.py --output-dir /tmp/baseline
+        python scripts/generate-openapi-mock.py --output-dir /tmp/current
+        
+        # Test diff (should show no changes)
+        python scripts/diff-contracts.py \
+          --old-spec /tmp/baseline/public-v1.json \
+          --new-spec /tmp/current/public-v1.json \
+          --format json \
+          --output /tmp/test-diff.json
+        
+        # Verify output
+        python -m json.tool /tmp/test-diff.json > /dev/null
+        echo "Contract diff validation passed"
+    
+    - name: Lint scripts
+      run: |
+        # Basic Python syntax validation
+        python -m py_compile scripts/generate-openapi-mock.py
+        python -m py_compile scripts/diff-contracts.py
+        echo "Script linting passed"
