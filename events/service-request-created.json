@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Service Request Event",
+  "type": "object",
+  "required": ["eventType", "timestamp", "data"],
+  "properties": {
+    "eventType": {
+      "type": "string",
+      "const": "service_request_created",
+      "description": "Event type identifier"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp in ISO 8601 format"
+    },
+    "data": {
+      "type": "object",
+      "required": ["requestId", "clientId", "areaId"],
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "Service request identifier"
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Client who created the request"
+        },
+        "areaId": {
+          "type": "string",
+          "description": "Business area for the service"
+        },
+        "description": {
+          "type": "string",
+          "description": "Service request description"
+        },
+        "urgency": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "urgent"],
+          "description": "Request urgency level"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Event source system"
+        },
+        "version": {
+          "type": "string",
+          "description": "Event schema version"
+        }
+      }
+    }
+  }
+}
