@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongo
+    environment:
+      - NODE_ENV=development
+      - MONGO_URL=mongodb://mongo:27017/polaris
+      - JWT_SECRET=your-jwt-secret
+      - STRIPE_API_KEY=your-stripe-api-key
+      - EMERGENT_LLM_KEY=your-emergent-llm-key
+    networks:
+      - polaris-network
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - polaris-network
+
+networks:
+  polaris-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
