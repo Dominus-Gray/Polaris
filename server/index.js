@@ -42,6 +42,7 @@ const knowledgeBaseComplete = require('./routes/knowledgeBaseComplete');
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 const { authenticateToken } = require('./middleware/auth');
+const { requireJsonContent } = require('./middleware/contentType');
 
 // Logger configuration
 const logger = winston.createLogger({
@@ -104,6 +105,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
 }));
+
+// Require JSON content type for POST/PUT/PATCH requests
+app.use(requireJsonContent);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
