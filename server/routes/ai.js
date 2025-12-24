@@ -15,6 +15,48 @@ const router = express.Router()
 const BUSINESS_AREAS = getBusinessAreas()
 
 /**
+ * Get AI Chat Instance
+ * Manages chat history for conversational context using the database
+ */
+async function getAIChatInstance(sessionId, systemMessage, model, userId) {
+  const history = await AIGeneratedContent.find({
+    user_id: userId,
+    session_id: sessionId,
+    content_type: 'response'
+  }).sort({ created_at: 1 });
+
+  const chatHistory = history.map(item => [
+    { role: 'user', content: item.prompt },
+    { role: 'assistant', content: item.generated_content }
+  ]).flat();
+
+  return {
+    model: model,
+    history: [{ role: 'system', content: systemMessage }, ...chatHistory],
+    send_message: async function(userMessage) {
+      this.history.push({ role: 'user', content: userMessage });
+
+      const aiResponse = await callOpenAI(this.history, this.model);
+      this.history.push({ role: 'assistant', content: aiResponse });
+
+      // Save to database
+      const aiContent = new AIGeneratedContent({
+        user_id: userId,
+        content_type: 'response',
+        area_id: 'general',
+        prompt: userMessage,
+        generated_content: aiResponse,
+        generation_model: model,
+        session_id: sessionId
+      });
+      await aiContent.save();
+
+      return aiResponse;
+    }
+  };
+}
+
+/**
  * Call OpenAI API directly with emergent key
  */
 async function callOpenAI(messages, model = 'gpt-4o-mini') {
@@ -90,13 +132,10 @@ CONTEXT: ${context.area_id ? `User is asking about ${BUSINESS_AREAS[context.area
 
     try {
       // Get AI chat instance
-      const chat = getAIChatInstance(chatSessionId, systemMessage, 'gpt-4o')
-      
-      // Create user message
-      const userMessage = new UserMessage(question)
+      const chat = await getAIChatInstance(chatSessionId, systemMessage, 'gpt-4o', userId)
       
       // Get AI response
-      const aiResponse = await chat.send_message(userMessage)
+      const aiResponse = await chat.send_message(question)
       
       // Log the interaction for analytics
       logger.info(`AI coaching conversation: User ${userId}, Session: ${chatSessionId}`)
@@ -116,9 +155,14 @@ CONTEXT: ${context.area_id ? `User is asking about ${BUSINESS_AREAS[context.area
     } catch (llmError) {
       logger.error('LLM integration error:', llmError)
       
-      // Fallback response
-      res.json({
-        success: true,
+      // Fallback response with proper error status
+      res.status(503).json({
+        success: false,
+        error: {
+          code: 'POL-5003',
+          message: 'AI service is currently unavailable. Please try again later.',
+          details: `LLM integration error for session ${chatSessionId}`
+        },
         data: {
           response: "I'm here to help with your business questions. Due to high demand, I'm currently operating in limited mode. Please try rephrasing your question or contact our support team for direct assistance.",
           session_id: chatSessionId,
@@ -140,15 +184,37 @@ CONTEXT: ${context.area_id ? `User is asking about ${BUSINESS_AREAS[context.area
  */
 router.get('/coach/history/:session_id', authenticateToken, async (req, res, next) => {
   try {
-    const { session_id } = req.params
-    const userId = req.user.id
-    
-    // Verify session belongs to user
-    if (!session_id.includes(userId)) {
-      return res.status(403).json(
-        formatErrorResponse(\n          'POL-1003',\n          'Access denied',\n          'You can only view your own conversation history'\n        )\n      )\n    }
-    
-    // For now, return basic response since emergent integration handles history internally\n    res.json({\n      success: true,\n      data: {\n        session_id,\n        message_count: 0,\n        messages: [],\n        last_interaction: new Date().toISOString()\n      }\n    })\n    \n  } catch (error) {\n    logger.error('AI coaching history error:', error)\n    next(error)\n  }\n})
+    const { session_id } = req.params;
+    const userId = req.user.id;
+
+    const conversations = await AIGeneratedContent.find({
+      user_id: userId,
+      session_id: session_id,
+      content_type: 'response'
+    }).sort({ created_at: 1 });
+
+    const history = conversations.map(conv => ({
+      id: conv.id,
+      question: conv.prompt,
+      response: conv.generated_content,
+      timestamp: conv.created_at,
+      area_id: conv.area_id
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        session_id: session_id,
+        conversation_history: history,
+        total_interactions: history.length
+      }
+    });
+
+  } catch (error) {
+    logger.error('Get AI coach history error:', error);
+    next(error);
+  }
+});
         provider: [
           {
             title: 'Update Your Profile',
@@ -218,101 +284,6 @@ router.get('/coach/history/:session_id', authenticateToken, async (req, res, nex
     return responses;
   }
 }
-
-/**
- * POST /api/ai/coach/conversation
- * AI conversational coaching
- */
-router.post('/coach/conversation', authenticateToken, validate(schemas.aiQuery), async (req, res, next) => {
-  try {
-    const { question, context, session_id } = req.body;
-    const userId = req.user.id;
-    
-    // Generate contextual response
-    const aiResponses = await AIService.generateResponse(question, context);
-    
-    let response = '';
-    const lowerQuestion = question.toLowerCase();
-    
-    if (lowerQuestion.includes('start') || lowerQuestion.includes('begin')) {
-      response = aiResponses.coaching['how do i start'];
-    } else if (lowerQuestion.includes('technology') || lowerQuestion.includes('tech')) {
-      response = aiResponses.coaching.technology;
-    } else if (lowerQuestion.includes('financial') || lowerQuestion.includes('money')) {
-      response = aiResponses.coaching.financial;
-    } else {
-      response = 'I understand you\'re looking for guidance. Let me help you with a personalized recommendation based on your current progress. Start by completing your business assessment to identify areas that need attention, then use our Knowledge Base resources for detailed guidance. If you need hands-on help, consider connecting with our professional service providers.';
-    }
-    
-    // Save conversation to AI generated content
-    const aiContent = new AIGeneratedContent({
-      user_id: userId,
-      content_type: 'response',
-      area_id: context?.area_id || 'general',
-      prompt: question,
-      generated_content: response,
-      generation_model: 'polaris-ai-coach',
-      session_id: session_id || uuidv4()
-    });
-    
-    await aiContent.save();
-    
-    logger.info(`AI coaching response generated for user ${userId}`);
-    
-    res.json({
-      success: true,
-      data: {
-        response,
-        session_id: aiContent.session_id || session_id,
-        generated_at: aiContent.created_at,
-        context_used: context || {},
-        model: 'polaris-ai-coach'
-      }
-    });
-    
-  } catch (error) {
-    logger.error('AI coach conversation error:', error);
-    next(error);
-  }
-});
-
-/**
- * GET /api/ai/coach/history/:sessionId
- * Get AI coaching conversation history
- */
-router.get('/coach/history/:sessionId', authenticateToken, async (req, res, next) => {
-  try {
-    const { sessionId } = req.params;
-    const userId = req.user.id;
-    
-    const conversations = await AIGeneratedContent.find({
-      user_id: userId,
-      session_id: sessionId,
-      content_type: 'response'
-    }).sort({ created_at: 1 });
-    
-    const history = conversations.map(conv => ({
-      id: conv.id,
-      question: conv.prompt,
-      response: conv.generated_content,
-      timestamp: conv.created_at,
-      area_id: conv.area_id
-    }));
-    
-    res.json({
-      success: true,
-      data: {
-        session_id: sessionId,
-        conversation_history: history,
-        total_interactions: history.length
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Get AI coach history error:', error);
-    next(error);
-  }
-});
 
 /**
  * POST /api/ai/predictive-analytics

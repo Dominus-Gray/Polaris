@@ -62,6 +62,19 @@ const PaymentTransactionSchema = new mongoose.Schema({
     default: false
   },
   
+  // Stripe-specific identifiers for reconciliation
+  payment_intent_id: {
+    type: String,
+    index: true
+  },
+  customer_id: {
+    type: String,
+    index: true
+  },
+  receipt_url: {
+    type: String
+  },
+
   // Additional metadata
   metadata: {
     type: Object,

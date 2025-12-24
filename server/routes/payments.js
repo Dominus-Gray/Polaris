@@ -207,6 +207,20 @@ router.get('/checkout/status/:session_id', authenticateToken, async (req, res, n
     if (session.payment_status === 'paid' && !transaction.processed) {
       transaction.processed = true
       transaction.status = 'complete'
+
+      // Populate additional Stripe fields for reconciliation
+      transaction.payment_intent_id = session.payment_intent
+      transaction.customer_id = session.customer
+
+      // Retrieve charge to get the receipt URL
+      try {
+        const charge = await stripe.charges.retrieve(
+          (await stripe.paymentIntents.retrieve(session.payment_intent)).latest_charge
+        )
+        transaction.receipt_url = charge.receipt_url
+      } catch (chargeError) {
+        logger.error(`Could not retrieve charge for session ${session_id}:`, chargeError)
+      }
       
       // Grant access based on package type
       await processSuccessfulPayment(transaction)
@@ -298,6 +312,20 @@ router.post('/webhook/stripe', express.raw({ type: 'application/json' }), async 
         transaction.payment_status = session.payment_status
         transaction.status = 'complete'
         transaction.processed = true
+
+        // Populate additional Stripe fields for reconciliation
+        transaction.payment_intent_id = session.payment_intent
+        transaction.customer_id = session.customer
+
+        // Retrieve charge to get the receipt URL
+        try {
+          const charge = await stripe.charges.retrieve(
+            (await stripe.paymentIntents.retrieve(session.payment_intent)).latest_charge
+          )
+          transaction.receipt_url = charge.receipt_url
+        } catch (chargeError) {
+          logger.error(`Webhook: Could not retrieve charge for session ${session.id}:`, chargeError)
+        }
         
         // Process successful payment
         await processSuccessfulPayment(transaction)
