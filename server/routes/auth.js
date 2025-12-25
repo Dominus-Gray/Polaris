@@ -52,4 +52,31 @@ router.post('/logout', authenticateToken, (req, res) => {
   res.json(formatResponse(true, null, 'Logged out successfully'));
 });
 
+router.post('/forgot-password', validate({ email: schemas.userLogin.extract('email') }), async (req, res, next) => {
+  try {
+    await authService.forgotPassword(req.body.email);
+    res.json(formatResponse(true, null, 'If an account with that email exists, a password reset link has been sent'));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/reset-password', validate({ token: require('joi').string().required(), password: schemas.userRegistration.extract('password') }), async (req, res, next) => {
+  try {
+    await authService.resetPassword(req.body.token, req.body.password);
+    res.json(formatResponse(true, null, 'Password reset successfully'));
+  } catch (error) {
+    res.status(400).json(formatErrorResponse('POL-4001', error.message));
+  }
+});
+
+router.post('/change-password', authenticateToken, validate({ current_password: require('joi').string().required(), new_password: schemas.userRegistration.extract('password') }), async (req, res, next) => {
+  try {
+    await authService.changePassword(req.user, req.body.current_password, req.body.new_password);
+    res.json(formatResponse(true, null, 'Password changed successfully'));
+  } catch (error) {
+    res.status(400).json(formatErrorResponse('POL-4003', error.message));
+  }
+});
+
 module.exports = router;

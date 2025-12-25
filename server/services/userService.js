@@ -62,7 +62,75 @@ module.exports = {
   registerUser,
   updateUserProfile,
   deleteUser,
+  getDashboard,
+  getNotifications,
+  updatePreferences,
 };
+
+async function getDashboard(user) {
+  const role = user.role;
+  let dashboardData = {
+    user: user.toSafeObject(),
+    welcome_message: `Welcome back, ${user.name}!`,
+    notifications_count: 0,
+    quick_actions: []
+  };
+
+  switch (role) {
+    case 'client':
+      dashboardData.quick_actions = [
+        { title: 'Start Assessment', url: '/assessment', icon: 'clipboard' },
+        { title: 'View Services', url: '/services', icon: 'briefcase' },
+        { title: 'Knowledge Base', url: '/knowledge-base', icon: 'book' }
+      ];
+      break;
+    case 'provider':
+      dashboardData.quick_actions = [
+        { title: 'View Opportunities', url: '/opportunities', icon: 'search' },
+        { title: 'My Services', url: '/my-services', icon: 'briefcase' },
+        { title: 'Profile', url: '/profile', icon: 'user' }
+      ];
+      break;
+    case 'agency':
+      dashboardData.quick_actions = [
+        { title: 'Generate Licenses', url: '/licenses', icon: 'key' },
+        { title: 'View Clients', url: '/clients', icon: 'users' },
+        { title: 'Analytics', url: '/analytics', icon: 'chart' }
+      ];
+      break;
+    case 'navigator':
+      dashboardData.quick_actions = [
+        { title: 'Approve Agencies', url: '/approve-agencies', icon: 'check' },
+        { title: 'System Analytics', url: '/system-analytics', icon: 'chart' },
+        { title: 'User Management', url: '/users', icon: 'users' }
+      ];
+      break;
+  }
+
+  return dashboardData;
+}
+
+async function getNotifications(userId, page, limit) {
+  // TODO: Implement notifications system
+  return {
+    notifications: [],
+    total: 0
+  };
+}
+
+async function updatePreferences(userId, preferences) {
+  const user = await User.findOneAndUpdate(
+    { id: userId },
+    { $set: { preferences } },
+    { new: true, runValidators: true }
+  );
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user.preferences;
+}
 
 async function updateUserProfile(userId, updates) {
   const allowedUpdates = [
